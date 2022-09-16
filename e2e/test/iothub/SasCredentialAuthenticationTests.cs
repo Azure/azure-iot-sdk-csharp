@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Azure;
@@ -64,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
                 Assert.Fail("The SAS token is expired so the call should fail with an exception");
             }
-            catch (UnauthorizedException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized)
             {
                 // Expected to be unauthorized exception.
             }
@@ -98,12 +99,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     QueryCondition = query,
                     Twin = twin,
-                    StartOn = DateTime.UtcNow
+                    StartOnUtc = DateTimeOffset.UtcNow,
                 };
                 var scheduledTwinUpdateOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
-                    MaxExecutionTime = TimeSpan.FromMinutes(2)
+                    MaxExecutionTime = TimeSpan.FromMinutes(2),
                 };
                 ScheduledJob scheduledJob = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
@@ -111,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         scheduledTwinUpdateOptions)
                     .ConfigureAwait(false);
             }
-            catch (ThrottlingException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429) 
             {
                 // Concurrent jobs can be rejected, but it still means authentication was successful. Ignore the exception.
             }
@@ -167,13 +168,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // act
 
-            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
 
-            await serviceClient.Messaging.SendAsync(testDevice.Id, message);
+            await serviceClient.Messages.SendAsync(testDevice.Id, message);
 
             // cleanup
-            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
@@ -194,7 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // act
             try
             {
-                await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
+                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
                 Assert.Fail("The SAS token is expired so the call should fail with an exception");
             }
             catch (AmqpException ex) when (ex.Error.Description.Contains("401"))
@@ -205,10 +206,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             sasCredential.Update(signature);
 
-            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
-            await serviceClient.Messaging.SendAsync(testDevice.Id, message);
-            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messages.SendAsync(testDevice.Id, message);
+            await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
 
             // cleanup
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);

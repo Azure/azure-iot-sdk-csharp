@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -134,18 +136,18 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
             queriedJob.JobType.Should().NotBeNull();
-            queriedJob.CreatedTimeUtc.Should().NotBeNull();
+            queriedJob.CreatedOnUtc.Should().NotBeNull();
             queriedJob.Status.Should().NotBeNull();
             if (queriedJob.Status != JobStatus.Queued
                 && queriedJob.Status != JobStatus.Scheduled
                 && queriedJob.Status != JobStatus.Cancelled
                 && queriedJob.Status != JobStatus.Unknown)
             {
-                queriedJob.StartTimeUtc.Should().NotBeNull();
+                queriedJob.StartedOnUtc.Should().NotBeNull();
 
                 if (queriedJob.Status == JobStatus.Completed)
                 {
-                    queriedJob.EndTimeUtc.Should().NotBeNull();
+                    queriedJob.EndedOnUtc.Should().NotBeNull();
                 }
             }
         }
@@ -158,13 +160,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
 
             await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id);
+            await WaitForJobToBeQueryableAsync(serviceClient.Query, 1, null, null);
 
-            JobType? type = null;
-            JobStatus? status = null;
-
-            await WaitForJobToBeQueryableAsync(serviceClient.Query, 1, type, status);
-
-            QueryResponse<ScheduledJob> queryResponse = await serviceClient.Query.CreateAsync(type, status);
+            QueryResponse<ScheduledJob> queryResponse = await serviceClient.Query.CreateJobsQueryAsync();
             (await queryResponse.MoveNextAsync()).Should().BeTrue("Should have at least one page of jobs.");
             ScheduledJob queriedJob = queryResponse.Current;
 
@@ -173,8 +171,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
             queriedJob.JobType.Should().NotBeNull();
-            queriedJob.EndTimeUtc.Should().NotBeNull();
-            queriedJob.CreatedTimeUtc.Should().NotBeNull();
+            queriedJob.EndedOnUtc.Should().NotBeNull();
+            queriedJob.CreatedOnUtc.Should().NotBeNull();
             queriedJob.Status.Should().NotBeNull();
         }
 
@@ -195,7 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task WaitForDevicesToBeQueryableAsync(QueryClient queryClient, string query, int expectedCount)
         {
-            // There is some latency between the creation of the test devices and when they are query-able,
+            // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
             CancellationToken cancellationToken = cancellationTokenSource.Token;
@@ -204,37 +202,41 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 await Task.Delay(100).ConfigureAwait(false);
                 queryResponse = await queryClient.CreateAsync<Twin>(query);
-                cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become query-able
+                cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
             }
         }
 
         private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, string query, int expectedCount)
         {
-            // There is some latency between the creation of the test devices and when they are query-able,
+            // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
             QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateAsync<ScheduledJob>(query);
             while (queryResponse.CurrentPage.Count() < expectedCount)
             {
                 await Task.Delay(100).ConfigureAwait(false);
                 queryResponse = await queryClient.CreateAsync<ScheduledJob>(query);
-                cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become query-able
+                cancellationTokenSource.Token.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
             }
         }
 
-        private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, int expectedCount, JobType? type = null, JobStatus? status = null)
+        private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, int expectedCount, JobType? jobType = null, JobStatus? status = null)
         {
-            // There is some latency between the creation of the test devices and when they are query-able,
+            // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
             CancellationToken cancellationToken = cancellationTokenSource.Token;
-            QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateAsync(type, status);
+            var options = new JobQueryOptions
+            {
+                JobType = jobType,
+                JobStatus = status,
+            };
+            QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateJobsQueryAsync(options);
             while (queryResponse.CurrentPage.Count() < expectedCount)
             {
                 await Task.Delay(100).ConfigureAwait(false);
-                queryResponse = await queryClient.CreateAsync(type, status);
-                cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become query-able
+                queryResponse = await queryClient.CreateJobsQueryAsync(options);
+                cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
             }
         }
 
@@ -249,12 +251,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     Twin = twinUpdate,
                     QueryCondition = "DeviceId IN ['" + deviceId + "']",
-                    StartOn = DateTime.UtcNow.AddMinutes(3),
+                    StartOnUtc = DateTimeOffset.UtcNow.AddMinutes(3),
                 };
 
                 await jobsClient.ScheduleTwinUpdateAsync(scheduledTwinUpdate);
             }
-            catch (Common.Exceptions.ThrottlingException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
             {
                 // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
                 // tests in this suite are written to work even if the queried job isn't the one they created.

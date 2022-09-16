@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
@@ -95,15 +96,12 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Callback for message feedback must be set before opening the connection.
         /// </remarks>
-        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception. </exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
-        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
-        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>If the client operation times out before the response is returned.</exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        /// <exception cref="SocketException">If a socket error occurs.</exception>
+        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a WebSocket connection.</exception>
+        /// <exception cref="IOException">If an I/O error occurs.</exception>
+        /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -139,15 +137,12 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// The instance can be re-opened after closing.
         /// </remarks>
-        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception. </exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
-        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
-        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>If the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        /// <exception cref="SocketException">If a socket error occurs.</exception>
+        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a WebSocket connection.</exception>
+        /// <exception cref="IOException">If an I/O error occurs.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -172,6 +167,12 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _amqpConnection?.Dispose();
+        }
+
         private async void OnFeedbackMessageReceivedAsync(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled)
@@ -190,7 +191,7 @@ namespace Microsoft.Azure.Devices
 
                         var feedbackBatch = new FeedbackBatch
                         {
-                            EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
+                            EnqueuedOnUtc = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedOn],
                             Records = records,
                             IotHubHostName = Encoding.UTF8.GetString(
                                 amqpMessage.Properties.UserId.Array,
@@ -215,13 +216,23 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OnFeedbackMessageReceivedAsync)} threw an exception: {ex}", nameof(OnFeedbackMessageReceivedAsync));
 
-                if (ex is IotHubException hubEx)
+                try
                 {
-                    ErrorProcessor?.Invoke(new ErrorContext(hubEx));
+                    if (ex is IotHubServiceException hubEx)
+                    {
+                        ErrorProcessor?.Invoke(new ErrorContext(hubEx));
+                    }
+                    else if (ex is IOException ioEx)
+                    {
+                        ErrorProcessor?.Invoke(new ErrorContext(ioEx));
+                    }
+
+                    await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                 }
-                else if (ex is IOException ioEx)
+                catch (Exception ex2)
                 {
-                    ErrorProcessor?.Invoke(new ErrorContext(ioEx));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"{nameof(OnFeedbackMessageReceivedAsync)} threw an exception during cleanup: {ex2}", nameof(OnFeedbackMessageReceivedAsync));
                 }
             }
             finally
@@ -237,26 +248,20 @@ namespace Microsoft.Azure.Devices
             {
                 ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
                 ErrorProcessor?.Invoke(errorContext);
-                Exception exceptionToLog = errorContext.IOException != null ? errorContext.IOException : errorContext.IotHubException;
+                Exception exceptionToLog = errorContext.IotHubServiceException;
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
             }
             else
             {
-                var defaultException = new IOException("AMQP connection was lost.", ((AmqpObject)sender).TerminalException);
+                var defaultException = new IotHubServiceException("AMQP connection was lost.", ((AmqpObject)sender).TerminalException);
                 var errorContext = new ErrorContext(defaultException);
                 ErrorProcessor?.Invoke(errorContext);
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            _amqpConnection?.Dispose();
         }
     }
 }

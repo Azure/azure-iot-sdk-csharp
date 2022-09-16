@@ -35,11 +35,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
             (Message testMessage, string messageId, string payload, string p1Value) = ComposeTelemetryMessage();
-            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
-            await serviceClient.Messaging.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messages.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                             {
                                 QueryCondition = $"DeviceId IN ['{JobDeviceId}']",
                                 Twin = twin,
-                                StartOn = DateTimeOffset.UtcNow,
+                                StartOnUtc = DateTimeOffset.UtcNow,
                             },
                             new ScheduledJobsOptions
                             {
@@ -99,7 +99,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (ThrottlingException) when (++tryCount < MaxIterationWait)
+                catch (IotHubServiceException ex) 
+                    when (ex.StatusCode is (HttpStatusCode)429 && ++tryCount < MaxIterationWait)
                 {
                     Logger.Trace($"ThrottlingException... waiting.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);

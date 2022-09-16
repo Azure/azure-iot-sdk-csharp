@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
         /// The configured transport protocol.
         /// </summary>
         /// <remarks>
-        /// Only used for communications over AMQP, used in <see cref="MessagingClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
+        /// Only used for communications over AMQP, used in <see cref="MessagesClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
         /// and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </remarks>
         public IotHubTransportProtocol Protocol { get; set; } = IotHubTransportProtocol.Tcp;
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices
         /// The default value is 2 minutes.
         /// </summary>
         /// <remarks>
-        /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
+        /// Only used for AMQP. Can only be used for <see cref="MessagesClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
         /// The client will consider the connection as disconnected if the keep alive ping fails.
         /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
         /// </summary>
         /// <remarks>
-        /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
+        /// Only used for AMQP. Can only be used for <see cref="MessagesClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </remarks>
         /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
         public TimeSpan? AmqpWebSocketKeepAlive { get; set; }

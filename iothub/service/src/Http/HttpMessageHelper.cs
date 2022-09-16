@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The If-Match header value for forcing the operation regardless of ETag.
         /// </summary>
-        internal const string ETagForce = "\"*\"";
+        private static readonly string s_eTagForce = $"\"{ETag.All}\"";
 
         /// <summary>
         /// Helper method for serializing payload objects.
@@ -33,10 +33,9 @@ namespace Microsoft.Azure.Devices
         /// <returns>The serialized HttpContent.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="payload"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="payload"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -44,7 +43,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         internal static HttpContent SerializePayload(object payload)
         {
-            Argument.AssertNotNull(payload, nameof(payload));
+            Debug.Assert(payload != null, "Upstream caller should have validated the payload.");
 
             string str = JsonConvert.SerializeObject(payload);
             return new StringContent(str, Encoding.UTF8, ApplicationJson);
@@ -59,17 +58,13 @@ namespace Microsoft.Azure.Devices
         {
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
-                IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping =
-                    ExceptionHandlingHelper.GetDefaultErrorMapping();
-                if (defaultErrorMapping.TryGetValue(responseMessage.StatusCode, out Func<HttpResponseMessage, Task<Exception>> mappedException))
-                {
-                    throw await mappedException.Invoke(responseMessage);
-                }
+                string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
+                Tuple<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(responseMessage);
+                string trackingId = pair.Item1;
+                IotHubErrorCode errorCode = pair.Item2;
+                bool isTransient = DetermineIfTransient(responseMessage.StatusCode, errorCode);
 
-                // Default case for when the mapping of this error code to an exception does not exist yet
-                ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(responseMessage);
-                string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
-                throw new IotHubException(errorCode, errorMessage);
+                throw new IotHubServiceException(errorMessage, responseMessage.StatusCode, errorCode, isTransient, trackingId);
             }
         }
 
@@ -97,9 +92,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
         internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged)
         {
-            Argument.AssertNotNull(requestMessage, nameof(requestMessage));
+            Debug.Assert(requestMessage != null, "Request message should not have been null");
 
-            if (onlyIfUnchanged && eTag != null)
+            if (onlyIfUnchanged && !string.IsNullOrWhiteSpace(eTag.ToString()))
             {
                 // "Perform this operation only if the entity is unchanged"
                 // Sends the If-Match header with a value of the ETag.
@@ -110,7 +105,7 @@ namespace Microsoft.Azure.Devices
             {
                 // "Perform this operation even if the entity has changed"
                 // Sends the If-Match header with a value of "*"
-                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(ETagForce));
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(s_eTagForce));
             }
         }
 
@@ -120,19 +115,35 @@ namespace Microsoft.Azure.Devices
         {
             var escapedETagBuilder = new StringBuilder();
 
-            if (!eTag.ToString().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
+            if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
                 escapedETagBuilder.Append('"');
             }
 
-            escapedETagBuilder.Append(eTag.ToString());
+            escapedETagBuilder.Append(eTag);
 
-            if (!eTag.ToString().EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            if (!eTag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
                 escapedETagBuilder.Append('"');
             }
 
             return escapedETagBuilder.ToString();
+        }
+
+        private static bool DetermineIfTransient(HttpStatusCode statusCode, IotHubErrorCode errorCode)
+        {
+            switch (errorCode)
+            {
+                case IotHubErrorCode.ThrottlingException:
+                case IotHubErrorCode.IotHubQuotaExceeded:
+                    return true;
+
+                case IotHubErrorCode.Unknown:
+                    return statusCode == HttpStatusCode.RequestTimeout;
+
+                default:
+                    return false;
+            }
         }
     }
 }

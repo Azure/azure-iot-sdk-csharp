@@ -8,39 +8,39 @@ using Newtonsoft.Json.Converters;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Used to delineate job actions.
+    /// Used to specify the type of job.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
     public enum JobType
     {
         /// <summary>
-        /// Unknown
+        /// Unknown type.
         /// </summary>
         [EnumMember(Value = "unknown")]
         Unknown = 0,
 
         /// <summary>
-        /// Indicates an ExportDevices job
+        /// Indicates an ExportDevices job.
         /// </summary>
         [EnumMember(Value = "export")]
         ExportDevices,
 
         /// <summary>
-        /// Indicates an ImportDevices job
+        /// Indicates an ImportDevices job.
         /// </summary>
         [EnumMember(Value = "import")]
         ImportDevices,
 
         /// <summary>
-        /// Indicates a Device method job
+        /// Indicates a Device method job.
         /// </summary>
         [EnumMember(Value = "scheduleDeviceMethod")]
         ScheduleDeviceMethod,
 
         /// <summary>
-        /// Indicates a Twin update job
+        /// Indicates a Twin update job.
         /// </summary>
         [EnumMember(Value = "scheduleUpdateTwin")]
-        ScheduleUpdateTwin
+        ScheduleUpdateTwin,
     }
 }

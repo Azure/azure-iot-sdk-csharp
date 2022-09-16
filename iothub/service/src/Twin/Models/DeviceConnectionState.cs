@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -18,6 +16,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Represents a device in the connected state.
         /// </summary>
-        Connected = 1
+        Connected = 1,
     }
 }

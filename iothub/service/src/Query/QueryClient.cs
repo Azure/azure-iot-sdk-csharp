@@ -2,12 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -20,17 +17,16 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
     public class QueryClient
     {
-        private const string JobTypeFormat = "&jobType={0}";
-        private const string JobStatusFormat = "&jobStatus={0}";
         private const string ContinuationTokenHeader = "x-ms-continuation";
         private const string PageSizeHeader = "x-ms-max-item-count";
-        private const string DevicesQueryUriFormat = "/devices/query";
-        private const string JobsQueryFormat = "/jobs/v2/query";
 
-        private string _hostName;
-        private IotHubConnectionProperties _credentialProvider;
-        private HttpClient _httpClient;
-        private HttpRequestMessageFactory _httpRequestMessageFactory;
+        private static readonly Uri s_jobsQueryFormat = new("/jobs/v2/query", UriKind.Relative);
+        private static readonly Uri s_queryUri = new("/devices/query", UriKind.Relative);
+
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -52,10 +48,13 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Execute a query on your IoT hub and get an iterable set of the queried items. The kind of iterable items returned
-        /// by this query will depend on the query provided.
+        /// Execute a query on your IoT hub and get an iterable set of the queried items.
         /// </summary>
-        /// <param name="query">The query. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language">this document</see> for more details on how to build this query.</param>
+        /// <remarks>
+        /// The kind of iterable items returned by this query will depend on the query provided.
+        /// </remarks>
+        /// <param name="query">The query. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language">this document</see>
+        /// for more details on how to build this query.</param>
         /// <param name="options">The optional parameters to execute the query with.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <typeparam name="T">
@@ -64,12 +63,12 @@ namespace Microsoft.Azure.Devices
         /// <see cref="ScheduledJob"/>.
         /// </typeparam>
         /// <returns>An iterable set of the queried items.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="query"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the provided <paramref name="query"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="query"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or whitespace.</exception>
+        /// <exception cref="IotHubServiceException">
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -86,8 +85,6 @@ namespace Microsoft.Azure.Devices
         ///     Console.WriteLine(queriedTwin);
         /// }
         /// </c>
-        /// </example>
-        /// <example>
         /// <c>
         /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateAsync&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
         /// while (await queriedJobs.MoveNextAsync())
@@ -101,13 +98,18 @@ namespace Microsoft.Azure.Devices
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Creating query", nameof(CreateAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, QueryDevicesRequestUri(), _credentialProvider, new QuerySpecification { Sql = query });
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    HttpMethod.Post,
+                    s_queryUri,
+                    _credentialProvider,
+                    new QuerySpecification { Sql = query });
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
                 if (!string.IsNullOrWhiteSpace(options?.ContinuationToken))
                 {
@@ -141,15 +143,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Query all jobs or query jobs by type and/or status.
         /// </summary>
-        /// <param name="jobType">The type of the jobs to return in the query. If null, jobs of all types will be returned</param>
-        /// <param name="jobStatus">The status of the jobs to return in the query. If null, jobs of all states will be returned</param>
         /// <param name="options">The optional parameters to run the query with.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>An iterable set of the queried jobs.</returns>
-        /// <exception cref="IotHubException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// <exception cref="IotHubServiceException">
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -158,27 +158,30 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
         /// <c>
-        /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateAsync();
+        /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateJobsQueryAsync();
         /// while (await queriedJobs.MoveNextAsync())
         /// {
-        ///     ScheduledJob queriedJob = queriedJobs.Current;
-        ///     Console.WriteLine(queriedJob);
+        ///     Console.WriteLine(queriedJobs.Current.JobId);
         /// }
         /// </c>
         /// </example>
 
-        public virtual async Task<QueryResponse<ScheduledJob>> CreateAsync(JobType? jobType = null, JobStatus? jobStatus = null, QueryOptions options = default, CancellationToken cancellationToken = default)
+        public virtual async Task<QueryResponse<ScheduledJob>> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
+                Logging.Enter(this, $"jobType=[{options?.JobType}], jobStatus=[{options?.JobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    HttpMethod.Get,
+                    s_jobsQueryFormat,
+                    _credentialProvider,
+                    null,
+                    BuildQueryJobQueryString(options));
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, new Uri(JobsQueryFormat, UriKind.Relative), _credentialProvider, null, BuildQueryJobUri(jobType, jobStatus));
-
-                var customHeaders = new Dictionary<string, string>();
                 if (!string.IsNullOrWhiteSpace(options?.ContinuationToken))
                 {
                     request.Headers.Add(ContinuationTokenHeader, options?.ContinuationToken);
@@ -192,8 +195,8 @@ namespace Microsoft.Azure.Devices
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                QueriedPage<ScheduledJob> page = new QueriedPage<ScheduledJob>(response, responsePayload);
-                return new QueryResponse<ScheduledJob>(this, jobType, jobStatus, page.Items, page.ContinuationToken, options?.PageSize);
+                var page = new QueriedPage<ScheduledJob>(response, responsePayload);
+                return new QueryResponse<ScheduledJob>(this, options?.JobType, options?.JobStatus, page.Items, page.ContinuationToken, options?.PageSize);
             }
             catch (Exception ex)
             {
@@ -204,30 +207,25 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
+                    Logging.Exit(this, $"jobType=[{options?.JobType}], jobStatus=[{options?.JobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
             }
         }
 
-        private static Uri QueryDevicesRequestUri()
+        private static string BuildQueryJobQueryString(JobQueryOptions options)
         {
-            return new Uri(DevicesQueryUriFormat, UriKind.Relative);
-        }
+            string queryString = "";
 
-        private static string BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
-        {
-            var stringBuilder = new StringBuilder();
-
-            if (jobType != null)
+            if (options?.JobType != null)
             {
-                stringBuilder.Append(string.Format(CultureInfo.InvariantCulture, JobTypeFormat, jobType.ToString()));
+                queryString += $"&jobType={options.JobType.Value}";
             }
 
-            if (jobStatus != null)
+            if (options?.JobStatus != null)
             {
-                stringBuilder.Append(string.Format(CultureInfo.InvariantCulture, JobStatusFormat, jobStatus.ToString()));
+                queryString += $"&jobStatus={options.JobStatus.Value}";
             }
 
-            return stringBuilder.ToString();
+            return queryString;
         }
     }
 }

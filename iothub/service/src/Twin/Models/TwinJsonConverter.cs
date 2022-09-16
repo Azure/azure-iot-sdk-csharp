@@ -106,10 +106,10 @@ namespace Microsoft.Azure.Devices
                 writer.WriteValue(twin.StatusReason);
             }
 
-            if (twin.StatusUpdatedTime != null)
+            if (twin.StatusUpdatedOn != null)
             {
                 writer.WritePropertyName(StatusUpdateTimeTag);
-                writer.WriteValue(twin.StatusUpdatedTime);
+                writer.WriteValue(twin.StatusUpdatedOn);
             }
 
             if (twin.ConnectionState != null)
@@ -118,10 +118,10 @@ namespace Microsoft.Azure.Devices
                 writer.WriteRawValue(JsonConvert.SerializeObject(twin.ConnectionState, new StringEnumConverter()));
             }
 
-            if (twin.LastActivityTime != null)
+            if (twin.LastActivityOn != null)
             {
                 writer.WritePropertyName(LastActivityTimeTag);
-                writer.WriteValue(twin.LastActivityTime);
+                writer.WriteValue(twin.LastActivityOn);
             }
 
             if (twin.CloudToDeviceMessageCount != null)
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices
                         Dictionary<string, object> capabilitiesDictionary = serializer.Deserialize<Dictionary<string, object>>(reader);
                         twin.Capabilities = new DeviceCapabilities
                         {
-                            IotEdge = capabilitiesDictionary.ContainsKey(IotEdgeName) && (bool)capabilitiesDictionary[IotEdgeName]
+                            IsIotEdge = capabilitiesDictionary.ContainsKey(IotEdgeName) && (bool)capabilitiesDictionary[IotEdgeName]
                         };
                         break;
 
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedTime = ConvertToDateTime(reader.Value);
+                        twin.StatusUpdatedOn = ConvertToDateTime(reader.Value);
                         break;
 
                     case ConnectionStateTag:
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case LastActivityTimeTag:
-                        twin.LastActivityTime = ConvertToDateTime(reader.Value);
+                        twin.LastActivityOn = ConvertToDateTime(reader.Value);
                         break;
 
                     case CloudToDeviceMessageCountTag:

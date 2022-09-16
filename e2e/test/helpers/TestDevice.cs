@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
+using System.Net;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -27,9 +28,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class TestDevice : IDisposable
     {
         private const int MaxRetryCount = 5;
-        private static readonly HashSet<Type> s_throttlingExceptions = new() { typeof(ThrottlingException), };
-        private static readonly HashSet<Type> s_getRetryableExceptions = new(s_throttlingExceptions) { typeof(DeviceNotFoundException) };
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1);
+        private static readonly HashSet<IotHubErrorCode> s_throttlingStatusCodes = new HashSet<IotHubErrorCode> { IotHubErrorCode.ThrottlingException };
+        private static readonly HashSet<IotHubErrorCode> s_retryableStatusCodes = new HashSet<IotHubErrorCode>(s_throttlingStatusCodes) { IotHubErrorCode.DeviceNotFound };
+        private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
         private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
             retryCount: MaxRetryCount,
@@ -103,29 +104,33 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             Device device = null;
 
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RetryOperationsAsync1(
                     async () =>
                     {
                         device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
-                    s_throttlingExceptions,
+                    s_throttlingStatusCodes,
                     s_logger)
                 .ConfigureAwait(false);
 
             // Confirm the device exists in the registry before calling it good to avoid downstream test failures.
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RetryOperationsAsync1(
                     async () =>
                     {
                         device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                         if (device is null)
                         {
-                            throw new DeviceNotFoundException(ErrorCode.DeviceNotFound, $"Created device {requestDevice.Id} not yet gettable from IoT hub.");
+                            throw new IotHubServiceException($"Created device {requestDevice.Id} not yet gettable from IoT hub.")
+                            {
+                                StatusCode = HttpStatusCode.NotFound,
+                                ErrorCode = IotHubErrorCode.DeviceNotFound,
+                            };
                         }
                     },
                     s_exponentialBackoffRetryStrategy,
-                    s_getRetryableExceptions,
+                    s_retryableStatusCodes,
                     s_logger)
                 .ConfigureAwait(false);
 
@@ -197,13 +202,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RetryOperationsAsync1(
                     async () =>
                     {
                         await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
-                    s_throttlingExceptions,
+                    s_throttlingStatusCodes,
                     s_logger)
                 .ConfigureAwait(false);
         }

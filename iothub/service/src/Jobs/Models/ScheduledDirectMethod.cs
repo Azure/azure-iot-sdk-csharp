@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     public class ScheduledDirectMethod
     {
         /// <summary>
-        /// Query condition to evaluate which devices to run the job on.
+        /// Query condition to evaluate which devices the job applies to.
         /// </summary>
         [JsonProperty(PropertyName = "queryCondition", Required = Required.Always)]
         public string QueryCondition { get; set; }
@@ -24,9 +24,9 @@ namespace Microsoft.Azure.Devices
         public DirectMethodRequest DirectMethodRequest { get; set; }
 
         /// <summary>
-        /// Date time in UTC to start the job.
-        /// </summary>\
+        /// When to start the job in UTC.
+        /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc", Required = Required.Always)]
-        public DateTime StartTimeUtc { get; set; }
+        public DateTime StartOnUtc { get; set; }
     }
 }

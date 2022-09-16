@@ -60,14 +60,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Create a top-level edge device.
                 var edgeDevice1 = new Device(edgeId1)
                 {
-                    Capabilities = new DeviceCapabilities { IotEdge = true }
+                    Capabilities = new DeviceCapabilities { IsIotEdge = true }
                 };
                 edgeDevice1 = await serviceClient.Devices.CreateAsync(edgeDevice1).ConfigureAwait(false);
 
                 // Create a second-level edge device with edge 1 as the parent.
                 var edgeDevice2 = new Device(edgeId2)
                 {
-                    Capabilities = new DeviceCapabilities { IotEdge = true },
+                    Capabilities = new DeviceCapabilities { IsIotEdge = true },
                     ParentScopes = { edgeDevice1.Scope },
                 };
                 edgeDevice2 = await serviceClient.Devices.CreateAsync(edgeDevice2).ConfigureAwait(false);
@@ -100,14 +100,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string deviceId = _idPrefix + Guid.NewGuid();
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var twin = new Twin
+            var twin = new Twin(deviceId)
             {
                 Tags = new TwinCollection(@"{ companyId: 1234 }"),
             };
 
             var iotEdgeDevice = new Device(deviceId)
             {
-                Capabilities = new DeviceCapabilities { IotEdge = true }
+                Capabilities = new DeviceCapabilities { IsIotEdge = true }
             };
 
             await serviceClient.Devices.CreateWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Device actual = await serviceClient.Devices.GetAsync(deviceId).ConfigureAwait(false);
                 actual.Should().NotBeNull($"Got null in GET on device {deviceId} to check IotEdge property.");
-                actual.Capabilities.IotEdge.Should().BeTrue();
+                actual.Capabilities.IsIotEdge.Should().BeTrue();
             }
             finally
             {
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 twin2.Properties.Desired[expectedProperty] = expectedPropertyValue;
 
                 BulkRegistryOperationResult result = await serviceClient.Twins
-                    .UpdateAsync(new[] { twin1, twin2 }, true)
+                    .UpdateAsync(new[] { twin1, twin2 }, false)
                     .ConfigureAwait(false);
 
                 // assert
@@ -289,34 +289,25 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await serviceClient.Devices.CreateAsync(device2).ConfigureAwait(false);
 
                 // act
-
                 BulkRegistryOperationResult bulkDeleteResult = await serviceClient.Devices
                     .DeleteAsync(new[] { device1, device2 }, false, default)
                     .ConfigureAwait(false);
 
                 // assert
-
                 bulkDeleteResult.IsSuccessful.Should().BeTrue();
 
-                try
-                {
-                    Device actualDevice1 = await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
-                    throw new AssertFailedException("Expected the request to fail with a \"not found\" error");
-                }
-                catch (DeviceNotFoundException)
-                {
-                    // expected exception
-                }
 
-                try
-                {
-                    Device actualDevice2 = await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
-                    throw new AssertFailedException("Expected the request to fail with a \"not found\" error");
-                }
-                catch (DeviceNotFoundException)
-                {
-                    // expected exception
-                }
+                Func<Task> act1 = async () => await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
+
+                var error1 = await act1.Should().ThrowAsync<IotHubServiceException>("Expected the request to fail with a \"not found\" error");
+                error1.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+                error1.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+
+                Func<Task> act2 = async () => await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
+
+                var error2 = await act2.Should().ThrowAsync<IotHubServiceException>("Expected the request to fail with a \"not found\" error");
+                error2.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+                error2.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
             }
             finally
             {
@@ -517,23 +508,24 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 device.ETag = oldEtag;
 
                 // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                FluentActions
-                .Invoking(async () => { await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false); })
-                .Should()
-                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
+                Func<Task> act = async () => await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
+                var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
+                error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                 FluentActions
                 .Invoking(async () => { device = await serviceClient.Devices.SetAsync(device, false).ConfigureAwait(false); })
                 .Should()
-                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                .NotThrow<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
                 // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
                 device.Status = DeviceStatus.Enabled;
                 FluentActions
                 .Invoking(async () => { device = await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false); })
                 .Should()
-                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
+                .NotThrow<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
             }
             finally
             {
@@ -569,16 +561,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 device.ETag = oldEtag;
 
                 // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                FluentActions
-                .Invoking(async () => { await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false); })
-                .Should()
-                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
+                Func<Task> act = async () => await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false);
+                var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
+                error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                 FluentActions
                 .Invoking(async () => { await serviceClient.Devices.DeleteAsync(device, false).ConfigureAwait(false); })
                 .Should()
-                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                .NotThrow<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
             }
             finally
             {
@@ -586,7 +579,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
                 }
-                catch (DeviceNotFoundException)
+                catch (IotHubServiceException ex) 
+                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
                 {
                     // device was already deleted during the normal test flow
                 }
@@ -622,16 +616,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 module.ETag = oldEtag;
 
                 // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                FluentActions
-                .Invoking(async () => { await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false); })
-                .Should()
-                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
+                Func<Task> act = async () => await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false);
+                var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
+                error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                 FluentActions
                 .Invoking(async () => { module = await serviceClient.Modules.SetAsync(module, false).ConfigureAwait(false); })
                 .Should()
-                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                .NotThrow<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
                 // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
                 module.ManagedBy = "";
@@ -639,7 +634,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 FluentActions
                 .Invoking(async () => { await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false); })
                 .Should()
-                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
+                .NotThrow<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
             }
             finally
             {
@@ -680,16 +675,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 module.ETag = oldEtag;
 
                 // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                FluentActions
-                .Invoking(async () => { await serviceClient.Modules.DeleteAsync(module, true).ConfigureAwait(false); })
-                .Should()
-                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
+                Func<Task> act = async () => await serviceClient.Modules.DeleteAsync(module, true).ConfigureAwait(false);
+                var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
+                error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                 FluentActions
                 .Invoking(async () => { await serviceClient.Modules.DeleteAsync(module, false).ConfigureAwait(false); })
                 .Should()
-                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                .NotThrow<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
             }
             finally
             {
@@ -698,7 +694,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await serviceClient.Modules.DeleteAsync(deviceId, moduleId).ConfigureAwait(false);
                     await CleanupAsync(serviceClient, deviceId).ConfigureAwait(false);
                 }
-                catch (DeviceNotFoundException)
+                catch (IotHubServiceException ex)
+                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
                 {
                     // device was already deleted during the normal test flow
                 }

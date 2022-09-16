@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -70,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     new Device(edgeId1)
                     {
                         Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
-                        Capabilities = new DeviceCapabilities { IotEdge = true },
+                        Capabilities = new DeviceCapabilities { IsIotEdge = true },
                     })
                     .ConfigureAwait(false);
 
@@ -78,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     new Device(edgeId2)
                     {
                         Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
-                        Capabilities = new DeviceCapabilities { IotEdge = true },
+                        Capabilities = new DeviceCapabilities { IsIotEdge = true },
                         ParentScopes = { edge1.Scope },
                     })
                     .ConfigureAwait(false);
@@ -159,14 +160,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 : null;
 
-            JobProperties jobProperties = JobProperties.CreateForExportJob(
-                containerUri,
-                true,
-                devicesFileName,
-                storageAuthenticationType,
-                identity);
-            jobProperties.IncludeConfigurations = true;
-            jobProperties.ConfigurationsBlobName = configsFileName;
+            var jobProperties = new JobProperties(containerUri, true)
+            {
+                OutputBlobName = devicesFileName,
+                StorageAuthenticationType = storageAuthenticationType,
+                Identity = identity,
+                IncludeConfigurations = true,
+                ConfigurationsBlobName = configsFileName,
+            };
 
             var sw = Stopwatch.StartNew();
 
@@ -182,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (JobQuotaExceededException)
+                catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)492)
                 {
                     Logger.Trace($"JobQuotaExceededException... waiting after {sw.Elapsed}.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
@@ -199,7 +200,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
                 jobProperties = await serviceClient.Devices.GetJobAsync(jobProperties.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {jobProperties.JobId} is {jobProperties.Status} with progress {jobProperties.Progress}% after {sw.Elapsed}.");
+                Logger.Trace($"Job {jobProperties.JobId} is {jobProperties.Status} after {sw.Elapsed}.");
             }
 
             return jobProperties;
@@ -237,7 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 ExportImportDevice exportedDevice = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDevice);
 
-                if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge1.Id) && exportedDevice.Capabilities.IotEdge)
+                if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge1.Id) && exportedDevice.Capabilities.IsIotEdge)
                 {
                     Logger.Trace($"Found edge1 in export as [{serializedDevice}]");
                     foundEdge1InExport = true;
@@ -245,7 +246,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     continue;
                 }
 
-                if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge2.Id) && exportedDevice.Capabilities.IotEdge)
+                if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge2.Id) && exportedDevice.Capabilities.IsIotEdge)
                 {
                     Logger.Trace($"Found edge2 in export as [{serializedDevice}]");
                     foundEdge2InExport = true;

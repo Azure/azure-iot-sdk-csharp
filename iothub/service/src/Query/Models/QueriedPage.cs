@@ -14,12 +14,6 @@ namespace Microsoft.Azure.Devices
     {
         private const string ContinuationTokenHeader = "x-ms-continuation";
 
-        [JsonProperty(PropertyName = "items", Required = Required.Always)]
-        public IEnumerable<T> Items { get; set; }
-
-        [JsonProperty(PropertyName = "continuationToken", Required = Required.AllowNull)]
-        public string ContinuationToken { get; set; }
-
         // Payload is taken separately from http response because reading the payload should only be done
         // in an async function.
         internal QueriedPage(HttpResponseMessage response, string payload)
@@ -27,5 +21,11 @@ namespace Microsoft.Azure.Devices
             Items = JsonConvert.DeserializeObject<IEnumerable<T>>(payload);
             ContinuationToken = response.Headers.GetFirstValueOrNull(ContinuationTokenHeader);
         }
+
+        [JsonProperty(PropertyName = "items", Required = Required.Always)]
+        internal IEnumerable<T> Items { get; set; }
+
+        [JsonProperty(PropertyName = "continuationToken", Required = Required.AllowNull)]
+        internal string ContinuationToken { get; set; }
     }
 }

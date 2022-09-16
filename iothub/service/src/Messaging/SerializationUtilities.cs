@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Common
             { typeof(TimeSpan), PropertyValueType.TimeSpan },
         };
 
-        public static PropertyValueType GetTypeId(object value)
+        internal static PropertyValueType GetTypeId(object value)
         {
             if (value == null)
             {

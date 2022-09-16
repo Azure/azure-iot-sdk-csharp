@@ -25,10 +25,14 @@ namespace Microsoft.Azure.Devices
         private readonly JobType? _jobType;
         private readonly JobStatus? _jobStatus;
         private readonly int? _defaultPageSize;
+        private readonly IEnumerator<T> _items;
 
-        private IEnumerator<T> _items;
-
-        internal QueryResponse(QueryClient client, string query, IEnumerable<T> queryResults, string continuationToken, int? defaultPageSize)
+        internal QueryResponse(
+            QueryClient client,
+            string query,
+            IEnumerable<T> queryResults,
+            string continuationToken,
+            int? defaultPageSize)
         {
             _client = client;
             _originalQuery = query;
@@ -39,7 +43,13 @@ namespace Microsoft.Azure.Devices
             _defaultPageSize = defaultPageSize;
         }
 
-        internal QueryResponse(QueryClient client, JobType? jobType, JobStatus? jobStatus, IEnumerable<T> queryResults, string continuationToken, int? defaultPageSize)
+        internal QueryResponse(
+            QueryClient client,
+            JobType? jobType,
+            JobStatus? jobStatus,
+            IEnumerable<T> queryResults,
+            string continuationToken,
+            int? defaultPageSize)
         {
             _client = client;
             _jobType = jobType;
@@ -105,11 +115,11 @@ namespace Microsoft.Azure.Devices
         /// Advances to the next element of the query results.
         /// </summary>
         /// <returns>True if there was a next item in the query results. False if there were no more items.</returns>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// If this method made a request to IoT hub to get the next page of items but IoT hub responded to
         /// the request with a non-successful status code. For example, if the provided request was throttled,
-        /// <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible error cases,
-        /// see <see cref="Common.Exceptions"/>.
+        /// <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. For a complete list of possible error cases,
+        /// see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If this method made a request to IoT hub to get the next page of items but the HTTP request fails due to
@@ -154,10 +164,12 @@ namespace Microsoft.Azure.Devices
 
             // User's can pass in a continuation token themselves, but the default behavior
             // is to use the continuation token saved by this class when it last retrieved a page.
-            var queryOptionsClone = new QueryOptions
+            var queryOptionsClone = new JobQueryOptions
             {
                 ContinuationToken = queryOptions?.ContinuationToken ?? ContinuationToken,
                 PageSize = queryOptions?.PageSize ?? _defaultPageSize,
+                JobType = _jobType,
+                JobStatus = _jobStatus,
             };
 
             if (!string.IsNullOrEmpty(_originalQuery))
@@ -170,7 +182,7 @@ namespace Microsoft.Azure.Devices
             else
             {
                 // Job type and job status may still be null here, but that's okay
-                QueryResponse<ScheduledJob> response = await _client.CreateAsync(_jobType, _jobStatus, queryOptionsClone, cancellationToken);
+                QueryResponse<ScheduledJob> response = await _client.CreateJobsQueryAsync(queryOptionsClone, cancellationToken);
                 CurrentPage = (IEnumerable<T>)response.CurrentPage;
                 Current = CurrentPage.GetEnumerator().Current;
                 ContinuationToken = response.ContinuationToken;

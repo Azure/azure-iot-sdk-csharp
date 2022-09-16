@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -683,16 +684,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             twin.ETag = oldEtag;
 
             // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-            FluentActions
-                .Invoking(async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); })
-                .Should()
-                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a twin with an out of date ETag");
+            Func<Task> act = async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); };
+            var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a twin with an out of date ETag");
+            error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+            error.And.IsTransient.Should().BeFalse();
 
             // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
             FluentActions
                 .Invoking(async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, false).ConfigureAwait(false); })
                 .Should()
-                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                .NotThrow<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
             // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
             twin.Properties.Desired[propName] = propValue + "1";
@@ -700,7 +702,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             FluentActions
                 .Invoking(async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); })
                 .Should()
-                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
+                .NotThrow<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
         }
     }
 

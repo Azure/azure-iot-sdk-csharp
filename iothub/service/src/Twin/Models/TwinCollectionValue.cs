@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json.Linq;
 
@@ -11,10 +10,6 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Represents a property value in a <see cref="TwinCollection"/>.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1710:IdentifiersShouldHaveCorrectSuffix",
-        Justification = "Public API cannot change name.")]
-    [SuppressMessage("Microsoft.Design", "CA1036:OverrideMethodsOnComparableTypes",
-        Justification = "Uses default JValue comparison, equality and hashing implementations.")]
     public class TwinCollectionValue : JValue
     {
         private readonly JObject _metadata;
@@ -30,8 +25,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="propertyName">Property name to look up.</param>
         /// <returns>Property value, if present.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
-            Justification = "AppCompat. Changing the exception to ArgumentException might break existing applications.")]
         public dynamic this[string propertyName]
         {
             get
@@ -39,7 +32,7 @@ namespace Microsoft.Azure.Devices
                 return propertyName switch
                 {
                     TwinCollection.MetadataName => GetMetadata(),
-                    TwinCollection.LastUpdatedName => GetLastUpdated(),
+                    TwinCollection.LastUpdatedName => GetLastUpdatedOn(),
                     TwinCollection.LastUpdatedVersionName => GetLastUpdatedVersion(),
                     _ => throw new RuntimeBinderException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'."),
                 };
@@ -50,18 +43,18 @@ namespace Microsoft.Azure.Devices
         /// Gets the metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public Metadata GetMetadata()
+        public TwinMetadata GetMetadata()
         {
-            return new Metadata(GetLastUpdated(), GetLastUpdatedVersion());
+            return new TwinMetadata(GetLastUpdatedOn(), GetLastUpdatedVersion());
         }
 
         /// <summary>
         /// Gets the last updated time for this property.
         /// </summary>
         /// <returns>Date-time instance representing the last updated time for this property.</returns>
-        public DateTime GetLastUpdated()
+        public DateTimeOffset GetLastUpdatedOn()
         {
-            return (DateTime)_metadata[TwinCollection.LastUpdatedName];
+            return (DateTimeOffset)_metadata[TwinCollection.LastUpdatedName];
         }
 
         /// <summary>

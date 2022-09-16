@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
@@ -18,181 +17,117 @@ namespace Microsoft.Azure.Devices
         private const string MessageFieldErrorCode = "errorCode";
         private const string HttpErrorCodeName = "iothub-errorcode";
 
-        private static readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> s_mappings =
-            new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-        {
-            {
-                HttpStatusCode.NoContent,
-                async (response) => new DeviceNotFoundException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.NotFound,
-                async (response) => new DeviceNotFoundException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.Conflict,
-                async (response) => new DeviceAlreadyExistsException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.BadRequest, async (response) => new ArgumentException(
-                message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.Unauthorized,
-                async (response) => new UnauthorizedException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.Forbidden,
-                async (response) => new QuotaExceededException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.PreconditionFailed,
-                async (response) => new DeviceMessageLockLostException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.RequestEntityTooLarge,
-                async (response) => new MessageTooLargeException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.InternalServerError,
-                async (response) => new ServerErrorException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.ServiceUnavailable,
-                async (response) => new ServerBusyException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                (HttpStatusCode)429,
-                async (response) => new ThrottlingException(
-                    code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            }
-        };
-
-        public static IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping() =>
-            s_mappings;
-
-        public static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
+        internal static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
         {
             return response.Content.ReadAsStringAsync();
         }
 
-        /// <summary>
-        /// Get the fully-qualified error code from the HTTP response message, if exists.
-        /// </summary>
-        /// <param name="response">The HTTP response message</param>
-        /// <returns>The fully-qualified error code, or the response status code, if no error code was provided.</returns>
-        public static async Task<ErrorCode> GetExceptionCodeAsync(HttpResponseMessage response)
+        // There are two things to consider when surfacing service errors to the user, the 6-digit error code and
+        // the error description. Ideally, when a backend service returns an error, both of these fields are set
+        // in the same place. However, IoT hub is returning the 6-digit code in the response content, while
+        // the error description in the response header. The SDK will attempt to retrieve the integer error code
+        // in the field of ErrorCode from the response content. If it works, the SDK will populate the exception
+        // with the proper Code. Otherwise the SDK returns IotHubStatusCode.Unknown and log an error.
+        internal static async Task<Tuple<string, IotHubErrorCode>> GetErrorCodeAndTrackingIdAsync(HttpResponseMessage response)
         {
-            // First we will attempt to retrieve the error code from the response content.
-            string responseContentStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            // There are two things to consider when surfacing service errors to the user, the 6-digit error code and the code description. Ideally, when a backend service
-            // returns an error, both of these fields are set in the same place. However, IoT hub is returning the 6-digit code in the response content, while
-            // the error description in the response header. Therefore, there is a chance that the 6-digit error code does not match the error description. For that reason,
-            // the SDK will do its best to decide what to surface to the user.
-            // The SDK will attempt to retrieve the integer error code from the response content and the error description from the response header. Through a 'description'
-            // to 'error code' enum mapping, the SDK will check if both values are a match. If so, the SDK will populate the exception with the proper Code. In the case where
-            // there is a mismatch between the error code and the description, the SDK returns ErrorCode.InvalidErrorCode and log a warning.
-
-            int errorCodeValue = (int)ErrorCode.InvalidErrorCode;
+            string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            IoTHubExceptionResult responseContent = null;
             try
             {
-                IoTHubExceptionResult responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseContentStr);
+                responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseBody);
+            }
+            catch (JsonReaderException ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(
+                        nameof(GetErrorCodeAndTrackingIdAsync),
+                        $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
+            }
 
+            if (responseContent != null)
+            {
+                string trackingId = string.Empty;
                 try
                 {
-                    Dictionary<string, string> messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
+                    var structuredMessageFields = JsonConvert.DeserializeObject<ResponseMessage>(responseContent.Message);
 
-                    if (messageFields != null
-                        && messageFields.TryGetValue(MessageFieldErrorCode, out string errorCodeObj))
+                    if (structuredMessageFields != null)
                     {
-                        // The result of TryParse is not being tracked since errorCodeValue has already been initialized to a default value of InvalidErrorCode.
-                        _ = int.TryParse(errorCodeObj, NumberStyles.Any, CultureInfo.InvariantCulture, out errorCodeValue);
+                        if (structuredMessageFields.TrackingId != null)
+                        {
+                            trackingId = structuredMessageFields.TrackingId;
+                        }
+
+                        if (structuredMessageFields.ErrorCode != null)
+                        {
+                            if (int.TryParse(structuredMessageFields.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
+                            {
+                                return Tuple.Create(trackingId, (IotHubErrorCode)errorCodeInt);
+                            }
+                        }
                     }
                 }
                 catch (JsonReaderException ex)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(null, $"Failed to deserialize error message into a dictionary: {ex}. Message body: '{responseContentStr}.'");
+                        Logging.Error(
+                            nameof(GetErrorCodeAndTrackingIdAsync),
+                            $"Failed to deserialize error message into a dictionary: {ex.Message}. Message body: '{responseBody}.'");
+                }
+            }
 
-                    // In some scenarios, the error response string is a ';' delimited string with the service-returned error code.
-                    const char errorFieldsDelimiter = ';';
-                    string[] messageFields = responseContent.Message?.Split(errorFieldsDelimiter);
+            // In some scenarios, the error response string is a semicolon delimited string with the service-returned error code
+            // embedded in a string response.
+            const char errorFieldsDelimiter = ';';
+            string[] messageFields = responseContent.Message?.Split(errorFieldsDelimiter);
 
-                    if (messageFields != null)
+            if (messageFields == null || messageFields.Count() < 2)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(
+                        nameof(GetErrorCodeAndTrackingIdAsync),
+                        $"Failed to find expected semicolon in error message to find error code." +
+                        $" Message body: '{responseBody}.'");
+            }
+            else
+            {
+                foreach (string messageField in messageFields)
+                {
+                    if (messageField.IndexOf(MessageFieldErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        foreach (string messageField in messageFields)
-                        {
-                            if (messageField.IndexOf(MessageFieldErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
-                            {
-                                const char errorCodeDelimiter = ':';
+                        const char errorCodeDelimiter = ':';
 
-                                if (messageField.IndexOf(errorCodeDelimiter) >= 0)
-                                {
-                                    string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
-                                    if (Enum.TryParse(errorCodeFields[1], out ErrorCode errorCode))
-                                    {
-                                        errorCodeValue = (int)errorCode;
-                                    }
-                                }
-                            }
-                            break;
+                        if (messageField.IndexOf(errorCodeDelimiter) < 0)
+                        {
+                            continue;
+                        }
+
+                        string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
+
+                        string returnedErrorCode = errorCodeFields[1];
+
+                        // When the returned error code is numeric, only take the first 6 characters as it contains 6 digits.
+                        if (int.TryParse(returnedErrorCode.Substring(0, 6), out int code))
+                        {
+                            return Tuple.Create(string.Empty, (IotHubErrorCode)code);
+                        }
+
+                        // Otherwise the error code might be a string (e.g., PreconditionFailed) in which case we'll try to
+                        // find the matching IotHubErrorCode enum with that same name.
+                        if (Enum.TryParse(returnedErrorCode, out IotHubErrorCode errorCode))
+                        {
+                            return Tuple.Create(string.Empty, errorCode);
                         }
                     }
-                    else
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(null, $"Failed to deserialize error message into a dictionary and could not parse ';' delimited string either: {ex}." +
-                                $" Message body: '{responseContentStr}.'");
-
-                        return ErrorCode.InvalidErrorCode;
-                    }
                 }
             }
-            catch (JsonReaderException ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(null, $"Failed to parse response content JSON: {ex}. Message body: '{responseContentStr}.'");
 
-                return ErrorCode.InvalidErrorCode;
-            }
+            if (Logging.IsEnabled)
+                Logging.Error(
+                    nameof(GetErrorCodeAndTrackingIdAsync),
+                    $"Failed to derive any error code from the response message: {responseBody}");
 
-            // Now that we retrieved the integer error code from the response content, we will retrieve the error description from the header.
-            string headerErrorCodeString = response.Headers.GetFirstValueOrNull(HttpErrorCodeName);
-            if (headerErrorCodeString != null
-                && Enum.TryParse(headerErrorCodeString, out ErrorCode headerErrorCode))
-            {
-                if ((int)headerErrorCode == errorCodeValue)
-                {
-                    // We have a match. Therefore, return the proper error code.
-                    return headerErrorCode;
-                }
-
-                if (Logging.IsEnabled)
-                    Logging.Error(null, $"There is a mismatch between the error code retrieved from the response content and the response header." +
-                        $"Content error code: {errorCodeValue}. Header error code description: {(int)headerErrorCode}.");
-            }
-
-            return ErrorCode.InvalidErrorCode;
+            return Tuple.Create(string.Empty, IotHubErrorCode.Unknown);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
                 return propertyName switch
                 {
                     TwinCollection.MetadataName => GetMetadata(),
-                    TwinCollection.LastUpdatedName => GetLastUpdated(),
+                    TwinCollection.LastUpdatedName => GetLastUpdatedOn(),
                     TwinCollection.LastUpdatedVersionName => GetLastUpdatedVersion(),
                     _ => throw new ArgumentException($"{nameof(TwinCollectionArray)} does not contain a definition for '{propertyName}'."),
                 };
@@ -42,18 +42,18 @@ namespace Microsoft.Azure.Devices
         /// Gets the metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public Metadata GetMetadata()
+        public TwinMetadata GetMetadata()
         {
-            return new Metadata(GetLastUpdated(), GetLastUpdatedVersion());
+            return new TwinMetadata(GetLastUpdatedOn(), GetLastUpdatedVersion());
         }
 
         /// <summary>
         /// Gets the last updated time for this property.
         /// </summary>
         /// <returns>Date-time instance representing the last updated time for this property.</returns>
-        public DateTime GetLastUpdated()
+        public DateTimeOffset GetLastUpdatedOn()
         {
-            return (DateTime)_metadata[TwinCollection.LastUpdatedName];
+            return (DateTimeOffset)_metadata[TwinCollection.LastUpdatedName];
         }
 
         /// <summary>
