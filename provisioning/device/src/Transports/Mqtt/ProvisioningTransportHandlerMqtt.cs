@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 .WithTopic(registrationTopic)
                 .Build();
 
-            _startProvisioningRequestStatusSource = new TaskCompletionSource<RegistrationOperationStatus>();
+            _startProvisioningRequestStatusSource = new TaskCompletionSource<RegistrationOperationStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             try
             {
@@ -337,7 +337,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     .WithTopic(topicName)
                     .Build();
 
-                _checkRegistrationOperationStatusSource = new TaskCompletionSource<RegistrationOperationStatus>();
+                _checkRegistrationOperationStatusSource = new TaskCompletionSource<RegistrationOperationStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 MqttClientPublishResult publishResult = await mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
 
