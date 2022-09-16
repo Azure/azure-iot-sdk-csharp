@@ -13,6 +13,7 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -227,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
                     Assert.AreEqual(200, response.Status, $"The expected respose status should be 200 but was {response.Status}");
-                    string payload = (string)response.Payload;
+                    string payload = JsonConvert.SerializeObject(response.Payload);
                     Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
 
                     done = true;
