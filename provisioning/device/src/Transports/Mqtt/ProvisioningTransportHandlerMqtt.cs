@@ -138,14 +138,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (subscribeResults == null || subscribeResults.Items == null)
                 {
-                    throw new ProvisioningTransportException("Failed to subscribe to topic " + SubscribeFilter, true);
+                    throw new ProvisioningTransportException($"Failed to subscribe to topic {SubscribeFilter}", true);
                 }
 
                 MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
 
                 if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter))
                 {
-                    throw new ProvisioningTransportException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic, true);
+                    throw new ProvisioningTransportException($"Received unexpected subscription to topic {subscribeResult.TopicFilter.Topic}", true);
                 }
             }
             catch (Exception e) when (e is not ProvisioningTransportException && e is not OperationCanceledException)
