@@ -185,7 +185,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await serviceClient.OpenAsync().ConfigureAwait(false);
 
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
             }

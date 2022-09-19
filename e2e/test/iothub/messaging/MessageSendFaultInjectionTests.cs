@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -364,18 +365,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 ? FaultInjection.RecoveryTime
                 : retryDurationInMilliSec;
 
-            async Task init(DeviceClient deviceClient, TestDevice testDevice)
+            async Task InitAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec.TotalMilliseconds;
             }
 
-            async Task testOperation(DeviceClient deviceClient, TestDevice testDevice)
+            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
                 (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
                 using (testMessage)
                 {
-                    await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                    await deviceClient.SendEventAsync(testMessage, cts.Token).ConfigureAwait(false);
                 }
             }
 
@@ -389,8 +392,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     reason,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
-                    init,
-                    testOperation,
+                    InitAsync,
+                    TestOperationAsync,
                     () => Task.FromResult(false),
                     Logger)
                 .ConfigureAwait(false);

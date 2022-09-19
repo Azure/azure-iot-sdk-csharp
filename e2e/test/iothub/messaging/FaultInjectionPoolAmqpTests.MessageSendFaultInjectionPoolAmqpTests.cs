@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -419,7 +420,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             async Task TestInitAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler callbackHandler)
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
@@ -427,7 +429,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
 
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await deviceClient.SendEventAsync(testMessage, cts.Token).ConfigureAwait(false);
             }
 
             await FaultInjectionPoolingOverAmqp

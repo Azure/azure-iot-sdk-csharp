@@ -152,7 +152,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
             }
 
