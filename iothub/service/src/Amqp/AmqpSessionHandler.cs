@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Amqp
         internal async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Opening worker session.");
+                Logging.Enter(this, "Opening worker session.", nameof(OpenAsync));
 
             try
             {
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening worker session.");
+                    Logging.Exit(this, "Opening worker session.", nameof(OpenAsync));
             }
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Amqp
         internal async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Opening worker session.");
+                Logging.Enter(this, "Closing worker session.", nameof(CloseAsync));
 
             try
             {
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening worker session.");
+                    Logging.Exit(this, "Closing worker session.", nameof(CloseAsync));
             }
         }
 

@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(InvokeAsync)} threw an exception: {ex}", nameof(InvokeAsync));
+                    Logging.Error(this, $"Invoking device method for device id: {deviceId} threw an exception: {ex}", nameof(InvokeAsync));
                 throw;
             }
             finally
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(InvokeAsync)} threw an exception: {ex}", nameof(InvokeAsync));
+                    Logging.Error(this, $"Invoking device method for device id: {deviceId} and module id: {moduleId} threw an exception: {ex}", nameof(InvokeAsync));
                 throw;
             }
             finally

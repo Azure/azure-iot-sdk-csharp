@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device module threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating module: {module?.Id} on device: {module?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device module threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting module: {moduleId} on device: {deviceId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device module threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting device module threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally

@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating device: {device?.Id} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Device> GetAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting device {deviceId}", nameof(GetAsync));
+                Logging.Enter(this, $"Getting device: {deviceId}", nameof(GetAsync));
 
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
 
@@ -133,13 +133,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting device: {deviceId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting device {deviceId}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting device: {deviceId}", nameof(GetAsync));
             }
         }
 
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Device> SetAsync(Device device, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device {device?.Id}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating device: {device?.Id}", nameof(SetAsync));
 
             Argument.AssertNotNull(device, nameof(device));
 
@@ -187,13 +187,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating device: {device?.Id} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating device {device?.Id}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating device: {device?.Id}", nameof(SetAsync));
             }
         }
 
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task DeleteAsync(Device device, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting device {device?.Id}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting device: {device?.Id}", nameof(DeleteAsync));
 
             Argument.AssertNotNull(device, nameof(device));
 
@@ -268,13 +268,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting device threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting device: {device?.Id} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting device {device?.Id}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting device: {device?.Id}", nameof(DeleteAsync));
             }
         }
 
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> CreateWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating device with twin {device?.Id}", nameof(CreateWithTwinAsync));
+                Logging.Enter(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));
 
             Argument.AssertNotNull(device, nameof(device));
             Argument.AssertNotNull(twin, nameof(twin));
@@ -330,13 +330,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device with twin threw an exception: {ex}", nameof(CreateWithTwinAsync));
+                    Logging.Error(this, $"Creating device with twin: {device?.Id} threw an exception: {ex}", nameof(CreateWithTwinAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating device with twin {device?.Id}", nameof(CreateWithTwinAsync));
+                    Logging.Exit(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));
             }
         }
 
@@ -361,7 +361,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<IEnumerable<Module>> GetModulesAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting modules on device {deviceId}", nameof(GetModulesAsync));
+                Logging.Enter(this, $"Getting modules on device: {deviceId}", nameof(GetModulesAsync));
 
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
 
@@ -377,13 +377,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting modules on device threw an exception: {ex}", nameof(GetModulesAsync));
+                    Logging.Error(this, $"Getting modules on device: {deviceId} threw an exception: {ex}", nameof(GetModulesAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting modules on device {deviceId}", nameof(GetModulesAsync));
+                    Logging.Exit(this, $"Getting modules on device: {deviceId}", nameof(GetModulesAsync));
             }
         }
 
@@ -412,7 +412,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> CreateAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating devices", nameof(CreateAsync));
+                Logging.Enter(this, "Creating devices", nameof(CreateAsync));
 
             Argument.AssertNotNullOrEmpty(devices, nameof(devices));
 
@@ -432,7 +432,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating devices", nameof(CreateAsync));
+                    Logging.Exit(this, "Creating devices", nameof(CreateAsync));
             }
         }
 
@@ -463,7 +463,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating multiple devices ", nameof(SetAsync));
+                Logging.Enter(this, "Updating multiple devices", nameof(SetAsync));
 
             Argument.AssertNotNullOrEmpty(devices, nameof(devices));
 
@@ -484,7 +484,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating multiple devices", nameof(SetAsync));
+                    Logging.Exit(this, "Updating multiple devices", nameof(SetAsync));
             }
         }
 
@@ -515,7 +515,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting devices", nameof(DeleteAsync));
+                Logging.Enter(this, "Deleting devices", nameof(DeleteAsync));
 
             Argument.AssertNotNullOrEmpty(devices, nameof(devices));
 
@@ -536,7 +536,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting devices", nameof(DeleteAsync));
+                    Logging.Exit(this, "Deleting devices", nameof(DeleteAsync));
             }
         }
 
@@ -560,7 +560,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<JobProperties> ImportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Running import job", nameof(ImportAsync));
+                Logging.Enter(this, "Running import job", nameof(ImportAsync));
 
             Argument.AssertNotNull(jobParameters, nameof(jobParameters));
 
@@ -582,7 +582,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Running import job", nameof(ImportAsync));
+                    Logging.Exit(this, "Running import job", nameof(ImportAsync));
             }
         }
 
@@ -652,7 +652,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<JobProperties> GetJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+                Logging.Enter(this, $"Getting job: {jobId}", nameof(GetJobsAsync));
 
             Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
 
@@ -668,13 +668,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting job {jobId} threw an exception: {ex}", nameof(GetJobsAsync));
+                    Logging.Error(this, $"Getting job: {jobId} threw an exception: {ex}", nameof(GetJobsAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+                    Logging.Exit(this, $"Getting job: {jobId}", nameof(GetJobsAsync));
             }
         }
 
@@ -696,7 +696,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting jobs", nameof(GetJobsAsync));
+                Logging.Enter(this, "Getting jobs", nameof(GetJobsAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -716,7 +716,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting jobs", nameof(GetJobsAsync));
+                    Logging.Exit(this, "Getting jobs", nameof(GetJobsAsync));
             }
         }
 
@@ -740,7 +740,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task CancelJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Canceling job {jobId}", nameof(CancelJobAsync));
+                Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
 
             Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
 
@@ -756,13 +756,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Canceling job {jobId} threw an exception: {ex}", nameof(CancelJobAsync));
+                    Logging.Error(this, $"Canceling job: {jobId} threw an exception: {ex}", nameof(CancelJobAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Canceling job {jobId}", nameof(CancelJobAsync));
+                    Logging.Exit(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
             }
         }
 
@@ -784,7 +784,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<RegistryStatistics> GetRegistryStatisticsAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
+                Logging.Enter(this, "Getting registry statistics", nameof(GetRegistryStatisticsAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -804,7 +804,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
+                    Logging.Exit(this, "Getting registry statistics", nameof(GetRegistryStatisticsAsync));
             }
         }
 
@@ -826,7 +826,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
+                Logging.Enter(this, "Getting service statistics", nameof(GetServiceStatisticsAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -846,7 +846,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
+                    Logging.Exit(this, "Getting service statistics", nameof(GetServiceStatisticsAsync));
             }
         }
 

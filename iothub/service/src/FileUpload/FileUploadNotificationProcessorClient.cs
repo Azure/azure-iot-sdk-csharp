@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Opening FileUploadNotificationProcessorClient", nameof(OpenAsync));
+                Logging.Enter(this, "Opening FileUploadNotificationProcessorClient.", nameof(OpenAsync));
 
             if (FileUploadNotificationProcessor == null)
             {
@@ -115,13 +115,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(OpenAsync)} threw an exception: {ex}", nameof(OpenAsync));
+                    Logging.Error(this, $"Opening FileUploadNotificationProcessorClient threw an exception: {ex}", nameof(OpenAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening FileUploadNotificationProcessorClient", nameof(OpenAsync));
+                    Logging.Exit(this, "Opening FileUploadNotificationProcessorClient.", nameof(OpenAsync));
             }
         }
 
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Closing FileUploadNotificationProcessorClient", nameof(CloseAsync));
+                Logging.Enter(this, "Closing FileUploadNotificationProcessorClient.", nameof(CloseAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Closing FileUploadNotificationProcessorClient", nameof(CloseAsync));
+                    Logging.Exit(this, "Closing FileUploadNotificationProcessorClient.", nameof(CloseAsync));
             }
         }
 

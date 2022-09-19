@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Opening MessagingClient", nameof(OpenAsync));
+                Logging.Enter(this, "Opening MessagingClient.", nameof(OpenAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -95,13 +95,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(OpenAsync)} threw an exception: {ex}", nameof(OpenAsync));
+                    Logging.Error(this, $"Opening MessagingClient threw an exception: {ex}", nameof(OpenAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening MessagingClient", nameof(OpenAsync));
+                    Logging.Exit(this, "Opening MessagingClient.", nameof(OpenAsync));
             }
         }
 
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Closing MessagingClient", nameof(CloseAsync));
+                Logging.Enter(this, "Closing MessagingClient.", nameof(CloseAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -128,13 +128,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CloseAsync)} threw an exception: {ex}", nameof(CloseAsync));
+                    Logging.Error(this, $"Closing MessagingClient threw an exception: {ex}", nameof(CloseAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Closing MessagingClient", nameof(CloseAsync));
+                    Logging.Exit(this, "Closing MessagingClient.", nameof(CloseAsync));
             }
         }
 
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex) when (ex is not TimeoutException && !Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+                    Logging.Error(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId} threw an exception: {ex}", nameof(SendAsync));
 
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+                    Logging.Error(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId} threw an exception: {ex}", nameof(SendAsync));
 
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
@@ -299,7 +299,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(PurgeMessageQueueAsync)} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
+                    Logging.Error(this, $"Purging message queue for device: {deviceId} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
                 throw;
             }
             finally
