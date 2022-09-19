@@ -85,9 +85,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                         if (request.MethodName == commandName)
                         {
-                            string payload = JsonConvert.SerializeObject(request.MethodName);
                             response.Status = expectedCommandStatus;
-                            response.Payload = Encoding.UTF8.GetBytes(payload);
+                            response.Payload = request.MethodName;
                         }
 
                         return Task.FromResult(response);
