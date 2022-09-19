@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private readonly string _devicePrefix = $"{nameof(MessageSendE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
-        private static string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceSendSingleMessage_Amqp()

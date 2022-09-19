@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             var serviceClientTransportSettings = new ServiceClientTransportSettings
             {
-                HttpProxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
+                HttpProxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress)
             };
 
             await SendMethodAndRespondAsync(
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             var serviceClientTransportSettings = new ServiceClientTransportSettings
             {
-                HttpProxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
+                HttpProxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress)
             };
 
             await SendMethodAndRespondAsync(
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
             // setup
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
             methodInvocation.SetPayloadJson("10");
 
@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // setup
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "ModuleNotFoundTest").ConfigureAwait(false);
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
             methodInvocation.SetPayloadJson("10");
 
@@ -282,7 +282,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         null)
                     .ConfigureAwait(false);
 
-                using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+                using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
                 CloudToDeviceMethod c2dMethod = new CloudToDeviceMethod(commandName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).SetPayloadJson(null);
 
                 // act
@@ -313,8 +313,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             ServiceClient serviceClient = serviceClientTransportSettings == default
-                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString)
-                : ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
+                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString)
+                : ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
@@ -346,8 +346,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             ServiceClient serviceClient = serviceClientTransportSettings == default
-                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString)
-                : ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
+                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString)
+                : ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
             CloudToDeviceMethodResult response =
@@ -375,8 +375,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             ServiceClient serviceClient = serviceClientTransportSettings == default
-                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString)
-                : ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
+                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString)
+                : ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
 

@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize service client for service-side operations
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             // Message payload and properties for C2D operation
             var messagesSent = new Dictionary<string, Tuple<Message, string>>();

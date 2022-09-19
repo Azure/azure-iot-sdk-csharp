@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 attempt++;
                 try
                 {
-                    using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+                    using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
                     CloudToDeviceMethodResult response =

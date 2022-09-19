@@ -36,8 +36,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public const string FaultType_GracefulShutdownAmqp = "ShutDownAmqp";
         public const string FaultType_GracefulShutdownMqtt = "ShutDownMqtt";
 
-        public const string FaultCloseReason_Boom = "boom";
-        public const string FaultCloseReason_Bye = "byebye";
+        public const string FaultCloseReason_Boom = "boom"; // Ungraceful dc
+        public const string FaultCloseReason_Bye = "byebye"; // Graceful dc
 
         public static readonly TimeSpan DefaultFaultDelay = TimeSpan.FromSeconds(5); // Time in seconds after service initiates the fault.
         public static readonly TimeSpan DefaultFaultDuration = TimeSpan.FromSeconds(5); // Duration in seconds

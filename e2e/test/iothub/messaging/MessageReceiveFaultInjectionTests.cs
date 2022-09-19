@@ -363,7 +363,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             TimeSpan delayInSec,
             string proxyAddress = null)
         {
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
                 await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -418,7 +418,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {

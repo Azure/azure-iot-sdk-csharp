@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private async Task TestTimeout(TimeSpan? timeout)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             var sw = new Stopwatch();
             sw.Start();
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, transportType);
+            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, transportType);
             string messageId = Guid.NewGuid().ToString();
 
             // act and expect no exception
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 SdkAssignsMessageId = Shared.SdkAssignsMessageId.Never,
             };
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, options);
+            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, options);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,
             };
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, options);
+            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, options);
             string messageId = Guid.NewGuid().ToString();
 
             // act
