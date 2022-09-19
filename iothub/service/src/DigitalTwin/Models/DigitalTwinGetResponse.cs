@@ -16,10 +16,10 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="digitalTwin">The deserialized digital twin.</param>
-        internal DigitalTwinGetResponse(T digitalTwin, string eTag = default)
+        internal DigitalTwinGetResponse(T digitalTwin, ETag eTag = default)
         {
             DigitalTwin = digitalTwin;
-            ETag = new ETag(eTag);
+            ETag = eTag;
         }
 
         /// <summary>

@@ -15,9 +15,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="location">URI of the digital twin.</param>
-        internal DigitalTwinUpdateResponse(string eTag = default, string location = default)
+        internal DigitalTwinUpdateResponse(ETag eTag = default, string location = default)
         {
-            ETag = new ETag(eTag);
+            ETag = eTag;
             Location = location;
         }
 
