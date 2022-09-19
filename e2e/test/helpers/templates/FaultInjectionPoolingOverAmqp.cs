@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -142,7 +143,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                     if (!isRecovered)
                     {
-                        Assert.Fail($"Some devices did not reconnect.");
+                        var unconnectedDevices = new List<string>();
+                        for (int i = 0; i < devicesCount; ++i)
+                        {
+                            if (amqpConnectionStatuses[i].LastConnectionStatus != ConnectionStatus.Connected)
+                            {
+                                unconnectedDevices.Add(testDevices[i].Id);
+                            }
+                        }
+                        Assert.Fail($"Some devices did not reconnect: {string.Join(", ", unconnectedDevices)}");
                     }
 
                     logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirmed all devices back online.");
