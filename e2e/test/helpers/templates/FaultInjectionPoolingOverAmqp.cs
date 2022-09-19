@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 }
                 else
                 {
-                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being activated.");
+                    logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multiple times.
                     int counter = 0;
                     var runOperationUnderFaultInjectionDuration = Stopwatch.StartNew();
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 TimeSpan timeToFinishFaultInjection = durationInSec.Subtract(faultInjectionDuration.Elapsed);
                 if (timeToFinishFaultInjection > TimeSpan.Zero)
                 {
-                    logger.Trace($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection}ms to ensure that FaultInjection duration passed.");
+                    logger.Trace($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
                     await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
                 }
             }
