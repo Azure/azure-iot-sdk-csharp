@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
-    public static class FaultInjectionPoolingOverAmqp
+    internal static class FaultInjectionPoolingOverAmqp
     {
         public static async Task TestFaultInjectionPoolAmqpAsync(
             string devicePrefix,
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             // Initialize the test device client instances.
             // Set the device client connection status change handler.
-            logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)} Initializing device clients for multiplexing test.");
+            logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)} Initializing device clients for multiplexing test.");
             for (int i = 0; i < devicesCount; i++)
             {
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // Perform the test operation and verify the operation is successful.
                 for (int i = 0; i < devicesCount; i++)
                 {
-                    logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing baseline operation for device {i}.");
+                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing baseline operation for device {i}.");
                     operations.Add(testOperation(deviceClients[i], testDevices[i], testDeviceCallbackHandlers[i]));
                 }
                 await Task.WhenAll(operations).ConfigureAwait(false);
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     // Perform the test operation for all devices
                     for (int i = 0; i < devicesCount; i++)
                     {
-                        logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device {i}.");
+                        logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device {i}.");
                         operations.Add(testOperation(deviceClients[i], testDevices[i], testDeviceCallbackHandlers[i]));
                     }
                     await Task.WhenAll(operations).ConfigureAwait(false);
@@ -158,13 +158,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 }
                 else
                 {
-                    logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being activated.");
+                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multiple times.
                     int counter = 0;
                     var runOperationUnderFaultInjectionDuration = Stopwatch.StartNew();
                     while (runOperationUnderFaultInjectionDuration.Elapsed < FaultInjection.LatencyTimeBuffer)
                     {
-                        logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {counter++}.");
+                        logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {counter++}.");
                         await testOperation(deviceClients[0], testDevices[0], testDeviceCallbackHandlers[0]).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
@@ -207,8 +207,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             {
                 await cleanupOperation(deviceClients, testDeviceCallbackHandlers).ConfigureAwait(false);
 
-                await Task.WhenAll(testDevices.Select(x => x.RemoveDeviceAsync())).ConfigureAwait(false);
                 testDeviceCallbackHandlers.ForEach(x => x.Dispose());
+                deviceClients.ForEach(x => x.Dispose());
+                await Task.WhenAll(testDevices.Select(x => x.RemoveDeviceAsync())).ConfigureAwait(false);
 
                 faultInjectionDuration.Stop();
 

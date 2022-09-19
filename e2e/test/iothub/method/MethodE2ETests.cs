@@ -53,18 +53,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Mqtt()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_MqttWs()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
@@ -98,18 +86,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceUnsubscribes_AmqpWs()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Amqp_WebSocket_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Amqp()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_AmqpWs()
-        {
-            await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -152,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     SetDeviceReceiveMethodAsync,
                     TimeSpan.FromMinutes(5),
                     serviceClientTransportSettings)
-            .ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -260,15 +236,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // arrange
 
-            DeviceClient deviceClient = null;
+            const string commandName = "Reboot";
+            bool deviceMethodCalledSuccessfully = false;
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "NullMethodPayloadTest").ConfigureAwait(false);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
 
             try
             {
-                const string commandName = "Reboot";
-                bool deviceMethodCalledSuccessfully = false;
-
-                deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient
@@ -299,8 +273,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
-                deviceClient.Dispose();
-
                 await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
             }
         }
@@ -312,7 +284,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
-            ServiceClient serviceClient = serviceClientTransportSettings == default
+            using ServiceClient serviceClient = serviceClientTransportSettings == default
                 ? ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString)
                 : ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
 
@@ -332,7 +304,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             finally
             {
                 await serviceClient.CloseAsync().ConfigureAwait(false);
-                serviceClient.Dispose();
             }
         }
 
@@ -345,15 +316,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
-            ServiceClient serviceClient = serviceClientTransportSettings == default
+            using ServiceClient serviceClient = serviceClientTransportSettings == default
                 ? ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString)
                 : ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            CloudToDeviceMethodResult response =
-                await serviceClient.InvokeDeviceMethodAsync(
+            CloudToDeviceMethodResult response = await serviceClient.InvokeDeviceMethodAsync(
                     deviceId,
-                    new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
+                    new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(reqJson))
+                .ConfigureAwait(false);
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
@@ -361,7 +332,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
 
             await serviceClient.CloseAsync().ConfigureAwait(false);
-            serviceClient.Dispose();
         }
 
         public static async Task ServiceSendMethodAndVerifyResponseAsync(
@@ -374,7 +344,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
-            ServiceClient serviceClient = serviceClientTransportSettings == default
+            using ServiceClient serviceClient = serviceClientTransportSettings == default
                 ? ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString)
                 : ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
 
@@ -393,22 +363,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
 
             await serviceClient.CloseAsync().ConfigureAwait(false);
-            serviceClient.Dispose();
         }
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(
+#if !NET451
+                TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+                );
 
             await deviceClient
                 .SetMethodHandlerAsync(
-                methodName,
-                (request, context) =>
-                {
-                    logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-                },
-                null)
+                    methodName,
+                    (request, context) =>
+                    {
+                        logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+                    },
+                    null)
                 .ConfigureAwait(false);
 
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
@@ -419,7 +392,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         public static async Task<Task> SetDeviceReceiveMethodAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(
+#if !NET451
+                TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+                );
 
             await deviceClient
                 .SetMethodHandlerAsync(
@@ -430,14 +407,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                             try
                             {
-                                Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
-                                Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
+                                request.Name.Should().Be(methodName);
+                                request.DataAsJson.Should().Be(ServiceRequestJson);
 
-                                methodCallReceived.SetResult(true);
+                                methodCallReceived.TrySetResult(true);
                             }
                             catch (Exception ex)
                             {
-                                methodCallReceived.SetException(ex);
+                                methodCallReceived.TrySetException(ex);
                             }
 
                             return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
@@ -451,85 +428,68 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         public static async Task<Task> SetDeviceReceiveMethodDefaultHandlerAsync(DeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(
+#if !NET451
+                TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+                );
 
-            await deviceClient.SetMethodDefaultHandlerAsync(
-                (request, context) =>
-                {
-                    logger.Trace($"{nameof(SetDeviceReceiveMethodDefaultHandlerAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
-
-                    try
+            await deviceClient
+                .SetMethodDefaultHandlerAsync(
+                    (request, context) =>
                     {
-                        Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
-                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
+                        logger.Trace($"{nameof(SetDeviceReceiveMethodDefaultHandlerAsync)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
 
-                        methodCallReceived.SetResult(true);
-                    }
-                    catch (Exception ex)
-                    {
-                        methodCallReceived.SetException(ex);
-                    }
+                        try
+                        {
+                            request.Name.Should().Be(methodName);
+                            request.DataAsJson.Should().Be(ServiceRequestJson);
 
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-                },
-                null).ConfigureAwait(false);
+                            methodCallReceived.TrySetResult(true);
+                        }
+                        catch (Exception ex)
+                        {
+                            methodCallReceived.TrySetException(ex);
+                        }
+
+                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+                    },
+                    null)
+                .ConfigureAwait(false);
 
             return methodCallReceived.Task;
         }
 
-        private static Task<Task> SetDeviceReceiveMethodObsoleteHandler(DeviceClient deviceClient, string methodName, MsTestLogger logger)
-        {
-            var methodCallReceived = new TaskCompletionSource<bool>();
-
-#pragma warning disable CS0618
-            deviceClient.SetMethodHandler(methodName, (request, context) =>
-            {
-                logger.Trace($"{nameof(SetDeviceReceiveMethodObsoleteHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
-
-                try
-                {
-                    Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
-                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
-
-                    methodCallReceived.SetResult(true);
-                }
-                catch (Exception ex)
-                {
-                    methodCallReceived.SetException(ex);
-                }
-
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-            }, null);
-#pragma warning restore CS0618
-
-            return Task.FromResult<Task>(methodCallReceived.Task);
-        }
-
         public static async Task<Task> SetModuleReceiveMethodAsync(ModuleClient moduleClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(
+#if !NET451
+                TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+                );
 
             await moduleClient.SetMethodHandlerAsync(
-                methodName,
-                (request, context) =>
-                {
-                    logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: ModuleClient method: {request.Name} {request.ResponseTimeout}.");
-
-                    try
+                    methodName,
+                    (request, context) =>
                     {
-                        Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
-                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
+                        logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: ModuleClient method: {request.Name} {request.ResponseTimeout}.");
 
-                        methodCallReceived.SetResult(true);
-                    }
-                    catch (Exception ex)
-                    {
-                        methodCallReceived.SetException(ex);
-                    }
+                        try
+                        {
+                            request.Name.Should().Be(methodName);
+                            request.DataAsJson.Should().Be(ServiceRequestJson);
 
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-                },
-                null).ConfigureAwait(false);
+                            methodCallReceived.TrySetResult(true);
+                        }
+                        catch (Exception ex)
+                        {
+                            methodCallReceived.TrySetException(ex);
+                        }
+
+                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+                    },
+                    null)
+                .ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
             return methodCallReceived.Task;
@@ -537,28 +497,33 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         public static async Task<Task> SetModuleReceiveMethodDefaultHandlerAsync(ModuleClient moduleClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(
+#if !NET451
+                TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+                );
 
             await moduleClient.SetMethodDefaultHandlerAsync(
-                (request, context) =>
-                {
-                    logger.Trace($"{nameof(SetDeviceReceiveMethodDefaultHandlerAsync)}: ModuleClient method: {request.Name} {request.ResponseTimeout}.");
-
-                    try
+                    (request, context) =>
                     {
-                        Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
-                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
+                        logger.Trace($"{nameof(SetDeviceReceiveMethodDefaultHandlerAsync)}: ModuleClient method: {request.Name} {request.ResponseTimeout}.");
 
-                        methodCallReceived.SetResult(true);
-                    }
-                    catch (Exception ex)
-                    {
-                        methodCallReceived.SetException(ex);
-                    }
+                        try
+                        {
+                            request.Name.Should().Be(methodName);
+                            request.DataAsJson.Should().Be(ServiceRequestJson);
 
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-                },
-                null).ConfigureAwait(false);
+                            methodCallReceived.TrySetResult(true);
+                        }
+                        catch (Exception ex)
+                        {
+                            methodCallReceived.TrySetException(ex);
+                        }
+
+                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+                    },
+                    null)
+                .ConfigureAwait(false);
 
             return methodCallReceived.Task;
         }
@@ -576,7 +541,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             await subscribeAndUnsubscribeMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
 
-            await ServiceSendMethodAndVerifyNotReceivedAsync(testDevice.Id, MethodName, Logger, responseTimeout, serviceClientTransportSettings).ConfigureAwait(false);
+            await ServiceSendMethodAndVerifyNotReceivedAsync(
+                    testDevice.Id,
+                    MethodName,
+                    Logger,
+                    responseTimeout,
+                    serviceClientTransportSettings)
+                .ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
@@ -614,7 +585,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             await Task
                 .WhenAll(
-                    ServiceSendMethodAndVerifyResponseAsync(testModule.DeviceId, testModule.Id, MethodName, DeviceResponseJson, ServiceRequestJson, Logger, responseTimeout, serviceClientTransportSettings),
+                    ServiceSendMethodAndVerifyResponseAsync(
+                        testModule.DeviceId,
+                        testModule.Id,
+                        MethodName,
+                        DeviceResponseJson,
+                        ServiceRequestJson,
+                        Logger,
+                        responseTimeout,
+                        serviceClientTransportSettings),
                     methodReceivedTask)
                 .ConfigureAwait(false);
 

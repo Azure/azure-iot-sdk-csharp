@@ -32,8 +32,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileDisconnectTransport(
                     Client.TransportType.Amqp_Tcp_Only,
                     bigFile,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjectionConstants.FaultType_Tcp,
+                    FaultInjectionConstants.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
                 .ConfigureAwait(false);
         }
@@ -49,8 +49,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileDisconnectTransport(
                     Client.TransportType.Amqp_Tcp_Only,
                     smallFile,
-                    FaultInjection.FaultType_Throttle,
-                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjectionConstants.FaultType_Throttle,
+                    FaultInjectionConstants.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration)
                 .ConfigureAwait(false);
@@ -68,8 +68,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileDisconnectTransport(
                     Client.TransportType.Amqp_Tcp_Only,
                     smallFile,
-                    FaultInjection.FaultType_QuotaExceeded,
-                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjectionConstants.FaultType_QuotaExceeded,
+                    FaultInjectionConstants.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration)
                 .ConfigureAwait(false);

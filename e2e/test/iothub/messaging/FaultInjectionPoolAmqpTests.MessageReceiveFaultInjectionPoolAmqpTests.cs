@@ -24,8 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_Tcp_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom)
+                    FaultInjectionConstants.FaultType_Tcp,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -36,8 +36,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_WebSocket_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom)
+                    FaultInjectionConstants.FaultType_Tcp,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_Tcp_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_AmqpConn,
+                    FaultInjectionConstants.FaultType_AmqpConn,
                     "")
                 .ConfigureAwait(false);
         }
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_WebSocket_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_AmqpConn,
+                    FaultInjectionConstants.FaultType_AmqpConn,
                     "")
                 .ConfigureAwait(false);
         }
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_Tcp_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_AmqpSess,
+                    FaultInjectionConstants.FaultType_AmqpSess,
                     "")
                 .ConfigureAwait(false);
         }
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_WebSocket_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_AmqpSess,
+                    FaultInjectionConstants.FaultType_AmqpSess,
                     "")
                 .ConfigureAwait(false);
         }
@@ -99,8 +99,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_Tcp_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_AmqpC2D,
-                    FaultInjection.FaultCloseReason_Boom)
+                    FaultInjectionConstants.FaultType_AmqpC2D,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -111,8 +111,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_WebSocket_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_AmqpC2D,
-                    FaultInjection.FaultCloseReason_Boom)
+                    FaultInjectionConstants.FaultType_AmqpC2D,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -123,8 +123,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_Tcp_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_GracefulShutdownAmqp,
-                    FaultInjection.FaultCloseReason_Bye)
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
@@ -135,8 +135,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Client.TransportType.Amqp_WebSocket_Only,
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjection.FaultType_GracefulShutdownAmqp,
-                    FaultInjection.FaultCloseReason_Bye)
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
