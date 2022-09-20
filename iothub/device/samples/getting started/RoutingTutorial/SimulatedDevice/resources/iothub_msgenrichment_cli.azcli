@@ -1,0 +1,152 @@
+# This command retrieves the subscription id of the current Azure account.
+# This field is used when setting up the routing queries.
+subscriptionID=$(az account show --query id -o tsv)
+
+# Concatenate this number onto the resources that have to be globally unique.
+# You can set this to "" or to a specific value if you don't want it to be random.
+# This retrieves a random value.
+randomValue=$RANDOM
+
+# This command installs the IOT Extension for Azure CLI.
+# You only need to install this the first time.
+# You need it to create the device identity.
+az extension add --name azure-cli-iot-ext
+
+# Set the values for the resource names that
+#   don't have to be globally unique.
+location=westus2
+resourceGroup=ContosoResourcesMsgEn
+containerName1=original
+containerName2=enriched
+iotDeviceName=Contoso-Test-Device
+
+# Create the resource group to be used
+#   for all the resources for this tutorial.
+az group create --name $resourceGroup \
+    --location $location
+
+# The IoT hub name must be globally unique,
+#   so add a random value to the end.
+iotHubName=ContosoTestHubMsgEn$randomValue
+echo "IoT hub name = " $iotHubName
+
+# Create the IoT hub.
+az iot hub create --name $iotHubName \
+    --resource-group $resourceGroup \
+    --sku S1 --location $location
+
+# You need a storage account that will have two containers
+#   -- one for the original messages and
+#   one for the enriched messages.
+# The storage account name must be globally unique,
+#   so add a random value to the end.
+storageAccountName=contosostorage$randomValue
+echo "Storage account name = " $storageAccountName
+
+# Create the storage account to be used as a routing destination.
+az storage account create --name $storageAccountName \
+    --resource-group $resourceGroup \
+    --location $location \
+    --sku Standard_LRS
+
+# Get the primary storage account key.
+#    You need this to create the containers.
+storageAccountKey=$(az storage account keys list \
+    --resource-group $resourceGroup \
+    --account-name $storageAccountName \
+    --query "[0].value" | tr -d '"')
+
+# See the value of the storage account key.
+echo "storage account key = " $storageAccountKey
+
+# Create the containers in the storage account.
+az storage container create --name $containerName1 \
+    --account-name $storageAccountName \
+    --account-key $storageAccountKey \
+    --public-access off
+
+az storage container create --name $containerName2 \
+    --account-name $storageAccountName \
+    --account-key $storageAccountKey \
+    --public-access off
+
+# Create the IoT device identity to be used for testing.
+az iot hub device-identity create --device-id $iotDeviceName \
+    --hub-name $iotHubName
+
+# Retrieve the information about the device identity, then copy the primary key to
+#   Notepad. You need this to run the device simulation during the testing phase.
+# If you are using Cloud Shell, you can scroll the window back up to retrieve this value.
+az iot hub device-identity show --device-id $iotDeviceName \
+    --hub-name $iotHubName
+
+##### ROUTING FOR STORAGE #####
+
+# You're going to have two routes and two endpoints.
+# One route points to the first container ("original") in the storage account
+#   and includes the original messages.
+# The other points to the second container ("enriched") in the same storage account
+#   and includes the enriched versions of the messages.
+
+endpointType="azurestoragecontainer"
+endpointName1="ContosoStorageEndpointOriginal"
+endpointName2="ContosoStorageEndpointEnriched"
+routeName1="ContosoStorageRouteOriginal"
+routeName2="ContosoStorageRouteEnriched"
+
+# for both endpoints, retrieve the messages going to storage
+condition='level="storage"'
+
+# Get the connection string for the storage account.
+# Adding the "-o tsv" makes it be returned without the default double quotes around it.
+storageConnectionString=$(az storage account show-connection-string \
+  --name $storageAccountName --query connectionString -o tsv)
+
+# Create the routing endpoints and routes.
+# Set the encoding format to either avro or json.
+
+# This is the endpoint for the first container, for endpoint messages that are not enriched.
+az iot hub routing-endpoint create \
+  --connection-string $storageConnectionString \
+  --endpoint-name $endpointName1 \
+  --endpoint-resource-group $resourceGroup \
+  --endpoint-subscription-id $subscriptionID \
+  --endpoint-type $endpointType \
+  --hub-name $iotHubName \
+  --container $containerName1 \
+  --resource-group $resourceGroup \
+  --encoding json
+
+# This is the endpoint for the second container, for endpoint messages that are enriched.
+az iot hub routing-endpoint create \
+  --connection-string $storageConnectionString \
+  --endpoint-name $endpointName2 \
+  --endpoint-resource-group $resourceGroup \
+  --endpoint-subscription-id $subscriptionID \
+  --endpoint-type $endpointType \
+  --hub-name $iotHubName \
+  --container $containerName2 \
+  --resource-group $resourceGroup \
+  --encoding json
+
+# This is the route for messages that are not enriched.
+# Create the route for the first storage endpoint.
+az iot hub route create \
+  --name $routeName1 \
+  --hub-name $iotHubName \
+  --source devicemessages \
+  --resource-group $resourceGroup \
+  --endpoint-name $endpointName1 \
+  --enabled \
+  --condition $condition
+
+# This is the route for messages that are enriched.
+# Create the route for the second storage endpoint.
+az iot hub route create \
+  --name $routeName2 \
+  --hub-name $iotHubName \
+  --source devicemessages \
+  --resource-group $resourceGroup \
+  --endpoint-name $endpointName2 \
+  --enabled \
+  --condition $condition
