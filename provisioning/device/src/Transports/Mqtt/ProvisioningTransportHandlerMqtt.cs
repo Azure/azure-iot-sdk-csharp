@@ -77,7 +77,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             using IMqttClient mqttClient = s_mqttFactory.CreateMqttClient();
             MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest);
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
-            mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
 
             // Link the user-supplied cancellation token with a cancellation token that is cancelled
             // when the connection is lost so that all operations stop when either the user
@@ -93,6 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 try
                 {
                     await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), linkedCancellationToken.Token).ConfigureAwait(false);
+                    mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -110,6 +110,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 try
                 {
+                    mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
                     await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken);
                 }
                 catch (Exception ex)
