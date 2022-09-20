@@ -557,7 +557,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<JobProperties> ImportAsync(ImportJobProperties jobParameters, CancellationToken cancellationToken = default)
+        public virtual async Task<Job> ImportAsync(ImportJobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Running import job", nameof(ImportAsync));
@@ -601,7 +601,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<JobProperties> ExportAsync(ExportJobProperties jobParameters, CancellationToken cancellationToken = default)
+        public virtual async Task<Job> ExportAsync(ExportJobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Running export job", nameof(ExportAsync));
@@ -632,7 +632,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="jobId">Id of the registry job to retrieve.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>ImportJobProperties of the job specified by the provided jobId.</returns>
+        /// <returns>JobProperties of the job specified by the provided jobId.</returns>
         /// <exception cref="ArgumentNullException">When the provided job Id is null.</exception>
         /// <exception cref="ArgumentException">When the provided job Id is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
@@ -645,7 +645,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<JobProperties> GetJobAsync(string jobId, CancellationToken cancellationToken = default)
+        public virtual async Task<Job> GetJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting job {jobId}", nameof(GetJobAsync));
@@ -659,7 +659,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<JobProperties>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<Job>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -678,7 +678,7 @@ namespace Microsoft.Azure.Devices
         /// List all registry jobs for the IoT hub.
         /// </summary>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>IEnumerable of ImportJobProperties of all jobs for this IoT hub.</returns>
+        /// <returns>IEnumerable of JobProperties of all jobs for this IoT hub.</returns>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
@@ -689,7 +689,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<IEnumerable<Job>> GetJobsAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting jobs", nameof(GetJobsAsync));
@@ -701,7 +701,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, s_getJobsUri, _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<IEnumerable<JobProperties>>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<IEnumerable<Job>>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -959,7 +959,7 @@ namespace Microsoft.Azure.Devices
             return await HttpMessageHelper.DeserializeResponseAsync<BulkRegistryOperationResult>(response).ConfigureAwait(false);
         }
 
-        private async Task<JobProperties> CreateJobAsync(JobProperties jobProperties, CancellationToken cancellationToken)
+        private async Task<Job> CreateJobAsync(JobProperties jobProperties, CancellationToken cancellationToken)
         {
             Debug.Assert(jobProperties != null, $"{nameof(CreateJobAsync)} called with null for jobProperties.");
 
@@ -968,7 +968,7 @@ namespace Microsoft.Azure.Devices
             using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, s_createJobsUri, _credentialProvider, jobProperties);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-            return await HttpMessageHelper.DeserializeResponseAsync<JobProperties>(response).ConfigureAwait(false);
+            return await HttpMessageHelper.DeserializeResponseAsync<Job>(response).ConfigureAwait(false);
         }
     }
 }

@@ -8,39 +8,22 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    ///
+    /// Contains the properties available for import/export job.
     /// </summary>
-    public class JobProperties
+    public abstract class JobProperties : Job
     {
+        private static readonly JobStatus[] s_finishedStates = new[]
+        {
+            JobStatus.Completed,
+            JobStatus.Failed,
+            JobStatus.Cancelled,
+        };
+
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
         internal JobProperties()
         { }
-
-        /// <summary>
-        /// The unique Id of the export job.
-        /// </summary>
-        /// <remarks>
-        /// This value is created by the service. If specified by the user, it will be ignored.
-        /// </remarks>
-        [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]
-        public string JobId { get; internal set; }
-
-        /// <summary>
-        /// When the job started running.
-        /// </summary>
-        /// <remarks>
-        /// This value is created by the service. If specified by the user, it will be ignored.
-        /// </remarks>
-        [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? StartedOnUtc { get; internal set; }
-
-        /// <summary>
-        /// When the job finished.
-        /// </summary>
-        /// <remarks>
-        /// This value is created by the service. If specified by the user, it will be ignored.
-        /// </remarks>
-        [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? EndedOnUtc { get; internal set; }
 
         /// <summary>
         /// The type of job to execute.
@@ -49,25 +32,7 @@ namespace Microsoft.Azure.Devices
         /// This value is set by this client depending on which job method is called.
         /// </remarks>
         [JsonProperty(PropertyName = "type", Required = Required.Always)]
-        public JobType Type { get; internal set; }
-
-        /// <summary>
-        /// The status of the job.
-        /// </summary>
-        /// <remarks>
-        /// This value is created by the service. If specified by the user, it will be ignored.
-        /// </remarks>
-        [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
-        public JobStatus Status { get; internal set; }
-
-        /// <summary>
-        /// If status == failure, this represents a string containing the reason.
-        /// </summary>
-        /// <remarks>
-        /// This value is created by the service. If specified by the user, it will be ignored.
-        /// </remarks>
-        [JsonProperty(PropertyName = "failureReason", NullValueHandling = NullValueHandling.Ignore)]
-        public string FailureReason { get; internal set; }
+        protected internal JobType Type { get; internal set; }
 
         /// <summary>
         /// URI to a blob container, used to output the status of the job and the results.
@@ -85,22 +50,22 @@ namespace Microsoft.Azure.Devices
         public StorageAuthenticationType? StorageAuthenticationType { get; set; }
 
         /// <summary>
-        /// The managed identity used to access the storage account for the export job.
+        /// The managed identity used to access the storage account for the job.
         /// </summary>
         [JsonProperty(PropertyName = "identity", NullValueHandling = NullValueHandling.Ignore)]
         public ManagedIdentity Identity { get; set; }
 
         /// <summary>
-        /// Whether or not to include configurations in the export job.
+        /// Whether or not to include configurations in the job.
         /// </summary>
         /// <remarks>
-        /// The service assumes this is false, if not specified. If true, then configurations are included in the data export.
+        /// The service assumes this is false, if not specified. If true, then configurations are included in the data import/export.
         /// </remarks>
         [JsonProperty(PropertyName = "includeConfigurations", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IncludeConfigurations { get; set; }
 
         /// <summary>
-        /// Specifies the name of the blob to use when exporting configurations.
+        /// Specifies the name of the blob to use when using configurations.
         /// </summary>
         /// <remarks>
         /// The service assumes this is configurations.txt, if not specified.
@@ -123,12 +88,5 @@ namespace Microsoft.Azure.Devices
         /// <remarks>The service doesn't actually seem to set this, so not exposing it.</remarks>
         [JsonProperty(PropertyName = "progress", NullValueHandling = NullValueHandling.Ignore)]
         internal int Progress { get; set; }
-
-        private static readonly JobStatus[] s_finishedStates = new[]
-        {
-            JobStatus.Completed,
-            JobStatus.Failed,
-            JobStatus.Cancelled,
-        };
     }
 }
