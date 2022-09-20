@@ -322,12 +322,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case MqttClientConnectResultCode.BadUserNameOrPassword:
                     case MqttClientConnectResultCode.NotAuthorized:
                     case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", cfe, false, IotHubStatusCode.Unauthorized);
+                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", false, IotHubStatusCode.Unauthorized, cfe);
                     case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                         // Should never happen since the protocol version (3.1.1) is hardcoded
                         throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", cfe);
                     case MqttClientConnectResultCode.ServerUnavailable:
-                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", cfe, true, IotHubStatusCode.ServerBusy);
+                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", true, IotHubStatusCode.ServerBusy, cfe);
                     default:
                         // MQTT 3.1.1 only supports the above connect return codes, so this default case
                         // should never happen. For more details, see the MQTT 3.1.1 specification section "3.2.2.3 Connect Return code"
@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send message.", ex, true);
+                throw new IotHubClientException("Failed to send message.", true, ex);
             }
         }
 
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving direct methods.", ex, true);
+                throw new IotHubClientException("Failed to enable receiving direct methods.", true, ex);
             }
         }
 
@@ -410,7 +410,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving direct methods.", ex, true);
+                throw new IotHubClientException("Failed to disable receiving direct methods.", true, ex);
             }
         }
 
@@ -435,7 +435,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send direct method response.", ex, true);
+                throw new IotHubClientException("Failed to send direct method response.", true, ex);
             }
         }
 
@@ -447,7 +447,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving messages.", ex, true);
+                throw new IotHubClientException("Failed to enable receiving messages.", true, ex);
             }
         }
 
@@ -459,7 +459,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving messages.", ex, true);
+                throw new IotHubClientException("Failed to disable receiving messages.", true, ex);
             }
         }
 
@@ -478,7 +478,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving messages.", ex, true);
+                throw new IotHubClientException("Failed to enable receiving messages.", true, ex);
             }
         }
 
@@ -497,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving messages.", ex, true);
+                throw new IotHubClientException("Failed to disable receiving messages.", true, ex);
             }
         }
 
@@ -509,7 +509,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving twin patches.", ex, true);
+                throw new IotHubClientException("Failed to enable receiving twin patches.", true, ex);
             }
         }
 
@@ -521,7 +521,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving twin patches.", ex, true);
+                throw new IotHubClientException("Failed to disable receiving twin patches.", true, ex);
             }
         }
 
@@ -576,7 +576,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to get the twin.", ex, true);
+                throw new IotHubClientException("Failed to get the twin.", true, ex);
             }
             finally
             {
@@ -641,7 +641,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send twin patch.", ex, true);
+                throw new IotHubClientException("Failed to send twin patch.", true, ex);
             }
             finally
             {
