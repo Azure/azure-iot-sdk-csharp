@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
 
-            var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
+            var config = new TestConfiguration.IotHub.ConnectionStringParser(deviceConnectionString);
             string deviceId = config.DeviceId;
 
             ConnectionStatusInfo connectionStatusInfo = null;
@@ -177,10 +177,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: Asserting connection status change.");
 
-            Assert.AreEqual(1, deviceDisabledReceivedCount);
-            Assert.AreEqual(ConnectionStatus.Disconnected, connectionStatusInfo.Status);
-            Assert.AreEqual(ConnectionStatusChangeReason.DeviceDisabled, connectionStatusInfo.ChangeReason);
-            Assert.AreEqual(RecommendedAction.Quit, connectionStatusInfo.RecommendedAction);
+            deviceDisabledReceivedCount.Should().Be(1);
+            status.Should().Be(ConnectionStatus.Disconnected);
+            statusChangeReason.Should().Be(ConnectionStatusChangeReason.Device_Disabled);
+            connectionStatusInfo.RecommendedAction.Should().Be(RecommendedAction.Quit);
         }
 
         private async Task IotHubModuleClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base(
@@ -232,10 +232,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(IotHubModuleClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: Asserting connection status change.");
 
-            Assert.AreEqual(1, deviceDisabledReceivedCount);
-            Assert.AreEqual(ConnectionStatus.Disconnected, connectionStatusInfo.Status);
-            Assert.AreEqual(ConnectionStatusChangeReason.DeviceDisabled, connectionStatusInfo.ChangeReason);
-            Assert.AreEqual(RecommendedAction.Quit, connectionStatusInfo.RecommendedAction);
+            deviceDisabledReceivedCount.Should().Be(1);
+            status.Should().Be(ConnectionStatus.Disconnected);
+            statusChangeReason.Should().Be(ConnectionStatusChangeReason.Device_Disabled);
+            connectionStatusInfo.RecommendedAction.Should().Be(RecommendedAction.Quit);
         }
     }
 }

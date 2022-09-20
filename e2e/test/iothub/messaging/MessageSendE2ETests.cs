@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private readonly string _devicePrefix = $"{nameof(MessageSendE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
-        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
@@ -324,16 +325,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         public static async Task SendSingleMessageAsync(IotHubDeviceClient deviceClient, MsTestLogger logger, int messageSize = 0)
         {
-            Client.Message testMessage;
-
-            if (messageSize == 0)
-            {
-                (testMessage, _, _) = ComposeD2cTestMessage(logger);
-            }
-            else
-            {
-                (testMessage, _, _) = ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger);
-            }
+            using Client.Message testMessage = messageSize == 0
+                ? ComposeD2cTestMessage(logger, out string _, out string _)
+                : ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger, out string _, out string _);
 
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
@@ -344,7 +338,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             for (int i = 0; i < MessageBatchCount; i++)
             {
-                (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage(logger);
+                Client.Message testMessage = ComposeD2cTestMessage(logger, out string payload, out string p1Value);
                 messagesToBeSent.Add(testMessage, Tuple.Create(payload, p1Value));
             }
 
@@ -353,16 +347,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
         {
-            (Client.Message testMessage, _, _) = ComposeD2cTestMessage(Logger);
+            Client.Message testMessage = ComposeD2cTestMessage(Logger, out string _, out string _);
 
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
-        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessage(MsTestLogger logger)
+        public static Client.Message ComposeD2cTestMessage(MsTestLogger logger, out string payload, out string p1Value)
         {
             string messageId = Guid.NewGuid().ToString();
-            string payload = Guid.NewGuid().ToString();
-            string p1Value = Guid.NewGuid().ToString();
+            payload = Guid.NewGuid().ToString();
+            p1Value = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
@@ -374,14 +368,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             message.Properties.Add("property1", p1Value);
             message.Properties.Add("property2", null);
 
-            return (message, payload, p1Value);
+            return message;
         }
 
-        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessageOfSpecifiedSize(int messageSize, MsTestLogger logger)
+        public static Client.Message ComposeD2cTestMessageOfSpecifiedSize(int messageSize, MsTestLogger logger, out string payload, out string p1Value)
         {
             string messageId = Guid.NewGuid().ToString();
-            string payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";
-            string p1Value = Guid.NewGuid().ToString();
+            payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";
+            p1Value = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
@@ -391,7 +385,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             message.Properties.Add("property1", p1Value);
             message.Properties.Add("property2", null);
 
-            return (message, payload, p1Value);
+            return message;
         }
     }
 }

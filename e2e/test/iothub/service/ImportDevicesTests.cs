@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 ManagedIdentity identity = isUserAssignedMsi
                     ? new ManagedIdentity
                     {
-                        UserAssignedIdentity = TestConfiguration.IoTHub.UserAssignedMsiResourceId
+                        UserAssignedIdentity = TestConfiguration.IotHub.UserAssignedMsiResourceId
                     }
                     : null;
 
