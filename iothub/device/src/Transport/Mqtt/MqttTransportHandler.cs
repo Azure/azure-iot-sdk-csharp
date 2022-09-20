@@ -310,6 +310,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
+                _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
+                _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
                 await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
             }
             catch (MqttConnectingFailedException cfe)
@@ -415,10 +417,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             var topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
-
+            byte[] serializedPayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodResponse.Payload));
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
-                .WithPayload(methodResponse.Payload)
+                .WithPayload(serializedPayload)
                 .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
@@ -651,8 +653,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
-            _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
             _mqttClient?.Dispose();
         }
 
@@ -662,6 +662,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
+                _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
+                _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
                 await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
