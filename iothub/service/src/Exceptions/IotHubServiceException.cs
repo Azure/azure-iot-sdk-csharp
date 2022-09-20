@@ -32,17 +32,16 @@ namespace Microsoft.Azure.Devices
         /// to the inner exception that caused this exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        /// <param name="errorCode">The 3-digit error iotHubStatusCode returned back in the hub service response.</param>
-        /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
+        /// <param name="statusCode">The 3-digit status code returned back in the hub service response.</param>
+        /// <param name="errorCode">The 6-digit error code representing a more specific error in details.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(string message, HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, bool isTransient, string trackingId = null, Exception innerException = null)
+        public IotHubServiceException(string message, HttpStatusCode statusCode, IotHubErrorCode errorCode, string trackingId = null, Exception innerException = null)
             : base(message, innerException)
         {
-            StatusCode = errorCode;
-            ErrorCode = iotHubStatusCode;
-            IsTransient = isTransient;
+            StatusCode = statusCode;
+            ErrorCode = errorCode;
+            IsTransient = DetermineIfTransient(statusCode, errorCode);
             TrackingId = trackingId;
         }
 
@@ -78,6 +77,22 @@ namespace Microsoft.Azure.Devices
             base.GetObjectData(info, context);
             info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
             info.AddValue(TrackingIdSerializationStoreName, TrackingId);
+        }
+
+        private bool DetermineIfTransient(HttpStatusCode statusCode, IotHubErrorCode errorCode)
+        {
+            switch (errorCode)
+            {
+                case IotHubErrorCode.ThrottlingException:
+                case IotHubErrorCode.IotHubQuotaExceeded:
+                    return true;
+
+                case IotHubErrorCode.Unknown:
+                    return statusCode == HttpStatusCode.RequestTimeout;
+
+                default:
+                    return false;
+            }
         }
     }
 }
