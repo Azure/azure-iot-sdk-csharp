@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         // Cloud-to-device message callback information
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
+
         private volatile Tuple<Func<Message, object, Task>, object> _deviceReceiveMessageCallback;
 
         // File upload operation
@@ -160,12 +161,6 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 _deviceReceiveMessageSemaphore.Release();
-
-                if (_deviceReceiveMessageCallback != null)
-                {
-                    // Any previously received C2D messages will also need to be delivered.
-                    await InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
-                }
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, messageHandler, userContext, nameof(SetReceiveMessageHandlerAsync));
