@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <summary>
         /// The payload to be sent in the will message.
         /// </summary>
-        byte[] Payload { get; }
+        byte[] Payload { get; set; }
 
         /// <summary>
         /// An agreement between the sender of a message and the receiver of a message that defines the guarantee of delivery for a specific message

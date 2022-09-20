@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     public class WillMessage : IWillMessage
     {
         /// <inheritdoc />
-        public byte[] Payload { get; private set; }
+        public byte[] Payload { get; set; }
 
         /// <inheritdoc />
         public QualityOfService QualityOfService { get; set; }
