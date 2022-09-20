@@ -87,9 +87,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     cancellationToken,
                     _connectionLostCancellationToken.Token);
 
+            // Additional context to be included in the error message thrown if the connection is lost to explain
+            // when the connection was lost. Mostly for e2e test debugging, but users may find this helpful as well.
+            string currentStatus = "opening MQTT connection";
             try
             {
-                string currentStatus = "opening MQTT connection";
                 try
                 {
                     await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), linkedCancellationToken.Token).ConfigureAwait(false);
@@ -126,7 +128,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     // connection is closed in cases like these.
 
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"Failed to gracefully close the MQTT client while {currentStatus} {ex}");
+                        Logging.Error(this, $"Failed to gracefully close the MQTT client. {ex}");
                 }
 
                 return registrationResult;
@@ -140,7 +142,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // Deliberately not including the caught exception as this exception's inner exception because
                 // if the user sees an OperationCancelledException in the thrown exception, they may think they cancelled
                 // the operation even though they didn't.
-                throw new ProvisioningTransportException("MQTT connection was lost during provisioning.", true);
+                throw new ProvisioningTransportException($"MQTT connection was lost while {currentStatus}.", true);
 
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
