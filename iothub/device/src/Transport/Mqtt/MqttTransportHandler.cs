@@ -1099,7 +1099,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Task finishedTask = await Task.WhenAny(taskCompletionSource.Task, Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
 
             // If the finished task is not the cancellation token
-            if (finishedTask is Task<T>)
+            if (finishedTask == taskCompletionSource.Task)
             {
                 return await ((Task<T>)finishedTask).ConfigureAwait(false);
             }
