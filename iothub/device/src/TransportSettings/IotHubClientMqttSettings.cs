@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
             Protocol = transportProtocol;
             CleanSession = DefaultCleanSession;
             HasWill = DefaultHasWill;
-            KeepAlive = DefaultKeepAlive;
+            IdleTimeout = DefaultKeepAlive;
             PublishToServerQoS = DefaultPublishToServerQoS;
             ReceivingQoS = DefaultReceivingQoS;
             WillMessage = null;
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Setting a very low keep-alive value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
-        public TimeSpan KeepAlive { get; set; }
+        public TimeSpan IdleTimeout { get; set; }
 
         /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.

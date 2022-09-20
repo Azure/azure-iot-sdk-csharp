@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithTls(tlsParameters)
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311) // 3.1.1
                 .WithCleanSession(_mqttTransportSettings.CleanSession)
-                .WithKeepAlivePeriod(_mqttTransportSettings.KeepAlive);
+                .WithKeepAlivePeriod(_mqttTransportSettings.IdleTimeout);
 
             if (_mqttTransportSettings.HasWill && _mqttTransportSettings.WillMessage != null)
             {
