@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -73,7 +72,6 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Getting job {jobId}", nameof(GetAsync));
 
             Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
-
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -140,11 +138,11 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Canceling job {jobId}", nameof(CancelAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                     HttpMethod.Post,
                     new Uri(
