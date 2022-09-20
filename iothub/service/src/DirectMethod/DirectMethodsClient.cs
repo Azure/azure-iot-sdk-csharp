@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Invoking device method for device id: {deviceId} threw an exception: {ex}", nameof(InvokeAsync));
+                    Logging.Error(this, $"Invoking device method for device id {deviceId} threw an exception: {ex}", nameof(InvokeAsync));
                 throw;
             }
             finally
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Invoking device method for device id: {deviceId} and module id: {moduleId} threw an exception: {ex}", nameof(InvokeAsync));
+                    Logging.Error(this, $"Invoking device method for device id {deviceId} and module id {moduleId} threw an exception: {ex}", nameof(InvokeAsync));
                 throw;
             }
             finally

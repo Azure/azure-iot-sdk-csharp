@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device module twin: {deviceId}/{moduleId} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting device module twin {deviceId}/{moduleId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device twin: {deviceId} - is replace: {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"Updating device twin {deviceId} - is replace {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally
@@ -437,7 +437,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device twin: {deviceId}/{moduleId} - is replace: {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"Updating device {deviceId}/{moduleId} - is replace {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally

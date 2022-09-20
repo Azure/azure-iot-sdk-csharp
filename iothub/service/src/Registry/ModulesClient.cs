@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating module: {module?.Id} on device: {module?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating module {module?.Id} on device {module?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting module: {moduleId} on device: {deviceId} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting module {moduleId} on device {deviceId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating module {module?.Id} on device {module?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting module {module?.Id} on device {module?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally

@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CloseAsync)} threw an exception: {ex}", nameof(CloseAsync));
+                    Logging.Error(this, $"Closing FileUploadNotificationProcessorClient threw an exception: {ex}", nameof(CloseAsync));
                 throw;
             }
             finally

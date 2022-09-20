@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating configuration: {configuration?.Id} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating configuration {configuration?.Id} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting configuration: {configurationId} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting configuration {configurationId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating configuration: {configuration?.Id} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating configuration {configuration?.Id} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting configuration: {configuration?.Id} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting configuration {configuration?.Id} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
