@@ -207,6 +207,8 @@ namespace Microsoft.Azure.Devices
                 {
                     ErrorProcessor?.Invoke(new ErrorContext(ioEx));
                 }
+
+                await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
             }
             finally
             {
