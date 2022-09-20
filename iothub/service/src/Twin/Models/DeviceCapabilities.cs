@@ -11,9 +11,9 @@ namespace Microsoft.Azure.Devices
     public class DeviceCapabilities
     {
         /// <summary>
-        /// IoT Edge capability.
+        /// Indicates if the device is an IoT Edge device.
         /// </summary>
         [JsonProperty(PropertyName = "iotEdge")]
-        public bool IotEdge { get; set; }
+        public bool IsIotEdge { get; set; }
     }
 }

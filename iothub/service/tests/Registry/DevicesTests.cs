@@ -343,7 +343,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task UpdateTwinsAsyncWithInvalidDeviceIdTest()
         {
             var goodTwin = new Twin("123");
@@ -357,12 +357,12 @@ namespace Microsoft.Azure.Devices.Tests
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
-            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }, true).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when bad deviceid was used.");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task UpdateTwinsAsyncWithETagMissingTest()
         {
             var goodTwin = new Twin("123") { ETag = new ETag("234") };
@@ -376,12 +376,12 @@ namespace Microsoft.Azure.Devices.Tests
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
-            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }, true).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when ETag was null.");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task UpdateTwinsAsyncWithNullTwinTest()
         {
             var goodTwin = new Twin("123") { ETag = new ETag("234") };
@@ -394,7 +394,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpClient = new Mock<HttpClient>();
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
-            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }, true).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin was used.");
         }
 
@@ -408,7 +408,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task UpdateTwinsAsyncWithDeviceIdNullTest()
         {
             var goodTwin = new Twin("123") { ETag = new ETag("234") };
@@ -422,7 +422,7 @@ namespace Microsoft.Azure.Devices.Tests
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
-            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }, true).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when deviceId was null.");
         }
 
@@ -441,11 +441,11 @@ namespace Microsoft.Azure.Devices.Tests
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
-            await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task UpdateTwinsAsyncForceUpdateMissingETagTest()
         {
             var badTwin1 = new Twin("123");
@@ -459,7 +459,7 @@ namespace Microsoft.Azure.Devices.Tests
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
-            await Twin.UpdateAsync(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
+            await Twin.UpdateAsync(new List<Twin>() { badTwin1, badTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -477,7 +477,7 @@ namespace Microsoft.Azure.Devices.Tests
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
-            await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]

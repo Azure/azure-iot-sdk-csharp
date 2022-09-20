@@ -12,11 +12,23 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class DirectMethodRequest
     {
+        private object _payload;
+
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
         public DirectMethodRequest()
         {
+        }
+
+        /// <summary>
+        /// Returns JSON payload in a custom type.
+        /// </summary>
+        /// <typeparam name="T">The custom type into which the JSON payload can be deserialized.</typeparam>
+        /// <returns>The JSON payload in custom type.</returns>
+        public T GetPayload<T>()
+        {
+            return JsonConvert.DeserializeObject<T>(PayloadAsJsonString);
         }
 
         /// <summary>
@@ -54,34 +66,33 @@ namespace Microsoft.Azure.Devices.Client
             : (int?)null;
 
         /// <summary>
-        /// Get the serialized JSON payload. May be null or empty.
+        /// Get the payload object. May be null or empty.
         /// </summary>
         [JsonIgnore]
-        public string Payload
+        public object Payload
         {
-            get => (string)JsonPayload.Value;
+            get => _payload;
 
             set
             {
-                if (value == null)
+                _payload = value;
+                if (value != null)
                 {
-                    Payload = null;
-                }
-                else
-                {
-                    try
-                    {
-                        JToken.Parse(value);
-                        JsonPayload = new JRaw(value);
-                    }
-                    catch (JsonException ex)
-                    {
-                        throw new ArgumentException(ex.Message, nameof(value));
-                    }
+                    PayloadAsJsonString = JsonConvert.SerializeObject(value);
+                    JsonPayload = new JRaw(PayloadAsJsonString);
                 }
             }
         }
 
+        /// <summary>
+        /// Get the serialized JSON payload. May be null or empty.
+        /// </summary>
+        [JsonIgnore]
+        public string PayloadAsJsonString { get; internal set; }
+
+        /// <summary>
+        /// The JSON payload in JRaw type.
+        /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
         internal JRaw JsonPayload { get; set; }
 

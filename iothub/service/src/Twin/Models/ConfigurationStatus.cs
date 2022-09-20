@@ -3,7 +3,6 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices
 {
@@ -11,8 +10,6 @@ namespace Microsoft.Azure.Devices
     /// Specifies the configuration status.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    [SuppressMessage("Microsoft.Naming", "CA1717:OnlyFlagsEnumsShouldHavePluralNames",
-        Justification = "Status is singular.")]
     public enum ConfigurationStatus
     {
         /// <summary>

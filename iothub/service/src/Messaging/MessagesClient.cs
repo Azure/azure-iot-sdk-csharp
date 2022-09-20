@@ -77,8 +77,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Open the connection. Must be done before any cloud-to-device messages can be sent.
         /// </summary>
-        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
-        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>If the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
@@ -110,8 +110,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// The instance can be re-opened after closing.
         /// </remarks>
-        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
-        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>If the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
@@ -147,10 +147,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud-to-device message.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="message"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the provided <paramref name="deviceId"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="message"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="deviceId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -204,10 +204,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="moduleId">The module identifier for the target module.</param>
         /// <param name="message">The cloud-to-module message.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="message"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="message"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -263,10 +263,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The <see cref="PurgeMessageQueueResult"/>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
-        /// <exception cref="IotHubServiceException">Thrown if IoT hub responded to the request with a non-successful status code.
-        /// For example, if the provided request was throttled, <see cref="IotHubServiceException"/> with 
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> is empty or white space.</exception>
+        /// <exception cref="IotHubServiceException">If IoT hub responded to the request with a non-successful status code.
+        /// For example, if the provided request was throttled, <see cref="IotHubServiceException"/> wit.
         /// <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// <exception cref="HttpRequestException">If the HTTP request fails due to an underlying issue such as network connectivity,

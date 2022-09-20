@@ -536,7 +536,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
                 //Confirm that the device twin reflects what the enrollment dictated
                 Client.Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                twin.Capabilities.IotEdge.Should().Be(capabilities.IotEdge);
+                twin.Capabilities.IotEdge.Should().Be(capabilities.IsIotEdge);
             }
         }
 

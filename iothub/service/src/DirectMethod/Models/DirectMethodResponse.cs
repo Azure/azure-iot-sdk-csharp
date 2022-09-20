@@ -18,12 +18,15 @@ namespace Microsoft.Azure.Devices
         public int Status { get; internal set; }
 
         /// <summary>
-        /// Get the serialized JSON payload. May be null or empty.
+        /// Get the payload object. May be null or empty.
         /// </summary>
+        /// <remarks>
+        /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
+        /// </remarks>
         [JsonIgnore]
-        public string Payload
+        public object Payload
         {
-            get => (string)JsonPayload.Value;
+            get => JsonConvert.DeserializeObject((string)JsonPayload.Value);
         }
 
         [JsonProperty("payload")]

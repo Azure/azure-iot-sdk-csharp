@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -11,7 +12,7 @@ using Newtonsoft.Json.Converters;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Twin representation.
+    /// Properties of a device stored on the service.
     /// </summary>
     [JsonConverter(typeof(TwinJsonConverter))]
     public class Twin
@@ -19,17 +20,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        public Twin()
-        {
-            Tags = new TwinCollection();
-            Properties = new TwinProperties();
-        }
+        public Twin() { }
 
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        /// <param name="deviceId">Device Id</param>
-        public Twin(string deviceId) : this()
+        /// <param name="deviceId">The unique Id of the device to which the twin belongs.</param>
+        public Twin(string deviceId)
         {
             DeviceId = deviceId;
         }
@@ -37,10 +34,9 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        /// <param name="twinProperties"></param>
+        /// <param name="twinProperties">Properties of the twin.</param>
         public Twin(TwinProperties twinProperties)
         {
-            Tags = new TwinCollection();
             Properties = twinProperties;
         }
 
@@ -66,12 +62,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets and sets the twin tags.
         /// </summary>
-        public TwinCollection Tags { get; set; }
+        public TwinCollection Tags { get; set; } = new();
 
         /// <summary>
         /// Gets and sets the twin properties.
         /// </summary>
-        public TwinProperties Properties { get; set; }
+        public TwinProperties Properties { get; set; } = new();
 
         /// <summary>
         /// Gets the twin configuration properties.
@@ -79,7 +75,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Configuration properties are read only.
         /// </remarks>
-        public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; }
+        public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; } = new Dictionary<string, ConfigurationInfo>();
 
         /// <summary>
         /// Gets the twin capabilities.
@@ -87,7 +83,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Twin capabilities are read only.
         /// </remarks>
-        public DeviceCapabilities Capabilities { get; set; }
+        public DeviceCapabilities Capabilities { get; internal set; }
 
         /// <summary>
         /// Twin's ETag.
@@ -122,7 +118,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public DateTime? StatusUpdatedTime { get; internal set; }
+        public DateTimeOffset? StatusUpdatedOn { get; internal set; }
 
         /// <summary>
         /// Corresponding device's connection state.
@@ -137,7 +133,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public DateTime? LastActivityTime { get; internal set; }
+        public DateTimeOffset? LastActivityOn { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the corresponding device from the cloud.
@@ -187,6 +183,36 @@ namespace Microsoft.Azure.Devices
         public string ToJson(Formatting formatting = Formatting.None)
         {
             return JsonConvert.SerializeObject(this, formatting);
+        }
+
+        /// <summary>
+        /// For use in serialization.
+        /// </summary>
+        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool ShouldSerializeTags()
+        {
+            return Tags != null && Tags.Count > 0;
+        }
+
+        /// <summary>
+        /// For use in serialization.
+        /// </summary>
+        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool ShouldSerializeConfigurations()
+        {
+            return Configurations != null && Configurations.Any();
+        }
+
+        /// <summary>
+        /// For use in serialization.
+        /// </summary>
+        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool ShouldSerializeParentScopes()
+        {
+            return ParentScopes != null && ParentScopes.Any();
         }
     }
 }

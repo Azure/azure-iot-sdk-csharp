@@ -9,6 +9,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -322,7 +323,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            response.Payload.Should().Be(respJson);
+            response.Payload.Should().BeEquivalentTo(respJson);
         }
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
@@ -339,7 +340,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     var response = new Client.DirectMethodResponse()
                     {
                         Status = 200,
-                        Payload = Encoding.UTF8.GetBytes(DeviceResponseJson)
+                        Payload = DeviceResponseJson
                     };
 
                     return Task.FromResult(response);
@@ -377,7 +378,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             var response = new Client.DirectMethodResponse()
                             {
                                 Status = 200,
-                                Payload = Encoding.UTF8.GetBytes(DeviceResponseJson)
+                                Payload = DeviceResponseJson
                             };
 
                             return Task.FromResult(response);
@@ -413,7 +414,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     var response = new Client.DirectMethodResponse()
                     {
                         Status = 200,
-                        Payload = Encoding.UTF8.GetBytes(DeviceResponseJson)
+                        Payload = DeviceResponseJson
                     };
 
                     return Task.FromResult(response);

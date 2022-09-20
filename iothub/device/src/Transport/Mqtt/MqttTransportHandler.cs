@@ -493,7 +493,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             var directMethodRequest = new DirectMethodRequest()
             {
                 MethodName = tokens[3],
-                Payload = Encoding.UTF8.GetString(message.Payload),
+                Payload = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(message.Payload)),
                 RequestId = tokens[4].Substring(6)
             };
 
@@ -799,7 +799,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            var message = new Message(methodResponse.Payload)
+            var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodResponse.Payload)))
             {
                 MqttTopicName = MethodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId)
             };
