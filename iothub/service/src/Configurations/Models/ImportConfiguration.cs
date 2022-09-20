@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// A class for creating and serializing a configuration for a bulk import
-    /// job using <see cref="DevicesClient.CreateImportJobAsync(ImportJobProperties, CancellationToken)"/>.
+    /// job using <see cref="DevicesClient.CreateJobAsync(JobProperties, CancellationToken)"/>.
     /// </summary>
     public class ImportConfiguration : Configuration
     {

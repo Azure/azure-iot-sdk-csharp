@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 try
                 {
-                    importJobProperties = await serviceClient.Devices.ImportAsync(importJobProperties).ConfigureAwait(false);
+                    importJobProperties = (ImportJobProperties)await serviceClient.Devices.ImportAsync(importJobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(importJobProperties.FailureReason))
                     {
                         Logger.Trace($"Job failed due to {importJobProperties.FailureReason}");
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             while (!importJobProperties.IsFinished)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
-                importJobProperties = await serviceClient.Devices.GetImportJobAsync(importJobProperties.JobId).ConfigureAwait(false);
+                importJobProperties = (ImportJobProperties)await serviceClient.Devices.GetJobAsync(importJobProperties.JobId).ConfigureAwait(false);
                 Logger.Trace($"Job {importJobProperties.JobId} is {importJobProperties.Status} after {sw.Elapsed}.");
             }
 

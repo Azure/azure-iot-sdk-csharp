@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 try
                 {
-                    exportJobProperties = await serviceClient.Devices.ExportAsync(exportJobProperties).ConfigureAwait(false);
+                    exportJobProperties = (ExportJobProperties)await serviceClient.Devices.ExportAsync(exportJobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(exportJobProperties.FailureReason))
                     {
                         Logger.Trace($"Job failed due to {exportJobProperties.FailureReason}");
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             while (!exportJobProperties.IsFinished)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                exportJobProperties = await serviceClient.Devices.GetExportJobAsync(exportJobProperties.JobId).ConfigureAwait(false);
+                exportJobProperties = (ExportJobProperties)await serviceClient.Devices.GetJobAsync(exportJobProperties.JobId).ConfigureAwait(false);
                 Logger.Trace($"Job {exportJobProperties.JobId} is {exportJobProperties.Status} after {sw.Elapsed}.");
             }
 
