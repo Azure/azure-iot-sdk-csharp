@@ -1034,7 +1034,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 // Retry for Http status code 429 (too many requests)
                                 if (status == 429)
                                 {
-                                    throw new IotHubClientException($"Request {rid} was throttled by the server", true, IotHubStatusCode.Throttled);
+                                    throw new IotHubClientException($"Request {rid} was throttled by the server", IotHubStatusCode.Throttled);
                                 }
                                 else
                                 {
@@ -1070,7 +1070,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 else if (response == null)
                 {
-                    throw new IotHubClientException($"Response for message {rid} not received", true, IotHubStatusCode.Timeout);
+                    throw new IotHubClientException($"Response for message {rid} not received", IotHubStatusCode.Timeout);
                 }
 
                 return response;
@@ -1151,7 +1151,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                 }
 
-                return channel ?? throw new IotHubClientException("MQTT channel open failed.", null, true, IotHubStatusCode.NetworkErrors);
+                return channel ?? throw new IotHubClientException("MQTT channel open failed.", null, IotHubStatusCode.NetworkErrors);
             };
         }
 
@@ -1271,7 +1271,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (throwIfNotOpen && (State & TransportState.Open) == 0)
             {
-                throw new IotHubClientException("MQTT connection is not established. Please retry later.", null, true, IotHubStatusCode.NetworkErrors);
+                throw new IotHubClientException("MQTT connection is not established. Please retry later.", null, IotHubStatusCode.NetworkErrors);
             }
         }
 

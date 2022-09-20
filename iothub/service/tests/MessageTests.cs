@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Text;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Api.Test

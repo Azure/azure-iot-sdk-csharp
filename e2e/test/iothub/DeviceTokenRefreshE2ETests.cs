@@ -45,6 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             //assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -68,6 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
