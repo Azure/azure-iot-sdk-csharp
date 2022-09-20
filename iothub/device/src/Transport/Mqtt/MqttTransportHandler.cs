@@ -836,11 +836,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = queryStringKeyValuePairs.Get(RequestIdTopicKey);
             string methodName = tokens[3];
 
-            var methodRequest = new DirectMethodRequest()
+            var methodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
                 RequestId = requestId,
-                Payload = Encoding.UTF8.GetString(payload)
+                Payload = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(payload))
             };
 
             // We are intentionally not awaiting _methodListener callback. The direct method response
