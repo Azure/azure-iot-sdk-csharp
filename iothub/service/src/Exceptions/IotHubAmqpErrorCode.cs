@@ -4,7 +4,7 @@
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 
-namespace Microsoft.Azure.Devices.Common.Exceptions
+namespace Microsoft.Azure.Devices
 {
     internal static class IotHubAmqpErrorCode
     {

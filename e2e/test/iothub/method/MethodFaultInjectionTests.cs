@@ -9,7 +9,6 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -227,12 +226,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
                     Assert.AreEqual(200, response.Status, $"The expected respose status should be 200 but was {response.Status}");
-                    string payload = response.Payload;
+                    string payload = (string)response.Payload;
                     Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
 
                     done = true;
                 }
-                catch (IotHubServiceException ex) 
+                catch (IotHubServiceException ex)
                     when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
                 {
                     exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
