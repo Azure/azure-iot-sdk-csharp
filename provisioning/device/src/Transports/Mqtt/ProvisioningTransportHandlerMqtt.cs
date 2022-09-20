@@ -339,7 +339,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 .WithClientId(provisioningRequest.Authentication.GetRegistrationId())
                 .WithCredentials(username, password);
 
-            tlsParameters.CertificateValidationHandler = CertificateValidationHandler;
+            if (RemoteCertificateValidationCallback != null)
+            {
+                tlsParameters.CertificateValidationHandler = CertificateValidationHandler;
+            }
 
             tlsParameters.UseTls = true;
             tlsParameters.SslProtocol = SslProtocols;
