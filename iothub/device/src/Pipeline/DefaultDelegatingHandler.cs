@@ -72,12 +72,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler.WaitForTransportClosedAsync();
         }
 
-        public virtual Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler.ReceiveMessageAsync(cancellationToken);
-        }
-
         public virtual Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -96,24 +90,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
             return NextHandler.DisableReceiveMessageAsync(cancellationToken);
-        }
-
-        public virtual Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.CompleteMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
-        }
-
-        public virtual Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.AbandonMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
-        }
-
-        public virtual Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.RejectMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task SendEventAsync(Message message, CancellationToken cancellationToken)
@@ -138,12 +114,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
             return NextHandler?.DisableMethodsAsync(cancellationToken) ?? Task.CompletedTask;
-        }
-
-        public virtual Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task EnableTwinPatchAsync(CancellationToken cancellationToken)

@@ -378,25 +378,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-
-                // For Mqtt - the device needs to have subscribed to the devicebound topic, in order for IoT hub to deliver messages to the device.
-                // For this reason we will make a "fake" ReceiveAsync() call, which will result in the device subscribing to the c2d topic.
-                // Note: We need this "fake" ReceiveAsync() call even though we (SDK default) CONNECT with a CleanSession flag set to 0.
-                // This is because this test device is newly created, and it has never subscribed to IoT hub c2d topic.
-                // Hence, IoT hub doesn't know about its CleanSession preference yet.
-                if (transportSettings is IotHubClientMqttSettings)
-                {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                    try
-                    {
-                        await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // An OperationCanceledException is expected since there was no message sent from the service end.
-                        // ignore and proceed.
-                    }
-                }
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
@@ -455,9 +436,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 testDeviceCallbackHandler.ExpectedMessageSentByService = message;
                 await serviceClient.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
 
-                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-                receivedMessage.Should().BeNull();
             }
 
             async Task CleanupOperationAsync()

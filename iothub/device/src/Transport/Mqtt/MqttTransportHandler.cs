@@ -112,10 +112,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private SemaphoreSlim _receivingSemaphore = new(0);
         private CancellationTokenSource _disconnectAwaitersCancellationSource = new();
         private readonly Regex _twinResponseTopicRegex = new(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
-        private readonly Func<DirectMethodRequest, Task> _methodListener;
+        private readonly Func<DirectMethodRequest, Task<DirectMethodResponse>> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<Message, Task> _moduleMessageReceivedListener;
-        private readonly Func<Message, Task> _deviceMessageReceivedListener;
+        private readonly Func<Message, Task<MessageResponse>> _moduleMessageReceivedListener;
+        private readonly Func<Message, Task<MessageResponse>> _deviceMessageReceivedListener;
 
         private bool _isDeviceReceiveMessageCallbackSet;
         private Func<Task> _cleanupFunc;
@@ -246,49 +246,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            if (_isDeviceReceiveMessageCallbackSet)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, "Callback handler set for receiving C2D messages; ReceiveMessageAsync() will now always return null", nameof(ReceiveMessageAsync));
-
-                return null;
-            }
-            else
-            {
-                try
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Enter(
-                            this,
-                            cancellationToken, $"ReceiveMessageAsync() called with cancellation requested state of: {cancellationToken.IsCancellationRequested}",
-                            $"{nameof(ReceiveMessageAsync)}");
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    EnsureValidState();
-
-                    if (State != TransportState.Receiving)
-                    {
-                        await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(false);
-                    }
-
-                    await WaitUntilC2dMessageArrivesAsync(cancellationToken).ConfigureAwait(false);
-                    return ProcessC2dMessage();
-                }
-                finally
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Exit(
-                            this,
-                            cancellationToken,
-                            $"Exiting ReceiveMessageAsync() with cancellation requested state of: {cancellationToken.IsCancellationRequested}",
-                            $"{nameof(ReceiveMessageAsync)}");
-                }
-            }
-        }
-
         private Message ProcessC2dMessage()
         {
             Message message = null;
@@ -330,68 +287,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             // Wait until either of the linked cancellation tokens have been canceled.
             await _receivingSemaphore.WaitAsync(linkedCts.Token).ConfigureAwait(false);
-        }
-
-        public override async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Completing a message with lockToken: {lockToken}", nameof(CompleteMessageAsync));
-
-            cancellationToken.ThrowIfCancellationRequested();
-            EnsureValidState();
-
-            if (_qosReceivePacketFromService == QualityOfService.AtMostOnce)
-            {
-                throw new IotHubClientException("Complete is not allowed for QoS 0.", isTransient: false);
-            }
-
-            Task completeOperationCompletion;
-            lock (_syncRoot)
-            {
-                if (!lockToken.StartsWith(_generationId, StringComparison.InvariantCulture))
-                {
-                    throw new IotHubClientException(
-                        "Lock token is stale or never existed. The message will be redelivered. Please discard this lock token and do not retry the operation.",
-                        isTransient: false);
-                }
-
-                if (_completionQueue.Count == 0)
-                {
-                    throw new IotHubClientException("Unknown lock token.", isTransient: false);
-                }
-
-                string actualLockToken = _completionQueue.Peek();
-                if (lockToken.IndexOf(actualLockToken, s_generationPrefixLength, StringComparison.Ordinal) != s_generationPrefixLength ||
-                    lockToken.Length != actualLockToken.Length + s_generationPrefixLength)
-                {
-                    throw new IotHubClientException(
-                        "Client must send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. " +
-                        $"Expected lock token to end with: '{actualLockToken}'; actual lock token: '{lockToken}'.",
-                        isTransient: false);
-                }
-
-                _completionQueue.Dequeue();
-                completeOperationCompletion = _channel.WriteAndFlushAsync(actualLockToken);
-            }
-
-            await completeOperationCompletion.ConfigureAwait(true);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, $"Completing a message with lockToken: {lockToken}", nameof(CompleteMessageAsync));
-        }
-
-        public override Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            throw new NotSupportedException("MQTT protocol does not support this operation");
-        }
-
-        public override Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            throw new NotSupportedException("MQTT protocol does not support this operation");
         }
 
         protected override void Dispose(bool disposing)
@@ -602,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
             }
             message.LockToken = _generationId + message.LockToken;
-            await (_moduleMessageReceivedListener?.Invoke(message) ?? Task.CompletedTask).ConfigureAwait(false);
+            await Task.CompletedTask;
         }
 
         public async void OnError(Exception exception)
@@ -792,19 +687,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             EnsureValidState();
 
             await _channel.WriteAsync(new UnsubscribePacket(0, _receiveEventMessageFilter)).ConfigureAwait(true);
-        }
-
-        public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            EnsureValidState();
-
-            var message = new Message(methodResponse.Payload)
-            {
-                MqttTopicName = MethodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId)
-            };
-
-            await SendEventAsync(message, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)

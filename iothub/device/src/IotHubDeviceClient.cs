@@ -17,7 +17,8 @@ namespace Microsoft.Azure.Devices.Client
     {
         // Cloud-to-device message callback information
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
-        private volatile Tuple<Func<Message, object, Task>, object> _deviceReceiveMessageCallback;
+
+        private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _deviceReceiveMessageCallback;
 
         // File upload operation
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
@@ -87,39 +88,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Receive a message from the device queue using the cancellation token. IotHubDeviceClient instance must be opened already.
-        /// </summary>
-        /// <remarks>
-        /// After handling a received message, a client should call <see cref="IotHubBaseClient.CompleteMessageAsync(Message, CancellationToken)"/>,
-        /// <see cref="IotHubBaseClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="IotHubBaseClient.RejectMessageAsync(Message, CancellationToken)"/>,
-        /// and then dispose the message.
-        /// <para>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </para>
-        /// </remarks>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The received message.</returns>
-        public async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken = default)
-        {
-            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or
-            // unrecoverable (authentication, quota exceed) error occurs.
-            return await InnerHandler.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Sets a new delegate for receiving a message from the device queue using a cancellation token.
         /// IotHubDeviceClient instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// After handling a received message, a client should call <see cref="IotHubBaseClient.CompleteMessageAsync(Message, CancellationToken)"/>,
-        /// <see cref="IotHubBaseClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="IotHubBaseClient.RejectMessageAsync(Message, CancellationToken)"/>,
-        /// and then dispose the message.
-        /// <para>
         /// If a delegate is already registered it will be replaced with the new delegate.
         /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
-        /// </para>
         /// </remarks>
         /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -127,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetReceiveMessageHandlerAsync(
-            Func<Message, object, Task> messageHandler,
+            Func<Message, object, Task<MessageResponse>> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -148,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task>, object>(messageHandler, userContext);
+                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -220,15 +194,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         // The delegate for handling c2d messages received
-        private async Task OnDeviceMessageReceivedAsync(Message message)
+        private async Task<MessageResponse> OnDeviceMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(OnDeviceMessageReceivedAsync));
-
-            if (message == null)
-            {
-                return;
-            }
 
             // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the
             // item1 and the read of the item2
@@ -236,21 +205,27 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<Message, object, Task> callback = _deviceReceiveMessageCallback?.Item1;
+                Func<Message, object, Task<MessageResponse>> callback = _deviceReceiveMessageCallback?.Item1;
                 object callbackContext = _deviceReceiveMessageCallback?.Item2;
 
                 if (callback != null)
                 {
-                    _ = callback.Invoke(message, callbackContext);
+                    return await callback.Invoke(message, callbackContext);
+                }
+                else
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Received a cloud to device message when no user callback was set. Ignoring message.");
+
+                    return MessageResponse.None;
                 }
             }
             finally
             {
                 _deviceReceiveMessageSemaphore.Release();
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, message, nameof(OnDeviceMessageReceivedAsync));
             }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, message, nameof(OnDeviceMessageReceivedAsync));
         }
 
         // Enable telemetry downlink for devices

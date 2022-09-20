@@ -30,6 +30,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
+
         private volatile Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object> _deviceDefaultMethodCallback;
 
         // Twin property update request callback information
@@ -219,107 +220,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes a received message from the client queue.
-        /// </summary>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The lock identifier for the previously received message</returns>
-        public async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes the received message from the service's cloud to device message queue for this client.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task CompleteMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await CompleteMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Puts a received message back onto the client queue.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Puts a received message back onto the client queue.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="message">The message to abandon.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task AbandonMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await AbandonMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes a received message from the client queue and indicates to the server that the message could not be processed.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes the received message from the service's cloud to device message queue for this client and indicates to the server that the message could not be processed.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="message">The message to reject.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task RejectMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await RejectMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -523,56 +423,56 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling direct methods received from service.
         /// </summary>
-        internal async Task OnMethodCalledAsync(DirectMethodRequest directMethodRequest)
+        internal async Task<DirectMethodResponse> OnMethodCalledAsync(DirectMethodRequest directMethodRequest)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, directMethodRequest?.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
 
-            if (directMethodRequest == null)
+            try
             {
-                return;
-            }
+                DirectMethodResponse directMethodResponse = null;
 
-            DirectMethodResponse directMethodResponse = null;
-
-            if (_deviceDefaultMethodCallback == null)
-            {
-                directMethodResponse = new DirectMethodResponse()
+                if (_deviceDefaultMethodCallback == null)
                 {
-                    Status = (int)DirectMethodResponseStatusCode.MethodNotImplemented,
-                    RequestId = directMethodRequest.RequestId,
-                };
-            }
-            else
-            {
-                try
-                {
-                    Func<DirectMethodRequest, object, Task<DirectMethodResponse>> userSuppliedCallback = _deviceDefaultMethodCallback.Item1;
-                    object userSuppliedContext = _deviceDefaultMethodCallback.Item2;
-
-                    directMethodResponse = await userSuppliedCallback
-                        .Invoke(directMethodRequest, userSuppliedContext)
-                        .ConfigureAwait(false);
-
-                    directMethodResponse.RequestId = directMethodRequest.RequestId;
-                }
-                catch (Exception ex)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, ex, nameof(OnMethodCalledAsync));
-
                     directMethodResponse = new DirectMethodResponse()
                     {
-                        Status = (int)DirectMethodResponseStatusCode.UserCodeException,
+                        Status = (int)DirectMethodResponseStatusCode.MethodNotImplemented,
                         RequestId = directMethodRequest.RequestId,
                     };
                 }
+                else
+                {
+                    try
+                    {
+                        Func<DirectMethodRequest, object, Task<DirectMethodResponse>> userSuppliedCallback = _deviceDefaultMethodCallback.Item1;
+                        object userSuppliedContext = _deviceDefaultMethodCallback.Item2;
+
+                        directMethodResponse = await userSuppliedCallback
+                            .Invoke(directMethodRequest, userSuppliedContext)
+                            .ConfigureAwait(false);
+
+                        directMethodResponse.RequestId = directMethodRequest.RequestId;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, ex, nameof(OnMethodCalledAsync));
+
+                        directMethodResponse = new DirectMethodResponse()
+                        {
+                            Status = (int)DirectMethodResponseStatusCode.UserCodeException,
+                            RequestId = directMethodRequest.RequestId,
+                        };
+                    }
+                }
+
+                return directMethodResponse;
             }
-
-            await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
+            }
         }
 
         internal void OnDesiredStatePatchReceived(TwinCollection patch)
@@ -586,11 +486,6 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Info(this, patch.ToJson(), nameof(OnDesiredStatePatchReceived));
 
             _ = _desiredPropertyUpdateCallback.Invoke(patch, _twinPatchCallbackContext);
-        }
-
-        private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
-        {
-            await InnerHandler.SendMethodResponseAsync(directMethodResponse, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task HandleMethodEnableAsync(CancellationToken cancellationToken = default)

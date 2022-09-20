@@ -20,10 +20,10 @@ namespace Microsoft.Azure.Devices.Client
 
         internal Action<TwinCollection> DesiredPropertyUpdateCallback { get; set; }
 
-        internal Func<DirectMethodRequest, Task> MethodCallback { get; set; }
+        internal Func<DirectMethodRequest, Task<DirectMethodResponse>> MethodCallback { get; set; }
 
-        internal Func<Message, Task> ModuleEventCallback { get; set; }
+        internal Func<Message, Task<MessageResponse>> ModuleEventCallback { get; set; }
 
-        internal Func<Message, Task> DeviceEventCallback { get; set; }
+        internal Func<Message, Task<MessageResponse>> DeviceEventCallback { get; set; }
     }
 }

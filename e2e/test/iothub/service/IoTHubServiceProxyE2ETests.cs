@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
@@ -99,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (IotHubServiceException ex) 
+                catch (IotHubServiceException ex)
                     when (ex.StatusCode is (HttpStatusCode)429 && ++tryCount < MaxIterationWait)
                 {
                     Logger.Trace($"ThrottlingException... waiting.");

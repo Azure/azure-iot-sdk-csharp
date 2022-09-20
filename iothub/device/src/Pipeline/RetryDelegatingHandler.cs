@@ -114,54 +114,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendMethodResponseAsync(DirectMethodResponse method, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
-
-                await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.SendMethodResponseAsync(method, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, method, cancellationToken, nameof(SendMethodResponseAsync));
-            }
-        }
-
-        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(ReceiveMessageAsync));
-
-                return await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            return await base.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(ReceiveMessageAsync));
-            }
-        }
-
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             try
@@ -523,78 +475,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
-            }
-        }
-
-        public override async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
-
-                await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
-            }
-        }
-
-        public override async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
-
-                await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
-            }
-        }
-
-        public override async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
-
-                await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
             }
         }
 

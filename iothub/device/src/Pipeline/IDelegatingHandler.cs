@@ -24,9 +24,6 @@ namespace Microsoft.Azure.Devices.Client
 
         Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
 
-        // Telemetry downlink for devices.
-        Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken);
-
         Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
 
         // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
@@ -34,12 +31,6 @@ namespace Microsoft.Azure.Devices.Client
         Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken);
 
         Task DisableReceiveMessageAsync(CancellationToken cancellationToken);
-
-        Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken);
-
-        Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken);
-
-        Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken);
 
         // Edge Modules and Module Twins have different links to be used for the same function when communicating over AMQP
         // We are setting the flag on these methods since the decision should be made at the transport layer and not at the
@@ -55,8 +46,6 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableMethodsAsync(CancellationToken cancellationToken);
 
         Task DisableMethodsAsync(CancellationToken cancellationToken);
-
-        Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken);
 
         // Twin.
         Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken);

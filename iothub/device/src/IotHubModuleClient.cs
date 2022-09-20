@@ -297,7 +297,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-
         // Enable telemetry downlink for modules
         private Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
         {
@@ -320,15 +319,10 @@ namespace Microsoft.Azure.Devices.Client
         /// The delegate for handling event messages received
         /// </summary>
         /// <param name="message">The message received</param>
-        internal async Task OnModuleEventMessageReceivedAsync(Message message)
+        internal async Task<MessageResponse> OnModuleEventMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message?.InputName, nameof(OnModuleEventMessageReceivedAsync));
-
-            if (message == null)
-            {
-                return;
-            }
 
             try
             {
@@ -346,27 +340,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"{nameof(MessageResponse)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
 
-                try
-                {
-                    switch (response)
-                    {
-                        case MessageResponse.Completed:
-                            await CompleteMessageAsync(message).ConfigureAwait(false);
-                            break;
-
-                        case MessageResponse.Abandoned:
-                            await AbandonMessageAsync(message).ConfigureAwait(false);
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
-                catch (Exception ex) when (Logging.IsEnabled)
-                {
-                    Logging.Error(this, ex, nameof(OnModuleEventMessageReceivedAsync));
-                    throw;
-                }
+                return response;
             }
             finally
             {

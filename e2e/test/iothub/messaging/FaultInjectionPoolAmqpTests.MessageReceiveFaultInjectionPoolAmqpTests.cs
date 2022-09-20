@@ -653,9 +653,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Sent message to device {testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
 
-                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-                receivedMessage.Should().BeNull();
             }
 
             async Task CleanupOperationAsync(List<IotHubDeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)

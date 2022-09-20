@@ -41,11 +41,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(cancellationToken));
         }
 
-        public override Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.ReceiveMessageAsync(cancellationToken));
-        }
-
         public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableReceiveMessageAsync(cancellationToken));
@@ -103,21 +98,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken));
         }
 
-        public override Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.AbandonMessageAsync(lockToken, cancellationToken));
-        }
-
-        public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.CompleteMessageAsync(lockToken, cancellationToken));
-        }
-
-        public override Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.RejectMessageAsync(lockToken, cancellationToken));
-        }
-
         public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(messages, cancellationToken));
@@ -126,11 +106,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(message, cancellationToken));
-        }
-
-        public override Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }
 
         private static bool IsNetworkExceptionChain(Exception exceptionChain)

@@ -49,18 +49,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        public async Task MqttTransportHandlerReceiveAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveMessageAsync(token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task MqttTransportHandlerCompleteAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteMessageAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task MqttTransportHandlerEnableMethodsAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().EnableMethodsAsync(token)).ConfigureAwait(false);
@@ -70,17 +58,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         public async Task MqttTransportHandlerDisableMethodsAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().DisableMethodsAsync(token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task MqttTransportHandlerSendMethodResponseAsyncTokenCancellationRequested()
-        {
-            var response = new DirectMethodResponse()
-            {
-                Status = 0,
-            };
-
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(response, token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -498,26 +475,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             await task.ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(OperationCanceledException))]
-        public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerReceiving()
-        {
-            // arrange
-            var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
-
-            transport.OnConnected();
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            Task receivingTask = transport.ReceiveMessageAsync(CancellationToken.None);
-            Task task = transport.WaitForTransportClosedAsync();
-
-            // act
-            transport.OnError(new Exception("Testing"));
-
-            // assert
-            await task.ConfigureAwait(false);
-            await receivingTask.ConfigureAwait(false);
         }
 
         [TestMethod]

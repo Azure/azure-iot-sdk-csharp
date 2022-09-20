@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task OnC2dMessageReceivedAsync(Message message, object context)
+        private Task<MessageResponse> OnC2dMessageReceivedAsync(Message message, object context)
         {
             string messageData = Encoding.ASCII.GetString(message.Payload);
             var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
@@ -174,8 +174,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
             Console.WriteLine(formattedMessage.ToString());
 
-            await s_deviceClient.CompleteMessageAsync(message);
             Console.WriteLine($"Completed message [{messageData}].");
+            return Task.FromResult(MessageResponse.Completed);
         }
 
         // It is not generally a good practice to have async void methods, however, DeviceClient.SetConnectionStatusChangesHandler() event handler signature

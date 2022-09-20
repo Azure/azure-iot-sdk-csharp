@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -43,12 +44,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     MessageId = Guid.NewGuid().ToString(),
                 };
 
-                var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var feedbackMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 serviceClient.MessageFeedback.MessageFeedbackProcessor = (FeedbackBatch feedback) =>
                 {
                     if (feedback.Records.Any(x => x.OriginalMessageId == message.MessageId))
                     {
-                        messageReceived.TrySetResult(true);
+                        feedbackMessageReceived.TrySetResult(true);
                         return AcknowledgementType.Complete;
                     }
 
@@ -62,17 +63,23 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(
                     new IotHubClientOptions(new IotHubClientAmqpSettings()));
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync().ConfigureAwait(false);
-                await deviceClient.CompleteMessageAsync(receivedMessage.LockToken).ConfigureAwait(false);
+
+                var c2dMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                Func<Client.Message, object, Task<MessageResponse>> OnC2DMessageReceived = (message, context) =>
+                {
+                    c2dMessageReceived.SetResult(true);
+                    return Task.FromResult(MessageResponse.Completed);
+                };
+                await deviceClient.SetReceiveMessageHandlerAsync(OnC2DMessageReceived, null).ConfigureAwait(false);
 
                 Task result = await Task
                     .WhenAny(
                         // Wait for up to 200 seconds for the feedback message as the service may not send messages
                         // until they can batch others, even up to a minute later.
                         Task.Delay(TimeSpan.FromSeconds(200)),
-                        messageReceived.Task)
+                        c2dMessageReceived.Task)
                     .ConfigureAwait(false);
-                messageReceived.Task.IsCompleted.Should().BeTrue();
+                feedbackMessageReceived.Task.IsCompleted.Should().BeTrue();
             }
             finally
             {

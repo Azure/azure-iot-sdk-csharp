@@ -172,23 +172,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(ReceiveMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return await _amqpUnit.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(ReceiveMessageAsync));
-            }
-        }
-
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -268,32 +251,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 Logging.Exit(this, cancellationToken, nameof(DisableMethodsAsync));
-            }
-        }
-
-        public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
-                AmqpIotOutcome amqpIotOutcome = await _amqpUnit
-                    .SendMethodResponseAsync(methodResponse, ctb.Token)
-                    .ConfigureAwait(false);
-
-                if (amqpIotOutcome != null)
-                {
-                    amqpIotOutcome.ThrowIfNotAccepted();
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
             }
         }
 
@@ -441,57 +398,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Accepted, cancellationToken);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
-            }
-        }
-
-        public override Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Released, cancellationToken);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
-            }
-        }
-
-        public override Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Rejected, cancellationToken);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
             }
         }
 

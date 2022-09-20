@@ -19,10 +19,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly AdditionalClientInformation _additionalClientInformation;
         private readonly IotHubClientAmqpSettings _amqpSettings;
 
-        private readonly Func<DirectMethodRequest, Task> _onMethodCallback;
+        private readonly Func<DirectMethodRequest, Task<DirectMethodResponse>> _onMethodCallback;
         private readonly Action<Twin, string, TwinCollection, IotHubClientException> _twinMessageListener;
-        private readonly Func<Message, Task> _onModuleMessageReceivedCallback;
-        private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
+        private readonly Func<Message, Task<MessageResponse>> _onModuleMessageReceivedCallback;
+        private readonly Func<Message, Task<MessageResponse>> _onDeviceMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
         private readonly Action _onUnitDisconnected;
         private volatile bool _disposed;
@@ -61,10 +61,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             AdditionalClientInformation additionalClientInformation,
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
-            Func<DirectMethodRequest, Task> onMethodCallback,
+            Func<DirectMethodRequest, Task<DirectMethodResponse>> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
-            Func<Message, Task> onModuleMessageReceivedCallback,
-            Func<Message, Task> onDeviceMessageReceivedCallback,
+            Func<Message, Task<MessageResponse>> onModuleMessageReceivedCallback,
+            Func<Message, Task<MessageResponse>> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
             _connectionCredentials = connectionCredentials;
@@ -930,25 +930,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, DirectMethodRequest, nameof(OnMethodReceived));
-            }
-        }
-
-        public async Task<AmqpIotOutcome> SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, methodResponse, nameof(SendMethodResponseAsync));
-
-            await EnableMethodsAsync(cancellationToken).ConfigureAwait(false);
-            Debug.Assert(_methodSendingLink != null);
-
-            try
-            {
-                return await _methodSendingLink.SendMethodResponseAsync(methodResponse, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, methodResponse, nameof(SendMethodResponseAsync));
             }
         }
 
