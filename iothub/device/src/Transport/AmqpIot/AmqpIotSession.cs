@@ -285,10 +285,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     throw;
                 }
 
-                if (iotEx is AmqpIotResourceException)
+                if (iotEx is IotHubClientException hubEx && hubEx.InnerException is AmqpException)
                 {
                     amqpSession.SafeClose();
-                    throw new IotHubClientException(iotEx.Message, iotEx, true, IotHubStatusCode.NetworkErrors);
+                    throw iotEx;
                 }
 
                 throw iotEx;
@@ -358,10 +358,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     throw;
                 }
 
-                if (iotEx is AmqpIotResourceException)
+                if (iotEx is IotHubClientException hubEx && hubEx.InnerException is AmqpException)
                 {
                     amqpSession.SafeClose();
-                    throw new IotHubClientException(iotEx.Message, iotEx, true, IotHubStatusCode.NetworkErrors);
+                    throw iotEx;
                 }
 
                 throw iotEx;

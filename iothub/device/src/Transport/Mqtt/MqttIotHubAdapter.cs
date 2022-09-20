@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     if (Logging.IsEnabled)
                         Logging.Error(this, "When writing data to the MQTT transport layer, it had already been closed.", nameof(WriteAsync));
 
-                    throw new IotHubClientException("MQTT is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException("MQTT is disconnected.", null, IotHubStatusCode.NetworkErrors);
                 }
 
                 if (data is Message message)
@@ -444,7 +444,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Error(context, "MQTT connection hasn't been established in time, will shut down.", nameof(ShutdownIfNotReady));
 
-                ShutdownOnErrorAsync(context, new IotHubClientException("Connection hasn't been established in time.", true, IotHubStatusCode.Timeout));
+                ShutdownOnErrorAsync(context, new IotHubClientException("Connection hasn't been established in time.", IotHubStatusCode.Timeout));
             }
         }
 
@@ -482,7 +482,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (Logging.IsEnabled)
                             Logging.Info(context, $"The ping response wasn't received in {s_pingResponseTimeout}, will shut down.", nameof(PingServerAsync));
 
-                        ShutdownOnErrorAsync(context, new IotHubClientException($"The ping response wasn't received in {s_pingResponseTimeout}", true, IotHubStatusCode.Timeout));
+                        ShutdownOnErrorAsync(context, new IotHubClientException($"The ping response wasn't received in {s_pingResponseTimeout}", IotHubStatusCode.Timeout));
                     }
 
                     if (Logging.IsEnabled)
@@ -523,7 +523,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (Logging.IsEnabled)
                             Logging.Error(this, "The endpoint server was unavailable while attempting a CONNECT, will shut down.", nameof(ProcessConnectAckAsync));
 
-                        iotHubException = new IotHubClientException(reason, null, true, IotHubStatusCode.NetworkErrors);
+                        iotHubException = new IotHubClientException(reason, null, IotHubStatusCode.NetworkErrors);
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
 
@@ -533,7 +533,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (Logging.IsEnabled)
                             Logging.Error(this, "Invalid credentials were provided while attempting a CONNECT, will shut down.", nameof(ProcessConnectAckAsync));
 
-                        iotHubException = new IotHubClientException(reason, null, false, IotHubStatusCode.Unauthorized);
+                        iotHubException = new IotHubClientException(reason, null, IotHubStatusCode.Unauthorized);
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
 
@@ -805,7 +805,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Error(this, "When processing a PUBLISH packet, the MQTT transport layer had already been closed.", nameof(ProcessPublish));
 
-                throw new IotHubClientException("MQTT is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
+                throw new IotHubClientException("MQTT is disconnected.", null, IotHubStatusCode.NetworkErrors);
             }
 
             switch (packet.QualityOfService)
@@ -1378,7 +1378,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     $"current length is {Encoding.UTF8.GetByteCount(msg)}." +
                     $" The probable cause is the list of message.Properties and/or message.systemProperties is too long. " +
                     $"Please use AMQP or HTTP.",
-                    isTransient: false,
                     IotHubStatusCode.MessageTooLarge);
             }
 
