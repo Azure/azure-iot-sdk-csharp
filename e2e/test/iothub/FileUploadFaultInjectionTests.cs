@@ -17,8 +17,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string DevicePrefix = $"{nameof(FileUploadFaultInjectionTests)}_";
         private const int FileSizeSmall = 10 * 1024;
-        private const int FileSizeBig = 5120 * 1024;
-
         private static async Task SendErrorInjectionMessageAsync(
             IotHubDeviceClient deviceClient,
             string faultType,

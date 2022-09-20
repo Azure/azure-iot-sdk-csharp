@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningServiceClientE2ETests : E2EMsTestBase
     {
-        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"{nameof(ProvisioningServiceClientE2ETests)}_";
 
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };

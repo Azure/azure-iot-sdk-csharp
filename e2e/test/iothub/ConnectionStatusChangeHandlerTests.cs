@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
 
-            var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
+            var config = new TestConfiguration.IotHub.ConnectionStringParser(deviceConnectionString);
             string deviceId = config.DeviceId;
 
             ConnectionStatusInfo connectionStatusInfo = null;
@@ -212,10 +212,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsNotNull(twin);
 
             // Delete/disable the device in IoT hub.
-            using (var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString))
-            {
-                await registryManagerOperation(serviceClient, testModule.DeviceId).ConfigureAwait(false);
-            }
+            var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            await registryManagerOperation(serviceClient, testModule.DeviceId).ConfigureAwait(false);
 
             Logger.Trace($"{nameof(IotHubModuleClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 

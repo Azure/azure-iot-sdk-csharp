@@ -25,36 +25,5 @@ Note: The [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob
 
 ## Common script issues
 
-- The script may fail after installing Docker, requiring system reboot. Just reboot and rerun the script. The script is idempotent so it will run fine the second time.
 - The script may fail saying something is already installed. In that case, set -InstallDependencies $false and rerun the script.
 
-## Manual instructions to install and run docker containers
-
-If there are any issues with installing and running docker container, use the following instructions to do it manually before running the script:
-
-### TPM simulator
-
-Docker image: https://hub.docker.com/r/aziotbld/testtpm/
-
-```Shell
-docker pull aziotbld/testtpm
-docker run -d --restart unless-stopped --name azure-iot-tpmsim -p 127.0.0.1:2321:2321 -p 127.0.0.1:2322:2322 aziotbld/testtpm
-```
-
-Alternatives:
-
-- Stand-alone executable for Windows: https://www.microsoft.com/download/details.aspx?id=52507
-
-### Proxy server
-
-Docker image: https://hub.docker.com/r/aziotbld/testproxy/
-
-```Shell
-docker pull aziotbld/testproxy
-docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
-```
-
-Alternatives:
-
-- TinyProxy for Linux/Mac: https://tinyproxy.github.io/
-- Squid for Windows: https://chocolatey.org/packages/squid

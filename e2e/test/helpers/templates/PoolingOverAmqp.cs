@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 // Arrange
 
-                logger.Trace($">>> {nameof(PoolingOverAmqp)} Initializing device clients for multiplexing test - Test run {totalRuns}");
+                logger.Trace($"{nameof(PoolingOverAmqp)} Initializing device clients for multiplexing test - Test run {totalRuns}");
                 for (int i = 0; i < devicesCount; i++)
                 {
                     // Initialize the test device client instances

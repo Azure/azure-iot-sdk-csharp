@@ -158,17 +158,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 }
 
                 await CompleteMessageAsync(message).ConfigureAwait(false);
-                _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
+                _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: device client completed message with Id: {message.MessageId}.");
             }
             catch (Exception ex)
             {
-                _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
+                _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during device client receive message callback: {ex}.");
                 _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
             }
             finally
             {
                 // Always notify that we got the callback.
                 _receivedMessageCallbackSemaphore.Release();
+                message?.Dispose();
             }
         }
 
