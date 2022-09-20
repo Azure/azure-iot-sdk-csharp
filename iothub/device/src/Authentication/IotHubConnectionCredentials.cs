@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.Client
                         if (Logging.IsEnabled)
                             Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
 
-                        throw new IotHubClientException($"Failed to provide certificates in the chain - {ex.Message}", ex, false, IotHubStatusCode.Unauthorized);
+                        throw new IotHubClientException($"Failed to provide certificates in the chain - {ex.Message}", IotHubStatusCode.Unauthorized, ex);
                     }
                 }
             }

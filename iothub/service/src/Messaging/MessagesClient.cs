@@ -11,7 +11,6 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
 using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -279,7 +278,6 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
 
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-
             cancellationToken.ThrowIfCancellationRequested();
 
             try

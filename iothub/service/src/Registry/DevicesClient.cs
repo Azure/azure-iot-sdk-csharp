@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -568,8 +567,6 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 jobParameters.Type = JobType.ImportDevices;
                 return await CreateJobAsync(jobParameters, cancellationToken).ConfigureAwait(false);
             }
