@@ -149,8 +149,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             finally
             {
-                mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
-                mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
+                mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync; // safe to -= this value more than once
+                mqttClient.DisconnectedAsync -= HandleDisconnectionAsync; // safe to -= this value more than once
             }
         }
 
