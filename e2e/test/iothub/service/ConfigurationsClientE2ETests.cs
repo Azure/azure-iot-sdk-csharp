@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             try
             {
-                var expected = new Configuration(configurationId)
+                Configuration expected = new ConfigurationTest(configurationId)
                 {
                     Priority = 2,
                     Labels = { { "labelName", "labelValue" } },
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
             try
             {
-                var configuration = new Configuration(configurationId)
+                Configuration configuration = new ConfigurationTest(configurationId)
                 {
                     Priority = 2,
                     Labels = { { "labelName", "labelValue" } },
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
             try
             {
-                var configuration = new Configuration(configurationId)
+                Configuration configuration = new ConfigurationTest(configurationId)
                 {
                     Priority = 2,
                     Labels = { { "labelName", "labelValue" } },

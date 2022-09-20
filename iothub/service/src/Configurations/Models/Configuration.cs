@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// The configuration Id.
         /// Lowercase and the following special characters are allowed: [-+%_*!'].
         /// </param>
-        public Configuration(string configurationId)
+        protected internal Configuration(string configurationId)
         {
             Id = configurationId;
         }
