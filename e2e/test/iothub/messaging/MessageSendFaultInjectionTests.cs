@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpD2CLinkDropSendRecovery_Amqp()
+        public async Task Message_AmqpD2cLinkDropSendRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpD2CLinkDropSendRecovery_AmqpWs()
+        public async Task Message_AmqpD2cLinkDropSendRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(
                     Client.TransportType.Amqp_WebSocket_Only,

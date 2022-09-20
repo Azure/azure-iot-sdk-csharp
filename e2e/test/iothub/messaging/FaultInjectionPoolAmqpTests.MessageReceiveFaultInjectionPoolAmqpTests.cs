@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string MessageReceive_DevicePrefix = $"{nameof(FaultInjectionPoolAmqpTests)}.MessagaeReceive";
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
+        public async Task Message_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_Tcp_Only,
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
+        public async Task Message_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
+        public async Task Message_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_Tcp_Only,
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
+        public async Task Message_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
+        public async Task Message_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_Tcp_Only,
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
+        public async Task Message_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task Message_DeviceSak_AmqpC2dLinkDropReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
+        public async Task Message_AmqpC2dLinkDropReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_Tcp_Only,
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_AmqpC2dLinkDropReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
+        public async Task Message_AmqpC2dLinkDropReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
+        public async Task Message_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_Tcp_Only,
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
+        public async Task Message_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     Client.TransportType.Amqp_WebSocket_Only,

@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices
         public virtual Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding device: {device?.Id}", nameof(AddDeviceAsync));
+                Logging.Enter(this, $"Adding device {device?.Id} with type {device?.Authentication?.Type}", nameof(AddDeviceAsync));
 
             try
             {
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Adding device {device?.Id} with type {device?.Authentication.Type}", nameof(AddDeviceAsync));
+                    Logging.Exit(this, $"Adding device {device?.Id}", nameof(AddDeviceAsync));
             }
         }
 
