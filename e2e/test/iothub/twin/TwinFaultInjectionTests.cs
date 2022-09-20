@@ -222,8 +222,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 deviceTwin.Should().NotBeNull();
                 deviceTwin.Properties.Should().NotBeNull();
                 deviceTwin.Properties.Reported.Should().NotBeNull();
-                deviceTwin.Properties.Reported[propName].Should().NotBeNull();
-                deviceTwin.Properties.Reported[propName].ToString().Should().Be(propValue);
+                ((object)deviceTwin.Properties.Reported[propName]).Should().NotBeNull();
+                ((object)deviceTwin.Properties.Reported[propName]).ToString().Should().Be(propValue);
             }
 
             await FaultInjection
