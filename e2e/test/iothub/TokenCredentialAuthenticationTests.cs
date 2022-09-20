@@ -40,8 +40,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             using var registryManager = RegistryManager.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
-                TestConfiguration.IoTHub.GetClientSecretCredential());
+                TestConfiguration.IotHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetClientSecretCredential());
 
             var device = new Device(Guid.NewGuid().ToString());
 
@@ -60,8 +60,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             using var jobClient = JobClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
-                TestConfiguration.IoTHub.GetClientSecretCredential());
+                TestConfiguration.IotHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetClientSecretCredential());
 
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string jobDeviceId = "JobsSample_Device";
@@ -104,8 +104,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             using var digitalTwinClient = DigitalTwinClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
-                TestConfiguration.IoTHub.GetClientSecretCredential());
+                TestConfiguration.IotHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetClientSecretCredential());
 
             // act
             HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response = await digitalTwinClient
@@ -126,8 +126,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
             string ghostDevice = $"{nameof(Service_Amqp_TokenCredentialAuth_Success)}_{Guid.NewGuid()}";
             using var serviceClient = ServiceClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
-                TestConfiguration.IoTHub.GetClientSecretCredential(),
+                TestConfiguration.IotHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetClientSecretCredential(),
                 TransportType.Amqp);
             await serviceClient.OpenAsync().ConfigureAwait(false);
             using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));

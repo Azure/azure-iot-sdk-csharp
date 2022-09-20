@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // Arrange
                 // Initialize the test device client instances
                 // Set the device client connection status change handler
-                logger.Trace($">>> {nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test - Test run {totalRuns}");
+                logger.Trace($"{nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test - Test run {totalRuns}");
                 for (int i = 0; i < devicesCount; i++)
                 {
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);

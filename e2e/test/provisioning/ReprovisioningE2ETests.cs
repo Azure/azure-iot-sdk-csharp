@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
-        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
 
         private readonly string _idPrefix = $"E2E-{nameof(ReprovisioningE2ETests).ToLower()}-";
@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType transportProtocol, AttestationMechanismType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString);
+            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { TestConfiguration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType transportProtocol, AttestationMechanismType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString);
+            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { TestConfiguration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = true, UpdateHubAssignment = true }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType transportProtocol, AttestationMechanismType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString);
+            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { TestConfiguration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = false }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);

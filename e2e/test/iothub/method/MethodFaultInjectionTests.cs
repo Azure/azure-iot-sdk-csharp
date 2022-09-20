@@ -2,12 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -32,9 +31,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Mqtt_WebSocket_Only,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_Tcp,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -43,9 +41,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Mqtt_Tcp_Only,
-                    FaultInjection.FaultType_GracefulShutdownMqtt,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
@@ -53,9 +50,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
             await SendMethodAndRespondRecoveryAsync(Client.TransportType.Mqtt_Tcp_Only,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_Tcp,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -64,9 +60,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Mqtt_WebSocket_Only,
-                    FaultInjection.FaultType_GracefulShutdownMqtt,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
@@ -75,9 +70,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_Tcp,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -85,9 +79,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(Client.TransportType.Amqp_WebSocket_Only,
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_Tcp,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -96,9 +89,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
-                    FaultInjection.FaultType_AmqpConn,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_AmqpConn,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -107,9 +99,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
-                    FaultInjection.FaultType_AmqpConn,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_AmqpConn,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -118,9 +109,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
-                    FaultInjection.FaultType_AmqpSess,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_AmqpSess,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -129,9 +119,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
-                    FaultInjection.FaultType_AmqpSess,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_AmqpSess,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -140,9 +129,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
-                    FaultInjection.FaultType_AmqpMethodReq,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_AmqpMethodReq,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -151,9 +139,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
-                    FaultInjection.FaultType_AmqpMethodReq,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_AmqpMethodReq,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -162,9 +149,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
-                    FaultInjection.FaultType_AmqpMethodResp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_AmqpMethodResp,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -173,9 +159,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
-                    FaultInjection.FaultType_AmqpMethodResp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_AmqpMethodResp,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
         }
 
@@ -184,9 +169,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
-                    FaultInjection.FaultType_GracefulShutdownAmqp,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
@@ -195,16 +179,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await SendMethodAndRespondRecoveryAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
-                    FaultInjection.FaultType_GracefulShutdownAmqp,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
         private async Task ServiceSendMethodAndVerifyResponseAsync(string deviceName, string methodName, string respJson, string reqJson)
         {
-            var sw = new Stopwatch();
-            sw.Start();
+            var sw = Stopwatch.StartNew();
             bool done = false;
             ExceptionDispatchInfo exceptionDispatchInfo = null;
             int attempt = 0;
@@ -214,7 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 attempt++;
                 try
                 {
-                    using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+                    using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
                     CloudToDeviceMethodResult response =
@@ -226,9 +208,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
-                    Assert.AreEqual(200, response.Status, $"The expected respose status should be 200 but was {response.Status}");
-                    string payload = response.GetPayloadAsJson();
-                    Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
+                    response.Status.Should().Be(200);
+                    response.GetPayloadAsJson().Should().Be(respJson);
 
                     await serviceClient.CloseAsync().ConfigureAwait(false);
                     done = true;
@@ -241,13 +222,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 }
             }
 
-            if (!done && (exceptionDispatchInfo != null))
+            if (!done && exceptionDispatchInfo != null)
             {
                 exceptionDispatchInfo.Throw();
             }
         }
 
-        private async Task SendMethodAndRespondRecoveryAsync(Client.TransportType transport, string faultType, string reason, TimeSpan delayInSec, string proxyAddress = null)
+        private async Task SendMethodAndRespondRecoveryAsync(
+            Client.TransportType transport,
+            string faultType,
+            string reason,
+            string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
@@ -255,6 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // Configure the callback and start accepting method calls.
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAsync(MethodName, DeviceResponseJson, ServiceRequestJson)
@@ -266,21 +252,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
-
-                var tasks = new List<Task>() { serviceSendTask, methodReceivedTask };
-                while (tasks.Count > 0)
-                {
-                    Task completedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
-                    completedTask.GetAwaiter().GetResult();
-                    tasks.Remove(completedTask);
-                }
+                await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
 
             // Cleanup references.
             Task CleanupOperationAsync()
             {
                 testDeviceCallbackHandler?.Dispose();
-                return Task.FromResult(false);
+                return Task.FromResult(true);
             }
 
             await FaultInjection
@@ -291,7 +270,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     proxyAddress,
                     faultType,
                     reason,
-                    delayInSec,
+                    FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDelay,
                     InitOperationAsync,
                     TestOperationAsync,

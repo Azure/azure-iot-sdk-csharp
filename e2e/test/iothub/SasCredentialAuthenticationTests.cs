@@ -38,9 +38,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task RegistryManager_Http_SasCredentialAuth_Success()
         {
             // arrange
-            string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
+            string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             using var registryManager = RegistryManager.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetIotHubHostName(),
                 new AzureSasCredential(signature));
 
             var device = new Device(Guid.NewGuid().ToString());
@@ -59,10 +59,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task RegistryManager_Http_SasCredentialAuth_Renewed_Success()
         {
             // arrange
-            string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));
+            string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));
             var sasCredential = new AzureSasCredential(signature);
             using var registryManager = RegistryManager.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetIotHubHostName(),
                 sasCredential);
 
             var device = new Device(Guid.NewGuid().ToString());
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 // Expected to be unauthorized exception.
             }
-            signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
+            signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             sasCredential.Update(signature);
             Device createdDevice = await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
 
@@ -92,9 +92,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task JobClient_Http_SasCredentialAuth_Success()
         {
             // arrange
-            string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
+            string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             using var jobClient = JobClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetIotHubHostName(),
                 new AzureSasCredential(signature));
 
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
@@ -137,9 +137,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
+            string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             using var digitalTwinClient = DigitalTwinClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetIotHubHostName(),
                 new AzureSasCredential(signature));
 
             // act
@@ -163,9 +163,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
+            string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             using var serviceClient = ServiceClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetIotHubHostName(),
                 new AzureSasCredential(signature),
                 TransportType.Amqp);
 
@@ -187,10 +187,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));
+            string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));
             var sasCredential = new AzureSasCredential(signature);
             using var serviceClient = ServiceClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetIotHubHostName(),
                 sasCredential,
                 TransportType.Amqp);
 
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Expected to get an unauthorized exception.
             }
 
-            signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
+            signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             sasCredential.Update(signature);
             await serviceClient.OpenAsync().ConfigureAwait(false);
             using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));

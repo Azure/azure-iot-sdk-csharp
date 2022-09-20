@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_SingleConnection_Amqp()
+        public async Task Message_DeviceReceiveSingleMessage_SingleConnection_Amqp()
         {
             await ReceiveMessagePoolOverAmqpAsync(
                 Client.TransportType.Amqp_Tcp_Only,
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_SingleConnection_AmqpWs()
+        public async Task Message_DeviceReceiveSingleMessage_SingleConnection_AmqpWs()
         {
             await ReceiveMessagePoolOverAmqpAsync(
                 Client.TransportType.Amqp_WebSocket_Only,
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
+        public async Task Message_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
             await ReceiveMessagePoolOverAmqpAsync(
                 Client.TransportType.Amqp_Tcp_Only,
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
+        public async Task Message_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {
             await ReceiveMessagePoolOverAmqpAsync(
                 Client.TransportType.Amqp_WebSocket_Only,
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_Amqp()
+        public async Task Message_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_Amqp()
         {
             await
                 ReceiveMessageUsingCallbackPoolOverAmqpAsync(
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
+        public async Task Message_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
         {
             await
                 ReceiveMessageUsingCallbackPoolOverAmqpAsync(
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_Amqp()
+        public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_Amqp()
         {
             await
                 ReceiveMessageUsingCallbackAndUnsubscribePoolOverAmqpAsync(
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_AmqpWs()
+        public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_AmqpWs()
         {
             await
                 ReceiveMessageUsingCallbackAndUnsubscribePoolOverAmqpAsync(
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var messagesSent = new Dictionary<string, Tuple<Message, string>>();
 
             // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
@@ -301,10 +301,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
             }
 
@@ -337,7 +340,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 {
                     await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
                 };
-                Client.Message message = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
+                Client.Message message = await deviceClient.ReceiveAsync(cts.Token).ConfigureAwait(false);
                 message.MessageId.Should().Be(secondMessage.MessageId);
                 receiveMessageOverCallback.Should().Throw<OperationCanceledException>();
             }

@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private const string PayloadJsonData = "{\"testKey\":\"testValue\"}";
         private const string InvalidGlobalAddress = "httpbin.org";
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
-        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
 
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
@@ -623,7 +623,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            var iothubs = new List<string>() { IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString).HostName };
+            var iothubs = new List<string>() { IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString).HostName };
             await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(
                     transportType,
                     attestationType,
@@ -768,7 +768,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            string closeHostName = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString).HostName;
+            string closeHostName = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString).HostName;
 
             ICollection<string> iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
             string expectedDestinationHub = "";

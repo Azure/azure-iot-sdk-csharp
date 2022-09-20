@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices
         public virtual Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding device: {device?.Id}", nameof(AddDeviceAsync));
+                Logging.Enter(this, $"Adding device {device?.Id} with type {device?.Authentication?.Type}", nameof(AddDeviceAsync));
 
             try
             {
@@ -274,14 +274,15 @@ namespace Microsoft.Azure.Devices
                 NormalizeDevice(device);
 
                 var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-            {
                 {
-                    HttpStatusCode.PreconditionFailed,
-                    async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper
-                        .GetExceptionMessageAsync(responseMessage)
-                        .ConfigureAwait(false))
-                }
-            };
+                    {
+                        HttpStatusCode.PreconditionFailed,
+                        async responseMessage => new PreconditionFailedException(
+                            await ExceptionHandlingHelper
+                                .GetExceptionMessageAsync(responseMessage)
+                                .ConfigureAwait(false))
+                    }
+                };
 
                 return _httpClientHelper.PutAsync(GetRequestUri(device.Id), device, PutOperationType.CreateEntity, errorMappingOverrides, cancellationToken);
             }
@@ -294,7 +295,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Adding device: {device?.Id}", nameof(AddDeviceAsync));
+                    Logging.Exit(this, $"Adding device {device?.Id}", nameof(AddDeviceAsync));
             }
         }
 
@@ -2589,14 +2590,15 @@ namespace Microsoft.Azure.Devices
                 {
                     HttpStatusCode.NotFound,
                     async responseMessage =>
-                        {
-                            string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
-                            return new ConfigurationNotFoundException(responseContent, (Exception) null);
-                        }
+                    {
+                        string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
+                        return new ConfigurationNotFoundException(responseContent, (Exception) null);
+                    }
                 },
                 {
                     HttpStatusCode.PreconditionFailed,
-                    async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
+                    async responseMessage => new PreconditionFailedException(
+                        await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
                 }
             };
 
@@ -2623,11 +2625,13 @@ namespace Microsoft.Azure.Devices
             {
                 {
                     HttpStatusCode.PreconditionFailed,
-                    async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
+                    async responseMessage => new PreconditionFailedException(
+                        await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
                 },
                 {
                     HttpStatusCode.NotFound,
-                    async responseMessage => new DeviceNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false), (Exception)null)
+                    async responseMessage => new DeviceNotFoundException(
+                        await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false), (Exception)null)
                 }
             };
 
@@ -2965,18 +2969,15 @@ namespace Microsoft.Azure.Devices
         private static void NormalizeDevice(Device device)
         {
             // auto generate keys if not specified
-            if (device.Authentication == null)
-            {
-                device.Authentication = new AuthenticationMechanism();
-            }
+            device.Authentication ??= new AuthenticationMechanism();
 
             NormalizeAuthenticationInfo(device.Authentication);
         }
 
         private static void NormalizeAuthenticationInfo(AuthenticationMechanism authenticationInfo)
         {
-            //to make it backward compatible we set the type according to the values
-            //we don't set CA type - that has to be explicit
+            // to make it backward compatible we set the type according to the values
+            // we don't set CA type - that has to be explicit
             if (authenticationInfo.SymmetricKey != null && !authenticationInfo.SymmetricKey.IsEmpty())
             {
                 authenticationInfo.Type = AuthenticationType.Sas;
@@ -2991,10 +2992,7 @@ namespace Microsoft.Azure.Devices
         private static void NormalizeExportImportDevice(ExportImportDevice device)
         {
             // auto generate keys if not specified
-            if (device.Authentication == null)
-            {
-                device.Authentication = new AuthenticationMechanism();
-            }
+            device.Authentication ??= new AuthenticationMechanism();
 
             NormalizeAuthenticationInfo(device.Authentication);
         }
