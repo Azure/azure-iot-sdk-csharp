@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device: {device?.Id} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating device {device?.Id} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device: {deviceId} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting device {deviceId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device: {device?.Id} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating device {device?.Id} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting device: {device?.Id} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting device {device?.Id} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device with twin: {device?.Id} threw an exception: {ex}", nameof(CreateWithTwinAsync));
+                    Logging.Error(this, $"Creating device with twin {device?.Id} threw an exception: {ex}", nameof(CreateWithTwinAsync));
                 throw;
             }
             finally
@@ -377,7 +377,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting modules on device: {deviceId} threw an exception: {ex}", nameof(GetModulesAsync));
+                    Logging.Error(this, $"Getting modules on device {deviceId} threw an exception: {ex}", nameof(GetModulesAsync));
                 throw;
             }
             finally
@@ -668,7 +668,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting job: {jobId} threw an exception: {ex}", nameof(GetJobsAsync));
+                    Logging.Error(this, $"Getting job {jobId} threw an exception: {ex}", nameof(GetJobsAsync));
                 throw;
             }
             finally
@@ -756,7 +756,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Canceling job: {jobId} threw an exception: {ex}", nameof(CancelJobAsync));
+                    Logging.Error(this, $"Canceling job {jobId} threw an exception: {ex}", nameof(CancelJobAsync));
                 throw;
             }
             finally

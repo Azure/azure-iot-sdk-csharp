@@ -299,7 +299,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Purging message queue for device: {deviceId} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
+                    Logging.Error(this, $"Purging message queue for device {deviceId} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
                 throw;
             }
             finally

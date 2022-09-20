@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Devices.Amqp
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;
                         if (Logging.IsEnabled)
-                            Logging.Info(this, " Setting ClientWebSocket.Options.Proxy", nameof(CreateClientWebSocketAsync));
+                            Logging.Info(this, "Setting ClientWebSocket.Options.Proxy", nameof(CreateClientWebSocketAsync));
                     }
                 }
                 catch (PlatformNotSupportedException)
