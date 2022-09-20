@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains properties of a import job.
+    /// Contains properties of an import job.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/rest/api/iothub/service/createimportexportjob"/>
     public class ImportJobProperties
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
         };
 
         /// <summary>
-        /// Serialization constructor
+        /// Serialization constructor.
         /// </summary>
         internal ImportJobProperties()
         { }
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The unique Id of the job.
+        /// The unique Id of the import job.
         /// </summary>
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices
         public StorageAuthenticationType? StorageAuthenticationType { get; set; }
 
         /// <summary>
-        /// The managed identity used to access the storage account for import job.
+        /// The managed identity used to access the storage account for the import job.
         /// </summary>
         [JsonProperty(PropertyName = "identity", NullValueHandling = NullValueHandling.Ignore)]
         public ManagedIdentity Identity { get; set; }
