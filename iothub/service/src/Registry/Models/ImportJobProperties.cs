@@ -8,10 +8,10 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains properties of a job.
+    /// Contains properties of a import job.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/rest/api/iothub/service/createimportexportjob"/>
-    public class JobProperties
+    public class ImportJobProperties
     {
         private static readonly JobStatus[] s_finishedStates = new[]
         {
@@ -23,55 +23,21 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Serialization constructor
         /// </summary>
-        internal JobProperties() { }
+        internal ImportJobProperties()
+        { }
 
         /// <summary>
         /// Creates an instance of this class for the import job.
         /// </summary>
-        /// <seealso cref="DevicesClient.ImportAsync(JobProperties, System.Threading.CancellationToken)"/>
-        /// <remarks>
-        /// Other relevant, optional properties to set include:
-        /// <list type="bullet">
-        /// <item>InputBlobName, to override the default.</item>
-        /// <item>StorageAuthenticationType, if using identity-based instead of SAS in InputBlobContainerUri.</item>
-        /// <item>ManagedIdentity, if the IoT hub is not configured with a managed identity and the service app will specify
-        /// which identity has permissions to the storage account.</item>
-        /// <item>IncludeConfigurations, if the import job should also include configurations.</item>
-        /// <item>ConfigurationsBlobName, if the import job includes configurations and to override the default blob name.</item>
-        /// </list>
-        /// </remarks>
+        /// <seealso cref="DevicesClient.ImportAsync(ImportJobProperties, System.Threading.CancellationToken)"/>
         /// <param name="inputBlobContainerUri">URI to a blob container that contains registry data to sync.</param>
         /// <param name="outputBlobContainerUri">URI to a blob container, used to output the status of the job and the results.
         /// If not specified, the input blob container will be used.</param>
-        public JobProperties(Uri inputBlobContainerUri, Uri outputBlobContainerUri = default)
+        public ImportJobProperties(Uri inputBlobContainerUri, Uri outputBlobContainerUri = default)
         {
             Type = JobType.ImportDevices;
             InputBlobContainerUri = inputBlobContainerUri;
             OutputBlobContainerUri = outputBlobContainerUri ?? inputBlobContainerUri;
-        }
-
-        /// <summary>
-        /// Creates an instance of this class for the export job.
-        /// </summary>
-        /// <seealso cref="DevicesClient.ExportAsync(JobProperties, System.Threading.CancellationToken)"/>
-        /// <remarks>
-        /// Other relevant, optional properties to set include:
-        /// <list type="bullet">
-        /// <item>OutputBlobName, to override the default.</item>
-        /// <item>StorageAuthenticationType, if using identity-based instead of SAS in InputBlobContainerUri.</item>
-        /// <item>ManagedIdentity, if the IoT hub is not configured with a managed identity and the service app will specify
-        /// which identity has permissions to the storage account.</item>
-        /// <item>IncludeConfigurations, if the export job should also include configurations.</item>
-        /// <item>ConfigurationsBlobName, if the export job includes configurations and to override the default blob name.</item>
-        /// </list>
-        /// </remarks>
-        /// <param name="outputBlobContainerUri">URI to a blob container, used to output the status of the job and the results.</param>
-        /// <param name="excludeKeysInExport">Whether to include authorization keys in export output.</param>
-        public JobProperties(Uri outputBlobContainerUri, bool excludeKeysInExport)
-        {
-            Type = JobType.ExportDevices;
-            OutputBlobContainerUri = outputBlobContainerUri;
-            ExcludeKeysInExport = excludeKeysInExport;
         }
 
         /// <summary>
@@ -143,7 +109,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// <para>
-        /// For import job, if there are errors they will be written to OutputBlobContainerUri to a file called "importerrors.log"
+        /// If there are errors they will be written to OutputBlobContainerUri to a file called "importerrors.log"
         /// </para>
         /// </remarks>
         [JsonProperty(PropertyName = "outputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
@@ -160,45 +126,28 @@ namespace Microsoft.Azure.Devices
         public string InputBlobName { get; set; }
 
         /// <summary>
-        /// The name of the blob that will be created in the provided output blob container. This blob will contain
-        /// the exported device registry information for the IoT hub.
-        /// </summary>
-        /// <remarks>
-        /// If not specified, defaults to "devices.txt".
-        /// </remarks>
-        [JsonProperty(PropertyName = "outputBlobName", NullValueHandling = NullValueHandling.Ignore)]
-        public string OutputBlobName { get; set; }
-
-        /// <summary>
-        /// Optional for export jobs; ignored for other jobs. Default: false. If false, authorization keys are included
-        /// in export output. Keys are exported as null otherwise.
-        /// </summary>
-        [JsonProperty(PropertyName = "excludeKeysInExport", NullValueHandling = NullValueHandling.Ignore)]
-        public bool ExcludeKeysInExport { get; set; }
-
-        /// <summary>
         /// Specifies authentication type being used for connecting to storage account.
         /// </summary>
         [JsonProperty(PropertyName = "storageAuthenticationType", NullValueHandling = NullValueHandling.Ignore)]
         public StorageAuthenticationType? StorageAuthenticationType { get; set; }
 
         /// <summary>
-        /// The managed identity used to access the storage account for import and export jobs.
+        /// The managed identity used to access the storage account for import job.
         /// </summary>
         [JsonProperty(PropertyName = "identity", NullValueHandling = NullValueHandling.Ignore)]
         public ManagedIdentity Identity { get; set; }
 
         /// <summary>
-        /// Whether or not to include configurations in the import or export job.
+        /// Whether or not to include configurations in the import job.
         /// </summary>
         /// <remarks>
-        /// The service assumes this is false, if not specified. If true, then configurations are included in the data export/import.
+        /// The service assumes this is false, if not specified. If true, then configurations are included in the data import.
         /// </remarks>
         [JsonProperty(PropertyName = "includeConfigurations", NullValueHandling = NullValueHandling.Ignore)]
         public bool? IncludeConfigurations { get; set; }
 
         /// <summary>
-        /// Specifies the name of the blob to use when exporting/importing configurations.
+        /// Specifies the name of the blob to use when importing configurations.
         /// </summary>
         /// <remarks>
         /// The service assumes this is configurations.txt, if not specified.
