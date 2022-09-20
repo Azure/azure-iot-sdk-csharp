@@ -191,9 +191,9 @@ namespace Microsoft.Azure.Devices
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
-            catch (TaskCanceledException taskCanceledException)
+            catch (TaskCanceledException)
             {
-                throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
+                throw;
             }
             finally
             {
@@ -224,9 +224,9 @@ namespace Microsoft.Azure.Devices
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
-            catch (TaskCanceledException taskCanceledException)
+            catch (TaskCanceledException)
             {
-                throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
+                throw;
             }
             finally
             {

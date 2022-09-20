@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
             if (error.Condition.Equals(IotHubAmqpErrorCode.TimeoutError))
             {
-                retException = new TimeoutException(message);
+                retException = new IotHubServiceException(message, HttpStatusCode.RequestTimeout, IotHubErrorCode.Unknown, true);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotFound))
             {
