@@ -19,11 +19,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private int _port;
 
         /// <summary>
-        /// The default idle timeout.
-        /// </summary>
-        public static readonly TimeSpan DefaultIdleTimeout = TimeSpan.FromMinutes(2);
-
-        /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.
         /// </summary>
         public ProvisioningTransportHandler()
@@ -97,9 +92,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Specify client-side heartbeat interval.
         /// The interval, that the client establishes with the service, for sending keep alive pings.
-        /// The default value is 2 minutes.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// The default value is 2 minutes.
+        /// </para>
         /// <para>
         /// This option is not used when using HTTP because HTTP is not a stateful connection.
         /// </para>
@@ -109,7 +106,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </para>
         /// </remarks>
-        public TimeSpan IdleTimeout { get; set; } = DefaultIdleTimeout;
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
         /// Registers a device described by the message.

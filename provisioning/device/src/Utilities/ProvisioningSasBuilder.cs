@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="target">The path to target</param>
         /// <param name="timeToLive">The time before the returned signature expires</param>
         /// <returns>The sas signature derived from the provided symmetric key</returns>
-        public static string BuildSasSignature(string key, string target, TimeSpan timeToLive)
+        internal static string BuildSasSignature(string key, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return buffer.ToString();
         }
 
-        public static string BuildExpiresOn(TimeSpan timeToLive)
+        internal static string BuildExpiresOn(TimeSpan timeToLive)
         {
             var epochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
