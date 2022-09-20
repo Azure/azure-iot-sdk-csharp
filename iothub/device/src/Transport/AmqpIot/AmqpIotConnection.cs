@@ -69,9 +69,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (ex is IotHubClientException hubEx && hubEx.InnerException is AmqpException)
                 {
-                    hubEx.StatusCode = IotHubStatusCode.NetworkErrors;
                     _amqpConnection.SafeClose();
-                    throw hubEx;
+                    throw ex;
                 }
 
                 throw ex;
