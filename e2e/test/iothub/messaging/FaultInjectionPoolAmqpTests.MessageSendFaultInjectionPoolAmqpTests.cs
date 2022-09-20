@@ -426,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
+                using Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string payload, out string p1Value);
 
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));

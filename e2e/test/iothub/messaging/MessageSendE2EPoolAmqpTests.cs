@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
+                using Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string payload, out string p1Value);
                 Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             }

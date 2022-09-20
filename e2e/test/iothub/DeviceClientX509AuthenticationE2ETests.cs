@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting });
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
+            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, Logger).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
