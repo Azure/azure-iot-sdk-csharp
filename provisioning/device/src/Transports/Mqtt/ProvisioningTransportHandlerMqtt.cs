@@ -89,6 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             try
             {
+                string currentStatus = "opening MQTT connection";
                 try
                 {
                     await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), linkedCancellationToken.Token).ConfigureAwait(false);
@@ -99,17 +100,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new ProvisioningTransportException("Failed to open the MQTT connection.", ex, true);
                 }
 
+                currentStatus = "subscribing to registration responses";
                 await SubscribeToRegistrationResponseMessagesAsync(mqttClient, linkedCancellationToken.Token).ConfigureAwait(false);
 
+                currentStatus = "publishing registration request";
                 RegistrationOperationStatus registrationStatus = await PublishRegistrationRequestAsync(mqttClient, provisioningRequest, linkedCancellationToken.Token).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Successfully sent the initial registration request. Current status '{registrationStatus.Status}'. Now polling until provisioning has finished.");
 
+                currentStatus = "polling for registration state";
                 DeviceRegistrationResult registrationResult = await PollUntilProvisionigFinishesAsync(mqttClient, registrationStatus.OperationId, linkedCancellationToken.Token).ConfigureAwait(false);
 
                 try
                 {
+                    currentStatus = "closing MQTT connection";
                     mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
                     await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken);
                 }
@@ -121,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     // connection is closed in cases like these.
 
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"Failed to gracefully close the MQTT client {ex}");
+                        Logging.Error(this, $"Failed to gracefully close the MQTT client while {currentStatus} {ex}");
                 }
 
                 return registrationResult;
