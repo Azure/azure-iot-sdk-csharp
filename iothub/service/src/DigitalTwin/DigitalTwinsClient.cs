@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 T digitalTwin = await HttpMessageHelper.DeserializeResponseAsync<T>(response).ConfigureAwait(false);
-                string etag = response.Headers.GetValues("ETag").FirstOrDefault();
+                ETag etag = new ETag(response.Headers.GetValues("ETag").FirstOrDefault());
                 return new DigitalTwinGetResponse<T>(digitalTwin, etag);
             }
             catch (Exception ex)
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.Accepted, response).ConfigureAwait(false);
 
                 var updateResponse = new DigitalTwinUpdateResponse(
-                    response.Headers.GetValues("ETag").FirstOrDefault(),
+                    new ETag(response.Headers.GetValues("ETag").FirstOrDefault()),
                     response.Headers.GetValues("Location").FirstOrDefault());
 
                 return updateResponse;
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
