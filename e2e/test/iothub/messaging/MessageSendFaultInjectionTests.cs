@@ -386,25 +386,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Client.TransportType transport,
             string faultType,
             string reason,
-            TimeSpan retryDurationInMilliSec = default,
+            TimeSpan retryDuration = default,
             string proxyAddress = null)
         {
-            TimeSpan operationTimeoutInMilliSecs = retryDurationInMilliSec == TimeSpan.Zero
+            TimeSpan operationTimeout = retryDuration == TimeSpan.Zero
                 ? FaultInjection.RecoveryTime
-                : retryDurationInMilliSec;
+                : retryDuration;
 
             async Task InitAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
+                // Some tests rely on the operation timing out before fault injection ends, so this is important to set.
+                // But it could probably just as easily be done with cancellation tokens.
+                deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
+
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
-                deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec.TotalMilliseconds;
+                deviceClient.OperationTimeoutInMilliseconds = (uint)retryDuration.TotalMilliseconds;
             }
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
                 using Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string _, out string _);
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                await deviceClient.SendEventAsync(testMessage, cts.Token).ConfigureAwait(false);
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             }
 
             await FaultInjection
