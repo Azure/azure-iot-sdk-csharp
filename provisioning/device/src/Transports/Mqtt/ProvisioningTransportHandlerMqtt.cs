@@ -397,7 +397,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled)
                 Logging.Error(this, $"MQTT connection was lost '{disconnectedEventArgs.Exception}'.");
 
-            _connectionLostCancellationToken.Cancel();
+            if (disconnectedEventArgs.ClientWasConnected)
+            {
+                _connectionLostCancellationToken.Cancel();
+            }
+
             return Task.CompletedTask;
         }
 
