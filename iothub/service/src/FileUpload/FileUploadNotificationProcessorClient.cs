@@ -199,16 +199,24 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception: {ex}", nameof(OnNotificationMessageReceivedAsync));
 
-                if (ex is IotHubServiceException hubEx)
+                try
                 {
-                    ErrorProcessor?.Invoke(new ErrorContext(hubEx));
-                }
-                else if (ex is IOException ioEx)
-                {
-                    ErrorProcessor?.Invoke(new ErrorContext(ioEx));
-                }
+                    if (ex is IotHubServiceException hubEx)
+                    {
+                        ErrorProcessor?.Invoke(new ErrorContext(hubEx));
+                    }
+                    else if (ex is IOException ioEx)
+                    {
+                        ErrorProcessor?.Invoke(new ErrorContext(ioEx));
+                    }
 
-                await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
+                    await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
+                }
+                catch (Exception ex2)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during cleanup: {ex2}", nameof(OnNotificationMessageReceivedAsync));
+                }
             }
             finally
             {
