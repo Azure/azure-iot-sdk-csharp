@@ -183,7 +183,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _hostName = context.IotHubConnectionCredentials.IotHubHostName;
             _connectionCredentials = context.IotHubConnectionCredentials;
 
-            if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.WebSocket)
+            if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
+            {
+                // "ssl://" prefix is not needed here because the MQTT library adds it for us.
+                _mqttClientOptionsBuilder.WithTcpServer(_hostName, ProtocolGatewayPort);
+            }
+            else
             {
                 var uri = $"wss://{_hostName}/$iothub/websocket";
                 _mqttClientOptionsBuilder.WithWebSocketServer(uri);
@@ -207,11 +212,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                 }
             }
-            else
-            {
-                // "ssl://" prefix is not needed here because the MQTT library adds it for us.
-                _mqttClientOptionsBuilder.WithTcpServer(_hostName, ProtocolGatewayPort);
-            }
 
             MqttClientOptionsBuilderTlsParameters tlsParameters = new MqttClientOptionsBuilderTlsParameters();
 
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_mqttTransportSettings?.RemoteCertificateValidationCallback != null)
             {
-                tlsParameters.CertificateValidationHandler = certificateValidationHandler;
+                tlsParameters.CertificateValidationHandler = CertificateValidationHandler;
             }
 
             tlsParameters.UseTls = true;
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
         }
 
-        private bool certificateValidationHandler(MqttClientCertificateValidationEventArgs args)
+        private bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
         {
             return _mqttTransportSettings.RemoteCertificateValidationCallback.Invoke(
                 _mqttClient,
