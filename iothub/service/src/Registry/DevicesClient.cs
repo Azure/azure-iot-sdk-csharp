@@ -568,8 +568,6 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 jobParameters.Type = JobType.ImportDevices;
                 return await CreateJobAsync(jobParameters, cancellationToken).ConfigureAwait(false);
             }
