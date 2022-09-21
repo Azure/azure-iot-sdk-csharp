@@ -141,17 +141,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-            Client.TransportType transport,
+            IotHubClientTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             string faultType,
             string reason)
         {
-            // Initialize the service client
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
+                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
@@ -160,30 +161,26 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger, out string payload, out string p1Value);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
-                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Sent message to device {testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-
-                msg.Dispose();
             }
 
             async Task CleanupOperationAsync(List<IotHubDeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
             {
-                await serviceClient.CloseAsync().ConfigureAwait(false);
+                await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             }
 
             await FaultInjectionPoolingOverAmqp
                 .TestFaultInjectionPoolAmqpAsync(
                     MessageReceive_DevicePrefix,
-                    transport,
+                    transportSettings,
                     null,
                     poolSize,
                     devicesCount,

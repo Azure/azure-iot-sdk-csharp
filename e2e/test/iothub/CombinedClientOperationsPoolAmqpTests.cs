@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Send C2D Message
                 Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger, out string payload, out string p1Value);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
                 Task sendC2dMessage = serviceClient.Messages.SendAsync(testDevice.Id, msg);

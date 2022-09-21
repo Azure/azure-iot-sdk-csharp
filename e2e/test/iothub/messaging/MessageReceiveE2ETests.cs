@@ -128,11 +128,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
-        public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(MsTestLogger logger)
+        public static Message  ComposeC2dTestMessage(MsTestLogger logger, out string payload, out string p1Value)
         {
-            string payload = Guid.NewGuid().ToString();
+            payload = Guid.NewGuid().ToString();
             string messageId = Guid.NewGuid().ToString();
-            string p1Value = Guid.NewGuid().ToString();
+            p1Value = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(ComposeC2dTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 Properties = { ["property1"] = p1Value }
             };
 
-            return (message, payload, p1Value);
+            return message;
         }
 
         public static async Task VerifyReceivedC2dMessageAsync(IotHubDeviceClient dc, string deviceId, Message message, string payload, MsTestLogger logger)
@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 catch (OperationCanceledException) { }
             }
 
-            (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
+            Message msg = ComposeC2dTestMessage(Logger, out string payload, out string p1Value);
             await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             await VerifyReceivedC2dMessageWithCancellationTokenAsync(deviceClient, testDevice.Id, payload, p1Value, Logger).ConfigureAwait(false);
 
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
+            Message msg = ComposeC2dTestMessage(Logger, out string _, out string _);
             await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
             testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
@@ -399,7 +399,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             // First receive message using the polling ReceiveAsync() API.
-            (Message firstMessage, _, _) = ComposeC2dTestMessage(Logger);
+            Message firstMessage = ComposeC2dTestMessage(Logger, out string _, out string _);
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messages.SendAsync(testDevice.Id, firstMessage).ConfigureAwait(false);
             Logger.Trace($"Sent C2D message from service, messageId={firstMessage.MessageId} - to be received on polling ReceiveAsync");
@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
 
             // Now, send a message to the device from the service.
-            (Message secondMessage, _, _) = ComposeC2dTestMessage(Logger);
+            Message secondMessage = ComposeC2dTestMessage(Logger, out string _, out string _);
             deviceHandler.ExpectedMessageSentByService = secondMessage;
             await serviceClient.Messages.SendAsync(testDevice.Id, secondMessage).ConfigureAwait(false);
             Logger.Trace($"Sent C2D message from service, messageId={secondMessage.MessageId} - to be received on callback");
@@ -445,7 +445,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             // Send a message to the device from the service.
-            (Message thirdMessage, _, _) = ComposeC2dTestMessage(Logger);
+            Message thirdMessage = ComposeC2dTestMessage(Logger, out string _, out string _);
             await serviceClient.Messages.SendAsync(testDevice.Id, thirdMessage).ConfigureAwait(false);
             Logger.Trace($"Sent C2D message from service, messageId={thirdMessage.MessageId} - to be received on polling ReceiveAsync");
 
@@ -479,7 +479,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // The C2D message should be received over the first callback handler, releasing the corresponding semaphore.
             using var cts1 = new CancellationTokenSource(s_tenSeconds);
-            (Message firstMessage, _, _) = ComposeC2dTestMessage(Logger);
+            Message firstMessage = ComposeC2dTestMessage(Logger, out string _, out string _);
             deviceHandler1.ExpectedMessageSentByService = firstMessage;
             Logger.Trace($"Sending C2D message from service, messageId={firstMessage.MessageId}");
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
@@ -501,7 +501,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // The C2D message should be received over the second callback handler, releasing the corresponding semaphore.
             // The first callback handler should not be called, meaning its semaphore should not be available to be grabbed.
-            (Message secondMessage, _, _) = ComposeC2dTestMessage(Logger);
+            Message secondMessage = ComposeC2dTestMessage(Logger, out string _, out string _);
             deviceHandler2.ExpectedMessageSentByService = secondMessage;
             Logger.Trace($"Sending C2D message from service, messageId={secondMessage.MessageId}");
             await Task
@@ -535,9 +535,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await deviceClient1.CloseAsync().ConfigureAwait(false);
             }
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             // Send the message from service.
-            (Message msg, string _, string _) = ComposeC2dTestMessage(Logger);
+            Message msg = ComposeC2dTestMessage(Logger, out string _, out string _);
             Logger.Trace($"Sending C2D message from service, messageId={msg.MessageId}");
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
@@ -583,7 +583,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
+            Message msg = ComposeC2dTestMessage(Logger, out string _, out string _);
 
             // Subscribe to receive C2D messages over the callback.
             await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);

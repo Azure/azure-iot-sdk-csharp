@@ -19,14 +19,11 @@
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.19.2" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.17.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <ProjectReference Include="..\..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
-    <ProjectReference Include="..\..\..\..\..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
     <ProjectReference Include="..\..\..\..\..\..\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
-    <ProjectReference Include="..\..\..\..\..\..\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
   </ItemGroup>
 
   <ItemGroup>

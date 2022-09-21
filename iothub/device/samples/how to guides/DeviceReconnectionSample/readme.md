@@ -24,11 +24,11 @@ TransportType transportType = TransportType.Mqtt;
 
 // This option is helpful in delegating the assignment of Message.MessageId to the sdk.
 // If the user doesn't set a value for Message.MessageId, the sdk will assign it a random GUID before sending the message.
-var options = new ClientOptions
+var options = new IotHubClientOptions
 {
-    SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,
+    SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
 };
-deviceClient = DeviceClient.CreateFromConnectionString(connectionString, transportType, options);
+deviceClient = new IotHubDeviceClient(connectionString, options);
 ```
 
 ### Send device to cloud telemetry:
@@ -40,41 +40,13 @@ var temperature = 25;
 var humidity = 70;
 string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
 
-using var eventMessage = new Message(Encoding.UTF8.GetBytes(messagePayload))
+var eventMessage = new Message(Encoding.UTF8.GetBytes(messagePayload))
 {
     ContentEncoding = Encoding.UTF8.ToString(),
     ContentType = "application/json",
 };
 
 await deviceClient.SendEventAsync(message);
-```
-
-### Receive cloud to device telemetry (using the polling API) and complete the message:
-
-```csharp
-// This snippet shows you how to call the API for receiving telemetry sent to your device client.
-// In order to ensure that your client is resilient to disconnection events and exceptions, refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
-using Message receivedMessage = await deviceClient.ReceiveAsync();
-if (receivedMessage == null)
-{
-    Console.WriteLine("No message received; timed out.");
-    return;
-}
-
-string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-var formattedMessage = new StringBuilder($"Received message: [{messageData}]\n");
-
-// User set application properties can be retrieved from the Message.Properties dictionary.
-foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
-{
-    formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
-}
-
-// System properties can be accessed using their respective accessors.
-formattedMessage.AppendLine($"\tMessageId: {receivedMessage.MessageId}");
-
-Console.WriteLine(formattedMessage.ToString());
-await deviceClient.CompleteAsync(receivedMessage);
 ```
 
 ### Receive cloud to device telemetry (using the callback) and complete the message:

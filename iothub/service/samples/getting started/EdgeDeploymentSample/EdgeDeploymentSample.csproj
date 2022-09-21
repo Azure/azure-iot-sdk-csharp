@@ -17,7 +17,6 @@
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.csproj" />
-    <ProjectReference Include="..\..\..\..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 
 </Project>

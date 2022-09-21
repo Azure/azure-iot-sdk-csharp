@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await
                 ReceiveMessageWithCallbackRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await
                 ReceiveMessageWithCallbackRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_AmqpConn,
                     "")
                 .ConfigureAwait(false);
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await
                 ReceiveMessageWithCallbackRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_AmqpSess,
                     "")
                 .ConfigureAwait(false);
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await
                 ReceiveMessageWithCallbackRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_AmqpC2D,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await
                 ReceiveMessageWithCallbackRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                await serviceClient.OpenAsync().ConfigureAwait(false);
+                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
@@ -202,22 +202,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                (Message message, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                Message message = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger, out string payload, out string p1Value);
 
                 testDeviceCallbackHandler.ExpectedMessageSentByService = message;
 
-                using (message)
-                {
-                    await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+                await serviceClient.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
 
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                    await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-                }
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             }
 
             async Task CleanupOperationAsync()
             {
-                await serviceClient.CloseAsync().ConfigureAwait(false);
+                await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler?.Dispose();
             }
 

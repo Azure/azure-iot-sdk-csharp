@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 Logger.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
 
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger, out string _, out string _);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
