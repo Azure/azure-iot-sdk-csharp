@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Reflection.Metadata.Ecma335;
+using System.Threading.Tasks;
 using BulkOperationSample;
 using CommandLine;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class Program
     {
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             // Parse application parameters
             Parameters parameters = null;
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString);
             var sample = new BulkOperationSample(provisioningServiceClient);
-            sample.RunSampleAsync().GetAwaiter().GetResult();
+            await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");
             return 0;

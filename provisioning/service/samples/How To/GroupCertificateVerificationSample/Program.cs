@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     {
         private const string VerificationCertificatePath = "verificationCertificate.cer";
 
-        public static int  Main(string[] args)
+        public static int Main(string[] args)
         {
             if (args.Length < 3)
             {
@@ -25,9 +25,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             string certificatePassword = args[1];
             string verificationCode = args[2];
 
-            var certificate = new X509Certificate2(
-                certificatePath, 
-                certificatePassword, 
+            using var certificate = new X509Certificate2(
+                certificatePath,
+                certificatePassword,
                 X509KeyStorageFlags.Exportable);
 
             if (!certificate.HasPrivateKey)
@@ -36,11 +36,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 return 1;
             }
 
-            X509Certificate2 verificationCertificate = 
-                VerificationCertificateGenerator.GenerateSignedCertificate(certificate, verificationCode);
+            using X509Certificate2 verificationCertificate = VerificationCertificateGenerator.GenerateSignedCertificate(certificate, verificationCode);
 
             File.WriteAllText(
-                VerificationCertificatePath, 
+                VerificationCertificatePath,
                 Convert.ToBase64String(verificationCertificate.Export(X509ContentType.Cert)));
 
             Console.WriteLine(
