@@ -295,8 +295,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         if (Logging.IsEnabled)
                             Logging.Info("Updated twin reported properties successfully", nameof(OnTwinChangesReceived));
 
-                        twin = new Twin();
-                        twin.Version = Convert.ToInt32(amqpMessage.MessageAnnotations.Map["version"]);
+                        twin = new Twin
+                        {
+                            Version = Convert.ToInt32(amqpMessage.MessageAnnotations.Map["version"]),
+                        };
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
