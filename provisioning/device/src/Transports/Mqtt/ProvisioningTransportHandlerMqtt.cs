@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Authentication;
@@ -42,6 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private CancellationTokenSource _connectionLostCancellationToken;
         private int _packetId;
         private bool _isClosing;
+        private Exception _connectionLossCause;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerMqtt class using the specified fallback type.
@@ -76,6 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             _isClosing = false;
+            _connectionLossCause = null;
             using IMqttClient mqttClient = s_mqttFactory.CreateMqttClient();
             MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest);
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
@@ -96,8 +97,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 try
                 {
-                    await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), linkedCancellationToken.Token).ConfigureAwait(false);
                     mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
+                    await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), linkedCancellationToken.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -145,7 +146,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // Deliberately not including the caught exception as this exception's inner exception because
                 // if the user sees an OperationCancelledException in the thrown exception, they may think they cancelled
                 // the operation even though they didn't.
-                throw new ProvisioningTransportException($"MQTT connection was lost while {currentStatus}.", true);
+                throw new ProvisioningTransportException($"MQTT connection was lost while {currentStatus}.", _connectionLossCause, true);
 
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
@@ -405,8 +406,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private Task HandleDisconnectionAsync(MqttClientDisconnectedEventArgs disconnectedEventArgs)
         {
+            _connectionLossCause = disconnectedEventArgs.Exception;
+
             if (Logging.IsEnabled)
-                Logging.Error(this, $"MQTT connection was lost '{disconnectedEventArgs.Exception}'.");
+                Logging.Error(this, $"MQTT connection was lost '{_connectionLossCause}'.");
 
             // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
             if (disconnectedEventArgs.ClientWasConnected && !_isClosing)
