@@ -4,8 +4,6 @@
 using CommandLine;
 using Microsoft.Azure.Devices.Logging;
 using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;

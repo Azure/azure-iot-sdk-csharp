@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PnpHelpers;

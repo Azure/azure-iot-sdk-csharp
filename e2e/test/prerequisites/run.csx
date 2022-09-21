@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Provisioning.Service;
 
 //This function will return the iot hub hostname to provision to based on which of the list of hub names has the longest host name

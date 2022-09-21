@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             var options = new ServiceClientOptions
             {
-                SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,
+                SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
             _serviceClient = ServiceClient.CreateFromConnectionString(_iotHubConnectionString, _transportType, options);
             _logger.LogInformation("Initialized a new service client instance.");
