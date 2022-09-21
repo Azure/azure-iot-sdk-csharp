@@ -310,9 +310,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
+                await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
                 _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                 _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
-                await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
             }
             catch (MqttConnectingFailedException cfe)
             {

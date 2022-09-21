@@ -97,8 +97,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 try
                 {
-                    mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                     await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), linkedCancellationToken.Token).ConfigureAwait(false);
+                    mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
