@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Authentication;
+using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
@@ -29,18 +28,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         {
             Console.WriteLine($"Loading the certificate...");
             using X509Certificate2 certificate = LoadProvisioningCertificate();
-            using var security = new SecurityProviderX509Certificate(certificate);
+            var security = new AuthenticationProviderX509Certificate(certificate);
 
             Console.WriteLine($"Initializing the device provisioning client...");
 
-            using ProvisioningTransportHandler transport = GetTransportHandler();
-            var provClient = ProvisioningDeviceClient.Create(
+            using ProvisioningTransportHandler transportHandler = GetTransportHandler();
+            var options = new ProvisioningClientOptions(transportHandler);
+            var provClient = new ProvisioningDeviceClient(
                 _parameters.GlobalDeviceEndpoint,
                 _parameters.IdScope,
                 security,
-                transport);
+                options);
 
-            Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}.");
+            Console.WriteLine($"Initialized for registration Id {security.GetRegistrationId()}.");
 
             Console.WriteLine("Registering with the device provisioning service... ");
             DeviceRegistrationResult result = await provClient.RegisterAsync();
@@ -60,10 +60,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 certificate);
 
             Console.WriteLine($"Testing the provisioned device with IoT Hub...");
-            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, _parameters.TransportType);
+            IotHubClientTransportSettings transportSettings = GetHubTransportSettings();
+            var hubOptions = new IotHubClientOptions(transportSettings);
+            using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
 
             Console.WriteLine("Sending a telemetry message...");
-            using var message = new Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var message = new Devices.Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
             await iotClient.SendEventAsync(message);
 
             await iotClient.CloseAsync();
@@ -72,16 +74,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
         private ProvisioningTransportHandler GetTransportHandler()
         {
-            return _parameters.TransportType switch
+            return _parameters.Transport switch
             {
-                TransportType.Mqtt => new ProvisioningTransportHandlerMqtt(),
-                TransportType.Mqtt_Tcp_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly),
-                TransportType.Mqtt_WebSocket_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly),
-                TransportType.Amqp => new ProvisioningTransportHandlerAmqp(),
-                TransportType.Amqp_Tcp_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly),
-                TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
-                TransportType.Http1 => new ProvisioningTransportHandlerHttp(),
-                _ => throw new NotSupportedException($"Unsupported transport type {_parameters.TransportType}"),
+                Transport.Mqtt => new ProvisioningTransportHandlerMqtt(_parameters.TransportProtocol),
+                Transport.Amqp => new ProvisioningTransportHandlerAmqp(_parameters.TransportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {_parameters.Transport}/{_parameters.TransportProtocol}"),
+            };
+        }
+
+        private IotHubClientTransportSettings GetHubTransportSettings()
+        {
+            IotHubClientTransportProtocol protocol = _parameters.TransportProtocol == ProvisioningClientTransportProtocol.Tcp
+                ? IotHubClientTransportProtocol.Tcp
+                : IotHubClientTransportProtocol.WebSocket;
+
+            return _parameters.Transport switch
+            {
+                Transport.Mqtt => new IotHubClientMqttSettings(protocol),
+                Transport.Amqp => new IotHubClientAmqpSettings(protocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {_parameters.Transport}/{_parameters.TransportProtocol}"),
             };
         }
 

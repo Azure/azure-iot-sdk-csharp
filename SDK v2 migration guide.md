@@ -58,8 +58,8 @@ TODO: list breaking changes
 - Reduced access levels to classes and methods that were never intended to be public where possible.
 
 
-### IoT hub Service Client
- 
+### IoT hub service client
+
 | V1 class  | Equivalent V2 Class(es)|
 |:---|:---|
 |    |    |
@@ -67,13 +67,11 @@ TODO: list breaking changes
 For v1 classes with more than one equivalent v2 classes, the methods that were in the v1 class have been split up to 
 create clients with more cohesive capabilities. For instance, TODO: add example
 
-
 #### RegistryManager
 
 | V1 class#method | Changed? | Equivalent V2 class#method |
 |:---|:---|:---|
 |    |    |    |
-
 
 TODO: is DeviceMethod a class in C#?
 #### DeviceMethod
@@ -82,13 +80,11 @@ TODO: is DeviceMethod a class in C#?
 |:---|:---|:---|
 |    |    |    |
 
-
 #### JobClient
 
 | V1 class#method | Changed? | Equivalent V2 class#method |
 |:---|:---|:---|
 |    |    |    |
-
 
 #### Other notable breaking changes
 
@@ -107,12 +103,15 @@ TODO: verify for C#
   - These were wrappers on top of the existing sync APIs. Users are expected to write async wrappers that better fit their preferred async framework.
 - Fixed a bug where dates retrieved by the client were converted to local time zone rather than keeping them in UTC time.  
 
-
 ### DPS Device Client
+
+| V1 API  | Equivalent V2 API |
+|:---|:---|
+| ProvisioningDeviceClient.Create() | new ProvisioningDeviceClient() |
+| ProvisioningDeviceClient initializer parameter `transportHandler` replaced | `ProvisioningClientOptions` parameter added |
 
 TODO: verify for c#
 No notable changes, but the security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
-
 
 ### DPS Service Client
 
@@ -126,18 +125,21 @@ No client APIs have changed for this package, but there are a few notable breaki
 - Reduced access levels to classes and methods that were never intended to be public where possible.
 - Reduce default SAS token time to live from 1 year to 1 hour for security purposes.
 
+### Authentication provider client
 
-### Security Provider Clients
-
-TODO: verify for c#
 Breaking changes:
-- Trust certificates are read from the physical device's trusted root certification authorities certificate store rather than from source.
-  - Users are expected to install the required public certificates into this certificate store if they are not present already.
-  - See [this document](./upcoming_certificate_changes_readme.md) for additional context on which certificates need to be installed.
-  - For most users, no action is needed here since IoT Hub uses the [DigiCert Global G2 CA root](https://global-root-g2.chain-demos.digicert.com/info/index.html) certificate which is already installed on most devices.
-- Users of the X509 SecurityProvider are expected to pass in the parsed certificates and keys as Java security primitives rather than as strings.
-  - See [this sample](./provisioning/provisioning-samples/provisioning-X509-sample) for a demonstration on how to create these Java security primitives from strings.
-  
+
+  - Microsoft.Azure.Devices.Shared.SecurityProvider* types moved from Microsoft.Azure.Devices.Shared.dll into Microsoft.Azure.Devices.Authentication.dll and renamed.
+
+| V1 API | Equivalent V2 API |
+|:---|:---|
+| SecurityProvider | AuthenticationProvider |
+| SecurityProvider was IDisposable |  AuthenticationProvider is not Disposable and only some derived types are |
+| SecurityProvider.GetRegistrationID() | AuthenticationProvider.GetRegistrationId() |
+| SecurityProviderSymmetricKey | AuthenticationProviderSymmetricKey |
+| SecurityProviderTpm | AuthenticationProviderTpm |
+| SecurityProviderX509 | AuthenticationProviderX509 |
+| SecurityProviderX509Certificate | AuthenticationProviderX509Certificate |
 
 ## Frequently Asked Questions
 
