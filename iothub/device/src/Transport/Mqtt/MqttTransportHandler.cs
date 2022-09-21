@@ -742,8 +742,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Info($"MQTT connection was lost {disconnectedEventArgs.Exception}");
 
-            // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
-            if (disconnectedEventArgs.ClientWasConnected && disconnectedEventArgs.Exception != null)
+            if (disconnectedEventArgs.ClientWasConnected)
             {
                 OnTransportDisconnected();
             }
