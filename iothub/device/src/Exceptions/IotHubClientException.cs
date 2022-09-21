@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Creates an instance of this class with an empty error message.
         /// </summary>
-        public IotHubClientException() : base()
+        protected internal IotHubClientException() : base()
         {
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// Creates an instance of this class with the supplied error message and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public IotHubClientException(string message)
+        protected internal IotHubClientException(string message)
             : this(message, false)
         {
         }
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        public IotHubClientException(string message, bool isTransient)
+        protected internal IotHubClientException(string message, bool isTransient)
             : this(message, isTransient, trackingId: string.Empty)
         {
         }
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="statusCode">The HTTP status statusCode returned by the IoT hub service.</param>
-        public IotHubClientException(string message, IotHubStatusCode statusCode)
+        protected internal IotHubClientException(string message, IotHubStatusCode statusCode)
             : this(message, trackingId: string.Empty, statusCode)
         {
         }
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubClientException(string message, Exception innerException = null)
+        protected internal IotHubClientException(string message, Exception innerException = null)
             : this(message, false, string.Empty, innerException)
         {
         }
@@ -83,25 +83,25 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubClientException(string message, bool isTransient, Exception innerException = null)
+        protected internal IotHubClientException(string message, bool isTransient, Exception innerException = null)
             : this(message, isTransient, trackingId: string.Empty, innerException)
         {
         }
 
         /// <summary>
-        /// Creates an instance of this class with a specified error message, the HTTP status statusCode returned 
+        /// Creates an instance of this class with a specified error message, the HTTP status statusCode returned
         /// by the IoT Hub service and an optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="statusCode">The HTTP status statusCode returned by the IoT hub service.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubClientException(string message, IotHubStatusCode statusCode, Exception innerException = null)
+        protected internal IotHubClientException(string message, IotHubStatusCode statusCode, Exception innerException = null)
             : this(message, trackingId: string.Empty, statusCode, innerException)
         {
         }
 
         /// <summary>
-        /// Creates an instance of this class with a specified error message, a flag indicating if the error 
+        /// Creates an instance of this class with a specified error message, a flag indicating if the error
         /// was transient, the service returned tracking Id associated with this particular error and an optional
         /// reference to the inner exception that caused this exception.
         /// </summary>
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected IotHubClientException(string message, bool isTransient, string trackingId, Exception innerException = null)
+        protected internal IotHubClientException(string message, bool isTransient, string trackingId, Exception innerException = null)
             : base(message, innerException)
         {
             IsTransient = isTransient;
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         /// <param name="statusCode">The HTTP status statusCode returned by the IoT hub service.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubClientException(string message, string trackingId, IotHubStatusCode statusCode, Exception innerException = null)
+        protected internal IotHubClientException(string message, string trackingId, IotHubStatusCode statusCode, Exception innerException = null)
             : base(message, innerException)
         {
             IsTransient = DetermineIfTransient(statusCode);
@@ -133,12 +133,27 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
+        /// Creates an instance of this class with a specified error message, the service returned tracking Id associated with this particular error,
+        /// the HTTP status statusCode returned by the IoT Hub service and an optional reference to the inner exception that caused this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
+        /// <param name="statusCode">The HTTP status statusCode returned by the IoT hub service.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
+        protected internal IotHubClientException(string message, bool isTransient, IotHubStatusCode statusCode, Exception innerException = null)
+            : base(message, innerException)
+        {
+            StatusCode = statusCode;
+            IsTransient = isTransient;
+        }
+
+        /// <summary>
         /// Creates an instance of this class with the <see cref="SerializationInfo"/>
         /// and <see cref="StreamingContext"/> associated with the exception.
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected IotHubClientException(SerializationInfo info, StreamingContext context)
+        protected internal IotHubClientException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             if (info != null)

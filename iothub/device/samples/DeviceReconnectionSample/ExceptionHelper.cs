@@ -1,7 +1,6 @@
-﻿// Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using DotNetty.Transport.Channels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,7 +21,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             typeof(IOException),
             typeof(SocketException),
-            typeof(ClosedChannelException),
             typeof(HttpRequestException),
             typeof(WebException),
             typeof(WebSocketException),

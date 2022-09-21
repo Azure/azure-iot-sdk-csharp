@@ -54,10 +54,7 @@
 
   <!--Nuget package dependencies-->
   <ItemGroup>
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
-    <!-- We will need to keep this reference to DotNetty.Common until the next release of DotNetty includes this dependency -->
-    <PackageReference Include="DotNetty.Common" Version="0.7.1" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
+    <PackageReference Include="MQTTnet" Version="4.0.0.167" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>

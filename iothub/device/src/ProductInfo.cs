@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Win32;
 
 namespace Microsoft.Azure.Devices.Client

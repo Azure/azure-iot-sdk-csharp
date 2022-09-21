@@ -13,7 +13,6 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 
@@ -30,7 +29,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             typeof(IOException),
             typeof(SocketException),
-            typeof(ClosedChannelException),
             typeof(HttpRequestException),
             typeof(WebException),
             typeof(WebSocketException),
@@ -49,13 +47,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableReceiveMessageAsync(cancellationToken));
-        }
-
-        // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
-        // then any message sent while the device was disconnected is delivered on the callback.
-        public override Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.EnsurePendingMessagesAreDeliveredAsync(cancellationToken));
         }
 
         public override Task DisableReceiveMessageAsync(CancellationToken cancellationToken)

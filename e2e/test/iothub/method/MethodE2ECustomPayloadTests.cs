@@ -18,13 +18,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     public class MethodE2ECustomPayloadTests : E2EMsTestBase
     {
         private static readonly CustomType _customTypeRequest = new("request", 21, false, new("e2e_test_request", 12));
-        private static readonly CustomType _customTypeResponse = new ("response", 21, false, new("e2e_test_response", 12));
+        private static readonly CustomType _customTypeResponse = new("response", 21, false, new("e2e_test_response", 12));
         private static readonly bool _booleanRequest = true;
         private static readonly byte[] _arrayRequest = new byte[] { 1, 2, 3 };
         private static readonly byte[] _arrayResponse = new byte[] { 3, 2, 1 };
-        private static readonly List<double> _listRequest = new () { 1.0, 2.0, 3.0 };
-        private static readonly List<double> _listResponse = new () { 3.0, 2.0, 1.0 };
-        private static readonly Dictionary<string, object> _dictRequest = new () { { "key1", 2.0 }, { "key2", "val" } };
+        private static readonly List<double> _listRequest = new() { 1.0, 2.0, 3.0 };
+        private static readonly List<double> _listResponse = new() { 3.0, 2.0, 1.0 };
+        private static readonly Dictionary<string, object> _dictRequest = new() { { "key1", 2.0 }, { "key2", "val" } };
         private static readonly Dictionary<string, object> _dictResponse = new() { { "key1", new byte[] { 3, 5, 6 } }, { "key2", false } };
 
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
@@ -34,33 +34,63 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponse_customPayload()
+        public async Task Method_DeviceReceivesMethodAndResponse_CustomPayload_Mqtt()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethod_customPayloadAsync, _customTypeRequest, _customTypeResponse).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponse_booleanPayload()
+        public async Task Method_DeviceReceivesMethodAndResponse_BooleanPayload_Mqtt()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethod_booleanPayloadAsync, _booleanRequest, false).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponse_arrayPayload()
+        public async Task Method_DeviceReceivesMethodAndResponse_ArrayPayload_Mqtt()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethod_arrayPayloadAsync, _arrayRequest, _arrayResponse).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponse_ListPayload()
+        public async Task Method_DeviceReceivesMethodAndResponse_ListPayload_Mqtt()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethod_listPayloadAsync, _listRequest, _listResponse).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_DeviceReceivesMethodAndResponse_DictionaryPayload()
+        public async Task Method_DeviceReceivesMethodAndResponse_DictionaryPayload_Mqtt()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethod_dictionaryPayloadAsync, _dictRequest, _dictResponse).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_DeviceReceivesMethodAndResponse_CustomPayload_Amqp()
+        {
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethod_customPayloadAsync, _customTypeRequest, _customTypeResponse).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_DeviceReceivesMethodAndResponse_BooleanPayload_Amqp()
+        {
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethod_booleanPayloadAsync, _booleanRequest, false).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_DeviceReceivesMethodAndResponse_ArrayPayload_Amqp()
+        {
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethod_arrayPayloadAsync, _arrayRequest, _arrayResponse).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_DeviceReceivesMethodAndResponse_ListPayload_Amqp()
+        {
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethod_listPayloadAsync, _listRequest, _listResponse).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_DeviceReceivesMethodAndResponse_DictionaryPayload_Amqp()
+        {
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethod_dictionaryPayloadAsync, _dictRequest, _dictResponse).ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondAsync(

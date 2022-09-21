@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<QueryResponse<T>> CreateAsync<T>(string query, QueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating query", nameof(CreateAsync));
+                Logging.Enter(this, "Creating query.", nameof(CreateAsync));
 
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
@@ -129,13 +129,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating query", nameof(CreateAsync));
+                    Logging.Exit(this, "Creating query.", nameof(CreateAsync));
             }
         }
 
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<QueryResponse<ScheduledJob>> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"jobType=[{options?.JobType}], jobStatus=[{options?.JobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize}", nameof(CreateAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -200,13 +200,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"jobType=[{options?.JobType}], jobStatus=[{options?.JobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize}", nameof(CreateAsync));
             }
         }
 
