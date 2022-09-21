@@ -11,7 +11,22 @@ namespace Microsoft.Azure.Devices
     public class TwinScheduledJob
     {
         /// <summary>
-        /// [Required] The update twin tags and desired properties.
+        /// Serialization constructor.
+        /// </summary>
+        protected internal TwinScheduledJob()
+        { }
+
+        /// <summary>
+        /// Creates an instance of this class for twin scheduled job.
+        /// </summary>
+        /// <param name="updateTwin">The update twin tags and desired properties.</param>
+        public TwinScheduledJob(Twin updateTwin)
+        {
+            UpdateTwin = updateTwin;
+        }
+
+        /// <summary>
+        /// The update twin tags and desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "updateTwin", NullValueHandling = NullValueHandling.Ignore)]
         public Twin UpdateTwin { get; internal set; }

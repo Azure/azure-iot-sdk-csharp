@@ -43,22 +43,6 @@ namespace Microsoft.Azure.Devices
         public string QueryCondition { get; internal set; }
 
         /// <summary>
-        /// Scheduled job start time in UTC.
-        /// </summary>
-        [JsonProperty(PropertyName = "createdDateTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? CreatedOnUtc { get; internal set; }
-
-        // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
-        // This private field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
-        // as the created time value for this class and expose it either way as CreatedTimeUtc.
-        [JsonProperty(PropertyName = "createdTime", NullValueHandling = NullValueHandling.Ignore)]
-        internal DateTime? AlternateCreatedOnUtc
-        {
-            get => CreatedOnUtc;
-            set => CreatedOnUtc = value;
-        }
-
-        /// <summary>
         /// Max execution time.
         /// </summary>
         /// <remarks>The precision on this is in seconds.</remarks>
