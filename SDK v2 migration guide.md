@@ -21,7 +21,7 @@ are outlines of the notable breaking changes as well as a mapping from v1 APIs t
 
 There are a number of reasons why the Azure IoT SDK team chose to do a major version revision. Here are a few of the more important reasons:
   - [Upcoming certificate changes](./upcoming_certificate_changes_readme.md) dictated that the SDK needed to stop pinning on a specific IoT Hub public certificate and start reading certificates from the device certificate store.
-  - Several 3rd party dependencies (Bouncycastle, Azure Storage SDK, TODO: other 3rd party dependencies) were becoming harder to carry due to security concerns and they could only be removed by removing or alterring existing APIs.
+  - Removing or upgrading several NuGet dependencies (TODO: list).
   - Many existing client classes (RegistryManager, DeviceTwin, DeviceMethod, ServiceClient, etc.) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
   - Many existing clients had a mix of standard constructors (```new DeviceClient(...)```) and static builder constructors (```DeviceClient.createFromSecurityProvider(...)```) that caused some confusion among users.
   - ```DeviceClient``` and ```ModuleClient``` had unneccessarily different method names for the same operations (```deviceClient.startDeviceTwin(...)``` vs ```moduleClient.startTwin(...)``` TODO: verify this issue exists in c#) that could be easily unified for consistency.
