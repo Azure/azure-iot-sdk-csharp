@@ -585,7 +585,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<int> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (!_isSubscribedToTwinResponses)
             {
@@ -636,8 +636,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubClientException(patchTwinResponse.Message);
                 }
 
-                //TODO new twin version should be returned here, but API surface doesn't currently allow it
-                //return patchTwinResponse.Version;
+                return patchTwinResponse.Version;
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {

@@ -292,9 +292,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         // This can be used to coorelate success response with updating reported properties
-                        // However currently we do not have it as request response style implementation
                         if (Logging.IsEnabled)
                             Logging.Info("Updated twin reported properties successfully", nameof(OnTwinChangesReceived));
+
+                        twin = new Twin();
+                        twin.Version = Convert.ToInt32(amqpMessage.MessageAnnotations.Map["version"]);
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
                     {

@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<int> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
@@ -358,7 +358,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
+                Twin twin = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
+                return (int)twin.Version;
             }
             finally
             {

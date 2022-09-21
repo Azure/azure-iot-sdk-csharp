@@ -405,7 +405,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var props = new Client.TwinCollection();
             props[propName] = propValue;
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+            int newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
             Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
@@ -416,6 +416,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Twin completeTwin = await _serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Reported[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+            Assert.AreEqual(completeTwin.Properties.Reported.Version, newTwinVersion);
         }
 
         public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(IotHubDeviceClient deviceClient, string expectedPropName, object expectedPropValue, MsTestLogger logger)

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
         // Twin.
         Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken);
 
-        Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken);
+        Task<int> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken);
 
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
