@@ -39,10 +39,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             var random = new SecureRandom();
             string sessionPassword = Convert.ToBase64String(SecureRandom.GetNextBytes(random, 32));
 
-            using (var stream = new MemoryStream(signerCertificate.Export(X509ContentType.Pfx, sessionPassword)))
-            {
-                store.Load(stream, sessionPassword.ToCharArray());
-            }
+            using var stream = new MemoryStream(signerCertificate.Export(X509ContentType.Pfx, sessionPassword));
+            store.Load(stream, sessionPassword.ToCharArray());
 
             return store;
         }
@@ -92,11 +90,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             certGenerator.SetNotAfter(notAfter);
 
             certGenerator.AddExtension(
-                X509Extensions.ExtendedKeyUsage, 
-                true, 
+                X509Extensions.ExtendedKeyUsage,
+                true,
                 ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.IdKPClientAuth)));
 
-            ISignatureFactory signatureFactory = 
+            ISignatureFactory signatureFactory =
                 new Asn1SignatureFactory("SHA256WITHECDSA", privateSigningKey, random);
 
             Org.BouncyCastle.X509.X509Certificate certificate = certGenerator.Generate(signatureFactory);
