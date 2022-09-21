@@ -2,7 +2,7 @@
 
 This document outlines the changes made from this library's 1.X.X releases to its 2.X.X releases. Since this is
 a major version upgrade, there are a number of breaking changes that will affect the ability to compile. Provided here
-are outlines of the notable breaking changes as well as a mapping from v1 APIs to v2 APIs to aid you in migrating.
+are outlines of the notable breaking changes as well as a mapping from v1 APIs to v2 APIs to aid migrating.
 
 ## Table Of Contents
 
