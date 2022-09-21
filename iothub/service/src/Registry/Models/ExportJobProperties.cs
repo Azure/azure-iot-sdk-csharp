@@ -36,15 +36,17 @@ namespace Microsoft.Azure.Devices
         /// the exported device registry information for the IoT hub.
         /// </summary>
         /// <remarks>
-        /// If not specified, defaults to "devices.txt".
+        /// If not specified, the service defaults to "devices.txt".
         /// </remarks>
         [JsonProperty(PropertyName = "outputBlobName", NullValueHandling = NullValueHandling.Ignore)]
         public string OutputBlobName { get; set; }
 
         /// <summary>
-        /// Optional for export jobs; ignored for other jobs. Default: false. If false, authorization keys are included
-        /// in export output. Keys are exported as null otherwise.
+        /// Determines if authorization keys are included in the export.
         /// </summary>
+        /// <remarks>
+        /// Optional parameter. The service defaults to false.
+        /// </remarks>
         [JsonProperty(PropertyName = "excludeKeysInExport", NullValueHandling = NullValueHandling.Ignore)]
         public bool ExcludeKeysInExport { get; set; }
     }

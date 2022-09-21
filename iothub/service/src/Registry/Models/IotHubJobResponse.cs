@@ -14,9 +14,9 @@ namespace Microsoft.Azure.Devices
     public abstract class IotHubJobResponse
     {
         /// <summary>
-        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// Creates an instance of this class. Provided for unit testing purposes and serialization.
         /// </summary>
-        internal IotHubJobResponse()
+        protected internal IotHubJobResponse()
         { }
 
         /// <summary>
