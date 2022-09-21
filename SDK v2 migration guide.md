@@ -10,7 +10,7 @@ are outlines of the notable breaking changes as well as a mapping from v1 APIs t
  - [What will happen to the v1 SDK](#What-will-happen-to-the-v1-sdk)
  - [Migration guide](#migration-guide)
    - [IoT hub device client](#iot-hub-device-client)
-   - [IoT Hub Service Client](#iot-hub-service-client)
+   - [IoT hub service client](#iot-hub-service-client)
    - [Device Provisioning Service (DPS) device client](#dps-device-client)
    - [DPS Service Client](#dps-service-client)
    - [Security Provider Clients](#security-provider-clients)
