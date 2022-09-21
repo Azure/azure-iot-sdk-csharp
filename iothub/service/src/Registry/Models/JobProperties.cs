@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains the properties available for import/export job.
     /// </summary>
-    public abstract class JobProperties : Job
+    public abstract class JobProperties : IotHubJobResponse
     {
         private static readonly JobStatus[] s_finishedStates = new[]
         {

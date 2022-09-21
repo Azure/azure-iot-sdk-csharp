@@ -11,12 +11,12 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains the properties set by the service import/export job.
     /// </summary>
-    public abstract class Job
+    public abstract class IotHubJobResponse
     {
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        internal Job()
+        internal IotHubJobResponse()
         { }
 
         /// <summary>
