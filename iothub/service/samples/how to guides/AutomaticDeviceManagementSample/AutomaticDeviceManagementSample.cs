@@ -15,11 +15,11 @@ namespace Microsoft.Azure.Devices.Samples
     /// </summary>
     public class AutomaticDeviceManagementSample
     {
-        private readonly RegistryManager _registryManager;
+        private readonly IotHubServiceClient _hubServiceClient;
 
-        public AutomaticDeviceManagementSample(RegistryManager registryManager)
+        public AutomaticDeviceManagementSample(IotHubServiceClient hubServiceClient)
         {
-            _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
+            _hubServiceClient = hubServiceClient ?? throw new ArgumentNullException(nameof(hubServiceClient));
         }
 
         public async Task RunSampleAsync()
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Samples
             CreateDeviceContent(configuration, configurationId);
             CreateMetricsAndTargetCondition(configuration);
 
-            await _registryManager.AddConfigurationAsync(configuration);
+            await _hubServiceClient.Configurations.CreateAsync(configuration);
 
             Console.WriteLine($"Configuration added, id: {configurationId}");
         }
@@ -90,13 +90,13 @@ namespace Microsoft.Azure.Devices.Samples
 
         private async Task DeleteConfigurationAsync(string configurationId)
         {
-            await _registryManager.RemoveConfigurationAsync(configurationId);
+            await _hubServiceClient.Configurations.DeleteAsync(configurationId);
             Console.WriteLine($"Configuration deleted, id: {configurationId}");
         }
 
         private async Task GetConfigurationsAsync(int count)
         {
-            IEnumerable<Configuration> configurations = await _registryManager.GetConfigurationsAsync(count);
+            IEnumerable<Configuration> configurations = await _hubServiceClient.Configurations.GetAsync(count);
 
             // Check configuration's metrics for expected conditions
             foreach (Configuration configuration in configurations)
