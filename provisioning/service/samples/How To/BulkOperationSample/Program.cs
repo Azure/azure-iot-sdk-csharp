@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 Environment.Exit(1);
             }
 
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString);
+            using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
             var sample = new BulkOperationSample(provisioningServiceClient);
             await sample.RunSampleAsync();
 
