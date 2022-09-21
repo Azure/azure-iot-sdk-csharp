@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Amqp
         internal async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Opening amqp connection.");
+                Logging.Enter(this, "Opening amqp connection.", nameof(OpenAsync));
 
             _openCloseSemaphore.Wait(cancellationToken);
 
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 }
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"Initialized AMQP transport, ws={_useWebSocketOnly}");
+                    Logging.Info(this, $"Initialized AMQP transport, ws={_useWebSocketOnly}", nameof(OpenAsync));
 
                 var amqpConnectionSettings = new AmqpConnectionSettings
                 {
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 _connection = new AmqpConnection(_transport, amqpSettings, amqpConnectionSettings);
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(AmqpConnection)} created.");
+                    Logging.Info(this, $"{nameof(AmqpConnection)} created.", nameof(OpenAsync));
 
                 _connection.Closed += _connectionLossHandler;
 
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Amqp
             {
                 _openCloseSemaphore.Release();
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening amqp connection.");
+                    Logging.Exit(this, "Opening amqp connection.", nameof(OpenAsync));
             }
         }
 
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Amqp
         internal async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Closing amqp connection.");
+                Logging.Enter(this, "Closing amqp connection.", nameof(CloseAsync));
 
             _openCloseSemaphore.Wait(cancellationToken);
 
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.Amqp
             {
                 _openCloseSemaphore.Release();
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Closing amqp connection.");
+                    Logging.Exit(this, "Closing amqp connection.", nameof(CloseAsync));
             }
         }
 
@@ -318,14 +318,14 @@ namespace Microsoft.Azure.Devices.Amqp
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;
                         if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                            Logging.Info(this, "Setting ClientWebSocket.Options.Proxy", nameof(CreateClientWebSocketAsync));
                     }
                 }
                 catch (PlatformNotSupportedException)
                 {
                     // .NET Core 2.0 doesn't support proxy. Ignore this setting.
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                        Logging.Error(this, "PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy", nameof(CreateClientWebSocketAsync));
                 }
 
                 await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
