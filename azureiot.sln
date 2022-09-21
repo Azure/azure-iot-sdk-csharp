@@ -54,6 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		configure_tls_protocol_version_and_ciphers.md = configure_tls_protocol_version_and_ciphers.md
 		device_connection_and_reliability_readme.md = device_connection_and_reliability_readme.md
 		readme.md = readme.md
+		SDK v2 migration guide.md = SDK v2 migration guide.md
 		supported_platforms.md = supported_platforms.md
 		vsts\test-release-nuget.yaml = vsts\test-release-nuget.yaml
 		test.runsettings = test.runsettings
