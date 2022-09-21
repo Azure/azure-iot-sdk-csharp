@@ -147,9 +147,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X509Sample", "provisioning\device\samples\Getting Started\X509Sample\X509Sample.csproj", "{071A6BA6-1C2B-4E05-A80C-03B6F73B9979}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how to", "how to", "{8415821D-5A32-4CE7-8203-CF457229F2A9}"
-	ProjectSection(SolutionItems) = preProject
-		provisioning\device\samples\How To\SymmetricKeySample\SymmetricKeySample.csproj = provisioning\device\samples\How To\SymmetricKeySample\SymmetricKeySample.csproj
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TpmSample", "provisioning\device\samples\How To\TpmSample\TpmSample.csproj", "{FD9B0B87-A056-4468-AB82-945B12474328}"
 EndProject
@@ -171,6 +168,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkOperationSample", "provisioning\service\samples\How To\BulkOperationSample\BulkOperationSample.csproj", "{ED719662-D4F8-4014-951F-418169AEB876}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupCertificateVerificationSample", "provisioning\service\samples\How To\GroupCertificateVerificationSample\GroupCertificateVerificationSample.csproj", "{4D529C9A-6644-4222-95C8-87EA17B8D37A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricKeySample", "provisioning\device\samples\How To\SymmetricKeySample\SymmetricKeySample.csproj", "{094C77B4-5921-439B-91CB-74555275C2B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -353,6 +352,10 @@ Global
 		{4D529C9A-6644-4222-95C8-87EA17B8D37A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D529C9A-6644-4222-95C8-87EA17B8D37A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D529C9A-6644-4222-95C8-87EA17B8D37A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{094C77B4-5921-439B-91CB-74555275C2B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{094C77B4-5921-439B-91CB-74555275C2B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{094C77B4-5921-439B-91CB-74555275C2B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{094C77B4-5921-439B-91CB-74555275C2B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -425,6 +428,7 @@ Global
 		{BF318CEE-DA06-419B-8ED7-0CADF35CEA18} = {01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}
 		{ED719662-D4F8-4014-951F-418169AEB876} = {23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}
 		{4D529C9A-6644-4222-95C8-87EA17B8D37A} = {23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}
+		{094C77B4-5921-439B-91CB-74555275C2B8} = {8415821D-5A32-4CE7-8203-CF457229F2A9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
