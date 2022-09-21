@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private TaskCompletionSource<RegistrationOperationStatus> _checkRegistrationOperationStatusSource;
         private CancellationTokenSource _connectionLostCancellationToken;
         private int _packetId;
+        private bool _isClosing;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerMqtt class using the specified fallback type.
@@ -74,6 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            _isClosing = false;
             using IMqttClient mqttClient = s_mqttFactory.CreateMqttClient();
             MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest);
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
@@ -117,6 +119,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 try
                 {
                     currentStatus = "closing MQTT connection";
+                    _isClosing = true;
                     mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
                     await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken);
                 }
@@ -406,7 +409,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Logging.Error(this, $"MQTT connection was lost '{disconnectedEventArgs.Exception}'.");
 
             // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
-            if (disconnectedEventArgs.ClientWasConnected && disconnectedEventArgs.Exception != null)
+            if (disconnectedEventArgs.ClientWasConnected && !_isClosing)
             {
                 _connectionLostCancellationToken.Cancel();
             }
