@@ -16,9 +16,9 @@ namespace Microsoft.Azure.Devices.Samples
 
         private readonly List<Configuration> _configurationsToDelete = new();
 
-        public EdgeDeploymentSample(IotHubServiceClient registryManager)
+        public EdgeDeploymentSample(IotHubServiceClient serviceClient)
         {
-            _serviceClient = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
+            _serviceClient = serviceClient ?? throw new ArgumentNullException(nameof(serviceClient));
         }
 
         public async Task RunSampleAsync()
