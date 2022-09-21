@@ -24,10 +24,7 @@ namespace Microsoft.Azure.Devices
         /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
         /// </remarks>
         [JsonIgnore]
-        public object Payload
-        {
-            get => JsonConvert.DeserializeObject((string)JsonPayload.Value);
-        }
+        public object Payload => JsonConvert.DeserializeObject((string)JsonPayload.Value);
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }

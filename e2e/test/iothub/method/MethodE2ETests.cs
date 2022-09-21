@@ -397,41 +397,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 (request, context) =>
                 {
                     logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: ModuleClient method: {request.MethodName} {request.ResponseTimeout}.");
-
-                        try
-                        {
-                            request.Name.Should().Be(methodName);
-                            request.DataAsJson.Should().Be(ServiceRequestJson);
-
-                            methodCallReceived.TrySetResult(true);
-                        }
-                        catch (Exception ex)
-                        {
-                            methodCallReceived.TrySetException(ex);
-                        }
-
-                    var response = new Client.DirectMethodResponse
-                    {
-                        Status = 200,
-                        Payload = DeviceResponseJson,
-                    };
-        }
-                    return Task.FromResult(response);
-                },
-                null).ConfigureAwait(false);
-            var methodCallReceived = new TaskCompletionSource<bool>();
-
-            await moduleClient.SetMethodHandlerAsync(
-                methodName,
-                (request, context) =>
-                (request, context) =>
-                {
-                    logger.Trace($"{nameof(SetDeviceReceiveMethodDefaultHandlerAsync)}: ModuleClient method: {request.Name} {request.ResponseTimeout}.");
-
+            
                     try
                     {
-                        Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
-                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
+                        request.MethodName.Should().Be(methodName);
+                        request.PayloadAsJsonString.Should().Be(ServiceRequestJson);
 
                         methodCallReceived.SetResult(true);
                     }
@@ -440,7 +410,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         methodCallReceived.SetException(ex);
                     }
 
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+                    return Task.FromResult(
+                        new Client.DirectMethodResponse
+                        {
+                            Status = 00,
+                            Payload = DeviceResponseJson,
+                        });
                 },
                 null).ConfigureAwait(false);
 

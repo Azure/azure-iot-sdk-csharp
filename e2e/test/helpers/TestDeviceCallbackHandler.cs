@@ -169,7 +169,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             {
                 // Always notify that we got the callback.
                 _receivedMessageCallbackSemaphore.Release();
-                message?.Dispose();
             }
         }
 

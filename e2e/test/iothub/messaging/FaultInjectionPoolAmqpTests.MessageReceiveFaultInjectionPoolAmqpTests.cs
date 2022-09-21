@@ -140,6 +140,30 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        public async Task Message_DeviceSak_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
+        {
+            await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
+                    new IotHubClientAmqpSettings(),
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        public async Task Message_DeviceSak_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
+        {
+            await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
+                .ConfigureAwait(false);
+        }
+
         private async Task ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
             IotHubClientTransportSettings transportSettings,
             int poolSize,
@@ -148,11 +172,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason)
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 

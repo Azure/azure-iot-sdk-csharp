@@ -745,7 +745,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             string faultType,
             string reason,
-            Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
+            Func<IotHubDeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             string proxyAddress = null)
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();

@@ -11,6 +11,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
     public static class PoolingOverAmqp
     {
+        public const int SingleConnection_DevicesCount = 2;
+        public const int SingleConnection_PoolSize = 1;
         public const int MultipleConnections_DevicesCount = 4;
         public const int MultipleConnections_PoolSize = 2;
         public const int MaxTestRunCount = 5;
