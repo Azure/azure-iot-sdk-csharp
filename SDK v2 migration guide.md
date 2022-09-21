@@ -13,7 +13,7 @@ are outlines of the notable breaking changes as well as a mapping from v1 APIs t
    - [IoT hub service client](#iot-hub-service-client)
    - [Device Provisioning Service (DPS) device client](#dps-device-client)
    - [DPS Service Client](#dps-service-client)
-   - [Security Provider Clients](#security-provider-clients)
+   - [Security provider clients](#security-provider-clients)
    - [Deps](#deps)
  - [Frequently asked questions](#frequently-asked-questions)
 
