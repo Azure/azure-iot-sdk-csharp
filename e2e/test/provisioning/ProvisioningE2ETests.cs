@@ -45,6 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private static DirectoryInfo s_x509CertificatesFolder;
         private static string s_intermediateCertificateSubject;
+        private static CancellationTokenSource s_cancellationTokenSource = new CancellationTokenSource();
 
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
@@ -1431,7 +1432,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
-                            logger)
+                            logger,
+                            s_cancellationTokenSource.Token)
                         .ConfigureAwait(false);
                 }
                 else if (enrollmentType == EnrollmentType.Group)
@@ -1444,7 +1446,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
-                            logger)
+                            logger,
+                            s_cancellationTokenSource.Token)
                         .ConfigureAwait(false);
                 }
             }

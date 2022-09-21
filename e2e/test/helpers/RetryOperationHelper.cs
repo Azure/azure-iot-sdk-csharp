@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 
@@ -15,14 +16,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class RetryOperationHelper
     {
         /// <summary>
-        /// Rety an async operation based on the retry strategy supplied.
+        /// Retry an async operation based on the retry strategy supplied.
         /// </summary>
+        /// <remarks>
+        /// This is for E2E tests of provisioning service clients .
+        /// </remarks>
         /// <param name="asyncOperation">The async operation to be retried.</param>
         /// <param name="retryPolicy">The retry policy to be applied.</param>
         /// <param name="retryableExceptions">The exceptions to be retried on.</param>
         /// <param name="logger">The <see cref="MsTestLogger"/> instance to be used.</param>
-        /// <returns></returns>
-        public static async Task RetryOperationsAsync(Func<Task> asyncOperation, IRetryPolicy retryPolicy, HashSet<Type> retryableExceptions, MsTestLogger logger)
+        /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+        public static async Task RetryOperationsAsync(
+            Func<Task> asyncOperation,
+            IRetryPolicy retryPolicy,
+            HashSet<Type> retryableExceptions,
+            MsTestLogger logger,
+            CancellationToken cancellationToken = default)
         {
             int counter = 0;
             bool shouldRetry;
@@ -47,19 +56,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 }
 
                 logger.Trace($"Will retry operation in {retryInterval}.");
-                await Task.Delay(retryInterval).ConfigureAwait(false);
+                await Task.Delay(retryInterval, cancellationToken);
             }
-            while (shouldRetry);
+            while (shouldRetry && !cancellationToken.IsCancellationRequested);
         }
 
         /// <summary>
-        /// Rety an async operation based on the retry strategy supplied.
+        /// Retry an async operation based on the retry strategy supplied.
         /// </summary>
+        /// <remarks>
+        /// This is for E2E tests of hub service clients.
+        /// </remarks>
         /// <param name="asyncOperation">The async operation to be retried.</param>
         /// <param name="retryPolicy">The retry policy to be applied.</param>
         /// <param name="retryableStatusCodes">The errors to be retried on.</param>
         /// <param name="logger">The <see cref="MsTestLogger"/> instance to be used.</param>
-        public static async Task RetryOperationsAsync1(Func<Task> asyncOperation, IRetryPolicy retryPolicy, HashSet<IotHubErrorCode> retryableStatusCodes, MsTestLogger logger)
+        /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+        public static async Task RetryOperationsAsync(
+            Func<Task> asyncOperation,
+            IRetryPolicy retryPolicy,
+            HashSet<IotHubErrorCode> retryableStatusCodes,
+            MsTestLogger logger,
+            CancellationToken cancellationToken = default)
         {
             int counter = 0;
             bool shouldRetry;
@@ -84,9 +102,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 }
 
                 logger.Trace($"Will retry operation in {retryInterval}.");
-                await Task.Delay(retryInterval).ConfigureAwait(false);
+                await Task.Delay(retryInterval, cancellationToken);
             }
-            while (shouldRetry);
+            while (shouldRetry && !cancellationToken.IsCancellationRequested);
         }
     }
 }
