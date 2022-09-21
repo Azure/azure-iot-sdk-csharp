@@ -100,7 +100,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 try
                 {
-                    await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken).ConfigureAwait(false);
+                    MqttClientConnectResult connectResult = await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken).ConfigureAwait(false);
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"MQTT connect responded with status code '{connectResult.ResultCode}'");
                     mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                     _isOpening = false;
                 }
@@ -417,7 +419,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Logging.Error(this, $"MQTT connection was lost '{_connectionLossCause}'.");
 
             // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
-            if (disconnectedEventArgs.ClientWasConnected && !_isClosing && _isOpening)
+            if (disconnectedEventArgs.ClientWasConnected && !_isClosing && !_isOpening)
             {
                 _connectionLostCancellationToken.Cancel();
             }
