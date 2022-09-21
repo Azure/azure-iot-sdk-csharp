@@ -62,7 +62,10 @@ TODO: list breaking changes
 
 | V1 class  | Equivalent V2 Class(es)|
 |:---|:---|
-|    |    |
+| RegistryManager | IotHubServiceClient, subclients Devices, Twins, Configurations, etc. |
+| RegistryManager.AddConfigurationAsync(...) | IotHubServiceClient.Configurations.CreateAsync(...) |
+| RegistryManager.GetConfigurationsAsync(int maxCount) | IotHubServiceClient.Configurations.GetAsync(int maxCount) |
+| RegistryManager.RemoveConfigurationAsync(...) | IotHubServiceClient.Configurations.DeleteAsync(...) |
 
 For v1 classes with more than one equivalent v2 classes, the methods that were in the v1 class have been split up to 
 create clients with more cohesive capabilities. For instance, TODO: add example
