@@ -178,17 +178,6 @@ Answer:
 > The SDK has an updated exception strategy. Please refer to the documentation comments on each API where the relevant exceptions are documented.
 
 Question:
-TODO: verify for c#
-> What if I don't want this SDK to read from my device's trusted root certification authorities certificate store? Is there a way to override this behavior?
-
-Answer:
-> Yes, there is a way to override this behavior. For a given client, there is an optional parameter that allows you to provide
-> the SSLContext to the client rather than allow the client to build the SSLContext for you from the trusted root certification 
-> authorities certificate store. In this SSLContext, you have complete control over what certificates to trust. 
->
-> For an example of injecting your own SSLContext, see [this sample](./iothub/device/samples/how%20to%20guides/X509DeviceCertWithChainSample/).
-
-Question:
 > Does this major version bump bring any changes to what platforms this SDK supports?
 
 Answer:
