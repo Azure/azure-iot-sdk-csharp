@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<ScheduledJob> ScheduleTwinUpdateAsync(
+        public virtual async Task<TwinScheduledJob> ScheduleTwinUpdateAsync(
             ScheduledTwinUpdate scheduledTwinUpdate,
             ScheduledJobsOptions scheduledJobsOptions = default,
             CancellationToken cancellationToken = default)
@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<TwinScheduledJob>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

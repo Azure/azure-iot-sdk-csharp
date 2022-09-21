@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 try
                 {
-                    ScheduledJob scheduledJob = await sc.ScheduledJobs
+                    TwinScheduledJob scheduledJob = await sc.ScheduledJobs
                         .ScheduleTwinUpdateAsync(
                             new ScheduledTwinUpdate
                             {
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (IotHubServiceException ex) 
+                catch (IotHubServiceException ex)
                     when (ex.StatusCode is (HttpStatusCode)429 && ++tryCount < MaxIterationWait)
                 {
                     Logger.Trace($"ThrottlingException... waiting.");

@@ -104,13 +104,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     JobId = jobId,
                     MaxExecutionTime = TimeSpan.FromMinutes(2),
                 };
-                ScheduledJob scheduledJob = await serviceClient.ScheduledJobs
+                TwinScheduledJob scheduledJob = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
                         twinUpdate,
                         scheduledTwinUpdateOptions)
                     .ConfigureAwait(false);
             }
-            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429) 
+            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
             {
                 // Concurrent jobs can be rejected, but it still means authentication was successful. Ignore the exception.
             }
