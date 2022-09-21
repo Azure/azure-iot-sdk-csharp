@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Threading.Tasks;
 
@@ -42,8 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task QueryIndividualEnrollmentsAsync()
         {
             Console.WriteLine("\nCreating a query for enrollments...");
-            var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
-            using Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification);
+            Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery("SELECT * FROM enrollments");
             while (query.HasNext())
             {
                 Console.WriteLine("\nQuerying the next enrollments...");

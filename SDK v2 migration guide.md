@@ -113,20 +113,20 @@ TODO: verify for C#
 | ProvisioningDeviceClient.Create() | new ProvisioningDeviceClient() |
 | ProvisioningDeviceClient initializer parameter `transportHandler` replaced | `ProvisioningClientOptions` parameter added |
 
-TODO: verify for c#
-No notable changes, but the security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
+### Other notable changes
+
+- The security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
 
 ### DPS Service Client
 
-TODO: verify for c#
-No client APIs have changed for this package, but there are a few notable breaking changes:
+| V1 API  | Equivalent V2 API |
+|:---|:---|
+| ProvisioningServiceClient.CreateFromConnectionString() | new ProvisioningServiceClient() |
+| QuerySpecification | Type removed from public API. Methods take the parameters directly. |
 
-- Trust certificates are read from the physical device's trusted root certification authorities certificate store rather than from source.
-  - Users are expected to install the required public certificates into this certificate store if they are not present already.
-  - See [this document](./upcoming_certificate_changes_readme.md) for additional context on which certificates need to be installed.
-  - For most users, no action is needed here since IoT Hub uses the [DigiCert Global G2 CA root](https://global-root-g2.chain-demos.digicert.com/info/index.html) certificate which is already installed on most devices.
-- Reduced access levels to classes and methods that were never intended to be public where possible.
-- Reduce default SAS token time to live from 1 year to 1 hour for security purposes.
+### Other notable changes
+
+- Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
 
 ### Authentication provider client
 

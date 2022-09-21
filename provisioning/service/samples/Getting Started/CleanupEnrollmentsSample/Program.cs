@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
 using System;
 using System.Threading.Tasks;
+using CommandLine;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 Environment.Exit(1);
             }
 
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString);
+            using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
             var sample = new CleanupEnrollmentsSample(provisioningServiceClient);
             await sample.RunSampleAsync();
 
