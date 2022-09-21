@@ -21,7 +21,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.
         /// </summary>
-        public ProvisioningTransportHandler() { }
+        public ProvisioningTransportHandler()
+        { }
 
         /// <summary>
         /// Gets or sets the proxy for Provisioning Client operations.
@@ -37,6 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Gets or sets the inner handler.
         /// </summary>
+        /// <exception cref="ArgumentNullException">When the provided inner handler is null.</exception>
         public ProvisioningTransportHandler InnerHandler
         {
             get => _innerHandler;

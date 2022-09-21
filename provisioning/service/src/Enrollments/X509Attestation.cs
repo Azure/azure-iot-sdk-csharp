@@ -35,16 +35,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     </item>
     /// </list>
     ///
-    /// The provisioning service allows user to create <see cref="IndividualEnrollment"/> and <see cref="EnrollmentGroup"/>. 
-    ///     For all operations over <see cref="IndividualEnrollment"/> with <b>X509</b>, user must provide a 
-    ///     <b>clientCertificates</b>, and for operations over <see cref="EnrollmentGroup"/>, user must provide a 
+    /// The provisioning service allows user to create <see cref="IndividualEnrollment"/> and <see cref="EnrollmentGroup"/>.
+    ///     For all operations over <see cref="IndividualEnrollment"/> with <b>X509</b>, user must provide a
+    ///     <b>clientCertificates</b>, and for operations over <see cref="EnrollmentGroup"/>, user must provide a
     ///     <b>rootCertificates</b> or a <b>X509CAReferences</b>.
     ///
     /// For each of this types of certificates, user can provide 2 Certificates, a primary and a secondary. Only the
     ///     primary is mandatory, the secondary is optional.
     ///
     /// The provisioning service will process the provided certificates, but will never return it back. Instead of
-    ///     it, <see cref="GetPrimaryX509CertificateInfo()"/> and <see cref="GetSecondaryX509CertificateInfo()"/> 
+    ///     it, <see cref="GetPrimaryX509CertificateInfo()"/> and <see cref="GetSecondaryX509CertificateInfo()"/>
     ///     will return the certificate information for the certificates.
     /// </remarks>
     public sealed class X509Attestation : Attestation
@@ -247,7 +247,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the provide primary certificate is invalid.</exception>
+        /// <exception cref="ArgumentException">if the provided primary certificate is invalid.</exception>
+        /// <exception cref="CryptographicException">if the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromCAReferences(string primary)
         {
             if (string.IsNullOrWhiteSpace(primary))
@@ -270,6 +271,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentException">if the provide primary certificate is invalid.</exception>
+        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromCAReferences(string primary, string secondary)
         {
             if (string.IsNullOrWhiteSpace(primary))
@@ -290,6 +292,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     primary certificate.
         /// </remarks>
         /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be <c>null</c>.</returns>
+        /// <exception cref="ArgumentException">if no valid certificate information is available.</exception>
         public X509CertificateInfo GetPrimaryX509CertificateInfo()
         {
             if (ClientCertificates != null)

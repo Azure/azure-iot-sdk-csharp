@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
 
 namespace Microsoft.Azure.Devices
 {
@@ -11,12 +10,12 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     /// <remarks>
     /// The connection string contains a set of information that uniquely identify an IoT Service.
-    /// 
+    ///
     /// A valid connection string shall be in the following format:
     /// <c>
     /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
     /// </c>
-    /// 
+    ///
     /// This object parse and store the connection string. It is responsible to provide the authorization token too.
     /// </remarks>
     internal sealed class ServiceConnectionString : IAuthorizationHeaderProvider
@@ -31,10 +30,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentNullException">if the provided builder is null.</exception>
         public ServiceConnectionString(ServiceConnectionStringBuilder builder)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            Argument.AssertNotNull(builder, nameof(builder));
 
             HostName = builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;

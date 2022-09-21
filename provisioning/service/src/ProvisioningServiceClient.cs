@@ -74,7 +74,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The Device Provisioning Service Client is created based on a <b>Provisioning Connection string</b>.
         /// Once you create a Device Provisioning Service on Azure, you can get the connection string on the Azure portal.
         /// </remarks>
-        ///
         /// <param name="connectionString">The <c>string</c> that cares the connection string of the Device Provisioning Service.</param>
         /// <param name="options"> The options that allow configuration of the provisioning service client instance during initialization.</param>
         /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
@@ -86,10 +85,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 options = new();
             }
 
-            if (string.IsNullOrWhiteSpace(connectionString ?? throw new ArgumentNullException(nameof(connectionString))))
-            {
-                throw new ArgumentException($"{nameof(connectionString)} cannot be empty string");
-            }
+            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
             _contractApiHttp = new ContractApiHttp(
@@ -98,28 +94,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 options);
         }
 
-        /// <summary>
-        /// Dispose the Provisioning Service Client and its dependencies.
-        /// </summary>
+        /// <inheritdoc/>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            if (_contractApiHttp != null)
             {
-                if (_contractApiHttp != null)
-                {
-                    _contractApiHttp.Dispose();
-                }
+                _contractApiHttp.Dispose();
             }
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -161,6 +143,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="registrationId">The registration Id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The enrollment.</returns>
+        /// <exception cref = "ArgumentException" > If the provided parameters are not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         public Task<IndividualEnrollment> GetIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.GetAsync(_contractApiHttp, registrationId, cancellationToken);
@@ -172,6 +157,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="individualEnrollment">The individual enrollment.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         public Task DeleteIndividualEnrollmentAsync(IndividualEnrollment individualEnrollment, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, individualEnrollment, cancellationToken);
@@ -193,7 +180,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentException">If the provided registrationId is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
-        /// <exception cref="ProvisioningServiceClientException">If the Device Provisioning Service was not able to execute the bulk operation.</exception>
         public Task DeleteIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, registrationId, cancellationToken);
@@ -206,6 +192,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">The eTag.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         public Task DeleteIndividualEnrollmentAsync(string registrationId, string eTag, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, registrationId, cancellationToken, eTag);
@@ -281,6 +269,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning was not able to create or update the enrollment.</exception>
         public Task<EnrollmentGroup> CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken = default)
         {
@@ -300,6 +290,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="EnrollmentGroup"/> with the content of the enrollment group in the Provisioning Device Service.</returns>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to retrieve
         /// the enrollment group information for the provided enrollmentGroupId.</exception>
         public Task<EnrollmentGroup> GetEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
@@ -323,6 +315,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> that identifies the enrollmentGroup. It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the enrollment group information for the provided enrollmentGroup.</exception>
         public Task DeleteEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken = default)
         {
@@ -343,6 +336,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the enrollment group information for the provided enrollmentGroupId.</exception>
         public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
@@ -366,6 +360,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">The <c>string</c> with the enrollment group eTag. It can be <c>null</c> or empty.
         /// The Device Provisioning Service will ignore it in all of these cases.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the enrollment group information for the provided enrollmentGroupId and eTag.</exception>
         public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, string eTag, CancellationToken cancellationToken = default)
         {
@@ -437,6 +432,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="id">The <c>string</c> that identifies the DeviceRegistrationState. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the DeviceRegistrationState in the Provisioning Device Service.</returns>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to retrieve the DeviceRegistrationState information for the provided registrationId.</exception>
         public Task<DeviceRegistrationState> GetDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken = default)
         {
@@ -458,6 +454,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="deviceRegistrationState">The <see cref="DeviceRegistrationState"/> that identifies the DeviceRegistrationState.
         /// It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to
         /// delete the registration status information for the provided DeviceRegistrationState.</exception>
         public Task DeleteDeviceRegistrationStateAsync(DeviceRegistrationState deviceRegistrationState, CancellationToken cancellationToken = default)
@@ -477,6 +474,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="id">The <c>string</c> that identifies the DeviceRegistrationState. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the
         /// DeviceRegistrationState information for the provided registrationId.</exception>
         public Task DeleteDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken = default)
@@ -500,6 +498,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">The <c>string</c> with the DeviceRegistrationState eTag. It can be <c>null</c> or empty.
         /// The Device Provisioning Service will ignore it in all of these cases.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the
         /// DeviceRegistrationState information for the provided registrationId and eTag.</exception>
         public Task DeleteDeviceRegistrationStateAsync(string id, string eTag, CancellationToken cancellationToken = default)
@@ -578,6 +577,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="registrationId">The registration Id of the individual enrollment to retrieve the attestation information of. This may not be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="AttestationMechanism"/> of the individual enrollment associated with the provided registrationId.</returns>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         public Task<AttestationMechanism> GetIndividualEnrollmentAttestationAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.GetEnrollmentAttestationAsync(_contractApiHttp, registrationId, cancellationToken);
@@ -592,6 +593,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="AttestationMechanism"/> associated with the provided group Id.</returns>
+        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         public Task<AttestationMechanism> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.GetEnrollmentAttestationAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);

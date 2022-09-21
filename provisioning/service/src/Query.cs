@@ -77,20 +77,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             int pageSize,
             CancellationToken cancellationToken)
         {
-            if (serviceConnectionString == null)
-            {
-                throw new ArgumentNullException(nameof(serviceConnectionString));
-            }
-
-            if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
-            {
-                throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
-            }
-
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            Argument.AssertNotNullOrWhiteSpace(serviceName, nameof(serviceName));
+            Argument.AssertNotNull(serviceConnectionString, nameof(serviceConnectionString));
+            Argument.AssertNotNull(query, nameof(query));
 
             if (pageSize < 0)
             {

@@ -10,15 +10,8 @@ namespace Microsoft.Azure.Devices
     {
         public static void ValidateServiceHostName(string serviceHostName, string serviceName)
         {
-            if (string.IsNullOrWhiteSpace(serviceHostName))
-            {
-                throw new ArgumentNullException(nameof(serviceHostName));
-            }
-
-            if (string.IsNullOrWhiteSpace(serviceName))
-            {
-                throw new ArgumentNullException(nameof(serviceName));
-            }
+            Argument.AssertNotNullOrWhiteSpace(serviceName, nameof(serviceName));
+            Argument.AssertNotNullOrWhiteSpace(serviceHostName, nameof(serviceHostName));
 
             if (!serviceHostName.StartsWith(serviceName.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
             {

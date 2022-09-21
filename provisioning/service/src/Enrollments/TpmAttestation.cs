@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The provisioning service supports Trusted Platform Module, or TPM, as the device attestation mechanism.
     /// User must provide the Endorsement Key, and can, optionally, provide the Storage Root Key.
     /// </remarks>
-    ///
     public sealed class TpmAttestation : Attestation
     {
         private string _endorsementKey;

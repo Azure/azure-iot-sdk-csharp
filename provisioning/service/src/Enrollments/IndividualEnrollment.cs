@@ -211,6 +211,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Attestation
         /// </summary>
+        /// <exception cref="ArgumentNullException">When the provided attestation is null.</exception>
         [JsonIgnore]
         public Attestation Attestation
         {

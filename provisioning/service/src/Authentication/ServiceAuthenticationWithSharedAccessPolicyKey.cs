@@ -52,21 +52,13 @@ namespace Microsoft.Azure.Devices
 
         private void SetPolicyName(string policyName)
         {
-            if (string.IsNullOrWhiteSpace(policyName))
-            {
-                throw new ArgumentNullException(nameof(policyName));
-            }
-
+            Argument.AssertNotNullOrWhiteSpace(policyName, nameof(policyName));
             _policyName = policyName;
         }
 
         private void SetKey(string key)
         {
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
+            Argument.AssertNotNullOrWhiteSpace(key, nameof(key));
             _key = key;
         }
     }
