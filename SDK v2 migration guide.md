@@ -155,7 +155,7 @@ Answer:
 > Newer features in the services will not be brought into to the v 1.X.X SDKs. Users are encouraged to upgrade to the 2.X.X SDK for all the best feature support, stability, and bug fixes.
 
 Question:
-> Can I still upload files to Azure Storage using this SDK now that deviceClient.CompleteFileUploadAsync() has been removed? (TODO: update API name)
+> Can I still upload files to Azure Storage using this SDK now that deviceClient.UploadToBlobAsync() has been removed?
 
 Answer:
 > Yes, you will still be able to upload files to Azure Storage after upgrading. 
