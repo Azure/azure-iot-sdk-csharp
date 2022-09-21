@@ -34,7 +34,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
         private static readonly MqttQualityOfServiceLevel QoS = MqttQualityOfServiceLevel.AtLeastOnce;
-        private static readonly MqttFactory s_mqttFactory = new MqttFactory(new MqttLogger());
+
+        private readonly MqttFactory s_mqttFactory = new MqttFactory(new MqttLogger());
 
         private TaskCompletionSource<RegistrationOperationStatus> _startProvisioningRequestStatusSource;
         private TaskCompletionSource<RegistrationOperationStatus> _checkRegistrationOperationStatusSource;
