@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private TaskCompletionSource<RegistrationOperationStatus> _checkRegistrationOperationStatusSource;
         private CancellationTokenSource _connectionLostCancellationToken;
         private int _packetId;
+        private bool _isOpening;
         private bool _isClosing;
         private Exception _connectionLossCause;
 
@@ -77,6 +78,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             _isClosing = false;
+            _isOpening = true;
             _connectionLossCause = null;
             using IMqttClient mqttClient = s_mqttFactory.CreateMqttClient();
             MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest);
@@ -100,6 +102,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 {
                     await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken).ConfigureAwait(false);
                     mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
+                    _isOpening = false;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -156,6 +159,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync; // safe to -= this value more than once
                 mqttClient.DisconnectedAsync -= HandleDisconnectionAsync; // safe to -= this value more than once
+                _connectionLostCancellationToken?.Dispose();
             }
         }
 
@@ -413,7 +417,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Logging.Error(this, $"MQTT connection was lost '{_connectionLossCause}'.");
 
             // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
-            if (disconnectedEventArgs.ClientWasConnected && !_isClosing)
+            if (disconnectedEventArgs.ClientWasConnected && !_isClosing && _isOpening)
             {
                 _connectionLostCancellationToken.Cancel();
             }
