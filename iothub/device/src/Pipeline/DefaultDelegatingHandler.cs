@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -157,10 +156,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
         }
 
-        public virtual Task<int> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public virtual Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0);
+            return NextHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0L);
         }
 
         public virtual Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)

@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                         twin = new Twin
                         {
-                            Version = Convert.ToInt32(amqpMessage.MessageAnnotations.Map["version"]),
+                            Version = long.Parse(amqpMessage.MessageAnnotations.Map["version"].ToString()),
                         };
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))

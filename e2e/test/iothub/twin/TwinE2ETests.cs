@@ -405,7 +405,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var props = new Client.TwinCollection();
             props[propName] = propValue;
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            int newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+            long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
             Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
