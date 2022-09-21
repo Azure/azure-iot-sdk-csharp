@@ -83,8 +83,11 @@ namespace Microsoft.Azure.Devices
         {
             switch (errorCode)
             {
-                case IotHubErrorCode.ThrottlingException:
                 case IotHubErrorCode.IotHubQuotaExceeded:
+                case IotHubErrorCode.DeviceNotOnline:
+                case IotHubErrorCode.ThrottlingException:
+                case IotHubErrorCode.ServerError:
+                case IotHubErrorCode.ServiceUnavailable:
                     return true;
 
                 case IotHubErrorCode.Unknown:
