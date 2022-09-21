@@ -17,9 +17,9 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
         private const string TestTagName = "JobsSample_Tag";
         private const int TestTagValue = 100;
 
-        private readonly JobClient _jobClient;
+        private readonly IotHubServiceClient _jobClient;
 
-        public JobsSample(JobClient jobClient)
+        public JobsSample(IotHubServiceClient jobClient)
         {
             _jobClient = jobClient ?? throw new ArgumentNullException(nameof(jobClient));
         }
