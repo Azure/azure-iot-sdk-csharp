@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
-using Microsoft.Azure.Devices.Provisioning.Security;
 using System;
 using System.Threading.Tasks;
+using CommandLine;
+using Microsoft.Azure.Devices.Provisioning.Security;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             // This sample provides a way to get the endorsement key (EK) required in creation of the individual enrollment
             if (parameters.GetTpmEndorsementKey)
             {
-                using var security = new SecurityProviderTpmHsm(null);
+                using var security = new AuthenticationProviderTpmHsm(null);
                 Console.WriteLine($"Your EK is {Convert.ToBase64String(security.GetEndorsementKey())}");
 
                 return 0;

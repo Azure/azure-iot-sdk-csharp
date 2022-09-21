@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             Console.WriteLine($"Initializing the device provisioning client...");
 
-            using ProvisioningTransportHandler transportHandler = GetTransportHandler();
+            using ProvisioningTransportHandler transportHandler = _parameters.GetTransportHandler();
             var options = new ProvisioningClientOptions(transportHandler);
             var provClient = new ProvisioningDeviceClient(
                 _parameters.GlobalDeviceEndpoint,
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 certificate);
 
             Console.WriteLine($"Testing the provisioned device with IoT Hub...");
-            IotHubClientTransportSettings transportSettings = GetHubTransportSettings();
+            IotHubClientTransportSettings transportSettings = _parameters.GetHubTransportSettings();
             var hubOptions = new IotHubClientOptions(transportSettings);
             using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
 
@@ -70,30 +70,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             await iotClient.CloseAsync();
             Console.WriteLine("Finished.");
-        }
-
-        private ProvisioningTransportHandler GetTransportHandler()
-        {
-            return _parameters.Transport switch
-            {
-                Transport.Mqtt => new ProvisioningTransportHandlerMqtt(_parameters.TransportProtocol),
-                Transport.Amqp => new ProvisioningTransportHandlerAmqp(_parameters.TransportProtocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {_parameters.Transport}/{_parameters.TransportProtocol}"),
-            };
-        }
-
-        private IotHubClientTransportSettings GetHubTransportSettings()
-        {
-            IotHubClientTransportProtocol protocol = _parameters.TransportProtocol == ProvisioningClientTransportProtocol.Tcp
-                ? IotHubClientTransportProtocol.Tcp
-                : IotHubClientTransportProtocol.WebSocket;
-
-            return _parameters.Transport switch
-            {
-                Transport.Mqtt => new IotHubClientMqttSettings(protocol),
-                Transport.Amqp => new IotHubClientAmqpSettings(protocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {_parameters.Transport}/{_parameters.TransportProtocol}"),
-            };
         }
 
         private X509Certificate2 LoadProvisioningCertificate()

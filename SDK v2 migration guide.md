@@ -98,7 +98,7 @@ TODO: verify for C#
   - For most users, no action is needed here since IoT Hub uses the [DigiCert Global G2 CA root](https://global-root-g2.chain-demos.digicert.com/info/index.html) certificate which is already installed on most devices.
 - The Bouncycastle dependencies have been removed.
   - The Bouncycastle dependencies were used for some certificate parsing logic that has been removed from the SDK.
-- Reduced access levels to classes and methods that were never intended to be public where possible .
+- Reduced access levels to classes and methods that were never intended to be public where possible.
 - Removed service error code descriptions that the service would never return the error code for.
 - Reduce default SAS token time to live from 1 year to 1 hour for security purposes.
 - Removed unnecessary synchronization on service client APIs to allow for a single client to make service API calls simultaneously.
