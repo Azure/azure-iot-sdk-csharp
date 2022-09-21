@@ -398,18 +398,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 (request, context) =>
                 {
                     logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: ModuleClient method: {request.MethodName} {request.ResponseTimeout}.");
+            
+                    try
+                    {
+                        request.MethodName.Should().Be(methodName);
+                        request.PayloadAsJsonString.Should().Be(ServiceRequestJson);
 
-                        try
-                        {
-                            request.MethodName.Should().Be(methodName);
-                            request.Payload.Should().Be(ServiceRequestJson);
-
-                            methodCallReceived.TrySetResult(true);
-                        }
-                        catch (Exception ex)
-                        {
-                            methodCallReceived.TrySetException(ex);
-                        }
+                        methodCallReceived.SetResult(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        methodCallReceived.SetException(ex);
+                    }
 
                     var response = new Client.DirectMethodResponse()
                     {

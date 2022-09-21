@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs_WithProxy()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     proxyAddress: s_proxyServerAddress)
@@ -65,10 +65,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    new IotHubClientMqttSettings(),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -79,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -92,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs_WithProxy()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     proxyAddress: s_proxyServerAddress)
@@ -104,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_AmqpConnectionLossSendRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_AmqpConn,
                     "")
                 .ConfigureAwait(false);
@@ -115,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_AmqpConnectionLossSendRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_AmqpConn,
                     "")
                 .ConfigureAwait(false);
@@ -126,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_AmqpSessionLossSendRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_AmqpSess,
                     "")
                 .ConfigureAwait(false);
@@ -137,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_AmqpSessionLossSendRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_AmqpSess,
                     "")
                 .ConfigureAwait(false);
@@ -148,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_AmqpD2cLinkDropSendRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_AmqpD2C,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -159,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_AmqpD2cLinkDropSendRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_AmqpD2C,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -170,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_Throttle,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -182,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Throttle,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -197,11 +199,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
-                        Client.TransportType.Amqp_Tcp_Only,
+                        new IotHubClientAmqpSettings(),
                         FaultInjectionConstants.FaultType_Throttle,
                         FaultInjectionConstants.FaultCloseReason_Boom,
                         FaultInjection.ShortRetryDuration)
-                    .ConfigureAwait(false);
+                .ConfigureAwait(false);
+            };
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
@@ -218,12 +221,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_Throttle,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration,
-                    FaultInjection.ShortRetryDuration).ConfigureAwait(false);
+                        new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                        FaultInjectionConstants.FaultType_Throttle,
+                        FaultInjectionConstants.FaultCloseReason_Boom,
+                        FaultInjection.ShortRetryDuration)
+                    .ConfigureAwait(false);
             };
 
             // assert
@@ -241,11 +243,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_QuotaExceeded,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration)
+                        new IotHubClientAmqpSettings(),
+                        FaultInjectionConstants.FaultType_QuotaExceeded,
+                        FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
             };
 
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [DoNotParallelize]
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
@@ -264,11 +264,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_QuotaExceeded,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration)
+                        new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                        FaultInjectionConstants.FaultType_QuotaExceeded,
+                        FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
             };
 
@@ -286,12 +284,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
-                    TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_Auth,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration).ConfigureAwait(false);
+                        new IotHubClientAmqpSettings(),
+                        FaultInjectionConstants.FaultType_Auth,
+                        FaultInjectionConstants.FaultCloseReason_Boom)
+                .ConfigureAwait(false);
             };
 
             // assert
@@ -308,12 +304,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
-                    TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_Auth,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration)
+                        new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                        FaultInjectionConstants.FaultType_Auth,
+                        FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
             };
 
@@ -326,14 +319,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
                     new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_GracefulShutdownAmqp,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
@@ -343,9 +336,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_GracefulShutdownAmqp,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
@@ -354,13 +346,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Mqtt()
         {
             await SendMessageRecoveryAsync(
                     new IotHubClientMqttSettings(),
-                    FaultInjection.FaultType_GracefulShutdownMqtt,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
@@ -370,9 +363,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_GracefulShutdownMqtt,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
+                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
+                    FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
         }
 
@@ -390,10 +382,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 // Some tests rely on the operation timing out before fault injection ends, so this is important to set.
-                // But it could probably just as easily be done with cancellation tokens.
-                deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
-
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                using var cts = new CancellationTokenSource(retryDuration);
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDuration.TotalMilliseconds;
             }

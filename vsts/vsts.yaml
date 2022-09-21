@@ -23,7 +23,6 @@ parameters:
     - netcore3.1
     - netcore2.1
     - net4.7.2
-    - net4.5.1
   default: default
 
 variables:
@@ -47,7 +46,6 @@ variables:
   testNet50: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net5.0')) }}
   testNetcore21: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore2.1')) }}
   testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
-  testNet451: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.5.1')) }}
 
 trigger:
   batch: true
@@ -385,9 +383,6 @@ jobs:
         .NET 4.7.2:
           FRAMEWORK: net472
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
-        .NET 4.5.1:
-          FRAMEWORK: net451
-          SHOULD_RUN: ${{ eq(variables['testNet451'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -408,7 +403,6 @@ jobs:
             Write-Host "testNet50: ${{ variables.testNet50 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
-            Write-Host "testNet451: ${{ variables.testNet451 }}"
 
       - ${{ if eq(variables['testNet60'], 'True') }}:
         - task: UseDotNet@2
@@ -446,17 +440,6 @@ jobs:
           displayName: 'Install .NET 4.7.2'
           inputs:
             script: 'choco install netfx-4.7.2-devpack'
-
-      - ${{ if eq(variables['testNet451'], 'True') }}:
-        - task: CmdLine@2
-          displayName: 'Install .NET 4.5.1'
-          inputs:
-            script: 'choco install dotnet4.5.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - script: |
           choco install -y squid

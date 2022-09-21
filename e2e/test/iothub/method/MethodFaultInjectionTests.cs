@@ -218,7 +218,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
                     DirectMethodResponse response = await serviceClient.DirectMethods
-                            .InvokeAsync(deviceName, directMethodRequest).ConfigureAwait(false);
+                            .InvokeAsync(deviceName, directMethodRequest)
+                            .ConfigureAwait(false);
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
@@ -227,8 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                     done = true;
                 }
-                catch (IotHubServiceException ex)
-                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
+                catch (IotHubServiceException ex) when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
                 {
                     exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: [Tried {attempt} time(s)] ServiceClient exception caught: {ex}.");
@@ -249,10 +249,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
-            using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             // Configure the callback and start accepting method calls.
-            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
+            async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
@@ -265,12 +264,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson);
+
+                using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
+
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
 
             // Cleanup references.
-            Task CleanupOperationAsync()
+            Task CleanupAsync()
             {
                 testDeviceCallbackHandler?.Dispose();
                 return Task.FromResult(true);
@@ -286,9 +288,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     reason,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDelay,
-                    InitOperationAsync,
+                    InitAsync,
                     TestOperationAsync,
-                    CleanupOperationAsync,
+                    CleanupAsync,
                     Logger)
                 .ConfigureAwait(false);
         }

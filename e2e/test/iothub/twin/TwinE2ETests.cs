@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2ETests)}_";
 
-        private static readonly IotHubServiceClient _serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+        private static readonly IotHubServiceClient _serviceClient = new(TestConfiguration.IotHub.ConnectionString);
 
         private static readonly List<object> s_listOfPropertyValues = new()
         {
@@ -360,10 +360,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
 
             int connectionStatusChangeCount = 0;
-            Action<ConnectionStatus, ConnectionStatusChangeReason> connectionStatusChangeHandler = (ConnectionStatus status, ConnectionStatusChangeReason reason) =>
+            void connectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
             {
                 Interlocked.Increment(ref connectionStatusChangeCount);
-            };
+            }
 
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();

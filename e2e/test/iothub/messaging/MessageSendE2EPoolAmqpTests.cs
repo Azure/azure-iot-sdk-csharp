@@ -27,7 +27,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MultipleConnections_AmqpWs()
         {
             await SendMessagePoolOverAmqp(
@@ -43,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            async Task InitAsync(DeviceClient deviceClient, TestDevice t, TestDeviceCallbackHandler c)
+            async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice t, TestDeviceCallbackHandler c)
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
@@ -51,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                using Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string payload, out string p1Value);
+                Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string payload, out string p1Value);
                 Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             }

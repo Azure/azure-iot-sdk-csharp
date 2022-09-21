@@ -169,6 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
 
+                await deviceClient.OpenAsync().ConfigureAwait(false);
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
