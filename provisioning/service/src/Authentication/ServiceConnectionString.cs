@@ -30,8 +30,6 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentNullException">if the provided builder is null.</exception>
         public ServiceConnectionString(ServiceConnectionStringBuilder builder)
         {
-            Argument.AssertNotNull(builder, nameof(builder));
-
             HostName = builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;

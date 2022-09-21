@@ -77,10 +77,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             int pageSize,
             CancellationToken cancellationToken)
         {
-            Argument.AssertNotNullOrWhiteSpace(serviceName, nameof(serviceName));
-            Argument.AssertNotNull(serviceConnectionString, nameof(serviceConnectionString));
-            Argument.AssertNotNull(query, nameof(query));
-
             if (pageSize < 0)
             {
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");

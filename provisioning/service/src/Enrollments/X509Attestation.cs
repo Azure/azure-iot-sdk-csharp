@@ -224,14 +224,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
         /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">If the provided primary certificate is null.</exception>
+        /// <exception cref="ArgumentException">if the provided primary certificate is empty or white space.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(string primary, string secondary)
         {
-            if (string.IsNullOrWhiteSpace(primary))
-            {
-                throw new ArgumentException("primary certificate cannot be null or empty.");
-            }
+            Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
 
             return new X509Attestation(
                 null,
@@ -247,14 +245,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the provided primary certificate is invalid.</exception>
+        /// <exception cref="ArgumentNullException">If the provided primary certificate is null.</exception>
+        /// <exception cref="ArgumentException">if the provided primary certificate is empty or white space.</exception>
         /// <exception cref="CryptographicException">if the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromCAReferences(string primary)
         {
-            if (string.IsNullOrWhiteSpace(primary))
-            {
-                throw new ArgumentException("primary certificate cannot be null or empty.");
-            }
+            Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
 
             return new X509Attestation(
                 null, null,
@@ -270,14 +266,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
         /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the provide primary certificate is invalid.</exception>
+        /// <exception cref="ArgumentNullException">If the provided primary certificate is null.</exception>
+        /// <exception cref="ArgumentException">if the provided primary certificate is empty or white space.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromCAReferences(string primary, string secondary)
         {
-            if (string.IsNullOrWhiteSpace(primary))
-            {
-                throw new ArgumentException("primary certificate cannot be null or empty.");
-            }
+            Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
 
             return new X509Attestation(
                 null, null,

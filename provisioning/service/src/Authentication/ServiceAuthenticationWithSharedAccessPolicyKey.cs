@@ -52,13 +52,11 @@ namespace Microsoft.Azure.Devices
 
         private void SetPolicyName(string policyName)
         {
-            Argument.AssertNotNullOrWhiteSpace(policyName, nameof(policyName));
             _policyName = policyName;
         }
 
         private void SetKey(string key)
         {
-            Argument.AssertNotNullOrWhiteSpace(key, nameof(key));
             _key = key;
         }
     }

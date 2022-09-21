@@ -77,7 +77,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="connectionString">The <c>string</c> that cares the connection string of the Device Provisioning Service.</param>
         /// <param name="options"> The options that allow configuration of the provisioning service client instance during initialization.</param>
         /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
-        /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">If the provided connection string is null.</exception>
+        /// <exception cref="ArgumentException">if the provided connection string is empty or white space.</exception>
         public ProvisioningServiceClient(string connectionString, ProvisioningServiceClientOptions options = default)
         {
             if (options == default)
@@ -143,7 +144,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="registrationId">The registration Id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The enrollment.</returns>
-        /// <exception cref = "ArgumentException" > If the provided parameters are not correct.</exception>
+        /// <exception cref="ArgumentException"> If the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
         public Task<IndividualEnrollment> GetIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken = default)
@@ -212,7 +213,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="query">The SQL query. It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
+        /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
+        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
         public Query CreateIndividualEnrollmentQuery(string query, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.CreateQuery(
@@ -240,7 +242,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
+        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if the provided page size value is less than zero.</exception>
         public Query CreateIndividualEnrollmentQuery(string query, int pageSize, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.CreateQuery(
@@ -380,7 +384,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="query">The SQL query. It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
+        /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
+        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
         public Query CreateEnrollmentGroupQuery(string query, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.CreateQuery(
@@ -408,7 +413,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
+        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if the provided page size value is less than zero.</exception>
         public Query CreateEnrollmentGroupQuery(string query, int pageSize, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.CreateQuery(
@@ -520,6 +527,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
+        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
             string query,
             string enrollmentGroupId,
@@ -552,7 +561,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
+        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if the provided page size value is less than zero.</exception>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
             string query,
             string enrollmentGroupId,

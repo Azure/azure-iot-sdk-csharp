@@ -51,8 +51,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>A <c>ServiceConnectionStringBuilder</c> object with the parsed connection string.</returns>
         public static ServiceConnectionStringBuilder Create(string serviceConnectionString)
         {
-            Argument.AssertNotNullOrWhiteSpace(serviceConnectionString, nameof(serviceConnectionString));
-
             var serviceConnectionStringBuilder = new ServiceConnectionStringBuilder();
             serviceConnectionStringBuilder.Parse(serviceConnectionString);
             serviceConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory
@@ -128,8 +126,6 @@ namespace Microsoft.Azure.Devices
 
         private void SetHostName(string hostname)
         {
-            Argument.AssertNotNullOrWhiteSpace(hostname, nameof(hostname));
-
             ValidateFormat(hostname, s_hostNamePropertyName, s_hostNameRegex);
             _hostName = hostname;
             SetServiceName();
@@ -147,8 +143,6 @@ namespace Microsoft.Azure.Devices
 
         private void SetAuthenticationMethod(IAuthenticationMethod authMethod)
         {
-            Argument.AssertNotNull(authMethod, nameof(authMethod));
-
             authMethod.Populate(this);
             _authenticationMethod = authMethod;
             Validate();

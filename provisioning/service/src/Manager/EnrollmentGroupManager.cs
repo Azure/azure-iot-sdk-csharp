@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (pageSize < 0)
             {
-                throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
+                throw new ArgumentOutOfRangeException($"{nameof(pageSize)} cannot be negative");
             }
 
             return new Query(provisioningConnectionString, ServiceName, query, contractApiHttp, pageSize, cancellationToken);
