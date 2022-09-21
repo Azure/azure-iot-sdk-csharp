@@ -9,6 +9,12 @@ using System.Reflection;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
+    public enum Transport
+    {
+        Mqtt,
+        Amqp,
+    };
+
     /// <summary>
     /// Parameters for the application
     /// </summary>
@@ -22,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         public string IdScope { get; set; }
 
         [Option(
-            'c',
+            'n',
             "CertificateName",
             Default = "certificate.pfx",
             HelpText = "The PFX certificate to load for device provisioning authentication.")]
@@ -35,18 +41,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         public string CertificatePassword { get; set; }
 
         [Option(
-            'g',
             "GlobalDeviceEndpoint",
             Default = "global.azure-devices-provisioning.net",
             HelpText = "The global endpoint for devices to connect to.")]
         public string GlobalDeviceEndpoint { get; set; }
 
         [Option(
-            't',
-            "TransportType",
-            Default = TransportType.Mqtt,
-            HelpText = "The transport to use to communicate with the device provisioning instance. Possible values include Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_only, and Http1.")]
-        public TransportType TransportType { get; set; }
+            "Transport",
+            Default = Transport.Mqtt,
+            HelpText = "The transport to use for the connection.")]
+        public Transport Transport { get; set; }
+
+        [Option(
+            "TransportProtocol",
+            Default = ProvisioningClientTransportProtocol.Tcp,
+            HelpText = "The transport to use to communicate with the device provisioning instance.")]
+        public ProvisioningClientTransportProtocol TransportProtocol { get; set; }
 
         public string GetCertificatePath()
         {
