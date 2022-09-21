@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private static readonly IDictionary<string, string> s_registrationIds = new Dictionary<string, string>
         {
             { SampleRegistrationId1, SampleTpmEndorsementKey },
-            { SampleRegistrationId2, SampleTpmEndorsementKey }
+            { SampleRegistrationId2, SampleTpmEndorsementKey },
         };
         
         public BulkOperationSample(ProvisioningServiceClient provisioningServiceClient)
