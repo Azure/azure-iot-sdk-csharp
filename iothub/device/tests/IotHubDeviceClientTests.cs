@@ -12,6 +12,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using NSubstitute;
 
 namespace Microsoft.Azure.Devices.Client.Test
@@ -247,7 +248,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             const int DefaultPercentage = 0;
-            Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
+            DefaultPercentage.Should().Be(deviceClient.DiagnosticSamplingPercentage);
         }
 
         [TestMethod]
@@ -256,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             const int ValidPercentage = 80;
             deviceClient.DiagnosticSamplingPercentage = ValidPercentage;
-            Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, ValidPercentage);
+            ValidPercentage.Should().Be(deviceClient.DiagnosticSamplingPercentage);
         }
 
         [TestMethod]
@@ -269,22 +270,22 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             try
             {
-                deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedUpperLimit;
-                Assert.Fail();
+                Action act = () => deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedUpperLimit;
+                act.Should().Throw<ArgumentOutOfRangeException>();
             }
             catch (ArgumentOutOfRangeException)
             {
-                Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
+                DefaultPercentage.Should().Be(deviceClient.DiagnosticSamplingPercentage);
             }
 
             try
             {
-                deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedLowerLimit;
-                Assert.Fail();
+                Action act = () => deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedLowerLimit;
+                act.Should().Throw<ArgumentOutOfRangeException>();
             }
             catch (ArgumentOutOfRangeException)
             {
-                Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
+                DefaultPercentage.Should().Be(deviceClient.DiagnosticSamplingPercentage);
             }
         }
 
@@ -414,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.MethodName;
-                actualMethodBody = methodRequest.Payload;
+                actualMethodBody = (string)methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
                 return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
@@ -433,10 +434,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(methodCallbackCalled);
-            Assert.AreEqual(methodName, actualMethodName);
-            Assert.AreEqual(methodBody, actualMethodBody);
-            Assert.AreEqual(methodUserContext, actualMethodUserContext);
+            methodCallbackCalled.Should().BeTrue();
+            methodName.Should().Be(actualMethodName);
+            methodBody.Should().Be(actualMethodBody);
+            methodUserContext.Should().Be((string)actualMethodUserContext);
 
             bool methodCallbackCalled2 = false;
             string actualMethodName2 = string.Empty;
@@ -445,7 +446,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodCallback2 = (methodRequest, userContext) =>
             {
                 actualMethodName2 = methodRequest.MethodName;
-                actualMethodBody2 = methodRequest.Payload;
+                actualMethodBody2 = (string)methodRequest.Payload;
                 actualMethodUserContext2 = userContext;
                 methodCallbackCalled2 = true;
                 return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
@@ -463,10 +464,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(methodCallbackCalled2);
-            Assert.AreEqual(methodName, actualMethodName2);
-            Assert.AreEqual(methodBody2, actualMethodBody2);
-            Assert.AreEqual(methodUserContext2, actualMethodUserContext2);
+            methodCallbackCalled2.Should().BeTrue();
+            methodName.Should().Be(actualMethodName2);
+            methodBody2.Should().Be(actualMethodBody2);
+            methodUserContext2.Should().Be((string)actualMethodUserContext2);
         }
 
         [TestMethod]
@@ -485,7 +486,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.MethodName;
-                actualMethodBody = methodRequest.Payload;
+                actualMethodBody = (string)methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
                 return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
@@ -504,10 +505,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(methodCallbackCalled);
-            Assert.AreEqual(methodName, actualMethodName);
-            Assert.AreEqual(methodBody, actualMethodBody);
-            Assert.AreEqual(methodUserContext, actualMethodUserContext);
+
+            methodCallbackCalled.Should().BeTrue();
+            methodName.Should().Be(actualMethodName);
+            methodBody.Should().Be(actualMethodBody);
+            methodUserContext.Should().Be((string)actualMethodUserContext);
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(null, null).ConfigureAwait(false);
@@ -520,7 +522,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsFalse(methodCallbackCalled);
+            methodCallbackCalled.Should().BeFalse();
         }
 
         [TestMethod]
@@ -552,9 +554,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
-            Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, connectionStatusInfo.Status);
-            Assert.AreEqual(ConnectionStatusChangeReason.ConnectionOk, connectionStatusInfo.ChangeReason);
+            handlerCalled.Should().BeTrue();
+            connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
+            connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
         }
 
         [TestMethod]
@@ -574,7 +576,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
-            Assert.IsFalse(handlerCalled);
+            handlerCalled.Should().BeFalse();
         }
 
         [TestMethod]
@@ -593,15 +595,15 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
-            Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, connectionStatusInfo.Status);
-            Assert.AreEqual(ConnectionStatusChangeReason.ConnectionOk, connectionStatusInfo.ChangeReason);
+            handlerCalled.Should().BeTrue();
+            connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
+            connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
             handlerCalled = false;
 
             // current status = connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
-            Assert.IsFalse(handlerCalled);
+            handlerCalled.Should().BeFalse();
         }
 
         [TestMethod]
@@ -622,18 +624,17 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // current status = disabled
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            handlerCalled.Should().BeTrue();
+            connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
+            connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
 
-            Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, connectionStatusInfo.Status);
-            Assert.AreEqual(ConnectionStatusChangeReason.ConnectionOk, connectionStatusInfo.ChangeReason);
             handlerCalled = false;
 
             // current status = connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError));
 
-            Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.DisconnectedRetrying, connectionStatusInfo.Status);
-            Assert.AreEqual(ConnectionStatusChangeReason.CommunicationError, connectionStatusInfo.ChangeReason);
+            handlerCalled.Should().BeTrue();
+            connectionStatusInfo.Status.Should().Be(ConnectionStatus.DisconnectedRetrying);
         }
 
         [TestMethod]

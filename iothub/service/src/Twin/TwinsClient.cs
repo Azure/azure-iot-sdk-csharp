@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -93,7 +92,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting device twin: {deviceId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -145,7 +144,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device module twin threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting device module twin {deviceId}/{moduleId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -266,7 +265,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> UpdateAsync(IEnumerable<Twin> twins, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating twins", nameof(UpdateAsync));
+                Logging.Enter(this, "Updating twins", nameof(UpdateAsync));
 
             Argument.AssertNotNullOrEmpty(twins, nameof(twins));
 
@@ -292,7 +291,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating twins", nameof(UpdateAsync));
+                    Logging.Exit(this, "Updating twins", nameof(UpdateAsync));
             }
         }
 
@@ -374,7 +373,7 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device twin {deviceId} - is replace: {isReplace}", nameof(UpdateAsync));
+                Logging.Enter(this, $"Updating device twin: {deviceId} - is replace: {isReplace}", nameof(UpdateAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -395,7 +394,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device twin threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"Updating device twin {deviceId} - is replace {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally
@@ -415,7 +414,7 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device module twin {deviceId}/{moduleId} - is replace: {isReplace}", nameof(UpdateAsync));
+                Logging.Enter(this, $"Updating device module twin: {deviceId}/{moduleId} - is replace: {isReplace}", nameof(UpdateAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -437,13 +436,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device module twin threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"Updating device {deviceId}/{moduleId} - is replace {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating device twin {deviceId}/{moduleId} - is replace: {isReplace}", nameof(UpdateAsync));
+                    Logging.Exit(this, $"Updating device twin: {deviceId}/{moduleId} - is replace: {isReplace}", nameof(UpdateAsync));
             }
         }
 
@@ -470,7 +469,7 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.UpdateTwinIfMatchETag:
                         if (string.IsNullOrWhiteSpace(twin.ETag.ToString()))
                         {
-                            throw new InvalidOperationException($"Twin {twin.DeviceId} missing an ETag when conditionally updating.");
+                            throw new InvalidOperationException($"Twin: {twin.DeviceId} missing an ETag when conditionally updating.");
                         }
                         break;
 

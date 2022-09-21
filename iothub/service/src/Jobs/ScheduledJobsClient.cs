@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -70,10 +69,9 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<ScheduledJob> GetAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting job {jobId}", nameof(GetAsync));
+                Logging.Enter(this, $"Getting job: {jobId}", nameof(GetAsync));
 
             Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
-
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -92,7 +90,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting job {jobId}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting job: {jobId}", nameof(GetAsync));
             }
         }
 
@@ -138,13 +136,13 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<ScheduledJob> CancelAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Canceling job {jobId}", nameof(CancelAsync));
+                Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                     HttpMethod.Post,
                     new Uri(
@@ -167,7 +165,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Canceling job {jobId}", nameof(CancelAsync));
+                    Logging.Exit(this, $"Canceling job: {jobId}", nameof(CancelAsync));
             }
         }
 
@@ -199,7 +197,7 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Scheduling direct method job {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
+                Logging.Enter(this, $"Scheduling direct method job: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
 
             Argument.AssertNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
 
@@ -235,7 +233,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Schedulign direct method job {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
+                    Logging.Enter(this, $"Scheduling direct method job: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
             }
         }
 
@@ -274,7 +272,7 @@ namespace Microsoft.Azure.Devices
                 : scheduledJobsOptions.JobId;
 
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"queryCondition=[{scheduledJobsOptions.JobId}]", nameof(ScheduleDirectMethodAsync));
+                Logging.Enter(this, $"Scheduling twin update: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
 
             Argument.AssertNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
 
@@ -309,7 +307,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Scheduling twin update {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
+                    Logging.Exit(this, $"Scheduling twin update: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
             }
         }
 

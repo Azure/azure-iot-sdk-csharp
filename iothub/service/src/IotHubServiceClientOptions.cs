@@ -13,8 +13,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class IotHubServiceClientOptions
     {
-        private static readonly TimeSpan s_defaultIdleTimeout = TimeSpan.FromMinutes(2);
-
         /// <summary>
         /// The web proxy that will be used to connect to IoT hub when using the HTTP protocol.
         /// </summary>
@@ -90,15 +88,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Specify client-side heartbeat interval.
         /// The interval, that the client establishes with the service, for sending keep alive pings.
-        /// The default value is 2 minutes.
         /// </summary>
         /// <remarks>
-        /// Only used for AMQP. Can only be used for <see cref="MessagesClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
+        /// <para>
+        /// The default value is 2 minutes.
+        /// </para>
+        /// <para>
+        /// Only used for AMQP. Can only be used for <see cref="MessagesClient"/>, <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
         /// The client will consider the connection as disconnected if the keep alive ping fails.
         /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
+        /// </para>
         /// </remarks>
-        public TimeSpan AmqpConnectionKeepAlive { get; set; } = s_defaultIdleTimeout;
+        public TimeSpan AmqpConnectionKeepAlive { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.

@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         var response = new Client.DirectMethodResponse()
                         {
                             Status = 200,
-                            Payload = Encoding.UTF8.GetBytes(deviceResponseJson)
+                            Payload = deviceResponseJson
                         };
                         return Task.FromResult(response);
                     }

@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     internal class SymmetricKeyCredentials : ServiceClientCredentials
     {
         private const string SASHeaderName = "SharedAccessSignature";
-        private const string Registration = "registration";
         private readonly string SymmetricKey;
         private volatile string _sasToken;
 
@@ -27,7 +26,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string audience = request.RequestUri.AbsolutePath.Trim('/');
             string[] segments = audience.Split('/');
 
-            _sasToken = ProvisioningSasBuilder.BuildSasSignature(Registration, SymmetricKey, string.Concat(segments[0], '/', segments[1], '/', segments[2]), TimeSpan.FromDays(1));
+            string target = string.Concat(segments[0], '/', segments[1], '/', segments[2]);
+            _sasToken = ProvisioningSasBuilder.BuildSasSignature(SymmetricKey, target, TimeSpan.FromDays(1));
             SetAuthorizationHeader(request, _sasToken);
 
             return base.ProcessHttpRequestAsync(request, cancellationToken);

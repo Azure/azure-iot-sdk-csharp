@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -112,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // act
 
-                JobProperties jobProperties = await CreateAndWaitForJobAsync(
+                ExportJobProperties exportJobProperties = await CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         isUserAssignedMsi,
                         devicesFileName,
@@ -123,8 +122,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // assert
 
-                jobProperties.Status.Should().Be(JobStatus.Completed, $"Export failed due to '{jobProperties.FailureReason}'.");
-                jobProperties.FailureReason.Should().BeNullOrEmpty("Otherwise export failed");
+                exportJobProperties.Status.Should().Be(JobStatus.Completed, $"Export failed due to '{exportJobProperties.FailureReason}'.");
+                exportJobProperties.FailureReason.Should().BeNullOrEmpty("Otherwise export failed");
 
                 await ValidateDevicesAsync(
                         devicesFileName,
@@ -145,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        private async Task<JobProperties> CreateAndWaitForJobAsync(
+        private async Task<ExportJobProperties> CreateAndWaitForJobAsync(
             StorageAuthenticationType storageAuthenticationType,
             bool isUserAssignedMsi,
             string devicesFileName,
@@ -160,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 : null;
 
-            var jobProperties = new JobProperties(containerUri, true)
+            var exportJobProperties = new ExportJobProperties(containerUri, true)
             {
                 OutputBlobName = devicesFileName,
                 StorageAuthenticationType = storageAuthenticationType,
@@ -171,14 +170,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var sw = Stopwatch.StartNew();
 
-            while (!jobProperties.IsFinished)
+            while (!exportJobProperties.IsFinished)
             {
                 try
                 {
-                    jobProperties = await serviceClient.Devices.ExportAsync(jobProperties).ConfigureAwait(false);
-                    if (!string.IsNullOrWhiteSpace(jobProperties.FailureReason))
+                    exportJobProperties = (ExportJobProperties)await serviceClient.Devices.ExportAsync(exportJobProperties).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(exportJobProperties.FailureReason))
                     {
-                        Logger.Trace($"Job failed due to {jobProperties.FailureReason}");
+                        Logger.Trace($"Job failed due to {exportJobProperties.FailureReason}");
                     }
                     break;
                 }
@@ -196,14 +195,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             sw.Restart();
 
-            while (!jobProperties.IsFinished)
+            while (!exportJobProperties.IsFinished)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                jobProperties = await serviceClient.Devices.GetJobAsync(jobProperties.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {jobProperties.JobId} is {jobProperties.Status} after {sw.Elapsed}.");
+                exportJobProperties = (ExportJobProperties)await serviceClient.Devices.GetJobAsync(exportJobProperties.JobId).ConfigureAwait(false);
+                Logger.Trace($"Job {exportJobProperties.JobId} is {exportJobProperties.Status} after {sw.Elapsed}.");
             }
 
-            return jobProperties;
+            return exportJobProperties;
         }
 
         private async Task ValidateDevicesAsync(

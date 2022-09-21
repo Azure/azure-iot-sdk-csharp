@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Amqp
             _linkName = "ReceiverLink-" + Guid.NewGuid();
 
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Opening receiving link with address {_linkAddress} and link name {_linkName}");
+                Logging.Enter(this, $"Opening receiving link with address {_linkAddress} and link name {_linkName}", nameof(OpenAsync));
 
             try
             {
@@ -71,14 +71,14 @@ namespace Microsoft.Azure.Devices.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening receiving link with address {_linkAddress} and link name {_linkName}");
+                    Logging.Exit(this, $"Opening receiving link with address {_linkAddress} and link name {_linkName}", nameof(OpenAsync));
             }
         }
 
         internal async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Closing receiving link with address {_linkAddress} and link name {_linkName}");
+                Logging.Enter(this, $"Closing receiving link with address {_linkAddress} and link name {_linkName}", nameof(CloseAsync));
 
             try
             {
@@ -90,14 +90,14 @@ namespace Microsoft.Azure.Devices.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Closing receiving link with address {_linkAddress} and link name {_linkName}");
+                    Logging.Exit(this, $"Closing receiving link with address {_linkAddress} and link name {_linkName}", nameof(CloseAsync));
             }
         }
 
         internal async Task AcknowledgeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}");
+                Logging.Enter(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}", nameof(AcknowledgeMessageAsync));
 
             try
             {
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}");
+                    Logging.Exit(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}", nameof(AcknowledgeMessageAsync));
             }
         }
     }
