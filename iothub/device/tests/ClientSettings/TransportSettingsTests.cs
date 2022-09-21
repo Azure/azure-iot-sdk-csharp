@@ -112,39 +112,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AmqpTransportSettings_SetsDefaultTimeout()
-        {
-            // act
-            var transportSetting = new IotHubClientAmqpSettings();
-
-            // assert
-            transportSetting.OperationTimeout.Should().Be(IotHubClientAmqpSettings.DefaultOperationTimeout, "Default OperationTimeout not set correctly");
-            transportSetting.IdleTimeout.Should().Be(IotHubClientAmqpSettings.DefaultIdleTimeout, "Default IdleTimeout not set correctly");
-            transportSetting.DefaultReceiveTimeout.Should().Be(IotHubClientAmqpSettings.DefaultOperationTimeout, "Default DefaultReceiveTimeout not set correctly");
-        }
-
-        [TestMethod]
-        public void AmqpTransportSettings_OverridesDefaultTimeout()
-        {
-            // We want to test that the timeouts that we set on AmqpTransportSettings override the default timeouts.
-            // In order to test that, we need to ensure the test timeout values are different from the default timeout values.
-            // Adding a TimeSpan to the default timeout value is an easy way to achieve that.
-            var expectedOperationTimeout = IotHubClientAmqpSettings.DefaultOperationTimeout.Add(TimeSpan.FromMinutes(5));
-            var expectedIdleTimeout = IotHubClientAmqpSettings.DefaultIdleTimeout.Add(TimeSpan.FromMinutes(5));
-
-            // act
-            var transportSetting = new IotHubClientAmqpSettings
-            {
-                OperationTimeout = expectedOperationTimeout,
-                IdleTimeout = expectedIdleTimeout,
-            };
-
-            // assert
-            transportSetting.OperationTimeout.Should().Be(expectedOperationTimeout);
-            transportSetting.IdleTimeout.Should().Be(expectedIdleTimeout);
-        }
-
-        [TestMethod]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void AmqpConnectionPoolSettings_UnderMinPoolSize()
         {
