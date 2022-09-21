@@ -11,7 +11,7 @@ are outlines of the notable breaking changes as well as a mapping from v1 APIs t
  - [Migration Guide](#migration-guide)
    - [IoT hub device client](#iot-hub-device-client)
    - [IoT Hub Service Client](#iot-hub-service-client)
-   - [DPS Device Client](#dps-device-client)
+   - [Device Provisioning Service (DPS) device client](#dps-device-client)
    - [DPS Service Client](#dps-service-client)
    - [Security Provider Clients](#security-provider-clients)
    - [Deps](#deps)
