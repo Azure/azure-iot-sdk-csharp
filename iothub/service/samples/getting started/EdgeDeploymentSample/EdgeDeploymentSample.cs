@@ -12,13 +12,13 @@ namespace Microsoft.Azure.Devices.Samples
         private const string ConfigurationIdPrefix = "edgedeploymentsampleconfiguration-";
         private const int NumOfEdgeDevices = 10;
         private const int BasePriority = 2;
-        private readonly RegistryManager _registryManager;
+        private readonly IotHubServiceClient _serviceClient;
 
-        private readonly List<Configuration> _configurationsToDelete = new List<Configuration>();
+        private readonly List<Configuration> _configurationsToDelete = new();
 
-        public EdgeDeploymentSample(RegistryManager registryManager)
+        public EdgeDeploymentSample(IotHubServiceClient registryManager)
         {
-            _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
+            _serviceClient = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
         }
 
         public async Task RunSampleAsync()
@@ -43,11 +43,11 @@ namespace Microsoft.Azure.Devices.Samples
                 foreach (Device device in edgeDevices)
                 {
                     Console.WriteLine($"Created edge device {device.Id}");
-                    Twin twin = await _registryManager.GetTwinAsync(device.Id);
+                    Twin twin = await _serviceClient.Twins.GetAsync(device.Id);
                     Console.WriteLine($"\tTwin is {twin.ToJson()}");
 
                     twin.Tags[conditionPropertyName] = conditionPropertyValue;
-                    await _registryManager.UpdateTwinAsync(device.Id, twin, twin.ETag);
+                    await _serviceClient.Twins.UpdateAsync(device.Id, twin);
                     Console.WriteLine($"\tUpdated twin to {twin.ToJson()}");
 
                     Console.WriteLine();
@@ -79,8 +79,8 @@ namespace Microsoft.Azure.Devices.Samples
                 Console.WriteLine($"Adding add-on configuration {JsonSerializer.Serialize(addOnConfiguration)}");
                 Console.WriteLine();
 
-                Task<Configuration> baseConfigTask = _registryManager.AddConfigurationAsync(baseConfiguration);
-                Task<Configuration> addOnConfigTask = _registryManager.AddConfigurationAsync(addOnConfiguration);
+                Task<Configuration> baseConfigTask = _serviceClient.Configurations.CreateAsync(baseConfiguration);
+                Task<Configuration> addOnConfigTask = _serviceClient.Configurations.CreateAsync(addOnConfiguration);
                 await Task.WhenAll(baseConfigTask, addOnConfigTask);
 
                 Console.WriteLine($"Cleaning up configuration created...");
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Samples
 
         private async Task CleanUpConfigurationsAsync()
         {
-            IEnumerable<Configuration> configurations = await _registryManager.GetConfigurationsAsync(100);
+            IEnumerable<Configuration> configurations = await _serviceClient.Configurations.GetAsync(100);
             {
                 foreach (Configuration configuration in configurations)
                 {
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Samples
                 configuration =>
                 {
                     Console.WriteLine($"Remove: {configuration.Id}");
-                    removeConfigTasks.Add(_registryManager.RemoveConfigurationAsync(configuration.Id));
+                    removeConfigTasks.Add(_serviceClient.Configurations.DeleteAsync(configuration.Id));
                 });
 
             await Task.WhenAll(removeConfigTasks);
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     Capabilities = new DeviceCapabilities
                     {
-                        IotEdge = true,
+                        IsIotEdge = true,
                     }
                 };
 
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Samples
 
         private Task<BulkRegistryOperationResult> CreateEdgeDevicesAsync(IEnumerable<Device> edgeDevices)
         {
-            return _registryManager.AddDevices2Async(edgeDevices);
+            return _serviceClient.Devices.CreateAsync(edgeDevices);
         }
 
         private static ConfigurationContent GetBaseConfigurationContent()
