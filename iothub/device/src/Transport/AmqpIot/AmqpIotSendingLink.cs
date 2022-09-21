@@ -153,6 +153,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #endregion Telemetry handling
 
+        #region Method handling
+
+        internal async Task<AmqpIotOutcome> SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, methodResponse, nameof(SendMethodResponseAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using AmqpMessage amqpMessage = AmqpIotMessageConverter.ConvertDirectMethodResponseToAmqpMessage(methodResponse);
+            AmqpIotMessageConverter.PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponse);
+
+            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, nameof(SendMethodResponseAsync));
+
+            return new AmqpIotOutcome(outcome);
+        }
+
+        #endregion Method handling
+
         #region Twin handling
 
         internal async Task<AmqpIotOutcome> SendTwinGetMessageAsync(string correlationId, CancellationToken cancellationToken)

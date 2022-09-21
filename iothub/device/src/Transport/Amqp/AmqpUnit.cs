@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
+using MQTTnet.Internal;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
@@ -522,14 +523,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnDeviceMessageReceived(Message message)
+        private async Task OnDeviceMessageReceived(Message message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(OnDeviceMessageReceived));
 
             try
             {
-                _onDeviceMessageReceivedCallback?.Invoke(message);
+                if (_onDeviceMessageReceivedCallback != null)
+                {
+                    MessageResponse response = await _onDeviceMessageReceivedCallback?.Invoke(message);
+                    AmqpIotDisposeActions acknowledgementType = AmqpIotDisposeActions.Accepted;
+                    if (response == MessageResponse.Abandoned)
+                    {
+                        acknowledgementType = AmqpIotDisposeActions.Released;
+                    }
+                    else if (response == MessageResponse.None)
+                    {
+                        acknowledgementType = AmqpIotDisposeActions.Rejected;
+                    }
+
+                    await DisposeMessageAsync(message.LockToken, acknowledgementType, CancellationToken.None).ConfigureAwait(false);
+                }
             }
             finally
             {
@@ -670,9 +685,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public void OnEventsReceived(Message message)
+        public async Task OnEventsReceived(Message message)
         {
-            _onModuleMessageReceivedCallback?.Invoke(message);
+            if (_onModuleMessageReceivedCallback != null)
+            {
+                MessageResponse response = await _onModuleMessageReceivedCallback?.Invoke(message);
+                AmqpIotDisposeActions acknowledgementType = AmqpIotDisposeActions.Accepted;
+                if (response == MessageResponse.Abandoned)
+                {
+                    acknowledgementType = AmqpIotDisposeActions.Released;
+                }
+                else if (response == MessageResponse.None)
+                {
+                    acknowledgementType = AmqpIotDisposeActions.Rejected;
+                }
+
+                await DisposeMessageAsync(message.LockToken, acknowledgementType, CancellationToken.None).ConfigureAwait(false);
+            }
         }
 
         #endregion Event
@@ -917,14 +946,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnMethodReceived(DirectMethodRequest DirectMethodRequest)
+        private async Task OnMethodReceived(DirectMethodRequest DirectMethodRequest)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, DirectMethodRequest, nameof(OnMethodReceived));
 
             try
             {
-                _onMethodCallback?.Invoke(DirectMethodRequest);
+                if (_onMethodCallback != null)
+                {
+                    DirectMethodResponse methodResponse = await _onMethodCallback.Invoke(DirectMethodRequest);
+                    await _methodSendingLink.SendMethodResponseAsync(methodResponse, CancellationToken.None).ConfigureAwait(false);
+                }
             }
             finally
             {

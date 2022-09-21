@@ -20,9 +20,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private readonly ReceivingAmqpLink _receivingAmqpLink;
 
-        private Action<Message> _onEventsReceived;
-        private Action<Message> _onDeviceMessageReceived;
-        private Action<DirectMethodRequest> _onMethodReceived;
+        private Func<Message, Task> _onEventsReceived;
+        private Func<Message, Task> _onDeviceMessageReceived;
+        private Func<DirectMethodRequest, Task> _onMethodReceived;
         private Action<Twin, string, TwinCollection, IotHubClientException> _onTwinMessageReceived;
 
         public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink)
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new ArraySegment<byte>(lockTokenGuid.ToByteArray());
         }
 
-        internal void RegisterReceiveMessageListener(Action<Message> onDeviceMessageReceived)
+        internal void RegisterReceiveMessageListener(Func<Message, Task> onDeviceMessageReceived)
         {
             _onDeviceMessageReceived = onDeviceMessageReceived;
             _receivingAmqpLink.RegisterMessageListener(OnDeviceMessageReceived);
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region EventHandling
 
-        internal void RegisterEventListener(Action<Message> onEventsReceived)
+        internal void RegisterEventListener(Func<Message, Task> onEventsReceived)
         {
             _onEventsReceived = onEventsReceived;
             _receivingAmqpLink.RegisterMessageListener(OnEventsReceived);
@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Method handling
 
-        internal void RegisterMethodListener(Action<DirectMethodRequest> onMethodReceived)
+        internal void RegisterMethodListener(Func<DirectMethodRequest, Task> onMethodReceived)
         {
             _onMethodReceived = onMethodReceived;
             _receivingAmqpLink.RegisterMessageListener(OnMethodReceived);

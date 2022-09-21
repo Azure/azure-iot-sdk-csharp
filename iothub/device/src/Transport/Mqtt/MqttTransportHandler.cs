@@ -92,10 +92,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private MqttQualityOfServiceLevel publishingQualityOfService;
         private MqttQualityOfServiceLevel receivingQualityOfService;
 
-        private readonly Func<DirectMethodRequest, Task> _methodListener;
+        private readonly Func<DirectMethodRequest, Task<DirectMethodResponse>> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<Message, Task> _moduleMessageReceivedListener;
-        private readonly Func<Message, Task> _deviceMessageReceivedListener;
+        private readonly Func<Message, Task<MessageResponse>> _moduleMessageReceivedListener;
+        private readonly Func<Message, Task<MessageResponse>> _deviceMessageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
@@ -383,13 +383,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await Task.WhenAll(messages.Select(x => SendEventAsync(x, cancellationToken))).ConfigureAwait(false);
         }
 
-        public override Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            //TODO stubbing this method because we plan on removing it from the device client later.
-            Message message = null;
-            return Task.FromResult(message);
-        }
-
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             try
@@ -411,31 +404,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
                 throw new IotHubClientException("Failed to disable receiving direct methods.", true, ex);
-            }
-        }
-
-        public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
-        {
-            var topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
-            byte[] serializedPayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodResponse.Payload));
-            MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(topic)
-                .WithPayload(serializedPayload)
-                .WithQualityOfServiceLevel(publishingQualityOfService)
-                .Build();
-
-            try
-            {
-                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
-
-                if (result.ReasonCode != MqttClientPublishReasonCode.Success)
-                {
-                    throw new IotHubClientException($"Failed to send direct method response with reason code {result.ReasonCode}", true);
-                }
-            }
-            catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
-            {
-                throw new IotHubClientException("Failed to send direct method response.", true, ex);
             }
         }
 
@@ -769,7 +737,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else if (topic.StartsWith(DirectMethodsRequestTopic))
             {
-                HandleReceivedDirectMethodRequest(receivedEventArgs);
+                await HandleReceivedDirectMethodRequestAsync(receivedEventArgs);
             }
             else if (topic.StartsWith(_moduleEventMessageTopic)
                 || topic.StartsWith(_edgeModuleInputEventsTopic))
@@ -795,12 +763,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_deviceMessageReceivedListener != null)
             {
-                // We are intentionally not awaiting _deviceMessageReceivedListener callback.
-                // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
-                _ = _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage);
+                MessageResponse acknowledgementType = await _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage).ConfigureAwait(false);
 
-                // note that MQTT does not support Abandon or Reject, so always Complete by acknowledging the message like this.
-                // Also note that
+                // Note that MQTT does not support Abandon or Reject
+                if (acknowledgementType != MessageResponse.Completed)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"MQTT does not support {MessageResponse.Abandoned} or {MessageResponse.None}");
+
+                    // This will skip acknowledging the message
+                    return;
+                }
+
                 try
                 {
                     await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
@@ -820,7 +794,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private void HandleReceivedDirectMethodRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
+        private async Task HandleReceivedDirectMethodRequestAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
             receivedEventArgs.AutoAcknowledge = true;
 
@@ -845,7 +819,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             // We are intentionally not awaiting _methodListener callback. The direct method response
             // is handled elsewhere, so we can simply invoke this callback and continue.
-            _methodListener.Invoke(methodRequest).ConfigureAwait(false);
+            DirectMethodResponse methodResponse = await _methodListener.Invoke(methodRequest).ConfigureAwait(false);
+
+            var topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
+            byte[] serializedPayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodResponse.Payload));
+            MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
+                .WithTopic(topic)
+                .WithPayload(serializedPayload)
+                .WithQualityOfServiceLevel(publishingQualityOfService)
+                .Build();
+
+            try
+            {
+                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
+
+                if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Failed to send direct method response with reason code {result.ReasonCode}");
+                }
+            }
+            catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to send direct method response. {ex}");
+            }
         }
 
         private void HandleReceivedDesiredPropertiesUpdateRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
@@ -943,7 +941,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 iotHubMessage.SystemProperties.Add(MessageSystemPropertyNames.InputName, tokens[5]);
             }
 
-            await (_moduleMessageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
+            MessageResponse acknowledgementType = await (_moduleMessageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
+
+            // Note that MQTT does not support Abandon or Reject
+            if (acknowledgementType != MessageResponse.Completed)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"MQTT does not support {MessageResponse.Abandoned} or {MessageResponse.None}");
+
+                // This will skip acknowledging the message
+                return;
+            }
+
+            try
+            {
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // This likely happened because the connection was lost. The service will re-send this message so the user
+                // can acknowledge it on the new connection.
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
+            }
         }
 
         public void PopulateMessagePropertiesFromMqttMessage(Message message, MqttApplicationMessage mqttMessage)

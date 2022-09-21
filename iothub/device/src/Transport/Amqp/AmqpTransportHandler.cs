@@ -394,31 +394,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private async Task DisposeMessageAsync(string lockToken, AmqpIotDisposeActions outcome, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
-
-            try
-            {
-                // Currently, the same mechanism is used for sending feedback for C2D messages and events received by modules.
-                // However, devices only support C2D messages (they cannot receive events), and modules only support receiving events
-                // (they cannot receive C2D messages). So we use this to distinguish whether to dispose the message (i.e. send outcome on)
-                // the DeviceBoundReceivingLink or the EventsReceivingLink.
-                // If this changes (i.e. modules are able to receive C2D messages, or devices are able to receive telemetry), this logic
-                // will have to be updated.
-                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
-
-                AmqpIotOutcome disposeOutcome = await _amqpUnit.DisposeMessageAsync(lockToken, outcome, ctb.Token).ConfigureAwait(false);
-                disposeOutcome.ThrowIfError();
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, outcome, nameof(DisposeMessageAsync));
-            }
-        }
-
         private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection, IotHubClientException ex = default)
         {
             if (correlationId == null)
