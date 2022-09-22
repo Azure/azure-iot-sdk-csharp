@@ -4,9 +4,8 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Serialization;
+using Azure;
 using Microsoft.Extensions.Logging;
-using Microsoft.Rest;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
@@ -14,15 +13,15 @@ namespace Microsoft.Azure.Devices.Samples
     public class ThermostatSample
     {
         private static readonly Random s_random = new();
-        private readonly DigitalTwinClient _digitalTwinClient;
+        private readonly IotHubServiceClient _serviceClient;
         private readonly string _digitalTwinId;
         private readonly ILogger _logger;
 
-        public ThermostatSample(DigitalTwinClient client, string digitalTwinId, ILogger logger)
+        public ThermostatSample(IotHubServiceClient client, string digitalTwinId, ILogger logger)
         {
-            _digitalTwinClient = client ?? throw new ArgumentNullException(nameof(client));
+            _serviceClient = client ?? throw new ArgumentNullException(nameof(client));
             _digitalTwinId = digitalTwinId ?? throw new ArgumentNullException(nameof(digitalTwinId));
-            _logger = logger ?? throw new ArgumentException(nameof(logger));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task RunSampleAsync()
@@ -30,7 +29,7 @@ namespace Microsoft.Azure.Devices.Samples
             // Get and print the digital twin. If you do not know the exact structure of your digital twin, you can 
             // use the BasicDgitalTwin type to deserialize it to a basic type
             BasicDigitalTwin digitalTwin = await GetAndPrintDigitalTwinAsync<BasicDigitalTwin>();
-            _logger.LogDebug($"The {_digitalTwinId} digital twin has a model with ID {digitalTwin.Metadata.ModelId}.");
+            _logger.LogDebug($"The {_digitalTwinId} digital twin has a model with Id {digitalTwin.Metadata.ModelId}.");
 
             // Update the targetTemperature property of the digital twin
             await UpdateTargetTemperaturePropertyAsync();
@@ -47,9 +46,10 @@ namespace Microsoft.Azure.Devices.Samples
         {
             _logger.LogDebug($"Get the {_digitalTwinId} digital twin.");
 
-            HttpOperationResponse<T, DigitalTwinGetHeaders> getDigitalTwinResponse = await _digitalTwinClient
-                .GetDigitalTwinAsync<T>(_digitalTwinId);
-            T thermostatTwin = getDigitalTwinResponse.Body;
+            DigitalTwinGetResponse<T> getDigitalTwinResponse = await _serviceClient
+                .DigitalTwins
+                .GetAsync<T>(_digitalTwinId);
+            T thermostatTwin = getDigitalTwinResponse.DigitalTwin;
             _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonConvert.SerializeObject(thermostatTwin, Formatting.Indented)}");
 
             return thermostatTwin;
@@ -58,39 +58,41 @@ namespace Microsoft.Azure.Devices.Samples
         private async Task UpdateTargetTemperaturePropertyAsync()
         {
             const string targetTemperaturePropertyName = "targetTemperature";
-            var updateOperation = new UpdateOperationsUtility();
+            var updateOperation = new JsonPatchDocument();
 
             // Choose a random value to assign to the targetTemperature property
             int desiredTargetTemperature = s_random.Next(0, 100);
 
             // First let's take a look at when the property was updated and what was it set to.
-            HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> getDigitalTwinResponse = await _digitalTwinClient
-                .GetDigitalTwinAsync<ThermostatTwin>(_digitalTwinId);
-            double? currentTargetTemperature = getDigitalTwinResponse.Body.TargetTemperature;
+            DigitalTwinGetResponse<ThermostatTwin> getDigitalTwinResponse = await _serviceClient
+                .DigitalTwins
+                .GetAsync<ThermostatTwin>(_digitalTwinId);
+            double? currentTargetTemperature = getDigitalTwinResponse.DigitalTwin.TargetTemperature;
             if (currentTargetTemperature != null)
             {
-                DateTimeOffset targetTemperatureDesiredLastUpdateTime = getDigitalTwinResponse.Body.Metadata.TargetTemperature.LastUpdateTime;
+                DateTimeOffset targetTemperatureDesiredLastUpdateTime = getDigitalTwinResponse.DigitalTwin.Metadata.TargetTemperature.LastUpdatedOn;
                 _logger.LogDebug($"The property {targetTemperaturePropertyName} was last updated on " +
                     $"{targetTemperatureDesiredLastUpdateTime.ToLocalTime()} `" +
-                    $" with a value of {getDigitalTwinResponse.Body.Metadata.TargetTemperature.DesiredValue}.");
+                    $" with a value of {getDigitalTwinResponse.DigitalTwin.Metadata.TargetTemperature.DesiredValue}.");
 
                 // The property path to be replaced should be prepended with a '/'
-                updateOperation.AppendReplacePropertyOp($"/{targetTemperaturePropertyName}", desiredTargetTemperature);
+                updateOperation.AppendReplace($"/{targetTemperaturePropertyName}", desiredTargetTemperature);
             }
             else
             {
                 _logger.LogDebug($"The property {targetTemperaturePropertyName} was never set on the ${_digitalTwinId} digital twin.");
 
                 // The property path to be added should be prepended with a '/'
-                updateOperation.AppendAddPropertyOp($"/{targetTemperaturePropertyName}", desiredTargetTemperature);
+                updateOperation.AppendAdd($"/{targetTemperaturePropertyName}", desiredTargetTemperature);
             }
 
             _logger.LogDebug($"Update the {targetTemperaturePropertyName} property on the " +
                 $"{_digitalTwinId} digital twin to {desiredTargetTemperature}.");
-            HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> updateDigitalTwinResponse = await _digitalTwinClient
-                .UpdateDigitalTwinAsync(_digitalTwinId, updateOperation.Serialize());
+            DigitalTwinUpdateResponse updateDigitalTwinResponse = await _serviceClient
+                .DigitalTwins
+                .UpdateAsync(_digitalTwinId, updateOperation.ToString());
 
-            _logger.LogDebug($"Update {_digitalTwinId} digital twin response: {updateDigitalTwinResponse.Response.StatusCode}.");
+            _logger.LogDebug($"Updated {_digitalTwinId} digital twin.");
 
             // Print the Thermostat digital twin
             await GetAndPrintDigitalTwinAsync<ThermostatTwin>();
@@ -102,15 +104,16 @@ namespace Microsoft.Azure.Devices.Samples
             int currentTemperature = s_random.Next(0, 100);
 
             const string currentTemperaturePropertyName = "currentTemperature";
-            var updateOperation = new UpdateOperationsUtility();
+            var updateOperation = new JsonPatchDocument();
 
             // First, add the property to the digital twin
-            updateOperation.AppendAddPropertyOp($"/{currentTemperaturePropertyName}", currentTemperature);
+            updateOperation.AppendAdd($"/{currentTemperaturePropertyName}", currentTemperature);
             _logger.LogDebug($"Add the {currentTemperaturePropertyName} property on the {_digitalTwinId} digital twin " +
                 $"with a value of {currentTemperature}.");
-            HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> addPropertyToDigitalTwinResponse = await _digitalTwinClient
-                .UpdateDigitalTwinAsync(_digitalTwinId, updateOperation.Serialize());
-            _logger.LogDebug($"Update {_digitalTwinId} digital twin response: {addPropertyToDigitalTwinResponse.Response.StatusCode}.");
+            DigitalTwinUpdateResponse addPropertyToDigitalTwinResponse = await _serviceClient
+                .DigitalTwins
+                .UpdateAsync(_digitalTwinId, updateOperation.ToString());
+            _logger.LogDebug($"Updated {_digitalTwinId} digital twin");
 
             // Print the Thermostat digital twin
             await GetAndPrintDigitalTwinAsync<ThermostatTwin>();
@@ -118,22 +121,24 @@ namespace Microsoft.Azure.Devices.Samples
             // Second, replace the property to a different value
             int newCurrentTemperature = s_random.Next(0, 100);
 
-            updateOperation.AppendReplacePropertyOp($"/{currentTemperaturePropertyName}", newCurrentTemperature);
+            updateOperation.AppendReplace($"/{currentTemperaturePropertyName}", newCurrentTemperature);
             _logger.LogDebug($"Replace the {currentTemperaturePropertyName} property on the {_digitalTwinId} digital twin " +
                 $"with a value of {newCurrentTemperature}.");
-            HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> replacePropertyInDigitalTwinResponse = await _digitalTwinClient
-                .UpdateDigitalTwinAsync(_digitalTwinId, updateOperation.Serialize());
-            _logger.LogDebug($"Update {_digitalTwinId} digital twin response: {replacePropertyInDigitalTwinResponse.Response.StatusCode}.");
+            DigitalTwinUpdateResponse replacePropertyInDigitalTwinResponse = await _serviceClient
+                .DigitalTwins
+                .UpdateAsync(_digitalTwinId, updateOperation.ToString());
+            _logger.LogDebug($"Updated {_digitalTwinId} digital twin.");
 
             // Print the Thermostat digital twin
             await GetAndPrintDigitalTwinAsync<ThermostatTwin>();
 
             // Third, remove the currentTemperature property
-            updateOperation.AppendRemoveOp($"/{currentTemperaturePropertyName}");
+            updateOperation.AppendRemove($"/{currentTemperaturePropertyName}");
             _logger.LogDebug($"Remove the {currentTemperaturePropertyName} property on the {_digitalTwinId} digital twin.");
-            HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> removePropertyInDigitalTwinResponse = await _digitalTwinClient
-                .UpdateDigitalTwinAsync(_digitalTwinId, updateOperation.Serialize());
-            _logger.LogDebug($"Update {_digitalTwinId} digital twin response: {removePropertyInDigitalTwinResponse.Response.StatusCode}.");
+            DigitalTwinUpdateResponse removePropertyInDigitalTwinResponse = await _serviceClient
+                .DigitalTwins
+                .UpdateAsync(_digitalTwinId, updateOperation.ToString());
+            _logger.LogDebug($"Updated {_digitalTwinId} digital twin.");
 
             // Print the Thermostat digital twin
             await GetAndPrintDigitalTwinAsync<ThermostatTwin>();
@@ -148,21 +153,24 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> invokeCommandResponse = await _digitalTwinClient
-                    .InvokeCommandAsync(_digitalTwinId, getMaxMinReportCommandName, JsonConvert.SerializeObject(since));
-
-                _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked. \nDevice returned status: {invokeCommandResponse.Body.Status}." +
-                    $"\nReport: {invokeCommandResponse.Body.Payload}");
-            }
-            catch (HttpOperationException e)
-            {
-                if (e.Response.StatusCode == HttpStatusCode.NotFound)
+                var options = new InvokeDigitalTwinCommandOptions
                 {
-                    _logger.LogWarning($"Unable to execute command {getMaxMinReportCommandName} on {_digitalTwinId}." +
-                        $"\nMake sure that the device sample Thermostat located in " +
-                        $"https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples/Thermostat " +
-                        $"is also running.");
-                }
+                    Payload = JsonConvert.SerializeObject(since),
+                };
+
+                InvokeDigitalTwinCommandResponse invokeCommandResponse = await _serviceClient
+                    .DigitalTwins
+                    .InvokeCommandAsync(_digitalTwinId, getMaxMinReportCommandName, options);
+
+                _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked. \nDevice returned status: {invokeCommandResponse.Status}." +
+                    $"\nReport: {invokeCommandResponse.Payload}");
+            }
+            catch (IotHubServiceException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning($"Unable to execute command {getMaxMinReportCommandName} on {_digitalTwinId}." +
+                    $"\nMake sure that the device sample Thermostat located in " +
+                    $"https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples/Thermostat " +
+                    $"is also running.");
             }
         }
     }
