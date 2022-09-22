@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 try
                 {
-                    ScheduledJob scheduledJob = await sc.ScheduledJobs
+                    TwinScheduledJob scheduledJob = await sc.ScheduledJobs
                         .ScheduleTwinUpdateAsync(
                             new ScheduledTwinUpdate
                             {
