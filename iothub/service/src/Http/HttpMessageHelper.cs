@@ -9,7 +9,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Azure;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
