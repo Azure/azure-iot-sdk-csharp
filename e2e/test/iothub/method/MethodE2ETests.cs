@@ -210,10 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodRequest.MethodName.Should().Be(commandName);
                             deviceMethodCalledSuccessfully = true;
-                            var response = new Client.DirectMethodResponse()
-                            {
-                                Status = 200,
-                            };
+                            var response = new Client.DirectMethodResponse(200);
 
                             return Task.FromResult(response);
                         },
@@ -345,16 +342,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                    (request, context) =>
+                (request, context) =>
+                {
+                    // This test only verifies that unsubscripion works.
+                    // For this reason, the direct method subscription callback does not implement any method-specific dispatcher.
+                    logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
+                    var response = new Client.DirectMethodResponse(200)
                     {
-                        // This test only verifies that unsubscripion works.
-                        // For this reason, the direct method subscription callback does not implement any method-specific dispatcher.
-                        logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
-                        var response = new Client.DirectMethodResponse
-                        {
-                            Status = 200,
-                            Payload = DeviceResponseJson,
-                        };
+                        Payload = DeviceResponseJson,
+                    };
 
                         return Task.FromResult(response);
                     },
@@ -388,9 +384,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                                 {
                                     methodCallReceived.TrySetException(ex);
                                 }
-                                var response = new Client.DirectMethodResponse
+                                var response = new Client.DirectMethodResponse(200)
                                 {
-                                    Status = 200,
                                     Payload = DeviceResponseJson,
                                 };
 
@@ -429,11 +424,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             methodCallReceived.TrySetException(ex);
                         }
 
-                        var response = new Client.DirectMethodResponse
-                        {
-                            Status = 200,
-                            Payload = DeviceResponseJson,
-                        };
+                    var response = new Client.DirectMethodResponse(200)
+                    {
+                        Payload = DeviceResponseJson,
+                    };
 
                         return Task.FromResult(response);
                     }

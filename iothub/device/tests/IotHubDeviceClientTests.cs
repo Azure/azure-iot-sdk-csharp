@@ -30,20 +30,15 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private static readonly IotHubConnectionCredentials s_iotHubConnectionCredentials = new(FakeConnectionString);
 
-        private DirectMethodResponse directMethodResponseWithPayload = new DirectMethodResponse()
+        private DirectMethodResponse directMethodResponseWithPayload = new DirectMethodResponse(200)
         {
-            Status = 200,
             Payload = Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")
         };
 
-        private DirectMethodResponse directMethodResponseWithNoPayload = new DirectMethodResponse()
-        {
-            Status = 200,
-        };
+        private DirectMethodResponse directMethodResponseWithNoPayload = new DirectMethodResponse(200);
 
-        private DirectMethodResponse directMethodResponseWithEmptyByteArrayPayload = new DirectMethodResponse()
+        private DirectMethodResponse directMethodResponseWithEmptyByteArrayPayload = new DirectMethodResponse(200)
         {
-            Status = 200,
             Payload = new byte[0]
         };
 
@@ -392,7 +387,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync((payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                response = payload.GetPayload<bool>();
+                _ = payload.TryGetPayload(out response);
                 responseAsString = payload.PayloadAsJsonString;
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
@@ -423,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync((payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                response = payload.GetPayload<byte[]>();
+                _ = payload.TryGetPayload(out response);
                 responseAsString = payload.PayloadAsJsonString;
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
@@ -454,7 +449,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync((payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                response = payload.GetPayload<List<double>>();
+                _ = payload.TryGetPayload(out response);
                 responseAsString = payload.PayloadAsJsonString;
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
@@ -485,7 +480,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync((payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                response = payload.GetPayload<Dictionary<string, object>>();
+                _ = payload.TryGetPayload(out response);
                 responseAsString = payload.PayloadAsJsonString;
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);

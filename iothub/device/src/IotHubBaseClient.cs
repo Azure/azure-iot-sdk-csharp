@@ -537,9 +537,8 @@ namespace Microsoft.Azure.Devices.Client
 
             if (_deviceDefaultMethodCallback == null)
             {
-                directMethodResponse = new DirectMethodResponse()
+                directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.MethodNotImplemented)
                 {
-                    Status = (int)DirectMethodResponseStatusCode.MethodNotImplemented,
                     RequestId = directMethodRequest.RequestId,
                 };
             }
@@ -561,9 +560,8 @@ namespace Microsoft.Azure.Devices.Client
                     if (Logging.IsEnabled)
                         Logging.Error(this, ex, nameof(OnMethodCalledAsync));
 
-                    directMethodResponse = new DirectMethodResponse()
+                    directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.UserCodeException)
                     {
-                        Status = (int)DirectMethodResponseStatusCode.UserCodeException,
                         RequestId = directMethodRequest.RequestId,
                     };
                 }
