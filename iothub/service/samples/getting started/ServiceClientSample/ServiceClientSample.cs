@@ -15,13 +15,13 @@ namespace Microsoft.Azure.Devices.Samples
         private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan s_operationTimeout = TimeSpan.FromSeconds(10);
 
-        private static ServiceClient _serviceClient;
+        private static IotHubServiceClient s_serviceClient;
         private readonly string _hubConnectionString;
-        private readonly TransportType _transportType;
+        private readonly Transport _transportType;
         private readonly string _deviceId;
         private readonly ILogger _logger;
 
-        public ServiceClientSample(string hubConnectionString, TransportType transportType, string deviceId, ILogger logger)
+        public ServiceClientSample(string hubConnectionString, Transport transportType, string deviceId, ILogger logger)
         {
             _hubConnectionString = hubConnectionString ?? throw new ArgumentNullException(nameof(hubConnectionString));
             _transportType = transportType;
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                await InitializeServiceClientAsync();
+                InitializeServiceClient();
                 Task sendTask = SendC2dMessagesAsync(cts.Token);
                 Task receiveTask = ReceiveMessageFeedbacksAsync(cts.Token);
 
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Samples
             // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
             _logger.LogInformation("Starting to listen to feedback messages");
 
-            var feedbackReceiver = _serviceClient.GetFeedbackReceiver();
+            var feedbackReceiver = s_serviceClient.GetFeedbackReceiver();
 
             while (!token.IsCancellationRequested)
             {
@@ -89,8 +89,8 @@ namespace Microsoft.Azure.Devices.Samples
                 catch (Exception e)
                 {
                     _logger.LogError($"Unexpected error, will need to reinitialize the client: {e}");
-                    await InitializeServiceClientAsync();
-                    feedbackReceiver = _serviceClient.GetFeedbackReceiver();
+                    InitializeServiceClient();
+                    feedbackReceiver = s_serviceClient.GetFeedbackReceiver();
                 }
             }
         }
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     try
                     {
-                        await _serviceClient.SendAsync(_deviceId, message, s_operationTimeout);
+                        await s_serviceClient.SendAsync(_deviceId, message, s_operationTimeout);
                         _logger.LogInformation($"Sent message {messageCount} with Id {message.MessageId} to {_deviceId}.");
                         message.Dispose();
                         break;
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Samples
                     catch (Exception e)
                     {
                         _logger.LogError($"Unexpected error, will need to reinitialize the client: {e}");
-                        await InitializeServiceClientAsync();
+                        InitializeServiceClient();
                     }
                     await Task.Delay(s_sleepDuration, cancellationToken);
                 }
@@ -133,21 +133,14 @@ namespace Microsoft.Azure.Devices.Samples
             }
         }
 
-        private async Task InitializeServiceClientAsync()
+        private void InitializeServiceClient()
         {
-            if (_serviceClient != null)
+            var options = new IotHubServiceClientOptions
             {
-                await _serviceClient.CloseAsync();
-                _serviceClient.Dispose();
-                _serviceClient = null;
-                _logger.LogInformation("Closed and disposed the current service client instance.");
-            }
-
-            var options = new ServiceClientOptions
-            {
-                SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,
+                Protocol = (IotHubTransportProtocol)_transportType,
+                SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
-            _serviceClient = ServiceClient.CreateFromConnectionString(_hubConnectionString, _transportType, options);
+            s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
             _logger.LogInformation("Initialized a new service client instance.");
         }
     }
