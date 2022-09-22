@@ -39,14 +39,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             _hubDeviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandler);
 
-            // Method Call processing will be enabled when the first method handler is added.
-            // Setup a callback for the 'WriteToConsole' method.
-            await _hubDeviceClient.SetMethodHandlerAsync(WriteToConsoleAsync, null, cts.Token);
-
-            // Setup a callback for the 'GetDeviceName' method.
+            // Setup a callback dispatcher for the incoming methods.
             await _hubDeviceClient.SetMethodHandlerAsync(
-                GetDeviceNameAsync,
-                new DeviceData { Name = "DeviceClientMethodSample" },
+                OnDirectMethodCalledAsync,
+                null,
                 cts.Token);
 
             var timer = Stopwatch.StartNew();
@@ -61,33 +57,48 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // You can unsubscribe from receiving a callback for direct methods by setting a null callback handler.
             await _hubDeviceClient.SetMethodHandlerAsync(
-                "GetDeviceName",
-                null,
-                null);
-
-            await _hubDeviceClient.SetMethodHandlerAsync(
-                "WriteToConsole",
                 null,
                 null);
         }
 
-        private void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        private async Task<DirectMethodResponse> OnDirectMethodCalledAsync(DirectMethodRequest directMethodRequest, object userContext)
         {
-            Console.WriteLine($"\nConnection status changed to {status}.");
-            Console.WriteLine($"Connection status changed reason is {reason}.\n");
+            switch (directMethodRequest.MethodName)
+            {
+                case "GetDeviceName":
+                    return await GetDeviceNameAsync(directMethodRequest, userContext);
+
+                case "WriteToConsole":
+                    return await WriteToConsoleAsync(directMethodRequest, userContext);
+
+                default:
+                    return new DirectMethodResponse
+                    {
+                        Status = 400,
+                    };
+            }
         }
 
-        private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodResponse methodRequest, object userContext)
+        private void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionInfo)
         {
-            Console.WriteLine($"\t *** {methodRequest.Name} was called.");
-            Console.WriteLine($"\t{methodRequest.DataAsJson}\n");
-
-            return Task.FromResult(new DirectMethodResponse(new byte[0], 200));
+            Console.WriteLine($"\nConnection status changed to {connectionInfo.Status}.");
+            Console.WriteLine($"Connection status changed reason is {connectionInfo.ChangeReason}.\n");
         }
 
-        private Task<DirectMethodResponse> GetDeviceNameAsync(DirectMethodRequest methodRequest, object userContext)
+        private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodRequest directMethodRequest, object userContext)
         {
-            Console.WriteLine($"\t *** {methodRequest.Name} was called.");
+            Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
+            Console.WriteLine($"\t{directMethodRequest.PayloadAsJsonString}\n");
+
+            var directMethodResponse = new DirectMethodResponse();
+            directMethodResponse.Status = 200;
+
+            return Task.FromResult(directMethodResponse);
+        }
+
+        private Task<DirectMethodResponse> GetDeviceNameAsync(DirectMethodRequest directMethodRequest, object userContext)
+        {
+            Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
 
             var retValue = new DirectMethodResponse();
             if (userContext == null)
