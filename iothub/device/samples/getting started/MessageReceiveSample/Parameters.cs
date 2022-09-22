@@ -1,7 +1,16 @@
-﻿using CommandLine;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using CommandLine;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
+    public enum Transport
+    {
+        Mqtt,
+        Amqp,
+        Http1,
+    };
+
     /// <summary>
     /// Parameters for the application.
     /// </summary>
@@ -16,11 +25,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         [Option(
             't',
-            "TransportType",
-            Default = TransportType.Mqtt,
+            "Transport",
+            Default = Transport.Mqtt,
             Required = false,
-            HelpText = "The transport to use to communicate with the IoT hub. Possible values include Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_Only, and Http1.")]
-        public TransportType TransportType { get; set; }
+            HelpText = "The transport to use for the connection.")]
+        public Transport Transport { get; set; }
 
         [Option(
             'r',

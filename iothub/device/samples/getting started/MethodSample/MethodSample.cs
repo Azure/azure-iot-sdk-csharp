@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class MethodSample
     {
-        private readonly DeviceClient _deviceClient;
+        private readonly IotHubDeviceClient _hubDeviceClient;
 
         private class DeviceData
         {
@@ -21,9 +21,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             public string Name { get; set; }
         }
 
-        public MethodSample(DeviceClient deviceClient)
+        public MethodSample(IotHubDeviceClient deviceClient)
         {
-            _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
+            _hubDeviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
         }
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
@@ -37,15 +37,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
-            _deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
+            _hubDeviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandler);
 
             // Method Call processing will be enabled when the first method handler is added.
             // Setup a callback for the 'WriteToConsole' method.
-            await _deviceClient.SetMethodHandlerAsync("WriteToConsole", WriteToConsoleAsync, null, cts.Token);
+            await _hubDeviceClient.SetMethodHandlerAsync(WriteToConsoleAsync, null, cts.Token);
 
             // Setup a callback for the 'GetDeviceName' method.
-            await _deviceClient.SetMethodHandlerAsync(
-                "GetDeviceName",
+            await _hubDeviceClient.SetMethodHandlerAsync(
                 GetDeviceNameAsync,
                 new DeviceData { Name = "DeviceClientMethodSample" },
                 cts.Token);
@@ -61,12 +60,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // You can unsubscribe from receiving a callback for direct methods by setting a null callback handler.
-            await _deviceClient.SetMethodHandlerAsync(
+            await _hubDeviceClient.SetMethodHandlerAsync(
                 "GetDeviceName",
                 null,
                 null);
 
-            await _deviceClient.SetMethodHandlerAsync(
+            await _hubDeviceClient.SetMethodHandlerAsync(
                 "WriteToConsole",
                 null,
                 null);
@@ -78,28 +77,30 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"Connection status changed reason is {reason}.\n");
         }
 
-        private Task<MethodResponse> WriteToConsoleAsync(MethodRequest methodRequest, object userContext)
+        private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodResponse methodRequest, object userContext)
         {
             Console.WriteLine($"\t *** {methodRequest.Name} was called.");
             Console.WriteLine($"\t{methodRequest.DataAsJson}\n");
 
-            return Task.FromResult(new MethodResponse(new byte[0], 200));
+            return Task.FromResult(new DirectMethodResponse(new byte[0], 200));
         }
 
-        private Task<MethodResponse> GetDeviceNameAsync(MethodRequest methodRequest, object userContext)
+        private Task<DirectMethodResponse> GetDeviceNameAsync(DirectMethodRequest methodRequest, object userContext)
         {
             Console.WriteLine($"\t *** {methodRequest.Name} was called.");
 
-            MethodResponse retValue;
+            var retValue = new DirectMethodResponse();
             if (userContext == null)
             {
-                retValue = new MethodResponse(new byte[0], 500);
+                retValue.Payload = Array.Empty<byte>();
+                retValue.Status = 500;
             }
             else
             {
                 var deviceData = (DeviceData)userContext;
                 string result = JsonSerializer.Serialize(deviceData);
-                retValue = new MethodResponse(Encoding.UTF8.GetBytes(result), 200);
+                retValue.Payload = Encoding.UTF8.GetBytes(result);
+                retValue.Status = 200;
             }
 
             return Task.FromResult(retValue);

@@ -13,11 +13,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class FileUploadSample
     {
-        private readonly DeviceClient _deviceClient;
+        private readonly IotHubDeviceClient _hubDeviceClient;
 
-        public FileUploadSample(DeviceClient deviceClient)
+        public FileUploadSample(IotHubDeviceClient hubDeviceClient)
         {
-            _deviceClient = deviceClient;
+            _hubDeviceClient = hubDeviceClient;
         }
 
         public async Task RunSampleAsync()
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string filePath = "TestPayload.txt";
 
             using var fileStreamSource = new FileStream(filePath, FileMode.Open);
-            var fileName = Path.GetFileName(fileStreamSource.Name);
+            string fileName = Path.GetFileName(fileStreamSource.Name);
 
             Console.WriteLine($"Uploading file {fileName}");
 
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Note: GetFileUploadSasUriAsync and CompleteFileUploadAsync will use HTTPS as protocol regardless of the DeviceClient protocol selection.
             Console.WriteLine("Getting SAS URI from IoT Hub to use when uploading the file...");
-            FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
+            FileUploadSasUriResponse sasUri = await _hubDeviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
             Uri uploadUri = sasUri.GetBlobUri();
 
             Console.WriteLine($"Successfully got SAS URI ({uploadUri}) from IoT Hub");
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 // at any given time. Once you are done with the file upload, you should free your SAS URI so that other
                 // SAS URIs can be generated. If a SAS URI is not freed through this API, then it will free itself eventually
                 // based on how long SAS URIs are configured to live on your IoT Hub.
-                await _deviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification);
+                await _hubDeviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification);
                 Console.WriteLine("Notified IoT Hub that the file upload failed and that the SAS URI can be freed");
 
                 fileUploadTime.Stop();
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 StatusDescription = "Success"
             };
 
-            await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification);
+            await _hubDeviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification);
             Console.WriteLine("Notified IoT Hub that the file upload succeeded and that the SAS URI can be freed.");
 
             fileUploadTime.Stop();
