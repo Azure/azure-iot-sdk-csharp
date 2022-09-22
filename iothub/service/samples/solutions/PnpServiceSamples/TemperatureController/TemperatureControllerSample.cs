@@ -3,8 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -18,15 +16,13 @@ namespace Microsoft.Azure.Devices.Samples
         private static readonly string DeviceSampleLink =
             "https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples/TemperatureController";
 
-        private readonly ServiceClient _serviceClient;
-        private readonly RegistryManager _registryManager;
+        private readonly IotHubServiceClient _serviceClient;
         private readonly string _deviceId;
         private readonly ILogger _logger;
 
-        public TemperatureControllerSample(ServiceClient serviceClient, RegistryManager registryManager, string deviceId, ILogger logger)
+        public TemperatureControllerSample(IotHubServiceClient serviceClient, string deviceId, ILogger logger)
         {
             _serviceClient = serviceClient ?? throw new ArgumentNullException(nameof(serviceClient));
-            _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
             _deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -51,7 +47,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             _logger.LogDebug($"Get the {_deviceId} device twin.");
 
-            Twin twin = await _registryManager.GetTwinAsync(_deviceId);
+            Twin twin = await _serviceClient.Twins.GetAsync(_deviceId);
             _logger.LogDebug($"{_deviceId} twin: \n{JsonConvert.SerializeObject(twin, Formatting.Indented)}");
 
             return twin;
@@ -63,23 +59,23 @@ namespace Microsoft.Azure.Devices.Samples
 
             // Create command name to invoke for component. The command is formatted as <component name>*<command name>
             string commandToInvoke = $"{Thermostat1Component}*{getMaxMinReportCommandName}";
-            var commandInvocation = new CloudToDeviceMethod(commandToInvoke) { ResponseTimeout = TimeSpan.FromSeconds(30) };
-
-            // Set command payload
-            DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2));
-            string componentCommandPayload = JsonConvert.SerializeObject(since);
-            commandInvocation.SetPayloadJson(componentCommandPayload);
+            var commandInvocation = new DirectMethodRequest
+            { 
+                MethodName = commandToInvoke,
+                ResponseTimeout = TimeSpan.FromSeconds(30),
+                Payload = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)),
+            };
 
             _logger.LogDebug($"Invoke the {getMaxMinReportCommandName} command on component {Thermostat1Component} " +
                 $"in the {_deviceId} device twin.");
 
             try
             {
-                CloudToDeviceMethodResult result = await _serviceClient.InvokeDeviceMethodAsync(_deviceId, commandInvocation);
+                DirectMethodResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on component {Thermostat1Component}." +
-                    $"\nDevice returned status: {result.Status}. \nReport: {result.GetPayloadAsJson()}");
+                    $"\nDevice returned status: {result.Status}. \nReport: {result.Payload}");
             }
-            catch (DeviceNotFoundException)
+            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubErrorCode.DeviceNotFound)
             {
                 _logger.LogWarning($"Unable to execute command {getMaxMinReportCommandName} on component {Thermostat1Component}." +
                     $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");
@@ -90,22 +86,23 @@ namespace Microsoft.Azure.Devices.Samples
         {
             // Create command name to invoke for component
             const string commandToInvoke = "reboot";
-            var commandInvocation = new CloudToDeviceMethod(commandToInvoke) { ResponseTimeout = TimeSpan.FromSeconds(30) };
-
-            // Set command payload
-            string componentCommandPayload = JsonConvert.SerializeObject(3);
-            commandInvocation.SetPayloadJson(componentCommandPayload);
+            var commandInvocation = new DirectMethodRequest
+            {
+                MethodName = commandToInvoke,
+                ResponseTimeout = TimeSpan.FromSeconds(30),
+                Payload = JsonConvert.SerializeObject(3),
+            };
 
             _logger.LogDebug($"Invoke the {commandToInvoke} command on the {_deviceId} device twin." +
                 $"\nThis will set the \"targetTemperature\" on \"Thermostat\" component to 0.");
 
             try
             {
-                CloudToDeviceMethodResult result = await _serviceClient.InvokeDeviceMethodAsync(_deviceId, commandInvocation);
+                DirectMethodResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {commandToInvoke} was invoked on the {_deviceId} device twin." +
                     $"\nDevice returned status: {result.Status}.");
             }
-            catch (DeviceNotFoundException)
+            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubErrorCode.DeviceNotFound)
             {
                 _logger.LogWarning($"Unable to execute command {commandToInvoke} on component {Thermostat1Component}." +
                     $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");
@@ -122,8 +119,9 @@ namespace Microsoft.Azure.Devices.Samples
             var twinPatch = CreatePropertyPatch(targetTemperaturePropertyName, desiredTargetTemperature, Thermostat1Component);
             _logger.LogDebug($"Updating the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_deviceId} device twin to { desiredTargetTemperature}.");
 
-            Twin twin = await _registryManager.GetTwinAsync(_deviceId);
-            await _registryManager.UpdateTwinAsync(_deviceId, twinPatch, twin.ETag);
+            Twin currentTwin = await _serviceClient.Twins.GetAsync(_deviceId);
+            twinPatch.ETag = currentTwin.ETag;
+            await _serviceClient.Twins.UpdateAsync(_deviceId, twinPatch, true);
 
             // Print the TemperatureController device twin
             await GetAndPrintDeviceTwinAsync();
