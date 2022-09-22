@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains properties of twin scheduled job.
     /// </summary>
-    public class TwinScheduledJob
+    public class TwinScheduledJob : ScheduledJob
     {
         /// <summary>
         /// Serialization constructor.
@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="updateTwin">The update twin tags and desired properties.</param>
         public TwinScheduledJob(Twin updateTwin)
         {
+            JobType = JobType.ScheduleUpdateTwin;
             UpdateTwin = updateTwin;
         }
 

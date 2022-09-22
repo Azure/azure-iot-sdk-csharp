@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="directMethodRequest">Contains parameters to execute a direct method on a device or module.</param>
         public CloudToDeviceMethodScheduledJob(DirectMethodRequest directMethodRequest)
         {
+            JobType = JobType.ScheduleDeviceMethod;
             DirectMethodRequest = directMethodRequest;
         }
 

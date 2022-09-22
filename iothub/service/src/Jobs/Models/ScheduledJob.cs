@@ -13,13 +13,7 @@ namespace Microsoft.Azure.Devices
     public class ScheduledJob : IotHubScheduledJobResponse
     {
         /// <summary>
-        /// System generated. Ignored at creation.
-        /// </summary>
-        [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]
-        public string JobId { get; internal set; }
-
-        /// <summary>
-        /// [Required] The type of job to execute.
+        /// The type of job to execute.
         /// </summary>
         [JsonProperty(PropertyName = "jobType", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(StringEnumConverter))]

@@ -19,6 +19,12 @@ namespace Microsoft.Azure.Devices
         { }
 
         /// <summary>
+        /// The job Id.
+        /// </summary>
+        [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]
+        public string JobId { get; internal set; }
+
+        /// <summary>
         /// Status of the job.
         /// </summary>
         [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
