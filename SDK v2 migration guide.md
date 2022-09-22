@@ -62,8 +62,10 @@ TODO: list breaking changes
 #### RegistryManager
 
 | V1 class#method | Equivalent V2 class#method |
-|:---|:---|:---|
+|:---|:---|
 | `RegistryManager` | `IotHubServiceClient`, subclients `Devices`, `Twins`, `Configurations`, etc. |
+| `RegistryManager.AddDevices2Async(...)` | `IotHubServiceClient.Devices.CreateAsync(IEnumerable<Device> devices,...)` |
+| `Device.Capabilities.IotEdge` | `Device.Capabilities.IsIotEdge` |
 | `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` |
 | `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` |
 | `ServiceClient.InvokeDeviceMethodAsync(...)` | `ServiceClient.DirectMethods.InvokeAsync(...)` |
@@ -78,6 +80,21 @@ TODO: list breaking changes
 - `CloudToDeviceMethod` took a constructor parameter for the method name, which is now used with `DirectMethodRequest` as a property initializer.
 - Operations that offer concurrency protection using `ETag`s, now take a parameter `onlyIfUnchanged` that relies on the ETag property of the submitted entity.
 
+#### ServiceClient
+
+| V1 class#method | Equivalent V2 class#method |
+|:---|:---|
+| `ServiceClient` | `IotHbServiceClient`, subclients `Messages`, `MessageFeedback`, `FileUploadNotifications` |
+| `ServiceClient.SendAsync(...)` | `IotHubServiceClient.Messages.SendAsync(...)` |
+| `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` |
+| `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor`
+
+#### Other notable breaking changes
+
+- `FeedbackReceiver` is now callback assigned to `MessageFeedbackProcessor` property.
+- `GetFileNotificationReceiver()` is now callback assigned to `FileUploadNotificationProcessor` property. These methods return a callback value.
+- `Message` no longer requires disposal.
+
 #### DeviceMethod
 
 | V1 class#method | Changed? | Equivalent V2 class#method |
@@ -86,14 +103,21 @@ TODO: list breaking changes
 
 #### JobClient
 
-| V1 class#method | Changed? | Equivalent V2 class#method |
-|:---|:---|:---|
-|    |    |    |
+| V1 class#method | Equivalent V2 class#method |
+|:---|:---|
+| `JobsClient` | `IotHubServiceClient`, subclients  `ScheduledJobs` |
+| `JobClient.GetJobAsync(...)` | `IotHubServiceClient.ScheduledJobs.GetAsync(...)` |
+| `JobClient.CreateQuery()` | `IotHubServiceClient.ScheduledJobs.CreateQueryAsync()` |
+| `JobsClient.ScheduleTwinUpdateAsync(...)` | `IotHubServiceClient.ScheduledJobs.ScheduledTwinUpdateAsync(...)` |
+
+#### Other notable breaking changes
+- `JobClient.ScheduleTwinUpdateAsync(...)` previously returned a `JobResponse`, now returns `ScheduledJob`.
+- `ScheduleJobs.GetAsync()` return type has changed to `QueryResponse<ScheduledJob>` from `IEnumerable<JobResponse>`.
 
 #### DigitalTwinClient
 
 | V1 class#method | Equivalent V2 class#method |
-|:---|:---|:---|
+|:---|:---|
 | `DigitalTwinClient` | `IotHubServiceClient.DigitalTwins` |
 | `DigitalTwinClient.GetDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.GetAsync(...)` |
 | `DigitalTwinClient.UpdateDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
