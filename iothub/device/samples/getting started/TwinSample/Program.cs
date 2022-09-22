@@ -39,9 +39,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
+            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
             using var deviceClient = new IotHubDeviceClient(
                 parameters.PrimaryConnectionString,
-                options); // TODO: pass in transport
+                options);
             var sample = new TwinSample(deviceClient);
             await sample.RunSampleAsync(runningTime);
             await deviceClient.CloseAsync();
