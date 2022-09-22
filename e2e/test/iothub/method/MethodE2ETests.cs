@@ -468,13 +468,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 responseTimeout,
                 serviceClientTransportSettings);
 
-            Task.WaitAll(
+            // This encapsulates the two tasks that need to finish during this test:
+            // 1) The service client sends the direct method
+            // 2) The device client receives the direct method
+            Task testTasks = Task.WhenAll(
                 new Task[]
                 {
                     serviceSendTask,
                     methodReceivedTask
-                },
-                TimeSpan.FromMinutes(1));
+                });
+
+            // Wait until the two test tasks finish or until 1 minute has passed
+            await Task.WhenAny(Task.Delay(TimeSpan.FromMinutes(1)), testTasks).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
 
@@ -508,13 +513,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         responseTimeout,
                         serviceClientTransportSettings);
 
-            Task.WaitAll(
+            // This encapsulates the two tasks that need to finish during this test:
+            // 1) The service client sends the direct method
+            // 2) The module client receives the direct method
+            Task testTasks = Task.WhenAll(
                 new Task[]
                 {
                     serviceSendTask,
                     methodReceivedTask
-                },
-                TimeSpan.FromMinutes(1));
+                });
+
+            // Wait until the two test tasks finish or until 1 minute has passed
+            await Task.WhenAny(Task.Delay(TimeSpan.FromMinutes(1)), testTasks).ConfigureAwait(false);
 
             await moduleClient.CloseAsync().ConfigureAwait(false);
 
