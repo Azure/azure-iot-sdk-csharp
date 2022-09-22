@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -466,7 +467,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 responseTimeout,
                 serviceClientTransportSettings);
 
-            await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
+            bool timedOut = Task.WaitAll(new Task[] { serviceSendTask, methodReceivedTask }, TimeSpan.FromMinutes(1));
+
+            if (timedOut)
+            {
+                serviceSendTask.IsCompleted.Should().Be(true, "Timed out waiting for service client to send the direct method");
+                methodReceivedTask.IsCompleted.Should().Be(true, "Timed out waiting for device client to receive the direct method");
+            }
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
@@ -483,10 +490,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(moduleClient, MethodName, Logger).ConfigureAwait(false);
-
-            await Task
-                .WhenAll(
-                    ServiceSendMethodAndVerifyResponseAsync(
+            Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
                         testModule.DeviceId,
                         testModule.Id,
                         MethodName,
@@ -494,9 +498,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         ServiceRequestJson,
                         Logger,
                         responseTimeout,
-                        serviceClientTransportSettings),
-                    methodReceivedTask)
-                .ConfigureAwait(false);
+                        serviceClientTransportSettings);
+
+            bool timedOut = Task.WaitAll(
+                new Task[]
+                {
+                    serviceSendTask,
+                    methodReceivedTask
+                },
+                TimeSpan.FromMinutes(1));
+
+            if (timedOut)
+            {
+                serviceSendTask.IsCompleted.Should().Be(true, "Timed out waiting for service client to send the direct method");
+                methodReceivedTask.IsCompleted.Should().Be(true, "Timed out waiting for module client to receive the direct method");
+            }
 
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
