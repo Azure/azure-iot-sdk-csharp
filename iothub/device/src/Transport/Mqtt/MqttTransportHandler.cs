@@ -796,7 +796,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleReceivedDirectMethodRequestAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            receivedEventArgs.AutoAcknowledge = true;
+            await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
 
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
