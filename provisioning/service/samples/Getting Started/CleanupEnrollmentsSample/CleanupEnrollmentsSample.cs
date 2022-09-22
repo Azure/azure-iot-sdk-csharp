@@ -44,8 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task QueryAndDeleteIndividualEnrollmentsAsync()
         {
             Console.WriteLine("\nCreating a query for enrollments...");
-            var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
-            using Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification, QueryPageSize);
+            Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery("SELECT * FROM enrollments", QueryPageSize);
             while (query.HasNext())
             {
                 Console.WriteLine("\nQuerying the next enrollments...");
@@ -73,8 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task QueryAndDeleteEnrollmentGroupsAsync()
         {
             Console.WriteLine("\nCreating a query for enrollment groups...");
-            var querySpecification = new QuerySpecification("SELECT * FROM enrollmentGroups");
-            using Query query = _provisioningServiceClient.CreateEnrollmentGroupQuery(querySpecification, QueryPageSize);
+            Query query = _provisioningServiceClient.CreateEnrollmentGroupQuery("SELECT * FROM enrollmentGroups", QueryPageSize);
             while (query.HasNext())
             {
                 Console.WriteLine("\nQuerying the next enrollment groups...");

@@ -35,9 +35,9 @@ to migrate to v2 when they have the chance. For more details on LTS releases, se
 
 #### DeviceClient
 
-| V1 class#method                                                                                                               | Changed? | Equivalent V2 class#method                                                                                                   |
+| V1 class#method | Changed? | Equivalent V2 class#method |
 |:------------------------------------------------------------------------------------------------------------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
-| TODO: fill in changes                                                                                                         | yes      |                                                                                                                              |
+| `DeviceClient | yes | `IotHubDeviceClient` |
 
 (TODO: do these apply to c#?)
 ** This method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
@@ -48,35 +48,28 @@ to migrate to v2 when they have the chance. For more details on LTS releases, se
 
 #### ModuleClient
 
-| V1 class#method                                                                                                               | Changed? | Equivalent V2 class#method                                                                                                   |
+| V1 class#method | Changed? | Equivalent V2 class#method |
 |:------------------------------------------------------------------------------------------------------------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
-| TODO: fill in changes                                                                                                         | yes      |                                                                                                                              |
+| `ModuleClient | yes | `IotHubModuleClient` |
 
 #### Other notable breaking changes
 
 TODO: list breaking changes
 - Reduced access levels to classes and methods that were never intended to be public where possible.
 
-
 ### IoT hub service client
-
-| V1 class  | Equivalent V2 Class(es)|
-|:---|:---|
-| RegistryManager | IotHubServiceClient, subclients Devices, Twins, Configurations, etc. |
-| RegistryManager.AddConfigurationAsync(...) | IotHubServiceClient.Configurations.CreateAsync(...) |
-| RegistryManager.GetConfigurationsAsync(int maxCount) | IotHubServiceClient.Configurations.GetAsync(int maxCount) |
-| RegistryManager.RemoveConfigurationAsync(...) | IotHubServiceClient.Configurations.DeleteAsync(...) |
-
-For v1 classes with more than one equivalent v2 classes, the methods that were in the v1 class have been split up to 
-create clients with more cohesive capabilities. For instance, TODO: add example
 
 #### RegistryManager
 
 | V1 class#method | Changed? | Equivalent V2 class#method |
 |:---|:---|:---|
-|    |    |    |
+| RegistryManager | Yes | IotHubServiceClient, subclients Devices, Twins, Configurations, etc. |
+| RegistryManager.AddConfigurationAsync(...) | Yes |  IotHubServiceClient.Configurations.CreateAsync(...) |
+| RegistryManager.GetConfigurationsAsync(int maxCount) | Yes |  IotHubServiceClient.Configurations.GetAsync(int maxCount) |
+| RegistryManager.RemoveConfigurationAsync(...) | Yes |  IotHubServiceClient.Configurations.DeleteAsync(...) |
 
 TODO: is DeviceMethod a class in C#?
+
 #### DeviceMethod
 
 | V1 class#method | Changed? | Equivalent V2 class#method |
@@ -89,44 +82,43 @@ TODO: is DeviceMethod a class in C#?
 |:---|:---|:---|
 |    |    |    |
 
+#### DigitalTwinClient
+
+| V1 class#method | Changed? | Equivalent V2 class#method |
+|:---|:---|:---|
+| `DigitalTWinClient` | Yes | `IotHubServiceClient.DigitalTwins` |
+| `DigitalTWinClient.GetDigitalTwinAsync(...)` | Yes | `IotHubServiceClient.DigitalTwins.GetAsync(...)` |
+| `DigitalTWinClient.UpdateDigitalTwinAsync(...)` | Yes | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
+| `DigitalTWinClient.UpdateDigitalTwinAsync(...)` | Yes | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
+| `UpdateOperationsUtility` | Yes | Removed. Use `Azure.JsonPatchDocument` from Azure.Core package. |
+
 #### Other notable breaking changes
 
-TODO: verify for C#
-- Trust certificates are read from the physical device's trusted root certification authorities certificate store rather than from source.
-  - Users are expected to install the required public certificates into this certificate store if they are not present already.
-  - See [this document](./upcoming_certificate_changes_readme.md) for additional context on which certificates need to be installed.
-  - For most users, no action is needed here since IoT Hub uses the [DigiCert Global G2 CA root](https://global-root-g2.chain-demos.digicert.com/info/index.html) certificate which is already installed on most devices.
-- The Bouncycastle dependencies have been removed.
-  - The Bouncycastle dependencies were used for some certificate parsing logic that has been removed from the SDK.
-- Reduced access levels to classes and methods that were never intended to be public where possible.
-- Removed service error code descriptions that the service would never return the error code for.
-- Reduce default SAS token time to live from 1 year to 1 hour for security purposes.
-- Removed unnecessary synchronization on service client APIs to allow for a single client to make service API calls simultaneously.
-- Removed asynchronous APIs for service client APIs.
-  - These were wrappers on top of the existing sync APIs. Users are expected to write async wrappers that better fit their preferred async framework.
-- Fixed a bug where dates retrieved by the client were converted to local time zone rather than keeping them in UTC time.  
+- Methods on this client have new, simpler return types. Check each method documentation comments for details.
+- The update method takes an `InvokeDigitalTwinCommandOptions` which holds the optional payload, connect timeout, and response timeout.
+- The `HttpOperationException will no longer be thrown. Exceptions that might be thrown are documented on each method.
 
-### DPS Device Client
+### DPS device client
 
 | V1 API  | Equivalent V2 API |
 |:---|:---|
 | ProvisioningDeviceClient.Create() | new ProvisioningDeviceClient() |
 | ProvisioningDeviceClient initializer parameter `transportHandler` replaced | `ProvisioningClientOptions` parameter added |
 
-TODO: verify for c#
-No notable changes, but the security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
+### Other notable changes
 
-### DPS Service Client
+- The security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
 
-TODO: verify for c#
-No client APIs have changed for this package, but there are a few notable breaking changes:
+### DPS service client
 
-- Trust certificates are read from the physical device's trusted root certification authorities certificate store rather than from source.
-  - Users are expected to install the required public certificates into this certificate store if they are not present already.
-  - See [this document](./upcoming_certificate_changes_readme.md) for additional context on which certificates need to be installed.
-  - For most users, no action is needed here since IoT Hub uses the [DigiCert Global G2 CA root](https://global-root-g2.chain-demos.digicert.com/info/index.html) certificate which is already installed on most devices.
-- Reduced access levels to classes and methods that were never intended to be public where possible.
-- Reduce default SAS token time to live from 1 year to 1 hour for security purposes.
+| V1 API  | Equivalent V2 API |
+|:---|:---|
+| ProvisioningServiceClient.CreateFromConnectionString() | new ProvisioningServiceClient() |
+| QuerySpecification | Type removed from public API. Methods take the parameters directly. |
+
+### Other notable changes
+
+- Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
 
 ### Authentication provider client
 

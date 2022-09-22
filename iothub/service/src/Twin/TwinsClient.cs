@@ -11,8 +11,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Microsoft.Azure.Devices.Common.Exceptions;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
