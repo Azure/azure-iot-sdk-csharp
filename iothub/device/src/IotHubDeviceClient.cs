@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         // Cloud-to-device message callback information
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
 
-        private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _deviceReceiveMessageCallback;
+        private volatile Tuple<Func<Message, object, Task<MessageAcknowledgementType>>, object> _deviceReceiveMessageCallback;
 
         // File upload operation
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetReceiveMessageHandlerAsync(
-            Func<Message, object, Task<MessageResponse>> messageHandler,
+            Func<Message, object, Task<MessageAcknowledgementType>> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
+                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task<MessageAcknowledgementType>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         // The delegate for handling c2d messages received
-        private async Task<MessageResponse> OnDeviceMessageReceivedAsync(Message message)
+        private async Task<MessageAcknowledgementType> OnDeviceMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(OnDeviceMessageReceivedAsync));
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<Message, object, Task<MessageResponse>> callback = _deviceReceiveMessageCallback?.Item1;
+                Func<Message, object, Task<MessageAcknowledgementType>> callback = _deviceReceiveMessageCallback?.Item1;
                 object callbackContext = _deviceReceiveMessageCallback?.Item2;
 
                 if (callback != null)
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client
                     if (Logging.IsEnabled)
                         Logging.Error(this, "Received a cloud to device message when no user callback was set. Ignoring message.");
 
-                    return MessageResponse.None;
+                    return MessageAcknowledgementType.Reject;
                 }
             }
             finally

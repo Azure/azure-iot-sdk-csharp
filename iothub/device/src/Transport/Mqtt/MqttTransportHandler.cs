@@ -95,17 +95,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly Func<DirectMethodRequest, Task<DirectMethodResponse>> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<Message, Task<MessageResponse>> _moduleMessageReceivedListener;
-        private readonly Func<Message, Task<MessageResponse>> _deviceMessageReceivedListener;
+        private readonly Func<Message, Task<MessageAcknowledgementType>> _moduleMessageReceivedListener;
+        private readonly Func<Message, Task<MessageAcknowledgementType>> _deviceMessageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
 
         private bool _isSubscribedToTwinResponses;
-
-        // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
-        // that is sent over the wire, so we increment this value locally instead.
-        private int _nextLockToken;
 
         private readonly string _deviceId;
         private readonly string _moduleId;
@@ -771,13 +767,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return;
             }
 
-            MessageResponse acknowledgementType = await _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage).ConfigureAwait(false);
+            MessageAcknowledgementType acknowledgementType = await _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage).ConfigureAwait(false);
 
             // Note that MQTT does not support Abandon or Reject
-            if (acknowledgementType != MessageResponse.Completed)
+            if (acknowledgementType != MessageAcknowledgementType.Complete)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"MQTT does not support {MessageResponse.Abandoned} or {MessageResponse.None}");
+                    Logging.Error(this, $"MQTT does not support {MessageAcknowledgementType.Abandon} or {MessageAcknowledgementType.Reject}");
 
                 // This will skip acknowledging the message
                 return;
@@ -951,13 +947,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 iotHubMessage.SystemProperties.Add(MessageSystemPropertyNames.InputName, tokens[5]);
             }
 
-            MessageResponse acknowledgementType = await (_moduleMessageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
+            MessageAcknowledgementType acknowledgementType = await (_moduleMessageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
 
             // Note that MQTT does not support Abandon or Reject
-            if (acknowledgementType != MessageResponse.Completed)
+            if (acknowledgementType != MessageAcknowledgementType.Complete)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"MQTT does not support {MessageResponse.Abandoned} or {MessageResponse.None}");
+                    Logging.Error(this, $"MQTT does not support {MessageAcknowledgementType.Abandon} or {MessageAcknowledgementType.Reject}");
 
                 // This will skip acknowledging the message
                 return;
@@ -978,8 +974,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public void PopulateMessagePropertiesFromMqttMessage(Message message, MqttApplicationMessage mqttMessage)
         {
-            message.LockToken = (++_nextLockToken).ToString();
-
             // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
             // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
             // Format 2 - going to module endpoint - devices/{deviceId}/modules/{moduleId/endpoints/{endpointId}/{properties}/

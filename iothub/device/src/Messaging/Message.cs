@@ -16,7 +16,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Default instantiation with no telemetry payload.
         /// </summary>
-        public Message() { }
+        public Message()
+        { }
 
         /// <summary>
         /// Creates a telemetry message with the specified payload.
@@ -74,15 +75,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => GetSystemProperty<ulong>(MessageSystemPropertyNames.SequenceNumber);
             internal set => SystemProperties[MessageSystemPropertyNames.SequenceNumber] = value;
-        }
-
-        /// <summary>
-        /// [Required] LockToken of the received message
-        /// </summary>
-        public string LockToken
-        {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.LockToken);
-            internal set => SystemProperties[MessageSystemPropertyNames.LockToken] = value;
         }
 
         /// <summary>
@@ -201,6 +193,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets or sets the deliveryTag which is used for server side check-pointing.
         /// </summary>
+        /// <remarks>
+        /// AMQP only
+        /// </remarks>
         internal ArraySegment<byte> DeliveryTag { get; set; }
 
         /// <summary>

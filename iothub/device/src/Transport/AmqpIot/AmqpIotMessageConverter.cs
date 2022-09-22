@@ -104,11 +104,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
             {
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(LockTokenName, out string lockToken))
-                {
-                    message.LockToken = lockToken;
-                }
-
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(SequenceNumberName, out ulong sequenceNumber))
                 {
                     message.SequenceNumber = sequenceNumber;

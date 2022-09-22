@@ -32,8 +32,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<DirectMethodRequest, Task<DirectMethodResponse>> onMethodCallback = null,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener = null,
-            Func<Message, Task<MessageResponse>> onModuleMessageReceivedCallback = null,
-            Func<Message, Task<MessageResponse>> onDeviceMessageReceivedCallback = null,
+            Func<Message, Task<MessageAcknowledgementType>> onModuleMessageReceivedCallback = null,
+            Func<Message, Task<MessageAcknowledgementType>> onDeviceMessageReceivedCallback = null,
             Action onUnitDisconnected = null)
             : base(
                   connectionCredentials,

@@ -117,10 +117,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 using var cts = new CancellationTokenSource(s_oneMinute);
 
                 var c2dMessageReceived = new TaskCompletionSource<Client.Message>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Func<Client.Message, object, Task<MessageResponse>> OnC2DMessageReceived = (message, context) =>
+                Func<Client.Message, object, Task<MessageAcknowledgementType>> OnC2DMessageReceived = (message, context) =>
                 {
                     c2dMessageReceived.SetResult(message);
-                    return Task.FromResult(MessageResponse.Completed);
+                    return Task.FromResult(MessageAcknowledgementType.Complete);
                 };
                 await dc.SetReceiveMessageHandlerAsync(OnC2DMessageReceived, null).ConfigureAwait(false);
 
@@ -186,9 +186,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await deviceClient1.OpenAsync().ConfigureAwait(false);
                 try
                 {
-                    Func<Client.Message, object, Task<MessageResponse>> OnC2DMessageReceived = (message, context) =>
+                    Func<Client.Message, object, Task<MessageAcknowledgementType>> OnC2DMessageReceived = (message, context) =>
                     {
-                        return Task.FromResult(MessageResponse.Completed);
+                        return Task.FromResult(MessageAcknowledgementType.Complete);
                     };
                     await deviceClient1.SetReceiveMessageHandlerAsync(OnC2DMessageReceived, null).ConfigureAwait(false);
                 }
@@ -211,11 +211,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             List<string> receivedMessageIds = new();
             var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            Task<MessageResponse> OnC2dMessageAsync(Client.Message message, object userContext)
+            Task<MessageAcknowledgementType> OnC2dMessageAsync(Client.Message message, object userContext)
             {
                 receivedMessageIds.Add(message.MessageId);
                 messageReceived.SetResult(true);
-                return Task.FromResult(MessageResponse.Completed);
+                return Task.FromResult(MessageAcknowledgementType.Complete);
             }
 
             // After message was sent, subscribe for messages to see if the device can get them.

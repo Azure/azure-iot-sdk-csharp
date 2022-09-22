@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal Func<DirectMethodRequest, Task<DirectMethodResponse>> MethodCallback { get; set; }
 
-        internal Func<Message, Task<MessageResponse>> ModuleEventCallback { get; set; }
+        internal Func<Message, Task<MessageAcknowledgementType>> ModuleEventCallback { get; set; }
 
-        internal Func<Message, Task<MessageResponse>> DeviceEventCallback { get; set; }
+        internal Func<Message, Task<MessageAcknowledgementType>> DeviceEventCallback { get; set; }
     }
 }

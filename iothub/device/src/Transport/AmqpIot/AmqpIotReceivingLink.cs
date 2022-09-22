@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (amqpMessage != null)
                 {
                     message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
-                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                    message.DeliveryTag = amqpMessage.DeliveryTag;
                 }
                 return message;
             }
@@ -98,12 +98,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal async Task<AmqpIotOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> DisposeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
 
-            ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
             Outcome disposeOutcome =
                 await _receivingAmqpLink.DisposeMessageAsync(
                     deliveryTag,
@@ -153,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (amqpMessage != null)
                 {
                     message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
-                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                    message.DeliveryTag = amqpMessage.DeliveryTag;
                 }
                 _onDeviceMessageReceived?.Invoke(message);
             }
@@ -186,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 Message message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
-                message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                message.DeliveryTag = amqpMessage.DeliveryTag;
                 _onEventsReceived?.Invoke(message);
             }
             finally

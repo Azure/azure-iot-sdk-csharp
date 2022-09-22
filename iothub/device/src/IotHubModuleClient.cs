@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
 
         // Cloud-to-module message callback information
-        private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _defaultEventCallback;
+        private volatile Tuple<Func<Message, object, Task<MessageAcknowledgementType>>, object> _defaultEventCallback;
 
         /// <summary>
         /// Creates a disposable <c>IotHubModuleClient</c> from the specified connection string.
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The task containing the event</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMessageHandlerAsync(
-            Func<Message, object, Task<MessageResponse>> messageHandler,
+            Func<Message, object, Task<MessageAcknowledgementType>> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (messageHandler != null)
                 {
                     await EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                    _defaultEventCallback = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
+                    _defaultEventCallback = new Tuple<Func<Message, object, Task<MessageAcknowledgementType>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -317,17 +317,17 @@ namespace Microsoft.Azure.Devices.Client
         /// The delegate for handling event messages received
         /// </summary>
         /// <param name="message">The message received</param>
-        internal async Task<MessageResponse> OnModuleEventMessageReceivedAsync(Message message)
+        internal async Task<MessageAcknowledgementType> OnModuleEventMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message?.InputName, nameof(OnModuleEventMessageReceivedAsync));
 
             try
             {
-                MessageResponse response = MessageResponse.Completed;
+                MessageAcknowledgementType response = MessageAcknowledgementType.Complete;
                 if (_defaultEventCallback?.Item1 != null)
                 {
-                    Func<Message, object, Task<MessageResponse>> userSuppliedCallback = _defaultEventCallback.Item1;
+                    Func<Message, object, Task<MessageAcknowledgementType>> userSuppliedCallback = _defaultEventCallback.Item1;
                     object userContext = _defaultEventCallback.Item2;
 
                     response = await userSuppliedCallback
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(MessageResponse)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
+                    Logging.Info(this, $"{nameof(MessageAcknowledgementType)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
 
                 return response;
             }
