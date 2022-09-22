@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,40 +60,55 @@ namespace Microsoft.Azure.Devices.Samples
             // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
             _logger.LogInformation("Starting to listen to feedback messages");
 
-            var feedbackReceiver = s_serviceClient.GetFeedbackReceiver();
-
-            while (!token.IsCancellationRequested)
+            AcknowledgementType OnC2dMessageAck(FeedbackBatch feedbackMessages)
             {
-                try
+                AcknowledgementType ackType = AcknowledgementType.Abandon;
+
+                while (!token.IsCancellationRequested)
                 {
-                    FeedbackBatch feedbackMessages = await feedbackReceiver.ReceiveAsync(token);
-                    if (feedbackMessages != null)
+                    try
                     {
-                        _logger.LogInformation("New Feedback received:");
-                        _logger.LogInformation($"\tEnqueue Time: {feedbackMessages.EnqueuedTime}");
-                        _logger.LogInformation($"\tNumber of messages in the batch: {feedbackMessages.Records.Count()}");
-                        foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
+                        if (feedbackMessages != null)
                         {
-                            _logger.LogInformation($"\tDevice {feedbackRecord.DeviceId} acted on message: {feedbackRecord.OriginalMessageId} with status: {feedbackRecord.StatusCode}");
+                            _logger.LogInformation("New Feedback received:");
+                            _logger.LogInformation($"\tEnqueue Time: {feedbackMessages.EnqueuedOnUtc}");
+                            _logger.LogInformation($"\tNumber of messages in the batch: {feedbackMessages.Records.Count()}");
+                            foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
+                            {
+                                _logger.LogInformation($"\tDevice {feedbackRecord.DeviceId} acted on message: {feedbackRecord.OriginalMessageId} with status: {feedbackRecord.StatusCode}");
+                            }
+
+                            //feedbackReceiver.CompleteAsync(feedbackMessages, token);
                         }
 
-                        await feedbackReceiver.CompleteAsync(feedbackMessages, token);
+                        Task.Delay(s_sleepDuration, token);
                     }
+                    catch (Exception e) when (ExceptionHelper.IsNetwork(e))
+                    {
+                        _logger.LogError($"Transient Exception occurred; will retry: {e}");
 
-                    await Task.Delay(s_sleepDuration, token);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"Unexpected error, will need to reinitialize the client: {e}");
+                        InitializeServiceClient();
+                        s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
+                    }
                 }
-                catch (Exception e) when (ExceptionHelper.IsNetwork(e))
-                {
-                    _logger.LogError($"Transient Exception occurred; will retry: {e}");
 
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError($"Unexpected error, will need to reinitialize the client: {e}");
-                    InitializeServiceClient();
-                    feedbackReceiver = s_serviceClient.GetFeedbackReceiver();
-                }
+                return ackType;
             }
+
+            s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
+            await s_serviceClient.MessageFeedback.OpenAsync(token);
+
+            try
+            {
+                await Task.Delay(-1, token);
+            }
+            catch (OperationCanceledException) { }
+
+            await s_serviceClient.MessageFeedback.CloseAsync(token);
         }
 
         private async Task SendC2dMessagesAsync(CancellationToken cancellationToken)
@@ -101,21 +117,21 @@ namespace Microsoft.Azure.Devices.Samples
             while (!cancellationToken.IsCancellationRequested)
             {
                 var str = $"Hello, Cloud! - Message {++messageCount }";
-                using var message = new Message(Encoding.ASCII.GetBytes(str))
+                var message = new Message(Encoding.ASCII.GetBytes(str))
                 {
                     // An acknowledgment is sent on delivery success or failure.
                     Ack = DeliveryAcknowledgement.Full
                 };
 
                 _logger.LogInformation($"Sending C2D message {messageCount} with Id {message.MessageId} to {_deviceId}.");
+                await s_serviceClient.Messages.OpenAsync(cancellationToken);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        await s_serviceClient.SendAsync(_deviceId, message, s_operationTimeout);
+                        await s_serviceClient.Messages.SendAsync(_deviceId, message, cancellationToken);
                         _logger.LogInformation($"Sent message {messageCount} with Id {message.MessageId} to {_deviceId}.");
-                        message.Dispose();
                         break;
                     }
                     catch (Exception e) when (ExceptionHelper.IsNetwork(e))
@@ -130,6 +146,7 @@ namespace Microsoft.Azure.Devices.Samples
                     await Task.Delay(s_sleepDuration, cancellationToken);
                 }
                 await Task.Delay(s_sleepDuration, cancellationToken);
+                await s_serviceClient.Messages.CloseAsync(cancellationToken);
             }
         }
 
