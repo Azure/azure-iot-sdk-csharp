@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Azure.Devices.Common.Exceptions
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The exception thrown when the client receives an error while communicating with IoT hub service.
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubErrorCode"/>, 
+        /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="IotHubErrorCode"/>, 
         /// error message, a flag indicating if the error was transient, an optional tracking id and an optional reference
         /// to the inner exception that caused this exception.
         /// </summary>
@@ -37,7 +37,13 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(string message, HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, bool isTransient, string trackingId = null, Exception innerException = null)
+        public IotHubServiceException(
+            string message,
+            HttpStatusCode errorCode,
+            IotHubErrorCode iotHubStatusCode,
+            bool isTransient,
+            string trackingId = null,
+            Exception innerException = null)
             : base(message, innerException)
         {
             StatusCode = errorCode;
