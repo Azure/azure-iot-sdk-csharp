@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Samples.JobsSample
 {
@@ -17,9 +16,9 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
         private const string TestTagName = "JobsSample_Tag";
         private const int TestTagValue = 100;
 
-        private readonly JobClient _jobClient;
+        private readonly IotHubServiceClient _jobClient;
 
-        public JobsSample(JobClient jobClient)
+        public JobsSample(IotHubServiceClient jobClient)
         {
             _jobClient = jobClient ?? throw new ArgumentNullException(nameof(jobClient));
         }
@@ -46,31 +45,42 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
             try
             {
                 Console.WriteLine($"Schedule twin job {jobId} for {DeviceId}...");
-                JobResponse createJobResponse = await _jobClient
+
+                var scheduledTwinUpdate = new ScheduledTwinUpdate
+                {
+                    QueryCondition = query,
+                    Twin = twin,
+                    StartOnUtc = DateTime.UtcNow,
+                };
+
+                var jobOptions = new ScheduledJobsOptions
+                {
+                    JobId = jobId,
+                    MaxExecutionTime = TimeSpan.FromMinutes(2)
+                };
+
+
+                ScheduledJob createJobResponse = await _jobClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
-                        jobId,
-                        query,
-                        twin,
-                        DateTime.UtcNow,
-                        (long)TimeSpan.FromMinutes(2).TotalSeconds);
+                        scheduledTwinUpdate,
+                        jobOptions);
 
                 Console.WriteLine("Schedule response");
                 Console.WriteLine(JsonSerializer.Serialize(createJobResponse, new JsonSerializerOptions { WriteIndented = true }));
                 Console.WriteLine();
             }
-            catch (ThrottlingException)
+            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubErrorCode.ThrottlingException)
             {
                 Console.WriteLine("Too many jobs scheduled at this given time. Please try again later.");
                 return;
             }
 
             // *************************************** Get all Jobs ***************************************
-            IEnumerable<JobResponse> queryResults = await _jobClient.CreateQuery().GetNextAsJobResponseAsync();
+            QueryResponse<ScheduledJob> queryResults = await _jobClient.ScheduledJobs.CreateQueryAsync();
 
-            List<JobResponse> getJobs = queryResults.ToList();
-            Console.WriteLine($"getJobs return {getJobs.Count} result(s)");
+            IEnumerable<ScheduledJob> getJobs = queryResults.CurrentPage;
 
-            foreach (JobResponse job in getJobs)
+            foreach (ScheduledJob job in getJobs)
             {
                 Console.WriteLine(JsonSerializer.Serialize(job, new JsonSerializerOptions { WriteIndented = true }));
             }
@@ -79,7 +89,7 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
 
             // *************************************** Check completion ***************************************
             Console.WriteLine("Monitoring jobClient for job completion...");
-            JobResponse jobResponse = await _jobClient.GetJobAsync(jobId);
+            ScheduledJob jobResponse = await _jobClient.ScheduledJobs.GetAsync(jobId);
 
             Console.WriteLine("First result");
             Console.WriteLine(JsonSerializer.Serialize(jobResponse, new JsonSerializerOptions { WriteIndented = true }));
@@ -89,7 +99,7 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
             {
                 Console.Write(". ");
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                jobResponse = await _jobClient.GetJobAsync(jobId);
+                jobResponse = await _jobClient.ScheduledJobs.GetAsync(jobId);
             }
 
             Console.WriteLine("DONE");

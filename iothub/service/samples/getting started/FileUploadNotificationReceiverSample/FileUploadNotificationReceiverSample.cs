@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -14,18 +15,21 @@ namespace Microsoft.Azure.Devices.Samples
     /// After inspecting the notification, the sample will mark it as completed.
     /// The sample will run indefinitely unless specified otherwise using the -r parameter or interrupted by Ctrl+C.
     /// </summary>
-    public class FileUploadNotificationReceiverSample
+    internal class FileUploadNotificationReceiverSample
     {
-        private readonly string _iotHubConnectionString;
         private readonly ILogger _logger;
-        private readonly TransportType _transportType;
-        private static ServiceClient _serviceClient;
+        private static IotHubServiceClient _serviceClient;
+        private int _totalNotificationsReceived;
+        private int _totalNotificationsCompleted;
+        private int _totalNotificationsAbandoned;
 
-        public FileUploadNotificationReceiverSample(string iotHubConnectionString, TransportType transportType, ILogger logger)
+        public FileUploadNotificationReceiverSample(IotHubServiceClient serviceClient, ILogger logger)
         {
-            _iotHubConnectionString = iotHubConnectionString ?? throw new ArgumentNullException(nameof(iotHubConnectionString));
-            _transportType = transportType;
+            _serviceClient = serviceClient ?? throw new ArgumentNullException(nameof(serviceClient));
             _logger = logger;
+            _totalNotificationsReceived = 0;
+            _totalNotificationsCompleted = 0;
+            _totalNotificationsAbandoned = 0;
         }
 
         /// <summary>
@@ -45,7 +49,6 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                await InitializeServiceClientAsync();
                 await ReceiveFileUploadNotificationsAsync(targetDeviceId, cts.Token);
             }
             catch (Exception ex)
@@ -55,7 +58,6 @@ namespace Microsoft.Azure.Devices.Samples
             finally
             {
                 _logger.LogInformation($"Closing the service client.");
-                await _serviceClient.CloseAsync();
             }
         }
 
@@ -68,84 +70,55 @@ namespace Microsoft.Azure.Devices.Samples
 
             _logger.LogInformation($"Listening for file upload notifications from the service.");
 
-            FileNotificationReceiver<FileNotification> notificationReceiver = _serviceClient.GetFileNotificationReceiver();
-
-            int totalNotificationsReceived = 0;
-            int totalNotificationsCompleted = 0;
-            int totalNotificationsAbandoned = 0;
-
-            while (!cancellationToken.IsCancellationRequested)
+            AcknowledgementType FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
             {
-                try
+                AcknowledgementType ackType = AcknowledgementType.Abandon;
+
+                _totalNotificationsReceived++;
+                var sb = new StringBuilder();
+                sb.Append($"Received file upload notification.");
+                sb.Append($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
+                sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
+                sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
+                sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
+                _logger.LogInformation(sb.ToString());
+
+                // If the targetDeviceId is set and does not match the notification's origin, ignore it by abandoning the notification.
+                // Completing a notification will remove that notification from the service's queue so it won't be delivered to any other receiver again.
+                // Abandoning a notification will put it back on the queue to be re-delivered to receivers. This is mostly used when multiple receivers
+                // are configured and each receiver is only interested in notifications from a particular device/s.
+                if (!string.IsNullOrWhiteSpace(targetDeviceId)
+                    && !string.Equals(fileUploadNotification.DeviceId, targetDeviceId, StringComparison.OrdinalIgnoreCase))
                 {
-                    FileNotification fileUploadNotification = await notificationReceiver.ReceiveAsync(cancellationToken);
-
-                    if (fileUploadNotification != null)
-                    {
-                        _logger.LogInformation("Did not receive any notification.");
-                        continue;
-                    }
-
-                    totalNotificationsReceived++;
-
-                    _logger.LogInformation($"Received file upload notification.");
-                    _logger.LogInformation($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
-                    _logger.LogInformation($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
-                    _logger.LogInformation($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedTimeUtc}.");
-                    _logger.LogInformation($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
-
-                    // If the targetDeviceId is set and does not match the notification's origin, ignore it by abandoning the notification.
-                    // Completing a notification will remove that notification from the service's queue so it won't be delivered to any other receiver again.
-                    // Abandoning a notification will put it back on the queue to be re-delivered to receivers. This is mostly used when multiple receivers
-                    // are configured and each receiver is only interested in notifications from a particular device/s.
-                    if (!string.IsNullOrWhiteSpace(targetDeviceId)
-                        && !string.Equals(fileUploadNotification.DeviceId, targetDeviceId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _logger.LogInformation($"Marking notification for {fileUploadNotification.DeviceId} as Abandoned.");
-
-                        await notificationReceiver.AbandonAsync(fileUploadNotification, cancellationToken);
-
-                        _logger.LogInformation($"Successfully marked the notification for device {fileUploadNotification.DeviceId} as Abandoned.");
-                        totalNotificationsAbandoned++;
-                    }
-                    else
-                    {
-                        _logger.LogInformation($"Marking notification for {fileUploadNotification.DeviceId} as Completed.");
-
-                        await notificationReceiver.CompleteAsync(fileUploadNotification, cancellationToken);
-
-                        _logger.LogInformation($"Successfully marked the notification for device {fileUploadNotification.DeviceId} as Completed.");
-                        totalNotificationsCompleted++;
-                    }
-
+                    _logger.LogInformation($"Marking notification for {fileUploadNotification.DeviceId} as Abandoned.");
+                    ackType = AcknowledgementType.Abandon;
+                    _totalNotificationsAbandoned++;
                 }
-                catch (Exception e) when ((e is IotHubException) || (e is DeviceMessageLockLostException))
+                else
                 {
-                    _logger.LogWarning($"Caught a recoverable exception, will retry: {e.Message} - {e}");
+                    _logger.LogInformation($"Marking notification for {fileUploadNotification.DeviceId} as Completed.");
+                    ackType = AcknowledgementType.Complete;
+                    _totalNotificationsCompleted++;
                 }
+
+                return ackType;
             }
 
-            _logger.LogInformation($"Total Notifications Received: {totalNotificationsReceived}.");
-            _logger.LogInformation($"Total Notifications Marked as Completed: {totalNotificationsCompleted}.");
-            _logger.LogInformation($"Total Notifications Marked as Abandoned: {totalNotificationsAbandoned}.");
-        }
+            _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+            await _serviceClient.FileUploadNotifications.OpenAsync(cancellationToken);
 
-        private async Task InitializeServiceClientAsync()
-        {
-            if (_serviceClient != null)
+            // Wait for cancellation and then print the summary
+            try
             {
-                await _serviceClient.CloseAsync();
-                _serviceClient.Dispose();
-                _serviceClient = null;
-                _logger.LogInformation("Closed and disposed the current service client instance.");
+                await Task.Delay(-1, cancellationToken);
             }
+            catch (OperationCanceledException) { }
 
-            var options = new ServiceClientOptions
-            {
-                SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
-            };
-            _serviceClient = ServiceClient.CreateFromConnectionString(_iotHubConnectionString, _transportType, options);
-            _logger.LogInformation("Initialized a new service client instance.");
+            _logger.LogInformation($"Total Notifications Received: {_totalNotificationsReceived}.");
+            _logger.LogInformation($"Total Notifications Marked as Completed: {_totalNotificationsCompleted}.");
+            _logger.LogInformation($"Total Notifications Marked as Abandoned: {_totalNotificationsAbandoned}.");
+
+            await _serviceClient.FileUploadNotifications.CloseAsync(CancellationToken.None);
         }
     }
 }
