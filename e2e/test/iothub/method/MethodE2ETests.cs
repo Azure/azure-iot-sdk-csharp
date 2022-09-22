@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -467,15 +468,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 responseTimeout,
                 serviceClientTransportSettings);
 
-            bool timedOut = Task.WaitAll(new Task[] { serviceSendTask, methodReceivedTask }, TimeSpan.FromMinutes(1));
+            Task.WaitAll(
+                new Task[]
+                {
+                    serviceSendTask,
+                    methodReceivedTask
+                },
+                TimeSpan.FromMinutes(1));
 
-            if (timedOut)
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+
+            // If the Task.WaitAll timed out, then one or both of these tasks timed out. This block clarifies which task(s) timed out
+            using (new AssertionScope())
             {
                 serviceSendTask.IsCompleted.Should().Be(true, "Timed out waiting for service client to send the direct method");
                 methodReceivedTask.IsCompleted.Should().Be(true, "Timed out waiting for device client to receive the direct method");
             }
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondAsync(
@@ -500,7 +508,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         responseTimeout,
                         serviceClientTransportSettings);
 
-            bool timedOut = Task.WaitAll(
+            Task.WaitAll(
                 new Task[]
                 {
                     serviceSendTask,
@@ -508,13 +516,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 },
                 TimeSpan.FromMinutes(1));
 
-            if (timedOut)
+            await moduleClient.CloseAsync().ConfigureAwait(false);
+
+            // If the Task.WaitAll timed out, then one or both of these tasks timed out. This block clarifies which task(s) timed out
+            using (new AssertionScope())
             {
                 serviceSendTask.IsCompleted.Should().Be(true, "Timed out waiting for service client to send the direct method");
                 methodReceivedTask.IsCompleted.Should().Be(true, "Timed out waiting for module client to receive the direct method");
             }
-
-            await moduleClient.CloseAsync().ConfigureAwait(false);
         }
     }
 }
