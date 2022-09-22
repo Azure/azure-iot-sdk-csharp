@@ -72,14 +72,23 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 };
                 await deviceClient.SetReceiveMessageHandlerAsync(OnC2DMessageReceived, null).ConfigureAwait(false);
 
-                Task result = await Task
+                await Task
+                    .WhenAny(
+                        Task.Delay(TimeSpan.FromSeconds(20)),
+                        c2dMessageReceived.Task)
+                    .ConfigureAwait(false);
+
+                c2dMessageReceived.Task.IsCompleted.Should().BeTrue("Timed out waiting for cloud to device message to be received by device");
+
+                await Task
                     .WhenAny(
                         // Wait for up to 200 seconds for the feedback message as the service may not send messages
                         // until they can batch others, even up to a minute later.
                         Task.Delay(TimeSpan.FromSeconds(200)),
-                        c2dMessageReceived.Task)
+                        feedbackMessageReceived.Task)
                     .ConfigureAwait(false);
-                feedbackMessageReceived.Task.IsCompleted.Should().BeTrue();
+
+                feedbackMessageReceived.Task.IsCompleted.Should().BeTrue("Service client never received c2d feedback message even though the device received the message");
             }
             finally
             {
