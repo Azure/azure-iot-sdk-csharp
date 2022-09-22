@@ -169,12 +169,14 @@ namespace Microsoft.Azure.Devices.Shared
                 value = GetMetadata();
                 return true;
             }
-            else if (propertyName == LastUpdatedName)
+
+            if (propertyName == LastUpdatedName)
             {
                 value = GetLastUpdated();
                 return true;
             }
-            else if (propertyName == LastUpdatedVersionName)
+
+            if (propertyName == LastUpdatedVersionName)
             {
                 value = GetLastUpdatedVersion();
                 return true;
