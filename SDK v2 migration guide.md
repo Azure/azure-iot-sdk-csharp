@@ -61,14 +61,22 @@ TODO: list breaking changes
 
 #### RegistryManager
 
-| V1 class#method | Changed? | Equivalent V2 class#method |
+| V1 class#method | Equivalent V2 class#method |
 |:---|:---|:---|
-| RegistryManager | Yes | IotHubServiceClient, subclients Devices, Twins, Configurations, etc. |
-| RegistryManager.AddConfigurationAsync(...) | Yes |  IotHubServiceClient.Configurations.CreateAsync(...) |
-| RegistryManager.GetConfigurationsAsync(int maxCount) | Yes |  IotHubServiceClient.Configurations.GetAsync(int maxCount) |
-| RegistryManager.RemoveConfigurationAsync(...) | Yes |  IotHubServiceClient.Configurations.DeleteAsync(...) |
+| `RegistryManager` | `IotHubServiceClient`, subclients `Devices`, `Twins`, `Configurations`, etc. |
+| `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` |
+| `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` |
+| `ServiceClient.InvokeDeviceMethodAsync(...)` | `ServiceClient.DirectMethods.InvokeAsync(...)` |
+| `CloudToDeviceMethod` | `DirectMethodRequest` |
+| `CloudToDeviceMethodResult` | `DirectMethodResponse` |
+| `RegistryManager.AddConfigurationAsync(...)` | `IotHubServiceClient.Configurations.CreateAsync(...)` |
+| `RegistryManager.GetConfigurationsAsync(int maxCount)`| `IotHubServiceClient.Configurations.GetAsync(int maxCount)` |
+| `RegistryManager.RemoveConfigurationAsync(...)` | `IotHubServiceClient.Configurations.DeleteAsync(...)` |
 
-TODO: is DeviceMethod a class in C#?
+#### Other notable breaking changes
+
+- `CloudToDeviceMethod` took a constructor parameter for the method name, which is now used with `DirectMethodRequest` as a property initializer.
+- Operations that offer concurrency protection using `ETag`s, now take a parameter `onlyIfUnchanged` that relies on the ETag property of the submitted entity.
 
 #### DeviceMethod
 
