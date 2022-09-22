@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices
         { }
 
         /// <summary>
-        /// System generated. Ignored at creation.
+        /// Status of the job.
         /// </summary>
         [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(StringEnumConverter))]
@@ -42,13 +42,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// System generated. Ignored at creation.
+        /// Represents the time the job started processing.
         /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? StartedOnUtc { get; internal set; }
 
         /// <summary>
-        /// System generated. Ignored at creation.
         /// Represents the time the job stopped processing.
         /// </summary>
         [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
@@ -65,7 +64,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// System generated. Ignored at creation.
+        /// Represents the reason for job failure.
         /// </summary>
         /// <remarks>
         /// If status is <see cref="JobStatus.Failed"/>, this represents a string containing the reason.
@@ -74,7 +73,6 @@ namespace Microsoft.Azure.Devices
         public string FailureReason { get; internal set; }
 
         /// <summary>
-        /// System generated. Ignored at creation.
         /// Represents a string containing a message with status about the job execution.
         /// </summary>
         [JsonProperty(PropertyName = "statusMessage", NullValueHandling = NullValueHandling.Ignore)]
