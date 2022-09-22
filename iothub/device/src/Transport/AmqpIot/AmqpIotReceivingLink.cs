@@ -218,7 +218,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 DirectMethodRequest DirectMethodRequest = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);
-                DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+
+                try
+                {
+                    DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+                }
+                catch (Exception ex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Failed to acknowledge the direct method request. {ex}");
+                }
+
                 _onMethodReceived?.Invoke(DirectMethodRequest);
             }
             finally

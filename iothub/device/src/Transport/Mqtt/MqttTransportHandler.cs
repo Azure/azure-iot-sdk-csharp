@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -720,6 +721,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleReceivedMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            Debug.Assert(receivedEventArgs != null);
             receivedEventArgs.AutoAcknowledge = false;
             string topic = receivedEventArgs.ApplicationMessage.Topic;
 
@@ -763,40 +765,48 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_deviceMessageReceivedListener != null)
             {
-                MessageResponse acknowledgementType = await _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage).ConfigureAwait(false);
+                if (Logging.IsEnabled)
+                    Logging.Error(this, "Received a cloud to device message while user's callback for handling them was null. Ignoring message.");
 
-                // Note that MQTT does not support Abandon or Reject
-                if (acknowledgementType != MessageResponse.Completed)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"MQTT does not support {MessageResponse.Abandoned} or {MessageResponse.None}");
-
-                    // This will skip acknowledging the message
-                    return;
-                }
-
-                try
-                {
-                    await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    // This likely happened because the connection was lost. The service will re-send this message so the user
-                    // can acknowledge it on the new connection.
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
-                }
+                return;
             }
-            else
+
+            MessageResponse acknowledgementType = await _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage).ConfigureAwait(false);
+
+            // Note that MQTT does not support Abandon or Reject
+            if (acknowledgementType != MessageResponse.Completed)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, "Received a cloud to device message while user's callback for handling them was null. Disposing message.");
+                    Logging.Error(this, $"MQTT does not support {MessageResponse.Abandoned} or {MessageResponse.None}");
+
+                // This will skip acknowledging the message
+                return;
+            }
+
+            try
+            {
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // This likely happened because the connection was lost. The service will re-send this message so the user
+                // can acknowledge it on the new connection.
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
             }
         }
 
         private async Task HandleReceivedDirectMethodRequestAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+            try
+            {
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to acknowledge the direct method request. {ex}");
+            }
 
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 

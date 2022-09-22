@@ -530,19 +530,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (_onDeviceMessageReceivedCallback != null)
                 {
-                    MessageResponse response = await _onDeviceMessageReceivedCallback?.Invoke(message);
-                    AmqpIotDisposeActions acknowledgementType = AmqpIotDisposeActions.Accepted;
-                    if (response == MessageResponse.Abandoned)
-                    {
-                        acknowledgementType = AmqpIotDisposeActions.Released;
-                    }
-                    else if (response == MessageResponse.None)
-                    {
-                        acknowledgementType = AmqpIotDisposeActions.Rejected;
-                    }
-
-                    await DisposeMessageAsync(message.LockToken, acknowledgementType, CancellationToken.None).ConfigureAwait(false);
+                    return;
                 }
+
+                MessageResponse response = await _onDeviceMessageReceivedCallback.Invoke(message).ConfigureAwait(false);
+                AmqpIotDisposeActions acknowledgementType = AmqpIotDisposeActions.Accepted;
+                if (response == MessageResponse.Abandoned)
+                {
+                    acknowledgementType = AmqpIotDisposeActions.Released;
+                }
+                else if (response == MessageResponse.None)
+                {
+                    acknowledgementType = AmqpIotDisposeActions.Rejected;
+                }
+
+                await DisposeMessageAsync(message.LockToken, acknowledgementType, CancellationToken.None).ConfigureAwait(false);
             }
             finally
             {
@@ -953,7 +955,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (_onMethodCallback != null)
                 {
-                    DirectMethodResponse methodResponse = await _onMethodCallback.Invoke(DirectMethodRequest);
+                    DirectMethodResponse methodResponse = await _onMethodCallback.Invoke(DirectMethodRequest).ConfigureAwait(false);
                     await _methodSendingLink.SendMethodResponseAsync(methodResponse, CancellationToken.None).ConfigureAwait(false);
                 }
             }

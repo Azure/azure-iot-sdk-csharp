@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (callback != null)
                 {
-                    return await callback.Invoke(message, callbackContext);
+                    return await callback.Invoke(message, callbackContext).ConfigureAwait(false);
                 }
                 else
                 {
