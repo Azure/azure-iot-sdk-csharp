@@ -62,25 +62,18 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 AcknowledgementType ackType = AcknowledgementType.Abandon;
 
-                try
-                {
-                    _logger.LogInformation("New Feedback received:");
-                    _logger.LogInformation($"\tEnqueue Time: {feedbackMessages.EnqueuedOnUtc}");
-                    _logger.LogInformation($"\tNumber of messages in the batch: {feedbackMessages.Records.Count()}");
-                    foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
-                    {
-                        _logger.LogInformation($"\tDevice {feedbackRecord.DeviceId} acted on message: {feedbackRecord.OriginalMessageId} with status: {feedbackRecord.StatusCode}");
-                    }
+                var sb = new StringBuilder();
 
-                    Task.Delay(s_sleepDuration, token);
-                }
-                catch (Exception e)
+                sb.Append("New Feedback received:");
+                sb.Append($"\tEnqueue Time: {feedbackMessages.EnqueuedOnUtc}");
+                sb.Append($"\tNumber of messages in the batch: {feedbackMessages.Records.Count()}");
+                _logger.LogInformation(sb.ToString());
+
+                foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
                 {
-                    _logger.LogError($"Unexpected error, will need to reinitialize the client: {e}");
-                    InitializeServiceClient();
-                    s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
+                    _logger.LogInformation($"\tDevice {feedbackRecord.DeviceId} acted on message: {feedbackRecord.OriginalMessageId} with status: {feedbackRecord.StatusCode}");
                 }
-                
+
                 return ackType;
             }
 

@@ -31,5 +31,11 @@ namespace Microsoft.Azure.Devices.Samples
             Required = false,
             HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
         public double? ApplicationRunningTime { get; set; }
+
+        [Option(
+           "TransportProtocol",
+           Default = IotHubTransportProtocol.Tcp,
+           HelpText = "The transport to use to communicate with the device provisioning instance.")]
+        public IotHubTransportProtocol TransportProtocol { get; set; }
     }
 }

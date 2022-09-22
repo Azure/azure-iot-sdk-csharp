@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             var serviceClientOptions = new IotHubServiceClientOptions
             {
-                Protocol = IotHubTransportProtocol.Tcp
+                Protocol = parameters.TransportProtocol,
             };
 
             var sample = new ServiceClientSample(parameters.IoTHubConnectionString, parameters.DeviceId, logger);
