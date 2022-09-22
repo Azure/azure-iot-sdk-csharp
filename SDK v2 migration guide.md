@@ -85,18 +85,8 @@ TODO: list breaking changes
 
 #### DigitalTwinClient
 
-| V1 class#method | Changed? | Equivalent V2 class#method |
-|:---|:---|:---|
-| `DigitalTWinClient` | Yes | `IotHubServiceClient.DigitalTwins` |
-| `DigitalTWinClient.GetDigitalTwinAsync(...)` | Yes | `IotHubServiceClient.DigitalTwins.GetAsync(...)` |
-| `DigitalTWinClient.UpdateDigitalTwinAsync(...)` | Yes | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
-| `DigitalTWinClient.UpdateDigitalTwinAsync(...)` | Yes | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
-| `UpdateOperationsUtility` | Yes | Removed. Use `Azure.JsonPatchDocument` from Azure.Core package. |
-
-#### DigitalTwinClient
-
 | V1 class#method | Equivalent V2 class#method |
-|:---|:---|:---|
+|:---|:---|
 | `DigitalTwinClient` | `IotHubServiceClient.DigitalTwins` |
 | `DigitalTwinClient.GetDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.GetAsync(...)` |
 | `DigitalTwinClient.UpdateDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
