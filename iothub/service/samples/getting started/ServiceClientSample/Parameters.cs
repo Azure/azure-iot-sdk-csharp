@@ -9,12 +9,6 @@ namespace Microsoft.Azure.Devices.Samples
     /// Parameters for the application.
     /// </summary>
 
-    public enum Transport
-    {
-        Amqp_WebSocket_Only = IotHubTransportProtocol.WebSocket,
-        Amqp = IotHubTransportProtocol.Tcp
-    };
-
     internal class Parameters
     {
         [Option(
@@ -30,14 +24,6 @@ namespace Microsoft.Azure.Devices.Samples
             Required = true,
             HelpText = "The Id of the device to connect to.")]
         public string DeviceId { get; set; }
-
-        [Option(
-            't',
-            "TransportType",
-            Default = Transport.Amqp,
-            Required = false,
-            HelpText = "The transport to use to communicate with the IoT hub. Possible values include Amqp and Amqp_WebSocket_Only.")]
-        public Transport TransportType { get; set; }
 
         [Option(
             'r',

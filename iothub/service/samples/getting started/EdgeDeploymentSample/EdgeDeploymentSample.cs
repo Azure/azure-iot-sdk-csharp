@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Samples
                 string targetCondition = $"tags.{conditionPropertyName}='{conditionPropertyValue}'";
 
                 var edgeDevices = devices.ToList();
-                BulkRegistryOperationResult createResult = await CreateEdgeDevicesAsync(edgeDevices);
+                BulkRegistryOperationResult createResult = await _serviceClient.Devices.CreateAsync(edgeDevices);
                 if (createResult.Errors.Length > 0)
                 {
                     foreach (DeviceRegistryOperationError err in createResult.Errors)
@@ -139,11 +139,6 @@ namespace Microsoft.Azure.Devices.Samples
             }
 
             return edgeDevices;
-        }
-
-        private Task<BulkRegistryOperationResult> CreateEdgeDevicesAsync(IEnumerable<Device> edgeDevices)
-        {
-            return _serviceClient.Devices.CreateAsync(edgeDevices);
         }
 
         private static ConfigurationContent GetBaseConfigurationContent()

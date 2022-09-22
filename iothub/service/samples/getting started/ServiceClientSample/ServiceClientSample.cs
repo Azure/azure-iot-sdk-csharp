@@ -18,14 +18,12 @@ namespace Microsoft.Azure.Devices.Samples
 
         private static IotHubServiceClient s_serviceClient;
         private readonly string _hubConnectionString;
-        private readonly Transport _transportType;
         private readonly string _deviceId;
         private readonly ILogger _logger;
 
-        public ServiceClientSample(string hubConnectionString, Transport transportType, string deviceId, ILogger logger)
+        public ServiceClientSample(string hubConnectionString, string deviceId, ILogger logger)
         {
             _hubConnectionString = hubConnectionString ?? throw new ArgumentNullException(nameof(hubConnectionString));
-            _transportType = transportType;
             _deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
             _logger = logger;
         }
@@ -64,38 +62,25 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 AcknowledgementType ackType = AcknowledgementType.Abandon;
 
-                while (!token.IsCancellationRequested)
+                try
                 {
-                    try
+                    _logger.LogInformation("New Feedback received:");
+                    _logger.LogInformation($"\tEnqueue Time: {feedbackMessages.EnqueuedOnUtc}");
+                    _logger.LogInformation($"\tNumber of messages in the batch: {feedbackMessages.Records.Count()}");
+                    foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
                     {
-                        if (feedbackMessages != null)
-                        {
-                            _logger.LogInformation("New Feedback received:");
-                            _logger.LogInformation($"\tEnqueue Time: {feedbackMessages.EnqueuedOnUtc}");
-                            _logger.LogInformation($"\tNumber of messages in the batch: {feedbackMessages.Records.Count()}");
-                            foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
-                            {
-                                _logger.LogInformation($"\tDevice {feedbackRecord.DeviceId} acted on message: {feedbackRecord.OriginalMessageId} with status: {feedbackRecord.StatusCode}");
-                            }
-
-                            //feedbackReceiver.CompleteAsync(feedbackMessages, token);
-                        }
-
-                        Task.Delay(s_sleepDuration, token);
+                        _logger.LogInformation($"\tDevice {feedbackRecord.DeviceId} acted on message: {feedbackRecord.OriginalMessageId} with status: {feedbackRecord.StatusCode}");
                     }
-                    catch (Exception e) when (ExceptionHelper.IsNetwork(e))
-                    {
-                        _logger.LogError($"Transient Exception occurred; will retry: {e}");
 
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError($"Unexpected error, will need to reinitialize the client: {e}");
-                        InitializeServiceClient();
-                        s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
-                    }
+                    Task.Delay(s_sleepDuration, token);
                 }
-
+                catch (Exception e)
+                {
+                    _logger.LogError($"Unexpected error, will need to reinitialize the client: {e}");
+                    InitializeServiceClient();
+                    s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
+                }
+                
                 return ackType;
             }
 
@@ -134,10 +119,6 @@ namespace Microsoft.Azure.Devices.Samples
                         _logger.LogInformation($"Sent message {messageCount} with Id {message.MessageId} to {_deviceId}.");
                         break;
                     }
-                    catch (Exception e) when (ExceptionHelper.IsNetwork(e))
-                    {
-                        _logger.LogError($"Transient Exception occurred, will retry: {e}");
-                    }
                     catch (Exception e)
                     {
                         _logger.LogError($"Unexpected error, will need to reinitialize the client: {e}");
@@ -154,7 +135,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             var options = new IotHubServiceClientOptions
             {
-                Protocol = (IotHubTransportProtocol)_transportType,
+                Protocol = IotHubTransportProtocol.Tcp,
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);

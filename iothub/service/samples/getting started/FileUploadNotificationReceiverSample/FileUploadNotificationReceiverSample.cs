@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -17,7 +18,6 @@ namespace Microsoft.Azure.Devices.Samples
     internal class FileUploadNotificationReceiverSample
     {
         private readonly ILogger _logger;
-        private readonly Transport _transport;
         private static IotHubServiceClient _serviceClient;
         private int _totalNotificationsReceived;
         private int _totalNotificationsCompleted;
@@ -58,7 +58,6 @@ namespace Microsoft.Azure.Devices.Samples
             finally
             {
                 _logger.LogInformation($"Closing the service client.");
-                await _serviceClient.FileUploadNotifications.CloseAsync();
             }
         }
 
@@ -76,12 +75,13 @@ namespace Microsoft.Azure.Devices.Samples
                 AcknowledgementType ackType = AcknowledgementType.Abandon;
 
                 _totalNotificationsReceived++;
-
-                _logger.LogInformation($"Received file upload notification.");
-                _logger.LogInformation($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
-                _logger.LogInformation($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
-                _logger.LogInformation($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
-                _logger.LogInformation($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
+                var sb = new StringBuilder();
+                sb.Append($"Received file upload notification.");
+                sb.Append($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
+                sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
+                sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
+                sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
+                _logger.LogInformation(sb.ToString());
 
                 // If the targetDeviceId is set and does not match the notification's origin, ignore it by abandoning the notification.
                 // Completing a notification will remove that notification from the service's queue so it won't be delivered to any other receiver again.

@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
                 {
                     QueryCondition = query,
                     Twin = twin,
-                    StartOnUtc = DateTime.UtcNow
+                    StartOnUtc = DateTime.UtcNow,
                 };
 
                 var jobOptions = new ScheduledJobsOptions
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
                 Console.WriteLine(JsonSerializer.Serialize(createJobResponse, new JsonSerializerOptions { WriteIndented = true }));
                 Console.WriteLine();
             }
-            catch (Exception)
+            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubErrorCode.ThrottlingException)
             {
                 Console.WriteLine("Too many jobs scheduled at this given time. Please try again later.");
                 return;
