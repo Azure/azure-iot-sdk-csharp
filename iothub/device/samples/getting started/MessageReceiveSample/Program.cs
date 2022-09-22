@@ -36,12 +36,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 appRunTime = TimeSpan.FromSeconds(parameters.ApplicationRunningTime.Value);
             }
 
-            using var deviceClient = new IotHubDeviceClient(
+            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
+            using var hubDeviceClient = new IotHubDeviceClient(
                 parameters.PrimaryConnectionString,
-                options); // TODO: pass in transport
-            var sample = new MessageReceiveSample(deviceClient, parameters.Transport, appRunTime);
+                options);
+            var sample = new MessageReceiveSample(hubDeviceClient, parameters.Transport, appRunTime);
             await sample.RunSampleAsync();
-            await deviceClient.CloseAsync();
+            await hubDeviceClient.CloseAsync();
 
             Console.WriteLine("Done.");
             return 0;
