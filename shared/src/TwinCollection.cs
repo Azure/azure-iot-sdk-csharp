@@ -151,6 +151,38 @@ namespace Microsoft.Azure.Devices.Shared
             set => TrySetMemberInternal(propertyName, value);
         }
 
+        /// <summary>
+        /// Gets the value associated with the specified property name.
+        /// </summary>
+        /// <param name="propertyName">Name of the property to get</param>
+        /// <param name="value">
+        ///     When this method returns, contains the value associated with the specified property name, if the property is found;
+        ///     otherwise, <c>null</c>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the <see cref="TwinCollection"/> contains an element with the specified property name; otherwise, <c>false</c>
+        /// </returns>
+        public bool TryGetValue(string propertyName, out dynamic value)
+        {
+            if (propertyName == MetadataName)
+            {
+                value = GetMetadata();
+                return true;
+            }
+            else if (propertyName == LastUpdatedName)
+            {
+                value = GetLastUpdated();
+                return true;
+            }
+            else if (propertyName == LastUpdatedVersionName)
+            {
+                value = GetLastUpdatedVersion();
+                return true;
+            }
+
+            return TryGetMemberInternal(propertyName, out value);
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {
