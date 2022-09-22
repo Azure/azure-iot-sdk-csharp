@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
 using CommandLine;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -29,5 +30,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Required = false,
             HelpText = "The transport to use for the connection.")]
         public Transport Transport { get; set; }
+
+        [Option(
+           "TransportProtocol",
+           Default = IotHubClientTransportProtocol.Tcp,
+           HelpText = "The transport to use to communicate with the device provisioning instance.")]
+        public IotHubClientTransportProtocol TransportProtocol { get; set; }
+
+        internal IotHubClientTransportSettings GetHubTransportSettings()
+        {
+            return Transport switch
+            {
+                Transport.Mqtt => new IotHubClientMqttSettings(TransportProtocol),
+                Transport.Amqp => new IotHubClientAmqpSettings(TransportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
+            };
+        }
     }
 }
