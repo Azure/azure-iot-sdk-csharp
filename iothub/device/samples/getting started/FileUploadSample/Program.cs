@@ -34,9 +34,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Environment.Exit(1);
                 });
 
+            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
             using var hubDeviceClient = new IotHubDeviceClient(
                 parameters.PrimaryConnectionString,
-                options); // TODO: figure out how to assign transport
+                options);
             var sample = new FileUploadSample(hubDeviceClient);
             await sample.RunSampleAsync();
 
