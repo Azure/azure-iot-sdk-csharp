@@ -27,8 +27,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
-        private static CancellationTokenSource s_cancellationTokenSource = new CancellationTokenSource();
-
 #pragma warning disable CA1823
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
 #pragma warning restore CA1823
@@ -165,7 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
                     Logger,
-                    s_cancellationTokenSource.Token)
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (attestationMechanism == null)
@@ -215,7 +213,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
                     Logger,
-                    s_cancellationTokenSource.Token)
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (attestationMechanism == null)
@@ -308,7 +306,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
                     Logger,
-                    s_cancellationTokenSource.Token)
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (individualEnrollmentResult == null)
@@ -374,7 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
                         Logger,
-                        s_cancellationTokenSource.Token)
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (enrollmentGroupResult == null)
@@ -445,7 +443,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 s_provisioningServiceRetryPolicy,
                                 s_retryableExceptions,
                                 logger,
-                                s_cancellationTokenSource.Token)
+                                CancellationToken.None)
                             .ConfigureAwait(false);
 
                         if (temporaryCreatedEnrollment == null)
@@ -467,7 +465,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 s_provisioningServiceRetryPolicy,
                                 s_retryableExceptions,
                                 logger,
-                                s_cancellationTokenSource.Token)
+                                CancellationToken.None)
                             .ConfigureAwait(false);
 
                         if (createdEnrollment == null)
@@ -512,7 +510,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
                     logger,
-                    s_cancellationTokenSource.Token)
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (createdEnrollment == null)
@@ -570,7 +568,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                    s_provisioningServiceRetryPolicy,
                    s_retryableExceptions,
                    logger,
-                   s_cancellationTokenSource.Token)
+                   CancellationToken.None)
                .ConfigureAwait(false);
 
             if (createdEnrollmentGroup == null)
@@ -602,7 +600,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
                             logger,
-                            s_cancellationTokenSource.Token)
+                            CancellationToken.None)
                         .ConfigureAwait(false);
                 }
                 else if (enrollmentType == EnrollmentType.Group)
@@ -616,7 +614,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
                             logger,
-                            s_cancellationTokenSource.Token)
+                            CancellationToken.None)
                         .ConfigureAwait(false);
                 }
             }

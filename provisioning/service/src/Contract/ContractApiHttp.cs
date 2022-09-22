@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     // Unfortunately TaskCanceledException is thrown when HttpClient times out.
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        throw new OperationCanceledException(ex.Message);
+                        throw new OperationCanceledException(ex.Message, ex);
                     }
 
                     throw new ProvisioningServiceClientTransportException($"The {httpMethod} operation timed out.", ex);

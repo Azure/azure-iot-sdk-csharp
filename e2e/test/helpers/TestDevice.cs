@@ -40,7 +40,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private X509Certificate2 _authCertificate;
 
         private static MsTestLogger s_logger;
-        private static CancellationTokenSource s_cancellationTokenSource = new CancellationTokenSource();
 
         private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
         {
@@ -112,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     s_exponentialBackoffRetryStrategy,
                     s_throttlingStatusCodes,
                     s_logger,
-                    s_cancellationTokenSource.Token)
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             // Confirm the device exists in the registry before calling it good to avoid downstream test failures.
@@ -133,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     s_exponentialBackoffRetryStrategy,
                     s_retryableStatusCodes,
                     s_logger,
-                    s_cancellationTokenSource.Token)
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             return device == null
@@ -212,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     s_exponentialBackoffRetryStrategy,
                     s_throttlingStatusCodes,
                     s_logger,
-                    s_cancellationTokenSource.Token)
+                    CancellationToken.None)
                 .ConfigureAwait(false);
         }
 

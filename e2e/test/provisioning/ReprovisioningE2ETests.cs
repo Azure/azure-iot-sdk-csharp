@@ -41,7 +41,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private static DirectoryInfo s_x509CertificatesFolder;
         private static string s_intermediateCertificateSubject;
-        private static CancellationTokenSource s_cancellationTokenSource = new CancellationTokenSource();
 
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
@@ -763,7 +762,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
                         Logger,
-                        s_cancellationTokenSource.Token)
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (retrievedEnrollment == null)
@@ -786,7 +785,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
                         Logger,
-                        s_cancellationTokenSource.Token)
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (updatedEnrollment == null)
@@ -806,7 +805,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
                         Logger,
-                        s_cancellationTokenSource.Token)
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (retrievedEnrollmentGroup == null)
@@ -827,7 +826,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
                         Logger,
-                        s_cancellationTokenSource.Token)
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (updatedEnrollmentGroup == null)
