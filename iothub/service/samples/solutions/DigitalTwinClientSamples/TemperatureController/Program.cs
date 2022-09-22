@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using CommandLine;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -38,10 +38,10 @@ namespace Microsoft.Azure.Devices.Samples
 
             ILogger logger = InitializeConsoleDebugLogger();
             logger.LogDebug("Set up the digital twin client.");
-            using var digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(parameters.HubConnectionString);
+            using var hubClient = new IotHubServiceClient(parameters.HubConnectionString);
 
             logger.LogDebug("Set up and start the TemperatureController service sample.");
-            var temperatureControllerSample = new TemperatureControllerSample(digitalTwinClient, parameters.DeviceId, logger);
+            var temperatureControllerSample = new TemperatureControllerSample(hubClient, parameters.DeviceId, logger);
             await temperatureControllerSample.RunSampleAsync();
         }
 

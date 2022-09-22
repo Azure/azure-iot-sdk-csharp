@@ -8,16 +8,21 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.19.2" />
-
-    <!-- Note: Applications should not need to import all 3 protocols. This was done to simplify protocol selection within the sample.-->
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.16.4" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.15.2" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.17.2" />
 
     <!-- Working around a bug between DotNetty and .NET 5.0+ by specifying the exact version of DotNetty.Common that has the fix -->
     <PackageReference Include="DotNetty.Common" Version="0.7.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="2.0.0-preview001" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="2.0.0-preview001" />
+    <PackageReference Include="Microsoft.Azure.Devices.Authentication" Version="2.0.0-preview001" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
   </ItemGroup>
 
 </Project>

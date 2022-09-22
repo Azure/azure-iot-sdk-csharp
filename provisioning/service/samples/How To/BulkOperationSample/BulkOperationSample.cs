@@ -84,9 +84,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task QueryIndividualEnrollmentsAsync()
         {
             Console.WriteLine("\nCreating a query for enrollments...");
-            var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
 
-            using Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification, QueryPageSize);
+            Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery("SELECT * FROM enrollments", QueryPageSize);
             while (query.HasNext())
             {
                 Console.WriteLine("\nQuerying the next enrollments...");

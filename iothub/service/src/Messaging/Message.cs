@@ -3,12 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading;
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
 {

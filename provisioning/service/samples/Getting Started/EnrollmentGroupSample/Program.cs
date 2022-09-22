@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using CommandLine;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
-
     internal class Program
     {
         /// <summary>
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
         /// </param>
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             // Parse application parameters
             Parameters parameters = null;
@@ -36,11 +36,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 Environment.Exit(1);
             }
 
-            var certificate = new X509Certificate2(parameters.CertificatePath);
+            using var certificate = new X509Certificate2(parameters.CertificatePath);
 
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString);
+            using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
             var sample = new EnrollmentGroupSample(provisioningServiceClient, certificate);
-            sample.RunSampleAsync().GetAwaiter().GetResult();
+            await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");
             return 0;

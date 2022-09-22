@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             HelpText = "The transport to use to communicate with the device provisioning instance.")]
         public ProvisioningClientTransportProtocol TransportProtocol { get; set; }
 
-        public string GetCertificatePath()
+        internal string GetCertificatePath()
         {
             if (string.IsNullOrWhiteSpace(CertificateName))
             {
@@ -85,6 +85,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             // Once we get to the root, the call to parent will return null
             // so that is our failure condition.
             throw new InvalidOperationException($"Could not find the certificate file {CertificateName} in the sample execution folder or any parent folder.");
+        }
+
+        internal ProvisioningTransportHandler GetTransportHandler()
+        {
+            return Transport switch
+            {
+                Transport.Mqtt => new ProvisioningTransportHandlerMqtt(TransportProtocol),
+                Transport.Amqp => new ProvisioningTransportHandlerAmqp(TransportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
+            };
+        }
+
+        internal IotHubClientTransportSettings GetHubTransportSettings()
+        {
+            IotHubClientTransportProtocol protocol = TransportProtocol == ProvisioningClientTransportProtocol.Tcp
+                ? IotHubClientTransportProtocol.Tcp
+                : IotHubClientTransportProtocol.WebSocket;
+
+            return Transport switch
+            {
+                Transport.Mqtt => new IotHubClientMqttSettings(protocol),
+                Transport.Amqp => new IotHubClientAmqpSettings(protocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
+            };
         }
     }
 }

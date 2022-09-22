@@ -61,7 +61,7 @@ TODO: list breaking changes
 #### RegistryManager
 
 | V1 class#method | Equivalent V2 class#method |
-|:---|:---|
+|:---|:---|:---|
 | `RegistryManager` | `IotHubServiceClient`, subclients `Devices`, `Twins`, `Configurations`, etc. |
 | `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` |
 | `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` |
@@ -83,12 +83,6 @@ TODO: list breaking changes
 |:---|:---|:---|
 |    |    |    |
 
-#### JobClient
-
-| V1 class#method | Changed? | Equivalent V2 class#method |
-|:---|:---|:---|
-|    |    |    |
-
 #### DigitalTwinClient
 
 | V1 class#method | Changed? | Equivalent V2 class#method |
@@ -99,9 +93,19 @@ TODO: list breaking changes
 | `DigitalTWinClient.UpdateDigitalTwinAsync(...)` | Yes | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
 | `UpdateOperationsUtility` | Yes | Removed. Use `Azure.JsonPatchDocument` from Azure.Core package. |
 
+#### DigitalTwinClient
+
+| V1 class#method | Equivalent V2 class#method |
+|:---|:---|:---|
+| `DigitalTwinClient` | `IotHubServiceClient.DigitalTwins` |
+| `DigitalTwinClient.GetDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.GetAsync(...)` |
+| `DigitalTwinClient.UpdateDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
+| `UpdateOperationsUtility` | Removed. Use `Azure.JsonPatchDocument` from Azure.Core package. |
+
 #### Other notable breaking changes
 
 - Methods on this client have new, simpler return types. Check each method documentation comments for details.
+  - Formerly `HttpOperationResponse` and now specific per method call. To get the body of the response before it would have been `HttpOperationResponse.Body` and now it will be, for example, `DigitalTwinGetReponse<T>.DigitalTwin`.
 - The update method takes an `InvokeDigitalTwinCommandOptions` which holds the optional payload, connect timeout, and response timeout.
 - The `HttpOperationException will no longer be thrown. Exceptions that might be thrown are documented on each method.
 

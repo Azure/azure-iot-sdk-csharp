@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Serialization;
+using Azure;
 using Microsoft.Extensions.Logging;
-using Microsoft.Rest;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
@@ -16,17 +15,17 @@ namespace Microsoft.Azure.Devices.Samples
     {
         private const string Thermostat1Component = "thermostat1";
 
-        private const string DeviceSampleLink = 
+        private const string DeviceSampleLink =
             "https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples/TemperatureController";
 
         private static readonly Random s_random = new();
-        private readonly DigitalTwinClient _digitalTwinClient;
+        private readonly IotHubServiceClient _hubClient;
         private readonly string _digitalTwinId;
         private readonly ILogger _logger;
 
-        public TemperatureControllerSample(DigitalTwinClient client, string digitalTwinId, ILogger logger)
+        public TemperatureControllerSample(IotHubServiceClient client, string digitalTwinId, ILogger logger)
         {
-            _digitalTwinClient = client ?? throw new ArgumentNullException(nameof(client));
+            _hubClient = client ?? throw new ArgumentNullException(nameof(client));
             _digitalTwinId = digitalTwinId ?? throw new ArgumentNullException(nameof(digitalTwinId));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -51,9 +50,10 @@ namespace Microsoft.Azure.Devices.Samples
         {
             _logger.LogDebug($"Get the {_digitalTwinId} digital twin.");
 
-            HttpOperationResponse<T, DigitalTwinGetHeaders> getDigitalTwinResponse = await _digitalTwinClient
-                .GetDigitalTwinAsync<T>(_digitalTwinId);
-            T thermostatTwin = getDigitalTwinResponse.Body;
+            DigitalTwinGetResponse<T> getDigitalTwinResponse = await _hubClient
+                .DigitalTwins
+                .GetAsync<T>(_digitalTwinId);
+            T thermostatTwin = getDigitalTwinResponse.DigitalTwin;
             _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonConvert.SerializeObject(thermostatTwin, Formatting.Indented)}");
 
             return thermostatTwin;
@@ -65,25 +65,26 @@ namespace Microsoft.Azure.Devices.Samples
             int desiredTargetTemperature = s_random.Next(0, 100);
 
             const string targetTemperaturePropertyName = "targetTemperature";
-            var updateOperation = new UpdateOperationsUtility();
+            var updateOperation = new JsonPatchDocument();
 
             // First let's take a look at when the property was updated and what was it set to.
-            HttpOperationResponse<TemperatureControllerTwin, DigitalTwinGetHeaders> getDigitalTwinResponse = await _digitalTwinClient
-                .GetDigitalTwinAsync<TemperatureControllerTwin>(_digitalTwinId);
-            ThermostatTwin thermostat1 = getDigitalTwinResponse.Body.Thermostat1;
+            DigitalTwinGetResponse<TemperatureControllerTwin> getDigitalTwinResponse = await _hubClient
+                .DigitalTwins
+                .GetAsync<TemperatureControllerTwin>(_digitalTwinId);
+            ThermostatTwin thermostat1 = getDigitalTwinResponse.DigitalTwin.Thermostat1;
             if (thermostat1 != null)
             {
                 // Thermostat1 is present in the TemperatureController twin. We can add/replace the component-level property "targetTemperature"
-                double? currentComponentTargetTemperature = getDigitalTwinResponse.Body.Thermostat1.TargetTemperature;
+                double? currentComponentTargetTemperature = getDigitalTwinResponse.DigitalTwin.Thermostat1.TargetTemperature;
                 if (currentComponentTargetTemperature != null)
                 {
-                    DateTimeOffset targetTemperatureDesiredLastUpdateTime = getDigitalTwinResponse.Body.Thermostat1.Metadata.TargetTemperature.LastUpdateTime;
+                    DateTimeOffset targetTemperatureDesiredLastUpdateTime = getDigitalTwinResponse.DigitalTwin.Thermostat1.Metadata.TargetTemperature.LastUpdatedOn;
                     _logger.LogDebug($"The property {targetTemperaturePropertyName} under component {Thermostat1Component} was last updated on `" +
                         $"{targetTemperatureDesiredLastUpdateTime.ToLocalTime()} `" +
-                        $" with a value of {getDigitalTwinResponse.Body.Thermostat1.Metadata.TargetTemperature.DesiredValue}.");
+                        $" with a value of {getDigitalTwinResponse.DigitalTwin.Thermostat1.Metadata.TargetTemperature.DesiredValue}.");
 
                     // The property path to be replaced should be prepended with a '/'
-                    updateOperation.AppendReplacePropertyOp($"/{Thermostat1Component}/{targetTemperaturePropertyName}", desiredTargetTemperature);
+                    updateOperation.AppendReplace($"/{Thermostat1Component}/{targetTemperaturePropertyName}", desiredTargetTemperature);
                 }
                 else
                 {
@@ -91,7 +92,7 @@ namespace Microsoft.Azure.Devices.Samples
                         $"was never set on the {_digitalTwinId} digital twin.");
 
                     // The property path to be added should be prepended with a '/'
-                    updateOperation.AppendAddPropertyOp($"/{Thermostat1Component}/{targetTemperaturePropertyName}", desiredTargetTemperature);
+                    updateOperation.AppendReplace($"/{Thermostat1Component}/{targetTemperaturePropertyName}", desiredTargetTemperature);
                 }
             }
             else
@@ -101,15 +102,16 @@ namespace Microsoft.Azure.Devices.Samples
                 _logger.LogDebug($"The component {Thermostat1Component} does not exist on the {_digitalTwinId} digital twin.");
 
                 // The property path to be replaced should be prepended with a '/'
-                updateOperation.AppendAddComponentOp($"/{Thermostat1Component}", componentProperty);
+                updateOperation.AppendReplace($"/{Thermostat1Component}", componentProperty);
             }
 
             _logger.LogDebug($"Update the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_digitalTwinId} `" +
                 $"digital twin to {desiredTargetTemperature}.");
-            HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> updateDigitalTwinResponse = await _digitalTwinClient
-                .UpdateDigitalTwinAsync(_digitalTwinId, updateOperation.Serialize());
+            DigitalTwinUpdateResponse updateDigitalTwinResponse = await _hubClient
+                .DigitalTwins
+                .UpdateAsync(_digitalTwinId, updateOperation.ToString());
 
-            _logger.LogDebug($"Update {_digitalTwinId} digital twin response: {updateDigitalTwinResponse.Response.StatusCode}.");
+            _logger.LogDebug($"Updated digital twin {_digitalTwinId}.");
 
             // Print the TemperatureController digital twin
             await GetAndPrintDigitalTwinAsync<TemperatureControllerTwin>();
@@ -125,19 +127,21 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> invokeCommandResponse = await _digitalTwinClient
-                    .InvokeCommandAsync(_digitalTwinId, rebootCommandName, JsonConvert.SerializeObject(delay));
+                var options = new InvokeDigitalTwinCommandOptions
+                {
+                    Payload = JsonConvert.SerializeObject(delay),
+                };
+                InvokeDigitalTwinCommandResponse invokeCommandResponse = await _hubClient
+                    .DigitalTwins
+                    .InvokeCommandAsync(_digitalTwinId, rebootCommandName, options);
 
                 _logger.LogDebug($"Command {rebootCommandName} was invoked on the {_digitalTwinId} digital twin." +
-                    $"\nDevice returned status: {invokeCommandResponse.Body.Status}.");
+                    $"\nDevice returned status: {invokeCommandResponse.Status}.");
             }
-            catch (HttpOperationException e)
+            catch (IotHubServiceException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                if (e.Response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    _logger.LogWarning($"Unable to execute command {rebootCommandName} on {_digitalTwinId}." +
-                        $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");
-                }
+                _logger.LogWarning($"Unable to execute command {rebootCommandName} on {_digitalTwinId}." +
+                    $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");
             }
         }
 
@@ -150,19 +154,21 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> invokeCommandResponse = await _digitalTwinClient
-                    .InvokeComponentCommandAsync(_digitalTwinId, Thermostat1Component, getMaxMinReportCommandName, JsonConvert.SerializeObject(since));
+                var options = new InvokeDigitalTwinCommandOptions
+                {
+                    Payload = JsonConvert.SerializeObject(since),
+                };
+                InvokeDigitalTwinCommandResponse invokeCommandResponse = await _hubClient
+                    .DigitalTwins
+                    .InvokeComponentCommandAsync(_digitalTwinId, Thermostat1Component, getMaxMinReportCommandName, options);
 
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on component {Thermostat1Component}." +
-                    $"\nDevice returned status: {invokeCommandResponse.Body.Status}. \nReport: {invokeCommandResponse.Body.Payload}");
+                    $"\nDevice returned status: {invokeCommandResponse.Status}. \nReport: {invokeCommandResponse.Payload}");
             }
-            catch (HttpOperationException e)
+            catch (IotHubServiceException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                if (e.Response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    _logger.LogWarning($"Unable to execute command {getMaxMinReportCommandName} on component {Thermostat1Component}." +
-                        $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");
-                }
+                _logger.LogWarning($"Unable to execute command {getMaxMinReportCommandName} on component {Thermostat1Component}." +
+                    $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");
             }
         }
     }
