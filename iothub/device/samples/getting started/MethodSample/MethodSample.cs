@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class MethodSample
     {
-        private readonly IotHubDeviceClient _hubDeviceClient;
+        private readonly IotHubDeviceClient _deviceClient;
 
         private class DeviceData
         {
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public MethodSample(IotHubDeviceClient deviceClient)
         {
-            _hubDeviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
+            _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
         }
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
@@ -37,10 +37,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
-            _hubDeviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandler);
+            _deviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandler);
 
             // Setup a callback dispatcher for the incoming methods.
-            await _hubDeviceClient.SetMethodHandlerAsync(
+            await _deviceClient.SetMethodHandlerAsync(
                 OnDirectMethodCalledAsync,
                 null,
                 cts.Token);
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // You can unsubscribe from receiving a callback for direct methods by setting a null callback handler.
-            await _hubDeviceClient.SetMethodHandlerAsync(
+            await _deviceClient.SetMethodHandlerAsync(
                 null,
                 null);
         }
@@ -101,18 +101,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
 
             var retValue = new DirectMethodResponse();
-            if (userContext == null)
-            {
-                retValue.Payload = Array.Empty<byte>();
-                retValue.Status = 500;
-            }
-            else
-            {
-                var deviceData = (DeviceData)userContext;
-                string result = JsonSerializer.Serialize(deviceData);
-                retValue.Payload = Encoding.UTF8.GetBytes(result);
-                retValue.Status = 200;
-            }
+            retValue.Payload = Encoding.UTF8.GetBytes("DeviceClientMethodSample");
+            retValue.Status = 200;
 
             return Task.FromResult(retValue);
         }

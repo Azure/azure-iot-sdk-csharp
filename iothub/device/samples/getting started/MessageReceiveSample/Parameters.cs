@@ -9,7 +9,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         Mqtt,
         Amqp,
-        Http1,
     };
 
     /// <summary>
