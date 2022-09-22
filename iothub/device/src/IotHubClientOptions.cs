@@ -46,6 +46,19 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientHttpSettings FileUploadTransportSettings { get; set; } = new IotHubClientHttpSettings();
 
         /// <summary>
+        /// The payload convention to be used to serialize and encode the payload being sent to service.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="PayloadConvention"/> defines both the serializer and encoding to be used.
+        /// You will only need to set this if you have objects that have special serialization rules or require a specific byte encoding.
+        /// <para>
+        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="NewtonsoftJsonPayloadSerializer"/> serializer
+        /// and <see cref="Utf8PayloadEncoder"/> encoder.
+        /// </para>
+        /// </remarks>
+        public PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
+
+        /// <summary>
         /// The fully-qualified DNS host name of a gateway to connect through.
         /// </summary>
         public string GatewayHostName { get; set; }
