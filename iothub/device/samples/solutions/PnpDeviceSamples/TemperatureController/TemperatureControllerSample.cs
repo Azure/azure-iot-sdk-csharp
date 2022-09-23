@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 "reboot" => await HandleRebootCommandAsync(request, userContext),
                 "thermostat1*getMaxMinReport" => await HandleMaxMinReportCommand(request, Thermostat1),
                 "thermostat2*getMaxMinReport" => await HandleMaxMinReportCommand(request, Thermostat2),
-                _ => new DirectMethodResponse { Status = 400 },
+                _ => new DirectMethodResponse(400),
             };
         }
 
@@ -188,29 +188,34 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
         private async Task<DirectMethodResponse> HandleRebootCommandAsync(DirectMethodRequest request, object userContext)
         {
-            try
+            bool delayReceived = request.TryGetPayload(out int delay);
+
+            if (delayReceived)
             {
-                int delay = request.GetPayload<int>();
+                try
+                {
+                    _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
+                    await Task.Delay(delay * 1000);
 
-                _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
-                await Task.Delay(delay * 1000);
+                    _logger.LogDebug("\tRebooting...");
 
-                _logger.LogDebug("\tRebooting...");
+                    _temperature[Thermostat1] = _maxTemp[Thermostat1] = 0;
+                    _temperature[Thermostat2] = _maxTemp[Thermostat2] = 0;
 
-                _temperature[Thermostat1] = _maxTemp[Thermostat1] = 0;
-                _temperature[Thermostat2] = _maxTemp[Thermostat2] = 0;
+                    _temperatureReadingsDateTimeOffset.Clear();
 
-                _temperatureReadingsDateTimeOffset.Clear();
+                    _logger.LogDebug("\tRestored.");
+                }
+                catch (JsonReaderException ex)
+                {
+                    _logger.LogDebug($"Command input is invalid: {ex.Message}.");
+                    return new DirectMethodResponse((int)StatusCode.BadRequest);
+                }
 
-                _logger.LogDebug("\tRestored.");
+                return new DirectMethodResponse((int)StatusCode.Completed);
             }
-            catch (JsonReaderException ex)
-            {
-                _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return new DirectMethodResponse { Status = (int)StatusCode.BadRequest };
-            }
 
-            return new DirectMethodResponse { Status = (int)StatusCode.Completed };
+            return new DirectMethodResponse((int)StatusCode.NotFound);
         }
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the
@@ -220,49 +225,53 @@ namespace Microsoft.Azure.Devices.Client.Samples
             try
             {
                 string componentName = (string)userContext;
-                DateTime sinceInUtc = request.GetPayload<DateTime>();
-                var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
+                bool sinceInUtcReceived = request.TryGetPayload(out DateTime sinceInUtc);
 
-                if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))
+                if (sinceInUtcReceived)
                 {
-                    _logger.LogDebug($"Command: Received - component=\"{componentName}\", generating max, min and avg temperature " +
-                        $"report since {sinceInDateTimeOffset.LocalDateTime}.");
+                    var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
 
-                    Dictionary<DateTimeOffset, double> allReadings = _temperatureReadingsDateTimeOffset[componentName];
-                    Dictionary<DateTimeOffset, double> filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset)
-                        .ToDictionary(i => i.Key, i => i.Value);
-
-                    if (filteredReadings != null && filteredReadings.Any())
+                    if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))
                     {
-                        var report = new
+                        _logger.LogDebug($"Command: Received - component=\"{componentName}\", generating max, min and avg temperature " +
+                            $"report since {sinceInDateTimeOffset.LocalDateTime}.");
+
+                        Dictionary<DateTimeOffset, double> allReadings = _temperatureReadingsDateTimeOffset[componentName];
+                        var filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset)
+                            .ToDictionary(i => i.Key, i => i.Value);
+
+                        if (filteredReadings != null && filteredReadings.Any())
                         {
-                            maxTemp = filteredReadings.Values.Max<double>(),
-                            minTemp = filteredReadings.Values.Min<double>(),
-                            avgTemp = filteredReadings.Values.Average(),
-                            startTime = filteredReadings.Keys.Min(),
-                            endTime = filteredReadings.Keys.Max(),
-                        };
+                            var report = new
+                            {
+                                maxTemp = filteredReadings.Values.Max<double>(),
+                                minTemp = filteredReadings.Values.Min<double>(),
+                                avgTemp = filteredReadings.Values.Average(),
+                                startTime = filteredReadings.Keys.Min(),
+                                endTime = filteredReadings.Keys.Max(),
+                            };
 
-                        _logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
-                            $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime.LocalDateTime}, " +
-                            $"endTime={report.endTime.LocalDateTime}");
+                            _logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
+                                $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime.LocalDateTime}, " +
+                                $"endTime={report.endTime.LocalDateTime}");
 
-                        byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-                        return Task.FromResult(new DirectMethodResponse { Payload = responsePayload, Status = (int)StatusCode.Completed });
+                            byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
+                            return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = responsePayload });
+                        }
+
+                        _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
+                            $"cannot generate any report.");
+                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
                     }
-
-                    _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
-                        $"cannot generate any report.");
-                    return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.NotFound });
                 }
 
                 _logger.LogDebug($"Command: component=\"{componentName}\", no temperature readings sent yet, cannot generate any report.");
-                return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.NotFound });
+                return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.BadRequest });
+                return Task.FromResult(new DirectMethodResponse((int)StatusCode.BadRequest));
             }
         }
 
