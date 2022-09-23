@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    throw new ProvisioningTransportException("Failed to open the MQTT connection.", ex, true);
+                    throw new DeviceProvisioningClientException("Failed to open the MQTT connection.", ex, true);
                 }
 
                 currentStatus = "subscribing to registration responses";
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // Deliberately not including the caught exception as this exception's inner exception because
                 // if the user sees an OperationCancelledException in the thrown exception, they may think they cancelled
                 // the operation even though they didn't.
-                throw new ProvisioningTransportException($"MQTT connection was lost while {currentStatus}.", _connectionLossCause, true);
+                throw new DeviceProvisioningClientException($"MQTT connection was lost while {currentStatus}.", _connectionLossCause, true);
 
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
@@ -177,19 +177,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (subscribeResults?.Items == null)
                 {
-                    throw new ProvisioningTransportException($"Failed to subscribe to topic '{SubscribeFilter}'.", true);
+                    throw new DeviceProvisioningClientException($"Failed to subscribe to topic '{SubscribeFilter}'.", true);
                 }
 
                 MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
 
                 if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter))
                 {
-                    throw new ProvisioningTransportException($"Received unexpected subscription to topic '{subscribeResult.TopicFilter.Topic}'.", true);
+                    throw new DeviceProvisioningClientException($"Received unexpected subscription to topic '{subscribeResult.TopicFilter.Topic}'.", true);
                 }
             }
-            catch (Exception ex) when (ex is not ProvisioningTransportException && ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not DeviceProvisioningClientException && ex is not OperationCanceledException)
             {
-                throw new ProvisioningTransportException("Failed to subscribe to the registrations response topic.", ex, true);
+                throw new DeviceProvisioningClientException("Failed to subscribe to the registrations response topic.", ex, true);
             }
         }
 
@@ -217,12 +217,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new ProvisioningTransportException($"Failed to publish the MQTT packet for message with reason code '{publishResult.ReasonCode}'.", true);
+                    throw new DeviceProvisioningClientException($"Failed to publish the MQTT packet for message with reason code '{publishResult.ReasonCode}'.", true);
                 }
             }
-            catch (Exception ex) when (ex is not ProvisioningTransportException && ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not DeviceProvisioningClientException && ex is not OperationCanceledException)
             {
-                throw new ProvisioningTransportException("Failed to send the initial registration request.", ex, true);
+                throw new DeviceProvisioningClientException("Failed to send the initial registration request.", ex, true);
             }
 
             if (Logging.IsEnabled)
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             if (registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning)
             {
-                throw new ProvisioningTransportException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true);
+                throw new DeviceProvisioningClientException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true);
             }
 
             return registrationStatus;
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new ProvisioningTransportException($"Failed to publish the MQTT registration message with reason code '{publishResult.ReasonCode}'.", true);
+                    throw new DeviceProvisioningClientException($"Failed to publish the MQTT registration message with reason code '{publishResult.ReasonCode}'.", true);
                 }
 
                 RegistrationOperationStatus currentStatus = await GetTaskCompletionSourceResultAsync(

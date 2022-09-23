@@ -2,81 +2,82 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Represents errors reported by the Provisioning Transport Handlers.
+    /// The exception that is thrown when an error occurs during device provisioning client operation.
     /// </summary>
-    public class ProvisioningTransportException : Exception
+    public class DeviceProvisioningClientException : Exception
     {
-        private const string IsTransientValueSerializationStoreName = "ProvisioningTransportException-IsTransient";
+        private const string IsTransientValueSerializationStoreName = "DeviceProvisioningClientException-IsTransient";
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the DeviceProvisioningClientException class.
         /// </summary>
-        protected internal ProvisioningTransportException()
+        protected internal DeviceProvisioningClientException()
         {
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
         /// </summary>
         /// <param name="innerException">The inner exception.</param>
-        protected internal ProvisioningTransportException(Exception innerException)
+        protected internal DeviceProvisioningClientException(Exception innerException)
             : base(string.Empty, innerException)
         {
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
-        protected internal ProvisioningTransportException(string message)
+        protected internal DeviceProvisioningClientException(string message)
             : this(message, null, false)
         {
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
-        protected internal ProvisioningTransportException(string message, bool isTransient)
+        protected internal DeviceProvisioningClientException(string message, bool isTransient)
             : this(message, null, isTransient)
         {
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="innerException">The inner exception.</param>
-        protected internal ProvisioningTransportException(string message, Exception innerException)
+        protected internal DeviceProvisioningClientException(string message, Exception innerException)
             : this(message, innerException, false, string.Empty)
         {
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
         /// <param name="innerException">The inner exception.</param>
-        protected internal ProvisioningTransportException(string message, Exception innerException, bool isTransient)
+        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient)
             : this(message, innerException, isTransient, trackingId: string.Empty)
         {
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
         /// <param name="trackingId">The service tracking Id.</param>
         /// <param name="innerException">The inner exception.</param>
-        protected internal ProvisioningTransportException(string message, Exception innerException, bool isTransient, string trackingId)
+        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, string trackingId)
             : base(message, innerException)
         {
             IsTransient = isTransient;
@@ -84,25 +85,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
         /// <param name="errorDetails">The service error details.</param>
         /// <param name="innerException">The inner exception.</param>
-        protected internal ProvisioningTransportException(string message, Exception innerException, bool isTransient, ProvisioningErrorDetails errorDetails)
+        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, ProvisioningErrorDetails errorDetails)
             : base(message, innerException)
         {
             IsTransient = isTransient;
             ErrorDetails = errorDetails;
+            StatusCode = (HttpStatusCode)(errorDetails.ErrorCode/1000);
+            TrackingId = errorDetails.TrackingId;
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected internal ProvisioningTransportException(SerializationInfo info, StreamingContext context)
+        protected internal DeviceProvisioningClientException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             if (info != null)
@@ -126,6 +129,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Service reported error details. Use this when reporting a service issue.
         /// </summary>
         public ProvisioningErrorDetails ErrorDetails { get; private set; }
+
+        /// <summary>
+        /// The 3-digit HTTP status code returned by Device Provisioning Service.
+        /// </summary>
+        public HttpStatusCode StatusCode { get; private set; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.

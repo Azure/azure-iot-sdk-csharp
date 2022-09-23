@@ -209,10 +209,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 throw new IotHubClientException(ex.Message, IotHubStatusCode.NetworkErrors, ex);
             }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 throw new IotHubClientException(ex.Message, ex);

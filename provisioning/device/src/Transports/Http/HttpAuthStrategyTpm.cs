@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Authentication key not found. OperationId=${operation?.OperationId}");
 
-                throw new ProvisioningTransportException(
+                throw new DeviceProvisioningClientException(
                     "Authentication key not found.",
                     null,
                     false);

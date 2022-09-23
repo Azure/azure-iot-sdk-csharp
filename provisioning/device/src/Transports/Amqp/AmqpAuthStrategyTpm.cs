@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Authentication key not found. OperationId=${operation?.OperationId}");
 
-                throw new ProvisioningTransportException("Authentication key not found.", null, false);
+                throw new DeviceProvisioningClientException("Authentication key not found.", null, false);
             }
 
             byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);

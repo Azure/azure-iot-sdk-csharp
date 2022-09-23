@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 bundleCancellationToken)
                             .ConfigureAwait(false);
                     }
-                    catch (ProvisioningTransportException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp amqp && e.IsTransient)
+                    catch (DeviceProvisioningClientException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp amqp && e.IsTransient)
                     {
                         operation.RetryAfter = amqp.RetryAfter;
                     }
@@ -174,12 +174,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 return operation.RegistrationState;
             }
-            catch (Exception ex) when (ex is not ProvisioningTransportException)
+            catch (Exception ex) when (ex is not DeviceProvisioningClientException)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}", nameof(RegisterAsync));
 
-                throw new ProvisioningTransportException($"AMQP transport exception", ex, true);
+                throw new DeviceProvisioningClientException($"AMQP transport exception", ex, true);
             }
             finally
             {
@@ -308,7 +308,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         errorDetails.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromRejection(rejected, s_defaultOperationPollingInterval);
                     }
 
-                    throw new ProvisioningTransportException(
+                    throw new DeviceProvisioningClientException(
                         rejected.Error.Description,
                         null,
                         isTransient,
@@ -323,7 +323,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
                             nameof(RegisterAsync));
 
-                    throw new ProvisioningTransportException(
+                    throw new DeviceProvisioningClientException(
                         $"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'",
                         ex,
                         false);

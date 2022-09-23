@@ -515,16 +515,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Amqp_Tpm_InvalidRegistrationId_RegisterFail()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(new IotHubClientAmqpSettings()).ConfigureAwait(false);
-                Assert.Fail("Expected exception not thrown");
-            }
-            catch (ProvisioningTransportException ex)
-            {
-                // Exception message must contain the errorCode value as below
-                Assert.IsTrue(ex.Message.Contains("404201"));
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -796,9 +795,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                         break;
                     }
-                    // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
+                    // Catching all DeviceProvisioningClientException as the status code is not the same for Mqtt, Amqp and Http.
                     // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
-                    catch (ProvisioningTransportException ex) when (++tryCount < MaxTryCount)
+                    catch (DeviceProvisioningClientException ex) when (++tryCount < MaxTryCount)
                     {
                         Logger.Trace($"ProvisioningDeviceClient RegisterAsync failed because: {ex.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
@@ -1037,7 +1036,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
-                ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+                DeviceProvisioningClientException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningClientException>(
                 () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
 
                 Logger.Trace($"Exception: {exception}");
@@ -1096,8 +1095,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
-                ProvisioningTransportException exception = await Assert.
-                ThrowsExceptionAsync<ProvisioningTransportException>(() => provClient.RegisterAsync(cts.Token))
+                DeviceProvisioningClientException exception = await Assert.
+                ThrowsExceptionAsync<DeviceProvisioningClientException>(() => provClient.RegisterAsync(cts.Token))
                 .ConfigureAwait(false);
 
                 Logger.Trace($"Exception: {exception}");
