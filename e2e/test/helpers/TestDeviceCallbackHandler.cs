@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                         var response = new Client.DirectMethodResponse(200)
                         {
-                            Payload = deviceResponseJson
+                            Payload = deviceResponseJson,
                         };
                         return Task.FromResult(response);
                     }
