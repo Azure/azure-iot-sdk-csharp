@@ -30,20 +30,15 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private static readonly IotHubConnectionCredentials s_iotHubConnectionCredentials = new(FakeConnectionString);
 
-        private DirectMethodResponse directMethodResponseWithPayload = new DirectMethodResponse()
+        private DirectMethodResponse directMethodResponseWithPayload = new DirectMethodResponse(200)
         {
-            Status = 200,
-            Payload = Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")
+            Payload = 123,
         };
 
-        private DirectMethodResponse directMethodResponseWithNoPayload = new DirectMethodResponse()
-        {
-            Status = 200,
-        };
+        private DirectMethodResponse directMethodResponseWithNoPayload = new DirectMethodResponse(200);
 
-        private DirectMethodResponse directMethodResponseWithEmptyByteArrayPayload = new DirectMethodResponse()
+        private DirectMethodResponse directMethodResponseWithEmptyByteArrayPayload = new DirectMethodResponse(200)
         {
-            Status = 200,
             Payload = new byte[0]
         };
 
@@ -316,6 +311,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_NullMethodRest()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
@@ -327,7 +323,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
 
+            // act
             await deviceClient.OnMethodCalledAsync(null).ConfigureAwait(false);
+
+            // assert
             await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             isMethodHandlerCalled.Should().BeFalse();
         }
@@ -335,6 +334,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasEmptyBody()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
@@ -351,7 +351,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 MethodName = "TestMethodName",
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             isMethodHandlerCalled.Should().BeTrue();
         }
@@ -359,6 +362,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
@@ -375,7 +379,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             isMethodHandlerCalled.Should().BeTrue();
         }
@@ -383,16 +390,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_BooleanPayload()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
+            bool responseReceivedAsExpected = false;
             bool response = false;
             string responseAsString = null;
             await deviceClient.SetMethodHandlerAsync((payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                response = payload.GetPayload<bool>();
+                responseReceivedAsExpected = payload.TryGetPayload(out response);
                 responseAsString = payload.PayloadAsJsonString;
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
@@ -404,9 +413,13 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = boolean,
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             isMethodHandlerCalled.Should().BeTrue();
+            responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeTrue();
             responseAsString.Should().Be(JsonConvert.SerializeObject(boolean));
         }
@@ -414,16 +427,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_ArrayPayload()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
+            bool responseReceivedAsExpected = false;
             byte[] response = null;
             string responseAsString = null;
             await deviceClient.SetMethodHandlerAsync((payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                response = payload.GetPayload<byte[]>();
+                responseReceivedAsExpected = payload.TryGetPayload(out response);
                 responseAsString = payload.PayloadAsJsonString;
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
@@ -435,9 +450,13 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = bytes,
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             isMethodHandlerCalled.Should().BeTrue();
+            responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(bytes);
             responseAsString.Should().Be(JsonConvert.SerializeObject(bytes));
         }
@@ -445,16 +464,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_ListPayload()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
+            bool responseReceivedAsExpected = false;
             List<double> response = null;
             string responseAsString = null;
             await deviceClient.SetMethodHandlerAsync((payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                response = payload.GetPayload<List<double>>();
+                responseReceivedAsExpected = payload.TryGetPayload(out response);
                 responseAsString = payload.PayloadAsJsonString;
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
@@ -466,9 +487,13 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = list,
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             isMethodHandlerCalled.Should().BeTrue();
+            responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(list);
             responseAsString.Should().Be(JsonConvert.SerializeObject(list));
         }
@@ -476,16 +501,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_DictionaryPayload()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
+            bool responseReceivedAsExpected = false;
             Dictionary<string, object> response = null;
             string responseAsString = null;
             await deviceClient.SetMethodHandlerAsync((payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                response = payload.GetPayload<Dictionary<string, object>>();
+                responseReceivedAsExpected = payload.TryGetPayload(out response);
                 responseAsString = payload.PayloadAsJsonString;
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
@@ -497,9 +524,13 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = map,
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             isMethodHandlerCalled.Should().BeTrue();
+            responseReceivedAsExpected.Should().BeTrue();
             responseAsString.Should().Be(JsonConvert.SerializeObject(map));
             response.Should().BeEquivalentTo(map);
         }
@@ -507,6 +538,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_NoPayloadResult()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
@@ -523,7 +555,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             isMethodHandlerCalled.Should().BeTrue();
         }
@@ -531,6 +566,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalledNoMethodHandler()
         {
+            // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -541,14 +577,17 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
+            // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Is<DirectMethodResponse>(resp => resp.Status == 501), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerOverwriteExistingDelegate()
         {
+            // arrange
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = new IotHubDeviceClient(connectionString);
 
@@ -578,14 +617,17 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
+            // assert
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
             methodBody.Should().Be(actualMethodBody);
             methodUserContext.Should().Be((string)actualMethodUserContext);
 
+            // arrange
             bool methodCallbackCalled2 = false;
             string actualMethodName2 = string.Empty;
             string actualMethodBody2 = string.Empty;
@@ -608,8 +650,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody2,
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
+            // assert
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             methodCallbackCalled2.Should().BeTrue();
             methodName.Should().Be(actualMethodName2);
@@ -620,6 +664,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerUnsetLastMethodHandler()
         {
+            // arrange
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = new IotHubDeviceClient(connectionString);
 
@@ -649,8 +694,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
+            // assert
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
             methodCallbackCalled.Should().BeTrue();
@@ -658,6 +705,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             methodBody.Should().Be(actualMethodBody);
             methodUserContext.Should().Be((string)actualMethodUserContext);
 
+            // arrange
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(null, null).ConfigureAwait(false);
             DirectMethodRequest = new DirectMethodRequest()
@@ -666,8 +714,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
+            // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
+            // assert
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             methodCallbackCalled.Should().BeFalse();
         }

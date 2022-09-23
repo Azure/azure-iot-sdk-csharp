@@ -59,10 +59,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         request.MethodName.Should().Be(methodName, "The expected method name should match what was sent from service");
                         request.Payload.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 
-                        var response = new Client.DirectMethodResponse
+                        var response = new Client.DirectMethodResponse(200)
                         {
-                            Status = 200,
-                            Payload = deviceResponseJson
+                            Payload = deviceResponseJson,
                         };
                         return Task.FromResult(response);
                     }
@@ -72,10 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
 
-                        var response = new Client.DirectMethodResponse
-                        {
-                            Status = 500,
-                        };
+                        var response = new Client.DirectMethodResponse(500);
 
                         return Task.FromResult(response);
                     }

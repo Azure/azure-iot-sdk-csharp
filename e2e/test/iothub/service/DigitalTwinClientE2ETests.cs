@@ -78,10 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     (request, context) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
-                        var response = new Client.DirectMethodResponse()
-                        {
-                            Status = 404,
-                        };
+                        var response = new Client.DirectMethodResponse(404);
 
                         if (request.MethodName == commandName)
                         {
@@ -179,10 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     (request, context) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
-                        var response = new Client.DirectMethodResponse()
-                        {
-                            Status = 404,
-                        };
+                        var response = new Client.DirectMethodResponse(404);
 
                         if (request.MethodName == rootCommandName
                             || request.MethodName == componentCommandNamePnp)
