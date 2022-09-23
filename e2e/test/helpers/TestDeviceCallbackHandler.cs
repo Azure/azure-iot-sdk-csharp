@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null).ConfigureAwait(false);
         }
 
-        public async Task UnSetMessageReceiveCallbackHandlerAsync()
+        public async Task UnsetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
