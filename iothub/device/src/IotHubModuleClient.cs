@@ -357,9 +357,6 @@ namespace Microsoft.Azure.Devices.Client
                         case MessageAcknowledgement.Reject:
                             await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
                             break;
-
-                        default:
-                            break;
                     }
                 }
                 catch (Exception ex) when (Logging.IsEnabled)
