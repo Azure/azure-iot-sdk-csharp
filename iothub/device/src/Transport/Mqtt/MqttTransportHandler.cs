@@ -25,8 +25,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     internal sealed class MqttTransportHandler : TransportHandler, IDisposable
     {
         private const int ProtocolGatewayPort = 8883;
-        private const int MaxMessageSize = 256 * 1024;
-        private const int MaxTopicNameLength = 65535;
 
         private const string DeviceToCloudMessagesTopicFormat = "devices/{0}/messages/events/";
         private const string ModuleToCloudMessagesTopicFormat = "devices/{0}/modules/{1}/messages/events/";
@@ -250,9 +248,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
             }
 
-            _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
-            _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
-
             _publishingQualityOfService = _mqttTransportSettings.PublishToServerQoS == QualityOfService.AtLeastOnce
                 ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
 
@@ -349,11 +344,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 string baseTopicName = _moduleId == null ? _deviceToCloudMessagesTopic : _moduleToCloudMessagesTopic;
                 string topicName = PopulateMessagePropertiesFromMessage(baseTopicName, message);
 
-                if (message.HasPayload && message.Payload.Length > MaxMessageSize)
-                {
-                    throw new InvalidOperationException($"Message size ({message.Payload.Length} bytes) is too big to process. Maximum allowed payload size is {MaxMessageSize}");
-                }
-
                 MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                     .WithTopic(topicName)
                     .WithPayload(message.Payload)
@@ -364,12 +354,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubClientException($"Failed to publish the MQTT packet for message with correlation Id {message.CorrelationId} with reason code {result.ReasonCode}", true);
+                    throw new IotHubClientException($"Failed to publish the MQTT packet for message with correlation Id {message.CorrelationId} with reason code {result.ReasonCode}", IotHubStatusCode.NetworkErrors);
                 }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send message.", true, ex);
+                throw new IotHubClientException("Failed to send message.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -398,7 +388,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving direct methods.", true, ex);
+                throw new IotHubClientException("Failed to enable receiving direct methods.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -410,7 +400,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving direct methods.", true, ex);
+                throw new IotHubClientException("Failed to disable receiving direct methods.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -430,12 +420,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubClientException($"Failed to send direct method response with reason code {result.ReasonCode}", true);
+                    throw new IotHubClientException($"Failed to send direct method response with reason code {result.ReasonCode}", IotHubStatusCode.NetworkErrors);
                 }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send direct method response.", true, ex);
+                throw new IotHubClientException("Failed to send direct method response.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -447,7 +437,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving messages.", true, ex);
+                throw new IotHubClientException("Failed to enable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -459,7 +449,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving messages.", true, ex);
+                throw new IotHubClientException("Failed to disable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -478,7 +468,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving messages.", true, ex);
+                throw new IotHubClientException("Failed to enable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -497,7 +487,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving messages.", true, ex);
+                throw new IotHubClientException("Failed to disable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -509,7 +499,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving twin patches.", true, ex);
+                throw new IotHubClientException("Failed to enable receiving twin patches.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -521,7 +511,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving twin patches.", true, ex);
+                throw new IotHubClientException("Failed to disable receiving twin patches.", IotHubStatusCode.NetworkErrors, ex);
             }
         }
 
@@ -551,7 +541,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubClientException($"Failed to publish the MQTT packet for getting this client's twin with reason code {result.ReasonCode}", true);
+                    throw new IotHubClientException($"Failed to publish the MQTT packet for getting this client's twin with reason code {result.ReasonCode}", IotHubStatusCode.NetworkErrors);
                 }
 
                 if (Logging.IsEnabled)
@@ -569,14 +559,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (getTwinResponse.Status != 200)
                 {
-                    throw new IotHubClientException(getTwinResponse.Message);
+                    throw new IotHubClientException(getTwinResponse.Message, IotHubStatusCode.NetworkErrors);
                 }
 
                 return getTwinResponse.Twin;
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to get the twin.", true, ex);
+                throw new IotHubClientException("Failed to get the twin.", IotHubStatusCode.NetworkErrors, ex);
             }
             finally
             {
@@ -615,7 +605,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubClientException($"Failed to publish the MQTT packet for patching this client's twin with reason code {result.ReasonCode}", true);
+                    throw new IotHubClientException($"Failed to publish the MQTT packet for patching this client's twin with reason code {result.ReasonCode}", IotHubStatusCode.NetworkErrors);
                 }
 
                 if (Logging.IsEnabled)
@@ -633,14 +623,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (patchTwinResponse.Status != 204)
                 {
-                    throw new IotHubClientException(patchTwinResponse.Message);
+                    throw new IotHubClientException(patchTwinResponse.Message, IotHubStatusCode.NetworkErrors);
                 }
 
                 return patchTwinResponse.Version;
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send twin patch.", true, ex);
+                throw new IotHubClientException("Failed to send twin patch.", IotHubStatusCode.NetworkErrors, ex);
             }
             finally
             {
@@ -698,14 +688,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (subscribeResults?.Items == null)
             {
-                throw new IotHubClientException($"Failed to subscribe to topic {fullTopic}", true);
+                throw new IotHubClientException($"Failed to subscribe to topic {fullTopic}", IotHubStatusCode.NetworkErrors);
             }
 
             MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
 
             if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
             {
-                throw new IotHubClientException($"Received unexpected subscription to topic {subscribeResult.TopicFilter.Topic}", true);
+                throw new IotHubClientException($"Received unexpected subscription to topic {subscribeResult.TopicFilter.Topic}", IotHubStatusCode.NetworkErrors);
             }
         }
 
@@ -721,18 +711,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (unsubscribeResults?.Items == null || unsubscribeResults.Items.Count != 1)
             {
-                throw new IotHubClientException($"Failed to unsubscribe to topic {fullTopic}", true);
+                throw new IotHubClientException($"Failed to unsubscribe to topic {fullTopic}", IotHubStatusCode.NetworkErrors);
             }
 
             MqttClientUnsubscribeResultItem unsubscribeResult = unsubscribeResults.Items.FirstOrDefault();
             if (!unsubscribeResult.TopicFilter.Equals(fullTopic))
             {
-                throw new IotHubClientException($"Received unexpected unsubscription from topic {unsubscribeResult.TopicFilter}", true);
+                throw new IotHubClientException($"Received unexpected unsubscription from topic {unsubscribeResult.TopicFilter}", IotHubStatusCode.NetworkErrors);
             }
 
             if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
             {
-                throw new IotHubClientException($"Failed to unsubscribe from topic {fullTopic} with reason {unsubscribeResult.ResultCode}", true);
+                throw new IotHubClientException($"Failed to unsubscribe from topic {fullTopic} with reason {unsubscribeResult.ResultCode}", IotHubStatusCode.NetworkErrors);
             }
         }
 
@@ -1022,13 +1012,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (!topicName.EndsWith("/", StringComparison.Ordinal))
             {
                 msg += "/";
-            }
-
-            if (Encoding.UTF8.GetByteCount(msg) > MaxTopicNameLength)
-            {
-                throw new IotHubClientException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, " +
-                    $"current length is {Encoding.UTF8.GetByteCount(msg)}." +
-                    $" The probable cause is the list of message.Properties and/or message.systemProperties is too long.", false, IotHubStatusCode.MessageTooLarge);
             }
 
             return msg;
