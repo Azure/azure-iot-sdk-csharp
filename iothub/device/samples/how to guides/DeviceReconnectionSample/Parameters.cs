@@ -1,8 +1,17 @@
-﻿using CommandLine;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using CommandLine;
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
+    public enum Transport
+    {
+        Mqtt,
+        Amqp,
+    };
+
     /// <summary>
     /// Parameters for the application.
     /// </summary>
@@ -23,11 +32,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         [Option(
             't',
-            "TransportType",
-            Default = TransportType.Mqtt,
+            "Transport",
+            Default = Transport.Mqtt,
             Required = false,
-            HelpText = "The transport to use to communicate with the IoT hub. Possible values include Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_Only, and Http1.")]
-        public TransportType TransportType { get; set; }
+            HelpText = "The transport to use for the connection.")]
+        public Transport Transport { get; set; }
+
+        [Option(
+           "TransportProtocol",
+           Default = IotHubClientTransportProtocol.Tcp,
+           HelpText = "The transport to use to communicate with the device provisioning instance.")]
+        public IotHubClientTransportProtocol TransportProtocol { get; set; }
 
         [Option(
             'r',
@@ -36,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
         public double? ApplicationRunningTime { get; set; }
 
-        public List<string> GetConnectionStrings()
+        internal List<string> GetConnectionStrings()
         {
             var cs = new List<string>(2)
             {
@@ -49,6 +64,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             return cs;
+        }
+
+        internal IotHubClientTransportSettings GetHubTransportSettings()
+        {
+            return Transport switch
+            {
+                Transport.Mqtt => new IotHubClientMqttSettings(TransportProtocol),
+                Transport.Amqp => new IotHubClientAmqpSettings(TransportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
+            };
         }
     }
 }

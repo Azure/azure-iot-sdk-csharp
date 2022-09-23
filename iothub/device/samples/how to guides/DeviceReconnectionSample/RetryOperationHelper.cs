@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             bool shouldRetry;
             do
             {
-                Exception lastException = new IotHubCommunicationException("Client is currently reconnecting internally; attempt the operation after some time.");
+                Exception lastException = new IotHubClientException("Client is currently reconnecting internally; attempt the operation after some time.");
                 try
                 {
                     if (shouldExecuteOperation())

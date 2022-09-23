@@ -12,7 +12,7 @@ namespace X509DeviceCertWithChainSample
     public class Program
     {
         /// <summary>
-        /// A sample to illustrate authenticating with a device by passing in the device certificate and 
+        /// A sample to illustrate authenticating with a device by passing in the device certificate and
         /// full chain of certificates from the one used to sign the device certificate to the one uploaded to the service.
         /// AuthSetup.ps1 can be used to create the necessary certs and setup to run this sample.
         /// </summary>
@@ -40,10 +40,11 @@ namespace X509DeviceCertWithChainSample
             using var deviceCert = new X509Certificate2(parameters.DevicePfxPath, parameters.DevicePfxPassword);
             using var auth = new DeviceAuthenticationWithX509Certificate(parameters.DeviceName, deviceCert, chainCerts);
 
-            using var deviceClient = DeviceClient.Create(
+            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
+            using var deviceClient = new IotHubDeviceClient(
                 parameters.HostName,
                 auth,
-                parameters.TransportType);
+                options);
 
             var sample = new X509DeviceCertWithChainSample(deviceClient);
             await sample.RunSampleAsync();

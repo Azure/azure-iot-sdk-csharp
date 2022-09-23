@@ -9,6 +9,12 @@ using System.Text;
 
 namespace X509DeviceCertWithChainSample
 {
+    public enum Transport
+    {
+        Mqtt,
+        Amqp,
+    };
+
     /// <summary>
     /// Parameters for the application.
     /// </summary>
@@ -60,10 +66,26 @@ namespace X509DeviceCertWithChainSample
 
         [Option(
             't',
-            "TransportType",
-            Default = TransportType.Mqtt_Tcp_Only,
+            "Transport",
+            Default = Transport.Mqtt,
             Required = false,
-            HelpText = "The transport to use to communicate with the IoT Hub. Possible values include Mqtt_Tcp_Only, Amqp_Tcp_only.")]
-        public TransportType TransportType { get; set; }
+            HelpText = "The transport to use for the connection.")]
+        public Transport Transport { get; set; }
+
+        [Option(
+           "TransportProtocol",
+           Default = IotHubClientTransportProtocol.Tcp,
+           HelpText = "The transport to use to communicate with the device provisioning instance.")]
+        public IotHubClientTransportProtocol TransportProtocol { get; set; }
+
+        internal IotHubClientTransportSettings GetHubTransportSettings()
+        {
+            return Transport switch
+            {
+                Transport.Mqtt => new IotHubClientMqttSettings(TransportProtocol),
+                Transport.Amqp => new IotHubClientAmqpSettings(TransportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
+            };
+        }
     }
 }

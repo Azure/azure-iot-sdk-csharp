@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             if (currentRetryCount < _maxRetryCount)
             {
-                if ((lastException is IotHubException iotHubException && iotHubException.IsTransient)
+                if ((lastException is IotHubClientException iotHubException && iotHubException.IsTransient)
                     || ExceptionHelper.IsNetworkExceptionChain(lastException)
                     || (_exceptionsToBeIgnored != null && _exceptionsToBeIgnored.ContainsKey(lastException.GetType())))
                 {
