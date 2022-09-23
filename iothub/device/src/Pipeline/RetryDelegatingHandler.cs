@@ -51,11 +51,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             public bool IsTransient(Exception ex)
             {
-                if (ex is OperationCanceledException)
-                {
-                    return true;
-                }
-
                 return ex is IotHubClientException exception && exception.IsTransient;
             }
         }
