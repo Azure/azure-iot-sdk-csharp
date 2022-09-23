@@ -14,6 +14,7 @@ using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -156,6 +157,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
+            }
+            catch (MqttCommunicationTimedOutException e)
+            {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
+                throw new OperationCanceledException("Timed out while provisioning.", e);
             }
             finally
             {

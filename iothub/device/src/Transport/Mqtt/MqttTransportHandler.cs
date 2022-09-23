@@ -339,6 +339,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (MqttCommunicationTimedOutException e)
             {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
                 throw new OperationCanceledException("Timed out waiting for MQTT connection to open.", e);
             }
         }
@@ -375,6 +377,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 catch (MqttCommunicationTimedOutException e)
                 {
+                    // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                    // when the cancellation token requests cancellation.
                     throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", e);
                 }
             }
@@ -446,6 +450,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (MqttCommunicationTimedOutException e)
             {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
                 throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", e);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
@@ -591,6 +597,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (MqttCommunicationTimedOutException e)
             {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
                 throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", e);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
@@ -659,6 +667,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (MqttCommunicationTimedOutException e)
             {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
                 throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", e);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
@@ -735,6 +745,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (MqttCommunicationTimedOutException e)
             {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
                 throw new OperationCanceledException("Timed out waiting for MQTT topic subscription to be acknowledged.", e);
             }
         }
@@ -769,6 +781,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (MqttCommunicationTimedOutException e)
             {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
                 throw new OperationCanceledException("Timed out waiting for MQTT topic unsubscription to be acknowledged.", e);
             }
         }
