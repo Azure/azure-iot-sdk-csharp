@@ -375,7 +375,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             mqttClientOptionsBuilder
                 .WithTls(tlsParameters)
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311) // 3.1.1
-                .WithKeepAlivePeriod(IdleTimeout);
+                .WithKeepAlivePeriod(IdleTimeout)
+                .WithTimeout(TimeSpan.MaxValue); // MQTTNet will only time out if the cancellation token requests cancellation.
 
             return mqttClientOptionsBuilder;
         }
