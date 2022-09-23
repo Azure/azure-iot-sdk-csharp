@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -111,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
             // setup
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var methodInvocation = new DirectMethodRequest
             {
                 MethodName = "SetTelemetryInterval",
@@ -182,12 +181,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // arrange
 
+            bool deviceMethodCalledSuccessfully = false;
+            string commandName = "Reboot";
+
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "NullMethodPayloadTest").ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
-
             try
             {
-
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient
                     .SetMethodHandlerAsync(
@@ -365,8 +365,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                             try
                             {
-                                request.Name.Should().Be(methodName);
-                                request.DataAsJson.Should().Be(ServiceRequestJson);
+                                request.MethodName.Should().Be(methodName);
+                                request.PayloadAsJsonString.Should().Be(ServiceRequestJson);
 
                                 methodCallReceived.TrySetResult(true);
                             }

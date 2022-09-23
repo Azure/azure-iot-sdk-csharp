@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -397,10 +395,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
 
             int connectionStatusChangeCount = 0;
-            void connectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
+            void connectionStatusChangeHandler(ConnectionStatusInfo connInfo)
             {
                 Interlocked.Increment(ref connectionStatusChangeCount);
             }
+            deviceClient.SetConnectionStatusChangeHandler(connectionStatusChangeHandler);
 
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();

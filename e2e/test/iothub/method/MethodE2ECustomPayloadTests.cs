@@ -18,13 +18,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     public class MethodE2ECustomPayloadTests : E2EMsTestBase
     {
         private static readonly CustomType _customTypeRequest = new("request", 21, false, new("e2e_test_request", 12));
-        private static readonly CustomType _customTypeResponse = new ("response", 21, false, new("e2e_test_response", 12));
+        private static readonly CustomType _customTypeResponse = new("response", 21, false, new("e2e_test_response", 12));
         private static readonly bool _booleanRequest = true;
         private static readonly byte[] _arrayRequest = new byte[] { 1, 2, 3 };
         private static readonly byte[] _arrayResponse = new byte[] { 3, 2, 1 };
-        private static readonly List<double> _listRequest = new () { 1.0, 2.0, 3.0 };
-        private static readonly List<double> _listResponse = new () { 3.0, 2.0, 1.0 };
-        private static readonly Dictionary<string, object> _dictRequest = new () { { "key1", 2.0 }, { "key2", "val" } };
+        private static readonly List<double> _listRequest = new() { 1.0, 2.0, 3.0 };
+        private static readonly List<double> _listResponse = new() { 3.0, 2.0, 1.0 };
+        private static readonly Dictionary<string, object> _dictRequest = new() { { "key1", 2.0 }, { "key2", "val" } };
         private static readonly Dictionary<string, object> _dictResponse = new() { { "key1", new byte[] { 3, 5, 6 } }, { "key2", false } };
 
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 

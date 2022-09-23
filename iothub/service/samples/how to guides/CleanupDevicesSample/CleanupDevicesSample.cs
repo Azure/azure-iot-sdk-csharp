@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Storage.Blobs;
-using Azure.Storage.Sas;
-using Microsoft.Azure.Devices.Common.Exceptions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -26,20 +24,13 @@ namespace Microsoft.Azure.Devices.Samples
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_maxJobDuration = TimeSpan.FromHours(4);
 
-        private static readonly IReadOnlyList<JobStatus> s_completedJobs = new[]
-        {
-            JobStatus.Completed,
-            JobStatus.Failed,
-            JobStatus.Cancelled,
-        };
-
-        private readonly RegistryManager _registryManager;
+        private readonly IotHubServiceClient _hubClient;
         private readonly BlobContainerClient _blobContainerClient;
         private readonly List<string> _deleteDevicesWithPrefix;
 
-        public CleanupDevicesSample(RegistryManager rm, BlobContainerClient sc, List<string> deleteDevicesWithPrefix)
+        public CleanupDevicesSample(IotHubServiceClient hubClient, BlobContainerClient sc, List<string> deleteDevicesWithPrefix)
         {
-            _registryManager = rm ?? throw new ArgumentNullException(nameof(rm));
+            _hubClient = hubClient ?? throw new ArgumentNullException(nameof(hubClient));
             _blobContainerClient = sc ?? throw new ArgumentNullException(nameof(sc));
             Console.WriteLine($"Delete devices with prefixes: {JsonConvert.SerializeObject(deleteDevicesWithPrefix)}");
             _deleteDevicesWithPrefix = deleteDevicesWithPrefix;
@@ -73,15 +64,14 @@ namespace Microsoft.Azure.Devices.Samples
                     // Retrieve the SAS Uri that will be used to grant access to the storage containers.
                     BlobClient blobClient = _blobContainerClient.GetBlobClient(ImportExportDevicesFileName);
                     var uploadResult = await blobClient.UploadAsync(devicesFile, overwrite: true);
-                    string storageAccountSasUri = GetStorageAccountSasUriForCleanupJob(_blobContainerClient).ToString();
+                    Uri storageAccountSasUri = GetStorageAccountSasUriForCleanupJob(_blobContainerClient);
 
                     // Step 3: Call import using the same blob to delete all devices.
-                    JobProperties importDevicesToBeDeletedProperties = JobProperties
-                        .CreateForImportJob(
-                            inputBlobContainerUri: storageAccountSasUri,
-                            outputBlobContainerUri: storageAccountSasUri,
-                            inputBlobName: ImportExportDevicesFileName,
-                            storageAuthenticationType: StorageAuthenticationType.KeyBased);
+                    var importDevicesToBeDeletedRequest = new JobProperties(storageAccountSasUri)
+                    {
+                        InputBlobName = ImportExportDevicesFileName,
+                        StorageAuthenticationType = StorageAuthenticationType.KeyBased,
+                    };
 
                     JobProperties importDevicesToBeDeletedJob = null;
 
@@ -90,14 +80,14 @@ namespace Microsoft.Azure.Devices.Samples
                     {
                         try
                         {
-                            importDevicesToBeDeletedJob = await _registryManager.ImportDevicesAsync(importDevicesToBeDeletedProperties);
+                            importDevicesToBeDeletedJob = await _hubClient.Devices.ImportAsync(importDevicesToBeDeletedRequest);
                             currentJobId = importDevicesToBeDeletedJob.JobId;
                             break;
                         }
                         // Wait for pending jobs to finish.
-                        catch (JobQuotaExceededException)
+                        catch (IotHubServiceException ex)
                         {
-                            Console.WriteLine($"JobQuotaExceededException... waiting.");
+                            Console.WriteLine($"Error submitting import job {ex.StatusCode}/{ex.ErrorCode}, {ex.Message}; waiting...");
                             await Task.Delay(s_waitDuration);
                         }
                     } while (jobTimer.Elapsed < s_maxJobDuration);
@@ -107,8 +97,8 @@ namespace Microsoft.Azure.Devices.Samples
                     while (importDevicesToBeDeletedJob != null
                         && jobTimer.Elapsed < s_maxJobDuration)
                     {
-                        importDevicesToBeDeletedJob = await _registryManager.GetJobAsync(importDevicesToBeDeletedJob.JobId);
-                        if (s_completedJobs.Contains(importDevicesToBeDeletedJob.Status))
+                        importDevicesToBeDeletedJob = await _hubClient.Devices.GetJobAsync(importDevicesToBeDeletedJob.JobId);
+                        if (importDevicesToBeDeletedJob.IsFinished)
                         {
                             // Job has finished executing.
                             Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status}.");
@@ -130,7 +120,7 @@ namespace Microsoft.Azure.Devices.Samples
                     if (!String.IsNullOrWhiteSpace(currentJobId))
                     {
                         Console.WriteLine($"Cancelling job {currentJobId}");
-                        await _registryManager.CancelJobAsync(currentJobId);
+                        await _hubClient.Devices.CancelJobAsync(currentJobId);
                     }
                 }
             }
@@ -146,22 +136,29 @@ namespace Microsoft.Azure.Devices.Samples
             //    "numberOfDevices": 10456
             //}
 
-            string queryResultText = null;
             int deviceCount = 0;
 
             try
             {
                 string countSqlQuery = "select count() AS numberOfDevices from devices";
-                IQuery countQuery = _registryManager.CreateQuery(countSqlQuery);
-                IEnumerable<string> queryResult = await countQuery.GetNextAsJsonAsync();
-                queryResultText = queryResult.First();
-                var resultObject = JObject.Parse(queryResultText);
-                deviceCount = resultObject.Value<int>("numberOfDevices");
+                QueryResponse<Dictionary<string, int>> countQuery = await _hubClient.Query.CreateAsync<Dictionary<string, int>>(countSqlQuery);
+                if (!await countQuery.MoveNextAsync())
+                {
+                    Console.WriteLine($"Failed to run device count query.");
+                    return 0;
+                }
+
+                if (!countQuery.Current.TryGetValue("numberOfDevices", out deviceCount))
+                {
+                    Console.WriteLine($"Failed to get device count from query result.");
+                    return 0;
+                }
+
                 Console.WriteLine($"Total # of devices in the hub: \n{deviceCount}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to parse device count of {queryResultText} due to {ex}");
+                Console.WriteLine($"Failed to process device count query due to {ex.Message}");
             }
 
             return deviceCount;
@@ -172,20 +169,15 @@ namespace Microsoft.Azure.Devices.Samples
             var devicesToDelete = new List<ExportImportDevice>(maxCount);
 
             const string queryText = "select deviceId FROM devices";
-            IQuery devicesQuery = _registryManager.CreateQuery(queryText);
-            while (devicesQuery.HasMoreResults)
+            QueryResponse<string> devicesQuery = await _hubClient.Query.CreateAsync<string>(queryText);
+            while (await devicesQuery.MoveNextAsync())
             {
-                IEnumerable<string> results = await devicesQuery.GetNextAsJsonAsync();
-                foreach (string result in results)
+                string deviceId = devicesQuery.Current;
+                foreach (string prefix in _deleteDevicesWithPrefix)
                 {
-                    var resultObject = JObject.Parse(result);
-                    string deviceId = resultObject.Value<string>("deviceId");
-                    foreach (string prefix in _deleteDevicesWithPrefix)
+                    if (deviceId.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        if (deviceId.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            devicesToDelete.Add(new ExportImportDevice(new Device(deviceId), ImportMode.Delete));
-                        }
+                        devicesToDelete.Add(new ExportImportDevice(new Device(deviceId), ImportMode.Delete));
                     }
                 }
             }

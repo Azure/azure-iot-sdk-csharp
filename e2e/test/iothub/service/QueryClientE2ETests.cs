@@ -8,7 +8,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -35,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
             using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
 
@@ -66,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
             using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
             using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
@@ -118,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobQuery_QueryWorks()
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
 
             await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id);
@@ -156,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobQuery_QueryByTypeWorks()
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
 
             await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id);
@@ -180,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RawQuery_QueryWorks()
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
 
             string query = "SELECT COUNT() as TotalNumberOfDevices FROM devices";

@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var deviceId = testDevice.Device.Id;
-            using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false); // making sure the queue is empty
 
             Message testMessage = ComposeD2CTestMessage();

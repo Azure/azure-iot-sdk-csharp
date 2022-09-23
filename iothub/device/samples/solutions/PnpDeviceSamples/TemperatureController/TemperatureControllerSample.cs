@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static readonly Random s_random = new Random();
 
-        private readonly DeviceClient _deviceClient;
+        private readonly IotHubDeviceClient _deviceClient;
         private readonly ILogger _logger;
 
         // Dictionary to hold the temperature updates sent over each "Thermostat" component.
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // has been processed.
         private static long s_localWritablePropertiesVersion = 1;
 
-        public TemperatureControllerSample(DeviceClient deviceClient, ILogger logger)
+        public TemperatureControllerSample(IotHubDeviceClient deviceClient, ILogger logger)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -85,13 +85,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // -> Periodically send "temperature" over telemetry - on "Thermostat" components.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set - on "Thermostat" components.
 
-            _deviceClient.SetConnectionStatusChangesHandler(async (status, reason) =>
+            _deviceClient.SetConnectionStatusChangeHandler(async (info) =>
             {
-                _logger.LogDebug($"Connection status change registered - status={status}, reason={reason}.");
+                _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
 
                 // Call GetWritablePropertiesAndHandleChangesAsync() to get writable properties from the server once the connection status changes into Connected.
                 // This can get back "lost" property updates in a device reconnection from status Disconnected_Retrying or Disconnected.
-                if (status == ConnectionStatus.Connected)
+                if (info.Status == ConnectionStatus.Connected)
                 {
                     await GetWritablePropertiesAndHandleChangesAsync();
                 }
