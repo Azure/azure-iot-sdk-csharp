@@ -79,7 +79,7 @@ Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing appl
 
 ## Samples
 
-All of our samples are located in this repository:
+All of our samples are located in this repository. The samples live alongside the source for each client library.
 
 - [Iot hub device](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples) samples
 - [Iot hub device](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples) samples
