@@ -530,11 +530,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         if (ex == default)
                         {
-                            task.SetResult(twin);
+                            task.TrySetResult(twin);
                         }
                         else
                         {
-                            task.SetException(ex);
+                            task.TrySetException(ex);
                         }
                     }
                     else

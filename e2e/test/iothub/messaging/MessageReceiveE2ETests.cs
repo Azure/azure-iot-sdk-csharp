@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 var c2dMessageReceived = new TaskCompletionSource<Client.Message>(TaskCreationOptions.RunContinuationsAsynchronously);
                 Func<Client.Message, object, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message, context) =>
                 {
-                    c2dMessageReceived.SetResult(message);
+                    c2dMessageReceived.TrySetResult(message);
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 };
                 await dc.SetReceiveMessageHandlerAsync(OnC2DMessageReceived, null).ConfigureAwait(false);

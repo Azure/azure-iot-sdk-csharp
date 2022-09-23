@@ -438,11 +438,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         }
                         catch (Exception e)
                         {
-                            propertyUpdateReceived.SetException(e);
+                            propertyUpdateReceived.TrySetException(e);
                         }
                         finally
                         {
-                            propertyUpdateReceived.SetResult(true);
+                            propertyUpdateReceived.TrySetResult(true);
                         }
 
                         return Task.FromResult<bool>(true);
