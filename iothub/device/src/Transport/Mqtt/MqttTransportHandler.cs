@@ -108,7 +108,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // that is sent over the wire, so we increment this value locally instead.
         private int _nextLockToken;
 
-
         private readonly string _deviceId;
         private readonly string _moduleId;
         private readonly string _hostName;
@@ -161,12 +160,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         internal IMqttClient _mqttClient;
 
         private MqttClientOptions _mqttClientOptions;
-
-        // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
-        // that is sent over the wire, so we increment this value locally instead.
-        private int _nextLockToken;
-
-        private bool _isSubscribedToTwinResponses;
 
         internal MqttTransportHandler(PipelineContext context, IotHubClientMqttSettings settings)
             : base(context, settings)
@@ -670,20 +663,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private void CheckTimeout(Object _)
+        private void CheckTimeout(object _)
         {
             if (_twinResponseTimeouts.Any())
             {
                 var currentDateTime = DateTime.UtcNow;
-                TimeSpan difference;
                 foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
                 {
-                    difference = currentDateTime - entry.Value;
-                    if (difference >= s_twinResponseTimeout)
+                    if (currentDateTime - entry.Value > s_twinResponseTimeout)
                     {
                         _getTwinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<GetTwinResponse> _);
                         _reportedPropertyUpdateResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<PatchTwinResponse> _);
-
                         _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
                     }
                 }
@@ -703,6 +693,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
+                _twinTimeoutTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
                 _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
                 await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken).ConfigureAwait(false);

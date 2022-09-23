@@ -116,19 +116,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private void CheckTimeout(Object _)
+        private void CheckTimeout(object _)
         {
             if (_twinResponseTimeouts.Any())
             {
                 var currentDateTime = DateTime.UtcNow;
-                TimeSpan difference;
                 foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
                 {
-                    difference = currentDateTime - entry.Value;
-                    if (difference >= s_twinResponseTimeout)
+                    if (currentDateTime - entry.Value > s_twinResponseTimeout)
                     {
                         _twinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<Twin> _);
-
                         _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
                     }
                 }
@@ -148,6 +145,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                _twinTimeoutTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 await _amqpUnit.CloseAsync(ctb.Token).ConfigureAwait(false);
             }
