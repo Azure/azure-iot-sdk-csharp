@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -24,8 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             int devicesCount,
             string faultType,
             string reason,
-            TimeSpan delayInSec,
-            TimeSpan durationInSec,
+            TimeSpan faultDelay,
+            TimeSpan faultDuration,
             Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
             Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<List<DeviceClient>, List<TestDeviceCallbackHandler>, Task> cleanupOperation,
@@ -82,25 +81,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             {
                 // Act-Assert
 
-                // Perform the test operation and verify the operation is successful.
-                for (int i = 0; i < devicesCount; i++)
-                {
-                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing baseline operation for device {i}.");
-                    operations.Add(testOperation(deviceClients[i], testDevices[i], testDeviceCallbackHandlers[i]));
-                }
-                await Task.WhenAll(operations).ConfigureAwait(false);
-                operations.Clear();
-
                 int countBeforeFaultInjection = amqpConnectionStatuses.First().ConnectionStatusChangeCount;
 
                 // Inject the fault into device 0
-                logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={durationInSec}s");
-                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
+                logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}s, duration={faultDuration}s");
                 faultInjectionDuration.Start();
+                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, faultDelay, faultDuration);
                 await deviceClients.First().SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
 
-                logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delayInSec} seconds.");
-                await Task.Delay(delayInSec).ConfigureAwait(false);
+                logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
+                await Task.Delay(faultDelay).ConfigureAwait(false);
 
                 // For disconnect type faults, the faulted device should disconnect and all devices should recover.
                 if (FaultInjection.FaultShouldDisconnect(faultType))
@@ -130,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                     connectionChangeWaitDuration.Start();
                     bool isRecovered = false;
-                    while (connectionChangeWaitDuration.Elapsed < durationInSec.Add(FaultInjection.LatencyTimeBuffer))
+                    while (connectionChangeWaitDuration.Elapsed < faultDuration.Add(FaultInjection.LatencyTimeBuffer))
                     {
                         isRecovered = amqpConnectionStatuses.All(x => x.LastConnectionStatus == ConnectionStatus.Connected);
                         if (isRecovered)
@@ -181,36 +171,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 // Close all the device clients.
                 await Task.WhenAll(deviceClients.Select(x => x.CloseAsync())).ConfigureAwait(false);
-
-                // Verify the connection status change checks.
-                // For all of the devices - last connection status should be "Disabled", with reason "Client_close"
-                for (int i = 0; i < devicesCount; i++)
-                {
-                    // For the faulted device [device 0] - verify the connection status change count.
-                    if (i == 0)
-                    {
-                        if (FaultInjection.FaultShouldDisconnect(faultType))
-                        {
-                            // 4 is the minimum notification count: connect, fault, reconnect, disable.
-                            amqpConnectionStatuses[i].ConnectionStatusChangeCount.Should().BeGreaterOrEqualTo(
-                                4,
-                                $"The expected connection status change count for {testDevices[i].Id} should equals or greater than 4 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
-                        }
-                        else
-                        {
-                            // 2 is the minimum notification count: connect, disable.
-                            amqpConnectionStatuses[i].ConnectionStatusChangeCount.Should().BeGreaterOrEqualTo(
-                                2,
-                                $"The expected connection status change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
-                        }
-                    }
-                    amqpConnectionStatuses[i].LastConnectionStatus.Should().Be(
-                        ConnectionStatus.Disabled,
-                        $"The expected connection status should be {ConnectionStatus.Disabled} but was {amqpConnectionStatuses[i].LastConnectionStatus}");
-                    amqpConnectionStatuses[i].LastConnectionStatusChangeReason.Should().Be(
-                        ConnectionStatusChangeReason.Client_Close,
-                        $"The expected connection status change reason should be {ConnectionStatusChangeReason.Client_Close} but was {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
-                }
             }
             finally
             {
@@ -219,16 +179,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 testDeviceCallbackHandlers.ForEach(x => x.Dispose());
                 deviceClients.ForEach(x => x.Dispose());
                 await Task.WhenAll(testDevices.Select(x => x.RemoveDeviceAsync())).ConfigureAwait(false);
-
-                faultInjectionDuration.Stop();
-
-                // Make sure we use up the remaining time that fault injection was requested for, as to not impact other tests.
-                TimeSpan timeToFinishFaultInjection = durationInSec.Subtract(faultInjectionDuration.Elapsed);
-                if (timeToFinishFaultInjection > TimeSpan.Zero)
-                {
-                    logger.Trace($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
-                    await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
-                }
             }
         }
     }

@@ -76,7 +76,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_MqttWs()
         {
             ITransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(DeviceTransportType.Mqtt_WebSocket_Only);

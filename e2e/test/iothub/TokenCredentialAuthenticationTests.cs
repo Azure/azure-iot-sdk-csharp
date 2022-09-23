@@ -35,7 +35,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
 #if !NET451
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -55,7 +56,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -86,7 +88,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -120,7 +123,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_TokenCredentialAuth_Success()
         {
             // arrange
