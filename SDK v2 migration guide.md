@@ -41,7 +41,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | `ReceiveAsync` | `ReceiveMessageAsync` |
 | `CompleteAsync` | `CompleteMessageAsync` |
 | `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
-| `MessageResponse` | `MessageAcknowledgementType` |
+| `MessageResponse` | `CloudToDeviceMessageAcknowledgement` |
 
 #### Other notable breaking changes
 
@@ -58,7 +58,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | Version 1.x API | Equivalent version 2.x API |
 |:---|:---|
 | `ModuleClient` | `IotHubModuleClient` |
-| `MessageResponse` | `MessageAcknowledgementType` |
+| `MessageResponse` | `CloudToDeviceMessageAcknowledgement` |
 
 #### Other notable breaking changes
 
