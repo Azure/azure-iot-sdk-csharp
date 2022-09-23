@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         internal IMqttClient _mqttClient;
 
-        private readonly MqttClientOptions _mqttClientOptions;
+        private MqttClientOptions _mqttClientOptions;
 
         // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
         // that is sent over the wire, so we increment this value locally instead.
