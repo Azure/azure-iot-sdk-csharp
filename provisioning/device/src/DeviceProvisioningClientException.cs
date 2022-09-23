@@ -15,32 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private const string IsTransientValueSerializationStoreName = "DeviceProvisioningClientException-IsTransient";
 
         /// <summary>
-        /// Creates a new instance of the DeviceProvisioningClientException class.
-        /// </summary>
-        protected internal DeviceProvisioningClientException()
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
-        /// </summary>
-        /// <param name="innerException">The inner exception.</param>
-        protected internal DeviceProvisioningClientException(Exception innerException)
-            : base(string.Empty, innerException)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        protected internal DeviceProvisioningClientException(string message)
-            : this(message, null, false)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
+        /// Creates a new instance of this class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
@@ -50,42 +25,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        /// <param name="innerException">The inner exception.</param>
-        protected internal DeviceProvisioningClientException(string message, Exception innerException)
-            : this(message, innerException, false, string.Empty)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
+        /// Creates a new instance of this class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
         /// <param name="innerException">The inner exception.</param>
         protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient)
-            : this(message, innerException, isTransient, trackingId: string.Empty)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        /// <param name="isTransient">True if the error is transient.</param>
-        /// <param name="trackingId">The service tracking Id.</param>
-        /// <param name="innerException">The inner exception.</param>
-        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, string trackingId)
             : base(message, innerException)
         {
             IsTransient = isTransient;
-            TrackingId = trackingId;
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
+        /// Creates a new instance of this class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
@@ -101,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="DeviceProvisioningClientException"/> class.
+        /// Creates a new instance of this class.
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
