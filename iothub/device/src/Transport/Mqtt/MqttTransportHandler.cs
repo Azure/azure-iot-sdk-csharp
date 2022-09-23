@@ -150,11 +150,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName }
         };
 
-        // Intentionally not private so that unit tests can mock this field
-        internal IMqttClient _mqttClient;
-
-        private MqttClientOptions _mqttClientOptions;
-
         // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
         // that is sent over the wire, so we increment this value locally instead.
         private int _nextLockToken;
