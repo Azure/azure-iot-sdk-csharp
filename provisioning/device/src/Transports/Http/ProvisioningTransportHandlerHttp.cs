@@ -225,7 +225,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 if (Logging.IsEnabled)
                                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(RegisterAsync));
 
-                                throw new DeviceProvisioningClientException(ex.Response.Content, ex, isTransient, errorDetails);
+                                throw new DeviceProvisioningClientException(
+                                    ex.Response.Content,
+                                    ex,
+                                    isTransient,
+                                    (HttpStatusCode)errorDetails.ErrorCode,
+                                    errorDetails.TrackingId);
                             }
                         }
                         catch (JsonException jex)
@@ -274,7 +279,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 try
                 {
                     ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
-                    throw new DeviceProvisioningClientException(ex.Response.Content, ex, isTransient, errorDetails);
+                    throw new DeviceProvisioningClientException(
+                        ex.Response.Content,
+                        ex,
+                        isTransient,
+                        (HttpStatusCode)errorDetails.ErrorCode,
+                        errorDetails.TrackingId);
                 }
                 catch (JsonException jex)
                 {

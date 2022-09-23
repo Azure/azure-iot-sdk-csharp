@@ -26,6 +26,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private static readonly TimeSpan s_timeoutConstant = TimeSpan.FromMinutes(1);
 
+        private TimeSpan? _retryAfter;
+
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
         /// </summary>
@@ -157,9 +159,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 bundleCancellationToken)
                             .ConfigureAwait(false);
                     }
-                    catch (DeviceProvisioningClientException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp amqp && e.IsTransient)
+                    catch (DeviceProvisioningClientException e) when (e.IsTransient)
                     {
-                        operation.RetryAfter = amqp.RetryAfter;
+                        operation.RetryAfter = _retryAfter;
                     }
 
                     attempts++;
@@ -306,13 +308,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     if (isTransient)
                     {
                         errorDetails.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromRejection(rejected, s_defaultOperationPollingInterval);
+                        _retryAfter = errorDetails.RetryAfter;
                     }
 
                     throw new DeviceProvisioningClientException(
                         rejected.Error.Description,
                         null,
                         isTransient,
-                        errorDetails);
+                        (HttpStatusCode)errorDetails.ErrorCode,
+                        errorDetails.TrackingId);
                 }
                 catch (JsonException ex)
                 {

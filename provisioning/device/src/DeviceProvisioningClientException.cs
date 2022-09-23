@@ -40,16 +40,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Creates a new instance of this class.
         /// </summary>
         /// <param name="message">The exception message.</param>
-        /// <param name="isTransient">True if the error is transient.</param>
-        /// <param name="errorDetails">The service error details.</param>
         /// <param name="innerException">The inner exception.</param>
-        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, ProvisioningErrorDetails errorDetails)
+        /// <param name="isTransient">True if the error is transient.</param>
+        /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
+        /// <param name="trackingId">Service reported tracking Id.</param>
+        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, HttpStatusCode statusCode, string trackingId)
             : base(message, innerException)
         {
             IsTransient = isTransient;
-            ErrorDetails = errorDetails;
-            StatusCode = (HttpStatusCode)(errorDetails.ErrorCode/1000);
-            TrackingId = errorDetails.TrackingId;
+            StatusCode = statusCode;
+            TrackingId = trackingId;
         }
 
         /// <summary>
@@ -76,11 +76,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Service reported tracking Id. Use this when reporting a service issue.
         /// </summary>
         public string TrackingId { get; set; }
-
-        /// <summary>
-        /// Service reported error details. Use this when reporting a service issue.
-        /// </summary>
-        public ProvisioningErrorDetails ErrorDetails { get; private set; }
 
         /// <summary>
         /// The 3-digit HTTP status code returned by Device Provisioning Service.
