@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
+            var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
             using var deviceClient = new IotHubDeviceClient(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",

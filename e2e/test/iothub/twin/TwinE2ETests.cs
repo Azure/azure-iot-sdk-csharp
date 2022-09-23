@@ -631,7 +631,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string propName2 = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var options = new IotHubClientOptions(transportSettings);
             using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);

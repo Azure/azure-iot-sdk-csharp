@@ -64,8 +64,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
         {
             await SendMessageRecoveryAsync(
@@ -345,8 +343,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Mqtt()
         {
             await SendMessageRecoveryAsync(
@@ -380,16 +376,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                // Some tests rely on the operation timing out before fault injection ends, so this is important to set.
                 using var cts = new CancellationTokenSource(retryDuration);
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
-                deviceClient.OperationTimeoutInMilliseconds = (uint)retryDuration.TotalMilliseconds;
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
-                using var cts = new CancellationTokenSource(operationTimeoutInMilliSecs);
+                Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string _, out string _);
+                using var cts = new CancellationTokenSource(operationTimeout);
                 await deviceClient.SendEventAsync(testMessage, cts.Token).ConfigureAwait(false);
             };
 

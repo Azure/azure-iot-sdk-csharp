@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -36,9 +36,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             int attempt = 0;
             bool shouldRetry;
+
             do
             {
-                Exception lastException = new IotHubClientException("Client is currently reconnecting internally; attempt the operation after some time.");
+                Exception lastException = new Exception("Client is currently reconnecting internally; attempt the operation after some time.");
                 try
                 {
                     if (shouldExecuteOperation())

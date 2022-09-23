@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             var testDevices = new List<TestDevice>(devicesCount);
             var deviceClients = new List<IotHubDeviceClient>(devicesCount);
-            var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>(devicesCountdevicesCount);
+            var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>(devicesCount);
             var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
             var operations = new List<Task>(devicesCount);
 
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                                 $"The expected connection status change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
                         }
                     }
-                    deviceClients[i].ConnectionStatusInfo.Status.Shnould(0.BeConnectionStatus.Closed, $"{deviceClients[i].ConnectionStatusInfo.ChangeReason}");
+                    deviceClients[i].ConnectionStatusInfo.Status.Should().Be(ConnectionStatus.Closed, $"{deviceClients[i].ConnectionStatusInfo.ChangeReason}");
                     deviceClients[i].ConnectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ClientClosed);
                 }
             }

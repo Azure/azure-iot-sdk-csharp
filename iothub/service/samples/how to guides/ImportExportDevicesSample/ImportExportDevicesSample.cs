@@ -230,12 +230,12 @@ namespace Microsoft.Azure.Devices.Samples
                 // The second URI points to the container to write errors to as a blob.
                 // This lets you import the devices from any file name. Since we wrote the new
                 // devices to [devicesToAdd], need to read the list from there as well.
-                var importGeneratedDevicesJob = new JobProperties(_containerUri)
+                var importGeneratedDevicesJob = new ImportJobProperties(_containerUri)
                 {
                     InputBlobName = _generateDevicesBlobName,
                 };
-                importGeneratedDevicesJob = await devicesClient.ImportAsync(importGeneratedDevicesJob);
-                await WaitForJobAsync(devicesClient, importGeneratedDevicesJob);
+                IotHubJobResponse jobResponse = await devicesClient.ImportAsync(importGeneratedDevicesJob);
+                await WaitForJobAsync(devicesClient, jobResponse);
             }
             catch (Exception ex)
             {
@@ -307,14 +307,14 @@ namespace Microsoft.Azure.Devices.Samples
 
                 // Call an export job on the IoT hub to retrieve all devices.
                 // This writes them to the container.
-                var exportJob = new JobProperties(_containerUri, true)
+                var exportJob = new ExportJobProperties(_containerUri, true)
                 {
                     OutputBlobName = devicesBlobName,
                     IncludeConfigurations = includeConfigurations,
                     ConfigurationsBlobName = configsBlobName,
                 };
-                exportJob = await devicesClient.ExportAsync(exportJob);
-                await WaitForJobAsync(devicesClient, exportJob);
+                IotHubJobResponse jobResponse = await devicesClient.ExportAsync(exportJob);
+                await WaitForJobAsync(devicesClient, jobResponse);
             }
             catch (Exception ex)
             {
@@ -328,14 +328,14 @@ namespace Microsoft.Azure.Devices.Samples
 
             // Step 3: Call import using the same blob to create all devices.
             // Loads and adds the devices to the destination IoT hub.
-            var importJob = new JobProperties(_containerUri)
+            var importJob = new ImportJobProperties(_containerUri)
             {
                 InputBlobName = _destHubDevicesImportBlobName,
                 IncludeConfigurations = includeConfigurations,
                 ConfigurationsBlobName = _destHubConfigsImportBlobName
             };
-            importJob = await devicesClient.ImportAsync(importJob);
-            await WaitForJobAsync(devicesClient, importJob);
+            var jobResponse = await devicesClient.ImportAsync(importJob);
+            await WaitForJobAsync(devicesClient, jobResponse);
 
             // Read from error logs to see if there were any failures
             BlobClient devicesErrorsBlob = _blobContainerClient.GetBlobClient(DeviceImportErrorsBlobName);
@@ -407,12 +407,12 @@ namespace Microsoft.Azure.Devices.Samples
 
             // Step 3: Call import using the same blob to delete all devices.
             Console.WriteLine("Running a registry manager job to delete the devices from the IoT hub.");
-            var importJob = new JobProperties(_containerUri)
+            var importJob = new ImportJobProperties(_containerUri)
             {
                 InputBlobName = _hubDevicesCleanupBlobName,
             };
-            importJob = await hubClient.Devices.ImportAsync(importJob);
-            await WaitForJobAsync(hubClient.Devices, importJob);
+            IotHubJobResponse jobResponse = await hubClient.Devices.ImportAsync(importJob);
+            await WaitForJobAsync(hubClient.Devices, jobResponse);
 
             // Step 4: delete configurations
             if (includeConfigurations)
@@ -549,7 +549,7 @@ namespace Microsoft.Azure.Devices.Samples
             return Convert.ToBase64String(keyBytes);
         }
 
-        private static async Task WaitForJobAsync(DevicesClient devicesClient, JobProperties job)
+        private static async Task WaitForJobAsync(DevicesClient devicesClient, IotHubJobResponse job)
         {
             // Wait until job is finished
             while (true)

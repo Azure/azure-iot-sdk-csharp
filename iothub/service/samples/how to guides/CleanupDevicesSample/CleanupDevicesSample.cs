@@ -67,13 +67,13 @@ namespace Microsoft.Azure.Devices.Samples
                     Uri storageAccountSasUri = GetStorageAccountSasUriForCleanupJob(_blobContainerClient);
 
                     // Step 3: Call import using the same blob to delete all devices.
-                    var importDevicesToBeDeletedRequest = new JobProperties(storageAccountSasUri)
+                    var importDevicesToBeDeletedRequest = new ImportJobProperties(storageAccountSasUri)
                     {
                         InputBlobName = ImportExportDevicesFileName,
                         StorageAuthenticationType = StorageAuthenticationType.KeyBased,
                     };
 
-                    JobProperties importDevicesToBeDeletedJob = null;
+                    IotHubJobResponse importDevicesToBeDeletedJob = null;
 
                     Stopwatch jobTimer = Stopwatch.StartNew();
                     do

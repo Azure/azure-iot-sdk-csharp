@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Act
 
             // Get device twin.
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             Twin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Act
 
             // Get device twin.
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             Twin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Act
 
             // Get module twin.
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             // Assert

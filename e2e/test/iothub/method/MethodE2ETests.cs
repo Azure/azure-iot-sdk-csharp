@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             var serviceClientTransportSettings = new IotHubServiceClientOptions
             {
-                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
+                Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress)
             };
 
             await SendMethodAndRespondAsync(
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             var serviceClientTransportSettings = new IotHubServiceClientOptions
             {
-                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
+                Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress)
             };
 
             await SendMethodAndRespondAsync(
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // setup
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "ModuleNotFoundTest").ConfigureAwait(false);
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "SetTelemetryInterval",
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         null)
                     .ConfigureAwait(false);
 
-                using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+                using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
                 var directMethodRequest = new DirectMethodRequest
                 {
                     MethodName = commandName,
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
 

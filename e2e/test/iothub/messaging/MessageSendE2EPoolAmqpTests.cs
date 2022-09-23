@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MultipleConnections_Amqp()
         {
             await SendMessagePoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
@@ -32,14 +32,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MultipleConnections_AmqpWs()
         {
             await SendMessagePoolOverAmqp(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
         }
 
         private async Task SendMessagePoolOverAmqp(
-            Client.TransportType transport,
+            IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string payload, out string p1Value);
                 Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");

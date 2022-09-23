@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 faultInjectionDuration.Stop();
 
-                TimeSpan timeToFinishFaultInjection = duration.Subtract(watch.Elapsed);
+                TimeSpan timeToFinishFaultInjection = duration.Subtract(faultInjectionDuration.Elapsed);
                 if (timeToFinishFaultInjection > TimeSpan.Zero)
                 {
                     logger.Trace($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");

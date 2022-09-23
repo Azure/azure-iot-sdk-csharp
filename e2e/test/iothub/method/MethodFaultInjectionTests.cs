@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 attempt++;
                 try
                 {
-                    using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+                    using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
                     var directMethodRequest = new DirectMethodRequest()
                     {

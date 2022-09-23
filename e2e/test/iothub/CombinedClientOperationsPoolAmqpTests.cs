@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount)
         {
             // Initialize service client for service-side operations
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             // Message payload and properties for C2D operation
             var messagesSent = new Dictionary<string, Tuple<Message, string>>();

@@ -53,7 +53,7 @@ namespace ImportExportDevicesWithManagedIdentitySample
             // If the IoT hub is not configured with system defined managed identity, the job will fail.
             // If StorageAuthenticationType is set to IdentityBased and neither user defined nor system defined
             // managed identities are configured on the hub, the job will fail.
-            var jobProperties = new JobProperties(blobContainerUri, false)
+            var jobProperties = new ExportJobProperties(blobContainerUri, false)
             {
                 StorageAuthenticationType = StorageAuthenticationType.IdentityBased,
                 Identity = new ManagedIdentity
@@ -62,7 +62,7 @@ namespace ImportExportDevicesWithManagedIdentitySample
                 },
             };
 
-            JobProperties jobResult = await client.Devices.ExportAsync(jobProperties);
+            IotHubJobResponse jobResult = await client.Devices.ExportAsync(jobProperties);
 
             // Poll every 5 seconds to see if the job has finished executing.
             while (true)
@@ -103,7 +103,7 @@ namespace ImportExportDevicesWithManagedIdentitySample
             // If the IoT hub is not configured with system defined managed identity, the job will fail.
             // If StorageAuthenticationType is set to IdentityBased and neither user defined nor system defined
             // managed identities are configured on the hub, the job will fail.
-            var jobProperties = new JobProperties(blobContainerUri)
+            var jobProperties = new ImportJobProperties(blobContainerUri)
             {
                 StorageAuthenticationType = StorageAuthenticationType.IdentityBased,
                 Identity = new ManagedIdentity
@@ -112,7 +112,7 @@ namespace ImportExportDevicesWithManagedIdentitySample
                 },
             };
 
-            JobProperties jobResult = await client.Devices.ImportAsync(jobProperties);
+            IotHubJobResponse jobResult = await client.Devices.ImportAsync(jobProperties);
 
             // Poll every 5 seconds to see if the job has finished executing.
             while (true)

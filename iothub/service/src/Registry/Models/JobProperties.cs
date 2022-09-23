@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -12,13 +11,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public abstract class JobProperties : IotHubJobResponse
     {
-        private static readonly JobStatus[] s_finishedStates = new[]
-        {
-            JobStatus.Completed,
-            JobStatus.Failed,
-            JobStatus.Cancelled,
-        };
-
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
@@ -72,12 +64,6 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         [JsonProperty(PropertyName = "configurationsBlobName", NullValueHandling = NullValueHandling.Ignore)]
         public string ConfigurationsBlobName { get; set; }
-
-        /// <summary>
-        /// Convenience property to determine if the job is in a terminal state, based on <see cref="JobStatus"/>.
-        /// </summary>
-        [JsonIgnore]
-        public bool IsFinished => s_finishedStates.Contains(Status);
 
         /// <summary>
         /// Represents the percentage of completion.

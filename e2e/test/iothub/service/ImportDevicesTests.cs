@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string devicesFileName = $"{idPrefix}-devices-{StorageContainer.GetRandomSuffix(4)}.txt";
             string configsFileName = $"{idPrefix}-configs-{StorageContainer.GetRandomSuffix(4)}.txt";
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             try
             {

@@ -112,12 +112,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var messagesSent = new Dictionary<string, Tuple<Message, string>>();
 
             // Initialize the service client
-            var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger, out string payload, out string _);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
@@ -161,13 +161,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize the service client
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger, out string _, out string _);
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
@@ -186,79 +186,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task CleanupOperationAsync()
             {
-                await serviceClient.CloseAsync().ConfigureAwait(false);
-                serviceClient.Dispose();
-            }
-
-            await PoolingOverAmqp
-                .TestPoolAmqpAsync(
-                    DevicePrefix,
-                    transport,
-                    poolSize,
-                    devicesCount,
-                    InitOperationAsync,
-                    TestOperationAsync,
-                    CleanupOperationAsync,
-                    authScope,
-                    true,
-                    Logger)
-                .ConfigureAwait(false);
-        }
-
-        private async Task ReceiveMessageUsingCallbackAndUnsubscribePoolOverAmqpAsync(
-            Client.TransportType transport,
-            int poolSize,
-            int devicesCount,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
-        {
-            // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
-
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
-            {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
-
-                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
-            }
-
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
-            {
-                var timeout = TimeSpan.FromSeconds(20);
-                using var cts = new CancellationTokenSource(timeout);
-
-                // Send a message to the device from the service.
-                (Message firstMessage, string payload, _) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
-                testDeviceCallbackHandler.ExpectedMessageSentByService = firstMessage;
-                await serviceClient.SendAsync(testDevice.Id, firstMessage).ConfigureAwait(false);
-                Logger.Trace($"Sent 1st C2D message from service - to be received on callback: deviceId={testDevice.Id}, messageId={firstMessage.MessageId}");
-
-                // The message should be received on the callback, while a call to ReceiveAsync() should return null.
-                Client.Message receivedMessage = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
-                await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-                receivedMessage.Should().BeNull();
-
-                // Now unsubscribe from receiving c2d messages over the callback.
-                await deviceClient.SetReceiveMessageHandlerAsync(null, deviceClient).ConfigureAwait(false);
-
-                // Send a message to the device from the service.
-                (Message secondMessage, _, _) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
-                await serviceClient.SendAsync(testDevice.Id, secondMessage).ConfigureAwait(false);
-                Logger.Trace($"Sent 2nd C2D message from service - to be received on polling ReceiveAsync(): deviceId={testDevice.Id}, messageId={secondMessage.MessageId}");
-
-                // This time, the message should not be received on the callback, rather it should be received on a call to ReceiveAsync().
-                Func<Task> receiveMessageOverCallback = async () =>
-                {
-                    await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-                };
-                Client.Message message = await deviceClient.ReceiveAsync(cts.Token).ConfigureAwait(false);
-                message.MessageId.Should().Be(secondMessage.MessageId);
-                receiveMessageOverCallback.Should().Throw<OperationCanceledException>();
-            }
-
-            async Task CleanupOperationAsync()
-            {
                 await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
+                serviceClient.Dispose();
             }
 
             await PoolingOverAmqp
