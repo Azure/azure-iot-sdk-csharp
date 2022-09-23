@@ -145,9 +145,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 _closed = true;
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 await _amqpUnit.CloseAsync(ctb.Token).ConfigureAwait(false);
             }
