@@ -83,6 +83,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private const string BasicProxyAuthentication = "Basic";
 
+        private const string MessageTimedOutErrorMessage = "Timed out waiting for MQTT message to be acknowledged.";
+
         // Intentionally not private so that unit tests can mock this field
         internal IMqttClient _mqttClient;
 
@@ -379,7 +381,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                     // when the cancellation token requests cancellation.
-                    throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", ex);
+                    throw new OperationCanceledException(MessageTimedOutErrorMessage, ex);
                 }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException && ex is not OperationCanceledException)
@@ -452,7 +454,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", ex);
+                throw new OperationCanceledException(MessageTimedOutErrorMessage, ex);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -599,7 +601,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", ex);
+                throw new OperationCanceledException(MessageTimedOutErrorMessage, ex);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -669,7 +671,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", ex);
+                throw new OperationCanceledException(MessageTimedOutErrorMessage, ex);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
