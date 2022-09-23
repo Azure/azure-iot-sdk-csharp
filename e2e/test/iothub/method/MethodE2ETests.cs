@@ -27,55 +27,64 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_MqttTcp()
         {
             await SendMethodAndUnsubscribeAsync(new IotHubClientMqttSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_MqttWs()
         {
             await SendMethodAndUnsubscribeAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_AmqpTcp()
         {
             await SendMethodAndUnsubscribeAsync(new IotHubClientAmqpSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_AmqpWs()
         {
             await SendMethodAndUnsubscribeAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceSendsMethodThroughProxyWithDefaultTimeout()
         {
             var serviceClientTransportSettings = new IotHubServiceClientOptions
@@ -90,7 +99,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceSendsMethodThroughProxyWithCustomTimeout()
         {
             var serviceClientTransportSettings = new IotHubServiceClientOptions
@@ -106,7 +116,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
             // setup
@@ -128,31 +139,36 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             error.And.IsTransient.Should().BeFalse();
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_MqttTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_MqttWs()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_AmqpWs()
         {
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownModuleThrows()
         {
             // setup
@@ -176,7 +192,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             error.And.IsTransient.Should().BeFalse();
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithNullPayload_DoesNotThrow()
         {
             // arrange
@@ -306,7 +323,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
 
-            var directMethodRequest = new DirectMethodRequest()
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
                 ResponseTimeout = methodTimeout,
@@ -321,7 +338,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            response.Payload.Should().BeEquivalentTo(respJson);
+            response.Payload.Should().Be(respJson);
         }
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)

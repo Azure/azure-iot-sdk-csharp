@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                using var cts = new CancellationTokenSource(retryDuration);
+                using var cts = new CancellationTokenSource(operationTimeout);
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
             }
 
