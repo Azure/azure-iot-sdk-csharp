@@ -718,7 +718,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private async Task HandleReceivedMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
             Debug.Assert(receivedEventArgs != null);
-            receivedEventArgs.AutoAcknowledge = false;
             string topic = receivedEventArgs.ApplicationMessage.Topic;
 
             if (topic.StartsWith(_deviceBoundMessagesTopic))
