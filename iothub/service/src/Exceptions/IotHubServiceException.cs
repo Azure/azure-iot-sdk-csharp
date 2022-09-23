@@ -38,9 +38,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public IotHubServiceException(
             string message,
-            HttpStatusCode errorCode,
-            IotHubErrorCode iotHubStatusCode,
-            bool isTransient,
+            HttpStatusCode statusCode,
+            IotHubErrorCode errorCode,
             string trackingId = null,
             Exception innerException = null)
             : base(message, innerException)
