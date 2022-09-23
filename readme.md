@@ -81,10 +81,10 @@ Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing appl
 
 All of our samples are located in this repository:
 
-- [IotHub Device Samples](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples)
-- [IotHub Service Samples](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples)
-- [Provisioning Device Samples](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples)
-- [Provisioning Service Samples](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/service/samples)
+- [Iot hub device](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples) samples
+- [Iot hub device](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples) samples
+- [Provisioning device](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples) samples
+- [Provisioning service](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/service/samples) samples
 
 Samples for each of these categories are further separated into three sub-categories (from simplest to complex):
 
