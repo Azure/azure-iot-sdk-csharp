@@ -3,7 +3,6 @@
 
 using System;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -18,8 +17,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     [TestCategory("IoTHub")]
     public class MethodE2ETests : E2EMsTestBase
     {
-        public const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
-        public const string ServiceRequestJson = "{\"a\":123}";
+        public static readonly object DeviceResponseJson = new { name = "e2e_test" };
+        public static readonly object ServiceRequestJson = new { a = 123 };
 
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
         private readonly string _modulePrefix = $"{nameof(MethodE2ETests)}_mod_";
@@ -283,8 +282,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public static async Task ServiceSendMethodAndVerifyResponseAsync(
             string deviceId,
             string methodName,
-            string respJson,
-            string reqJson,
+            object respJson,
+            object reqJson,
             MsTestLogger logger,
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
@@ -306,15 +305,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            response.Payload.Should().Be(respJson);
+            JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(respJson));
         }
 
         public static async Task ServiceSendMethodAndVerifyResponseAsync(
             string deviceId,
             string moduleId,
             string methodName,
-            string respJson,
-            string reqJson,
+            object respJson,
+            object reqJson,
             MsTestLogger logger,
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
@@ -327,18 +326,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 MethodName = methodName,
                 ResponseTimeout = methodTimeout,
-                Payload = reqJson
+                Payload = reqJson,
             };
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            DirectMethodResponse response =
-                await serviceClient.DirectMethods
-                    .InvokeAsync(deviceId, moduleId, directMethodRequest)
-                    .ConfigureAwait(false);
+            DirectMethodResponse response = await serviceClient.DirectMethods
+                .InvokeAsync(deviceId, moduleId, directMethodRequest)
+                .ConfigureAwait(false);
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            response.Payload.Should().Be(respJson);
+            JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(respJson));
         }
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
@@ -347,20 +345,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                (request, context) =>
-                {
-                    // This test only verifies that unsubscripion works.
-                    // For this reason, the direct method subscription callback does not implement any method-specific dispatcher.
-                    logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
-                    var response = new Client.DirectMethodResponse()
+                    (request, context) =>
                     {
-                        Status = 200,
-                        Payload = DeviceResponseJson
-                    };
+                        // This test only verifies that unsubscripion works.
+                        // For this reason, the direct method subscription callback does not implement any method-specific dispatcher.
+                        logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
+                        var response = new Client.DirectMethodResponse
+                        {
+                            Status = 200,
+                            Payload = DeviceResponseJson,
+                        };
 
-                    return Task.FromResult(response);
-                },
-                null)
+                        return Task.FromResult(response);
+                    },
+                    null)
                 .ConfigureAwait(false);
 
             await deviceClient.SetMethodHandlerAsync(null, null).ConfigureAwait(false);
@@ -381,22 +379,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                             try
                             {
-                                request.MethodName.Should().Be(methodName);
-                                request.PayloadAsJsonString.Should().Be(ServiceRequestJson);
+                                try
+                                {
+                                    request.MethodName.Should().Be(methodName);
+                                    request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(ServiceRequestJson));
+                                }
+                                catch (Exception ex)
+                                {
+                                    methodCallReceived.TrySetException(ex);
+                                }
+                                var response = new Client.DirectMethodResponse
+                                {
+                                    Status = 200,
+                                    Payload = DeviceResponseJson,
+                                };
 
+                                return Task.FromResult(response);
+                            }
+                            finally
+                            {
                                 methodCallReceived.TrySetResult(true);
                             }
-                            catch (Exception ex)
-                            {
-                                methodCallReceived.TrySetException(ex);
-                            }
-                            var response = new Client.DirectMethodResponse()
-                            {
-                                Status = 200,
-                                Payload = DeviceResponseJson
-                            };
-
-                            return Task.FromResult(response);
                         },
                     null)
                 .ConfigureAwait(false);
@@ -413,26 +416,31 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 (request, context) =>
                 {
                     logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: ModuleClient method: {request.MethodName} {request.ResponseTimeout}.");
-            
+
                     try
                     {
-                        request.MethodName.Should().Be(methodName);
-                        request.PayloadAsJsonString.Should().Be(ServiceRequestJson);
+                        try
+                        {
+                            request.MethodName.Should().Be(methodName);
+                            request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(ServiceRequestJson));
+                        }
+                        catch (Exception ex)
+                        {
+                            methodCallReceived.TrySetException(ex);
+                        }
 
-                        methodCallReceived.SetResult(true);
+                        var response = new Client.DirectMethodResponse
+                        {
+                            Status = 200,
+                            Payload = DeviceResponseJson,
+                        };
+
+                        return Task.FromResult(response);
                     }
-                    catch (Exception ex)
+                    finally
                     {
-                        methodCallReceived.SetException(ex);
+                        methodCallReceived.TrySetResult(true);
                     }
-
-                    var response = new Client.DirectMethodResponse()
-                    {
-                        Status = 200,
-                        Payload = DeviceResponseJson
-                    };
-
-                    return Task.FromResult(response);
                 },
                 null).ConfigureAwait(false);
 
