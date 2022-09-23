@@ -995,18 +995,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return DateTime.ParseExact(property.Value, "o", CultureInfo.InvariantCulture);
             }
 
-            if (property.Key == MessageSystemPropertyNames.Ack)
-            {
-                return property.Value switch
-                {
-                    "none" => DeliveryAcknowledgement.None,
-                    "negative" => DeliveryAcknowledgement.NegativeOnly,
-                    "positive" => DeliveryAcknowledgement.PositiveOnly,
-                    "full" => DeliveryAcknowledgement.Full,
-                    _ => throw new NotSupportedException($"Unknown value: '{property.Value}'"),
-                };
-            }
-
             return property.Value;
         }
 
