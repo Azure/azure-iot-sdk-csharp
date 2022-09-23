@@ -780,7 +780,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleReceivedDirectMethodRequestAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            receivedEventArgs.AutoAcknowledge = true;
+            try
+            {
+                // forcing MQTT to acknowlege this message now rather than later because
+                // IoT hub expects this ack before it expects the direct method response message sent
+                // later in this method.
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                // This likely happened because the connection was lost. The service will re-send this message so the user
+                // can acknowledge it on the new connection.
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}");
+            }
+
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
             var receivedDirectMethod = new Message(payload);
