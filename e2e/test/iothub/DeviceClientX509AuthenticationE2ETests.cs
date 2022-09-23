@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -164,7 +163,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSetting));
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, Logger).ConfigureAwait(false);
+            var message = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string _, out string _);
+            await deviceClient.SendEventAsync(message).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 

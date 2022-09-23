@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 // Inject the fault into device 0
                 logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={durationInSec}s");
-                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
+                Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
                 faultInjectionDuration.Start();
                 await deviceClients.First().SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
 
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     bool isRecovered = false;
                     while (connectionChangeWaitDuration.Elapsed < durationInSec.Add(FaultInjection.LatencyTimeBuffer))
                     {
-                        isRecovered = amqpConnectionStatuses.All(x => x.LastConnectionStatus == ConnectionStatus.Connected);
+                        isRecovered = deviceClients.All(x => x.ConnectionStatusInfo.Status == ConnectionStatus.Connected);
                         if (isRecovered)
                         {
                             break;
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         var unconnectedDevices = new List<string>();
                         for (int i = 0; i < devicesCount; ++i)
                         {
-                            if (amqpConnectionStatuses[i].LastConnectionStatus != ConnectionStatus.Connected)
+                            if (deviceClients[i].ConnectionStatusInfo.Status != ConnectionStatus.Connected)
                             {
                                 unconnectedDevices.Add(testDevices[i].Id);
                             }

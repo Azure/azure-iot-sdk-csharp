@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using MQTTnet;
 using MQTTnet.Adapter;
 using MQTTnet.Client;

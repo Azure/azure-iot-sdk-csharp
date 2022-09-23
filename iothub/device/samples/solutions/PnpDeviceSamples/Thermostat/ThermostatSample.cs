@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // See https://docs.microsoft.com/en-us/azure/event-grid/compare-messaging-services for more details.
         private readonly Dictionary<DateTimeOffset, double> _temperatureReadingsDateTimeOffset = new Dictionary<DateTimeOffset, double>();
 
-        private readonly DeviceClient _deviceClient;
+        private readonly IotHubDeviceClient _deviceClient;
         private readonly ILogger _logger;
 
         // A safe initial value for caching the writable properties version is 1, so the client
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // has been processed.
         private static long s_localWritablePropertiesVersion = 1;
 
-        public ThermostatSample(DeviceClient deviceClient, ILogger logger)
+        public ThermostatSample(IotHubDeviceClient deviceClient, ILogger logger)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -65,13 +65,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // -> Periodically send "temperature" over telemetry.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set.
 
-            _deviceClient.SetConnectionStatusChangesHandler(async (status, reason) =>
+            _deviceClient.SetConnectionStatusChangeHandler(async (info) =>
             {
-                _logger.LogDebug($"Connection status change registered - status={status}, reason={reason}.");
+                _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
 
                 // Call GetWritablePropertiesAndHandleChangesAsync() to get writable properties from the server once the connection status changes into Connected.
                 // This can get back "lost" property updates in a device reconnection from status Disconnected_Retrying or Disconnected.
-                if (status == ConnectionStatus.Connected)
+                if (info.Status == ConnectionStatus.Connected)
                 {
                     await GetWritablePropertiesAndHandleChangesAsync();
                 }
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, _deviceClient, cancellationToken);
 
             _logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
-            await _deviceClient.SetMethodHandlerAsync("getMaxMinReport", HandleMaxMinReportCommand, _deviceClient, cancellationToken);
+            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, null, cancellationToken);
 
             _logger.LogDebug("Check if the device properties are empty on the initial startup.");
             await CheckEmptyPropertiesAsync(cancellationToken);
@@ -99,6 +99,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await SendTemperatureAsync(cancellationToken);
                 await Task.Delay(5 * 1000, cancellationToken);
             }
+        }
+
+        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodRequest request, object userContext)
+        {
+            return request.MethodName switch
+            {
+                "getMaxMinReport" => await HandleMaxMinReportCommandAsync(request, userContext),
+                _ => new DirectMethodResponse { Status = 400 },
+            };
         }
 
         private async Task GetWritablePropertiesAndHandleChangesAsync()
@@ -179,11 +188,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature
         // from the specified time to the current time.
-        private Task<MethodResponse> HandleMaxMinReportCommand(MethodRequest request, object userContext)
+        private Task<DirectMethodResponse> HandleMaxMinReportCommandAsync(DirectMethodRequest request, object userContext)
         {
             try
             {
-                DateTime sinceInUtc = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
+                DateTime sinceInUtc = JsonConvert.DeserializeObject<DateTime>(request.PayloadAsJsonString);
                 var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
                 _logger.LogDebug($"Command: Received - Generating max, min and avg temperature report since " +
                     $"{sinceInDateTimeOffset.LocalDateTime}.");
@@ -208,16 +217,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         $"startTime={report.startTime.LocalDateTime}, endTime={report.endTime.LocalDateTime}");
 
                     byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-                    return Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+                    return Task.FromResult(new DirectMethodResponse { Payload = responsePayload, Status = (int)StatusCode.Completed });
                 }
 
                 _logger.LogDebug($"Command: No relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, cannot generate any report.");
-                return Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
+                return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.NotFound });
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return Task.FromResult(new MethodResponse((int)StatusCode.BadRequest));
+                return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.BadRequest });
             }
         }
 
@@ -240,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string telemetryName = "temperature";
 
             string telemetryPayload = $"{{ \"{telemetryName}\": {_temperature} }}";
-            using var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
+            var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
             {
                 ContentEncoding = "utf-8",
                 ContentType = "application/json",

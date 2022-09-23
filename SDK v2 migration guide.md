@@ -85,6 +85,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | `JobProperties.CreateForImportJob(...)` | `new JobProperties(Uri, Uri)` |
 | `JobProperties.CreateForExportJob(...)` | `new JobProperties(Uri, bool)` |
 | `RegistryManager.GetJobAsync(...)` | `IotHubServiceClient.Devices.GetJobAsync(...)` |
+| `RegistryManager.CancelJobAsync(...)` | `IotHubServiceClient.Devices.CancelJobAsync(...)` |
 
 #### Other notable breaking changes
 
@@ -93,6 +94,10 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - `IotHubServiceClient.Query.CreateAsync<T>(...)` is now async.
   - Call `QueryResponse<T>.MoveNextAsync()` in a loop (end when it returns `false`) and access `QueryResponse<T>.Current`.
 - `JobProperties` properties that hold Azure Storage SAS URIs are now of type `System.Uri` instead of `string`.
+
+#### Notable additions
+
+- `JobProperties` now has a helper property `IsFinished` which returns true if the job status is in a terminal state.
 
 #### ServiceClient
 

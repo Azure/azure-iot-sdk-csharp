@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using CommandLine;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Logging;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Rest;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             
             try
             {
-                using DeviceClient deviceClient = await SetupDeviceClientAsync(parameters, logger, cts.Token);
+                using IotHubDeviceClient deviceClient = await SetupDeviceClientAsync(parameters, logger, cts.Token);
                 var sample = new ThermostatSample(deviceClient, logger);
                 await sample.PerformOperationsAsync(cts.Token);
 
@@ -91,9 +93,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return loggerFactory.CreateLogger<ThermostatSample>();
         }
 
-        private static async Task<DeviceClient> SetupDeviceClientAsync(Parameters parameters, ILogger logger, CancellationToken cancellationToken)
+        private static async Task<IotHubDeviceClient> SetupDeviceClientAsync(Parameters parameters, ILogger logger, CancellationToken cancellationToken)
         {
-            DeviceClient deviceClient;
+            IotHubDeviceClient deviceClient;
             switch (parameters.DeviceSecurityType.ToLowerInvariant())
             {
                 case "dps":
@@ -119,10 +121,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Provision a device via DPS, by sending the PnP model Id as DPS payload.
         private static async Task<DeviceRegistrationResult> ProvisionDeviceAsync(Parameters parameters, CancellationToken cancellationToken)
         {
-            using SecurityProvider symmetricKeyProvider = new SecurityProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
+            var symmetricKeyProvider = new AuthenticationProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
             using ProvisioningTransportHandler mqttTransportHandler = new ProvisioningTransportHandlerMqtt();
-            ProvisioningDeviceClient pdc = ProvisioningDeviceClient.Create(parameters.DpsEndpoint, parameters.DpsIdScope,
-                symmetricKeyProvider, mqttTransportHandler);
+            var pdc = new ProvisioningDeviceClient(
+                parameters.DpsEndpoint,
+                parameters.DpsIdScope,
+                symmetricKeyProvider,
+                new ProvisioningClientOptions(mqttTransportHandler)); ;
 
             var pnpPayload = new ProvisioningRegistrationAdditionalData
             {
@@ -131,29 +136,29 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return await pdc.RegisterAsync(pnpPayload, cancellationToken);
         }
 
-        // Initialize the device client instance using connection string based authentication, over Mqtt protocol (TCP, with fallback over Websocket)
+        // Initialize the device client instance using connection string based authentication
         // and setting the ModelId into ClientOptions.
-        private static DeviceClient InitializeDeviceClient(string deviceConnectionString)
+        private static IotHubDeviceClient InitializeDeviceClient(string deviceConnectionString)
         {
-            var options = new ClientOptions
+            var options = new IotHubClientOptions
             {
                 ModelId = ModelId,
             };
 
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
+            var deviceClient = new IotHubDeviceClient(deviceConnectionString, options);
 
             return deviceClient;
         }
 
         // Initialize the device client instance using symmetric key based authentication, over Mqtt protocol (TCP, with fallback over Websocket) and setting the ModelId into ClientOptions.
-        private static DeviceClient InitializeDeviceClient(string hostname, IAuthenticationMethod authenticationMethod)
+        private static IotHubDeviceClient InitializeDeviceClient(string hostname, IAuthenticationMethod authenticationMethod)
         {
-            var options = new ClientOptions
+            var options = new IotHubClientOptions
             {
                 ModelId = ModelId,
             };
 
-            DeviceClient deviceClient = DeviceClient.Create(hostname, authenticationMethod, TransportType.Mqtt, options);
+            var deviceClient = new IotHubDeviceClient(hostname, authenticationMethod, options);
 
             return deviceClient;
         }

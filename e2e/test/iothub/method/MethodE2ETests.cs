@@ -110,8 +110,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
             // setup
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var methodInvocation = new DirectMethodRequest()
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            var methodInvocation = new DirectMethodRequest
             {
                 MethodName = "SetTelemetryInterval",
                 Payload = "10"
@@ -185,10 +185,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             bool deviceMethodCalledSuccessfully = false;
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "NullMethodPayloadTest").ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
-
             try
             {
-
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient
                     .SetMethodHandlerAsync(
@@ -367,7 +365,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             try
                             {
                                 request.MethodName.Should().Be(methodName);
-                                request.Payload.Should().Be(ServiceRequestJson);
+                                request.PayloadAsJsonString.Should().Be(ServiceRequestJson);
 
                                 methodCallReceived.TrySetResult(true);
                             }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -186,20 +187,17 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_AuthenticationNoRecovery_MultipleConnections_Amqp()
         {
             // act
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryPoolOverAmqpAsync(
-                        TestDeviceType.Sasl,
                         new IotHubClientAmqpSettings(),
                         PoolingOverAmqp.MultipleConnections_PoolSize,
                         PoolingOverAmqp.MultipleConnections_DevicesCount,
                         FaultInjection.FaultType_Auth,
-                        FaultInjection.FaultCloseReason_Boom,
-                        authScope: ConnectionStringAuthScope.IoTHub)
+                        FaultInjection.FaultCloseReason_Boom)
                     .ConfigureAwait(false);
             };
 
@@ -216,13 +214,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryPoolOverAmqpAsync(
-                        TestDeviceType.Sasl,
                         new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                         PoolingOverAmqp.MultipleConnections_PoolSize,
                         PoolingOverAmqp.MultipleConnections_DevicesCount,
                         FaultInjection.FaultType_Auth,
-                        FaultInjection.FaultCloseReason_Boom,
-                        authScope: ConnectionStringAuthScope.IoTHub)
+                        FaultInjection.FaultCloseReason_Boom)
                     .ConfigureAwait(false);
             };
 

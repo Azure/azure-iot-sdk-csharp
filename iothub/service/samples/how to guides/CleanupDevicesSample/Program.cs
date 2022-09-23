@@ -33,14 +33,14 @@ namespace Microsoft.Azure.Devices.Samples
                     Environment.Exit(1);
                 });
 
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
+            using var hubClient = new IotHubServiceClient(parameters.HubConnectionString);
             var deleteDevicesWithPrefix = ConvertCsvFileToList(parameters.PathToDevicePrefixForDeletion);
 
             var blobServiceClient = new BlobServiceClient(parameters.StorageAccountConnectionString);
             string blobContainerName = $"cleanupdevice{Guid.NewGuid()}";
             BlobContainerClient blobContainerClient = await blobServiceClient.CreateBlobContainerAsync(blobContainerName);
 
-            var sample = new CleanupDevicesSample(registryManager, blobContainerClient, deleteDevicesWithPrefix);
+            var sample = new CleanupDevicesSample(hubClient, blobContainerClient, deleteDevicesWithPrefix);
             await sample.RunCleanUpAsync();
 
             Console.WriteLine("Done.");

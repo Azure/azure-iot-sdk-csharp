@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 

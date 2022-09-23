@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices.Samples.JobsSample
 {

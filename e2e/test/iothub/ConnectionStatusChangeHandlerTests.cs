@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -157,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsNotNull(twin);
 
             // Delete/disable the device in IoT hub. This should trigger the ConnectionStatusChangeHandler.
-            using (var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString))
+            using (var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString))
             {
                 await registryManagerOperation(serviceClient, deviceId).ConfigureAwait(false);
             }
@@ -212,10 +209,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsNotNull(twin);
 
             // Delete/disable the device in IoT hub.
-            using (var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString))
-            {
-                await registryManagerOperation(serviceClient, testModule.DeviceId).ConfigureAwait(false);
-            }
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            await registryManagerOperation(serviceClient, testModule.DeviceId).ConfigureAwait(false);
 
             Logger.Trace($"{nameof(IotHubModuleClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
