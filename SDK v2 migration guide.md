@@ -70,28 +70,33 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | Version 1.x API | Equivalent version 2.x API |
 |:---|:---|
 | `RegistryManager` | `IotHubServiceClient`, subclients `Devices`, `Twins`, `Configurations`, etc. |
-| `RegistryManager.AddDevices2Async(...)` | `IotHubServiceClient.Devices.CreateAsync(IEnumerable<Device> devices,...)` |
+| `RegistryManager.AddDeviceAsync(Device, ...)` | `IotHubServiceClient.Devices.CreateAsync(Device, ...)` |
+| `RegistryManager.AddDevices2Async(...)` | `IotHubServiceClient.Devices.CreateAsync(IEnumerable<Device>,...)` |
+| `RegistryManager.RemoveDeviceAsync(...)` | `IotHubServiceClient.Devices.DeleteAsync(...)` |
 | `Device.Capabilities.IotEdge` | `Device.Capabilities.IsIotEdge` |
 | `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` |
 | `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` |
-| `ServiceClient.InvokeDeviceMethodAsync(...)` | `ServiceClient.DirectMethods.InvokeAsync(...)` |
-| `CloudToDeviceMethod` | `DirectMethodRequest` |
-| `CloudToDeviceMethodResult` | `DirectMethodResponse` |
 | `RegistryManager.AddConfigurationAsync(...)` | `IotHubServiceClient.Configurations.CreateAsync(...)` |
 | `RegistryManager.GetConfigurationsAsync(int maxCount)`| `IotHubServiceClient.Configurations.GetAsync(int maxCount)` |
 | `RegistryManager.RemoveConfigurationAsync(...)` | `IotHubServiceClient.Configurations.DeleteAsync(...)` |
+| `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.CreateAsync<T>(...)` |
 
 #### Other notable breaking changes
 
 - `CloudToDeviceMethod` took a constructor parameter for the method name, which is now used with `DirectMethodRequest` as a property initializer.
 - Operations that offer concurrency protection using `ETag`s, now take a parameter `onlyIfUnchanged` that relies on the ETag property of the submitted entity.
+- `IotHubServiceClient.Query.CreateAsync<T>(...)` is now async.
+  - Call `QueryResponse<T>.MoveNextAsync()` in a loop (end when it returns `false`) and access `QueryResponse<T>.Current`.
 
 #### ServiceClient
 
 | Version 1.x API | Equivalent version 2.x API |
 |:---|:---|
-| `ServiceClient` | `IotHbServiceClient`, subclients `Messages`, `MessageFeedback`, `FileUploadNotifications` |
+| `ServiceClient` | `IotHubServiceClient`, subclients `Messages`, `MessageFeedback`, `FileUploadNotifications` |
 | `ServiceClient.SendAsync(...)` | `IotHubServiceClient.Messages.SendAsync(...)` |
+| `ServiceClient.InvokeDeviceMethodAsync(...)` | `IotHubServiceClient.DirectMethods.InvokeAsync(...)` |
+| `CloudToDeviceMethod` | `DirectMethodRequest` |
+| `CloudToDeviceMethodResult` | `DirectMethodResponse` |
 | `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` |
 | `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor`
 
@@ -99,7 +104,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 - `FeedbackReceiver` is now callback assigned to `MessageFeedbackProcessor` property.
 - `GetFileNotificationReceiver()` is now callback assigned to `FileUploadNotificationProcessor` property. These methods return a callback value.
-- `Message` no longer requires disposal.
+- The `Message` class no longer requires disposal.
 
 #### DeviceMethod
 
