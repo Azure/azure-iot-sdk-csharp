@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (AmqpException ex) when (!Fx.IsFatal(ex))
             {
-                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex);
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, null);
                 if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
