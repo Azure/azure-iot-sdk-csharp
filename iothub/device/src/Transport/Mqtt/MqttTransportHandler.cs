@@ -337,11 +337,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         throw new IotHubClientException("Failed to open the MQTT connection", cfe);
                 }
             }
-            catch (MqttCommunicationTimedOutException e)
+            catch (MqttCommunicationTimedOutException ex)
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT connection to open.", e);
+                throw new OperationCanceledException("Timed out waiting for MQTT connection to open.", ex);
             }
         }
 
@@ -375,11 +375,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         throw new IotHubClientException($"Failed to publish the MQTT packet for message with correlation Id {message.CorrelationId} with reason code {result.ReasonCode}", true);
                     }
                 }
-                catch (MqttCommunicationTimedOutException e)
+                catch (MqttCommunicationTimedOutException ex)
                 {
                     // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                     // when the cancellation token requests cancellation.
-                    throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", e);
+                    throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", ex);
                 }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException && ex is not OperationCanceledException)
@@ -448,11 +448,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubClientException($"Failed to send direct method response with reason code {result.ReasonCode}", true);
                 }
             }
-            catch (MqttCommunicationTimedOutException e)
+            catch (MqttCommunicationTimedOutException ex)
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", e);
+                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", ex);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -595,11 +595,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 return getTwinResponse.Twin;
             }
-            catch (MqttCommunicationTimedOutException e)
+            catch (MqttCommunicationTimedOutException ex)
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", e);
+                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", ex);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -665,11 +665,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 return patchTwinResponse.Version;
             }
-            catch (MqttCommunicationTimedOutException e)
+            catch (MqttCommunicationTimedOutException ex)
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", e);
+                throw new OperationCanceledException("Timed out waiting for MQTT message to be acknowledged.", ex);
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -743,11 +743,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubClientException($"Received unexpected subscription to topic {subscribeResult.TopicFilter.Topic}", true);
                 }
             }
-            catch (MqttCommunicationTimedOutException e)
+            catch (MqttCommunicationTimedOutException ex)
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT topic subscription to be acknowledged.", e);
+                throw new OperationCanceledException("Timed out waiting for MQTT topic subscription to be acknowledged.", ex);
             }
         }
 
@@ -779,11 +779,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubClientException($"Failed to unsubscribe from topic {fullTopic} with reason {unsubscribeResult.ResultCode}", true);
                 }
             }
-            catch (MqttCommunicationTimedOutException e)
+            catch (MqttCommunicationTimedOutException ex)
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out waiting for MQTT topic unsubscription to be acknowledged.", e);
+                throw new OperationCanceledException("Timed out waiting for MQTT topic unsubscription to be acknowledged.", ex);
             }
         }
 

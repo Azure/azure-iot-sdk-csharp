@@ -158,11 +158,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
             }
-            catch (MqttCommunicationTimedOutException e)
+            catch (MqttCommunicationTimedOutException ex)
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new OperationCanceledException("Timed out while provisioning.", e);
+                throw new OperationCanceledException("Timed out while provisioning.", ex);
             }
             finally
             {
