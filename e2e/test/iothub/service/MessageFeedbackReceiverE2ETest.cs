@@ -23,7 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessageFeedbackReceiver_Operation(IotHubTransportProtocol protocol)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -102,14 +103,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             }
 
                             // The connection status should be "Disabled", with connection status change reason "ClientClose"
-                            Assert.AreEqual(
+                            deviceClients[i].ConnectionStatusInfo.Status.Should().Be(
                                 ConnectionStatus.Closed,
-                                deviceClients[i].ConnectionStatusInfo.Status,
-                                $"The actual connection status is = {deviceClients[i].ConnectionStatusInfo.Status}");
-                            Assert.AreEqual(
-                                ConnectionStatusChangeReason.ClientClosed,
-                                deviceClients[i].ConnectionStatusInfo.ChangeReason,
-                                $"The actual connection status change reason is = {deviceClients[i].ConnectionStatusInfo.ChangeReason}");
+                                $"Reason {deviceClients[i].ConnectionStatusInfo.ChangeReason}");
+                            deviceClients[i].ConnectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ClientClosed);
                         }
                     }
                     if (deviceConnectionStatusAsExpected)
@@ -138,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 }
             } while (reRunTest && totalRuns < MaxTestRunCount);
 
-            Assert.IsFalse(reRunTest, $"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {currentSuccessRate}%.");
+            reRunTest.Should().BeFalse($"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {currentSuccessRate}%.");
         }
 
         private class AmqpConnectionStatusChange

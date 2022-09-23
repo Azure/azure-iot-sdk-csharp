@@ -31,7 +31,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_AmqpWs()
         {
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
@@ -54,35 +55,40 @@ namespace Microsoft.Azure.Devices.E2ETests
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_MqttTcp()
         {
             IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck__MqttWs()
         {
             IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpTcp()
         {
             IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpWs()
         {
             IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Cert_Chain_Install_Test_MqttTcp()
         {
             // arrange

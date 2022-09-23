@@ -24,7 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private readonly string DevicePrefix = $"{nameof(MethodFaultInjectionTests)}_";
         private const string MethodName = "MethodE2ETest";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -37,7 +38,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -50,7 +52,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
             await SendMethodAndRespondRecoveryAsync(new IotHubClientMqttSettings(),
@@ -59,7 +62,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -72,7 +76,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -82,7 +87,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
@@ -91,7 +97,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -101,7 +108,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -111,7 +119,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -121,7 +130,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -131,7 +141,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -141,7 +152,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -151,7 +163,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -161,7 +174,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -174,7 +188,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -184,7 +199,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -286,7 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     faultType,
                     reason,
                     FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDelay,
+                    FaultInjection.DefaultFaultDelay, // we want a quick one because we need time to recover
                     InitAsync,
                     TestOperationAsync,
                     CleanupAsync,

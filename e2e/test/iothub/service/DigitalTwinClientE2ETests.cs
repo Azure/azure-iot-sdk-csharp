@@ -25,7 +25,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string _devicePrefix = $"{nameof(DigitalTwinClientE2ETests)}_";
         private static readonly string s_connectionString = TestConfiguration.IotHub.ConnectionString;
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
         {
             // Create a new test device instance.
@@ -108,7 +109,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithComponentOperationsAsync()
         {
             // Create a new test device instance.

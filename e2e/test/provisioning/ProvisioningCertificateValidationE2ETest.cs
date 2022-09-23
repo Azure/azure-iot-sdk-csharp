@@ -31,7 +31,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             s_x509CertificatesFolder = Directory.CreateDirectory(s_folderName);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(
@@ -49,7 +50,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 #endif
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.Tcp);
@@ -59,7 +61,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.Tcp);
@@ -76,7 +79,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateHttp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerHttp();
@@ -90,7 +94,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 #endif
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             using var transport = new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.WebSocket);
@@ -100,7 +105,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             using var transport = new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.WebSocket);

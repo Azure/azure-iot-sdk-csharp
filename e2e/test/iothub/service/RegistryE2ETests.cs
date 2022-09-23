@@ -27,7 +27,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // In particular, this should retry on "module not registered on this device" errors
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(IotHubServiceException) };
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [ExpectedException(typeof(HttpRequestException))]
         public async Task DevicesClient_BadProxy_ThrowsException()
@@ -44,7 +45,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             _ = await serviceClient.Devices.GetAsync("device-that-does-not-exist").ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_AddAndRemoveDeviceWithScope()
         {
             // arrange
@@ -96,7 +98,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_AddDeviceWithTwinWithDeviceCapabilities()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
@@ -126,7 +129,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_AddDevices2Async_Works()
         {
             // arrange
@@ -176,7 +180,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_UpdateDevices2Async_Works()
         {
             // arrange
@@ -225,7 +230,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_UpdateTwins2Async_Works()
         {
             // arrange
@@ -276,7 +282,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_RemoveDevices2Async_Works()
         {
             // arrange
@@ -324,7 +331,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_AddDeviceWithProxy()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
@@ -338,7 +346,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_GetModulesOnDevice()
         {
             const int moduleCount = 2;
@@ -391,7 +400,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         /// Test basic lifecycle of a module.
         /// This test includes CRUD operations only.
         /// </summary>
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_IdentityLifecycle()
         {
             string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
@@ -449,7 +459,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         /// <summary>
         /// Test basic operations of a module's twin.
         /// </summary>
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_DeviceTwinLifecycle()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -481,7 +492,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_GetStatistics()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -499,7 +511,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             registryStatistics.TotalDeviceCount.Should().BeGreaterOrEqualTo(0);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_SetDevicesETag_Works()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -552,7 +565,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_DeleteDevicesETag_Works()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -603,7 +617,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_SetModulesETag_Works()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -672,7 +687,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_DeleteModulesETag_Works()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);

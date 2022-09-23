@@ -22,7 +22,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodName = "MethodE2ECombinedOperationsTest";
         private readonly string _devicePrefix = $"{nameof(CombinedClientOperationsPoolAmqpTests)}_";
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceCombinedClientOperations_MultipleConnections_Amqp()
         {
@@ -33,7 +34,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(

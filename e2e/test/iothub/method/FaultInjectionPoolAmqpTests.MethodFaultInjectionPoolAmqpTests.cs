@@ -17,7 +17,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodDevicePrefix = "MethodFaultInjectionPoolAmqpTests";
         private const string MethodName = "MethodE2EFaultInjectionPoolAmqpTests";
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodTcpConnRecovery_MultipleConnections_Amqp()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(

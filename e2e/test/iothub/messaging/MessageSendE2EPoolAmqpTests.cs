@@ -18,7 +18,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private readonly string _devicePrefix = $"{nameof(MessageSendE2EPoolAmqpTests)}_";
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MultipleConnections_Amqp()
         {
             await SendMessagePoolOverAmqp(

@@ -26,7 +26,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private static readonly string s_devicePrefix = $"{nameof(IotHubServiceProxyE2ETests)}_";
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendSingleMessage_WithProxy()
         {
             var options = new IotHubServiceClientOptions
@@ -45,7 +46,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClientDevices_AddAndRemoveDevice_WithProxy()
         {
             var options = new IotHubServiceClientOptions
@@ -60,7 +62,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Devices.DeleteAsync(deviceName).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [Ignore]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
