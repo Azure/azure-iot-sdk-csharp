@@ -172,9 +172,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodCallReceived.SetException(ex);
                         }
-                        var response = new Client.DirectMethodResponse()
+                        var response = new Client.DirectMethodResponse(200)
                         {
-                            Status = 200,
                             Payload = false,
                         };
 
@@ -201,7 +200,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
                             request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_customTypeRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_customTypeRequest)} but was {request.PayloadAsJsonString}");
-                            _customTypeRequest.Should().BeEquivalentTo(request.GetPayload<CustomType>(), $"The expected respose payload should be {_customTypeRequest} but was {request.GetPayload<CustomType>()}");
+                            request.TryGetPayload(out CustomType customType).Should().BeTrue();
+                            customType.Should().BeEquivalentTo(_customTypeRequest, $"The expected respose payload should be {_customTypeRequest} but was {customType}");
 
                             methodCallReceived.SetResult(true);
                         }
@@ -209,9 +209,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodCallReceived.SetException(ex);
                         }
-                        var response = new Client.DirectMethodResponse()
+                        var response = new Client.DirectMethodResponse(200)
                         {
-                            Status = 200,
                             Payload = _customTypeResponse
                         };
 
@@ -238,7 +237,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
                             request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_listRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_listRequest)} but was {request.PayloadAsJsonString}");
-                            _listRequest.Should().BeEquivalentTo(request.GetPayload<List<double>>(), $"The expected respose payload should be {_listRequest} but was {request.GetPayload<List<double>>()}");
+                            request.TryGetPayload(out List<double> listRequest).Should().BeTrue();
+                            listRequest.Should().BeEquivalentTo(_listRequest, $"The expected respose payload should be {_listRequest} but was {listRequest}");
 
                             methodCallReceived.SetResult(true);
                         }
@@ -246,9 +246,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodCallReceived.SetException(ex);
                         }
-                        var response = new Client.DirectMethodResponse()
+                        var response = new Client.DirectMethodResponse(200)
                         {
-                            Status = 200,
                             Payload = _listResponse,
                         };
 
@@ -275,7 +274,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
                             request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_dictRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_dictRequest)} but was {request.PayloadAsJsonString}");
-                            _dictRequest.Should().BeEquivalentTo(request.GetPayload<Dictionary<string, object>>(), $"The expected respose payload should be {_arrayRequest} but was {request.GetPayload<Dictionary<string, object>>()}");
+                            request.TryGetPayload(out Dictionary<string, object> dictRequest).Should().BeTrue();
+                            dictRequest.Should().BeEquivalentTo(_dictRequest, $"The expected respose payload should be {_dictRequest} but was {dictRequest}");
 
                             methodCallReceived.SetResult(true);
                         }
@@ -283,9 +283,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodCallReceived.SetException(ex);
                         }
-                        var response = new Client.DirectMethodResponse()
+                        var response = new Client.DirectMethodResponse(200)
                         {
-                            Status = 200,
                             Payload = _dictResponse,
                         };
 
@@ -312,7 +311,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
                             request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_arrayRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_arrayRequest)} but was {request.PayloadAsJsonString}");
-                            _arrayRequest.Should().BeEquivalentTo(request.GetPayload<byte[]>(), $"The expected respose payload should be {_arrayRequest} but was {request.GetPayload<byte[]>()}");
+                            request.TryGetPayload(out byte[] byteRequest).Should().BeTrue();
+                            byteRequest.Should().BeEquivalentTo(_arrayRequest, $"The expected respose payload should be {_arrayRequest} but was {byteRequest}");
 
                             methodCallReceived.SetResult(true);
                         }
@@ -320,9 +320,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodCallReceived.SetException(ex);
                         }
-                        var response = new Client.DirectMethodResponse()
+                        var response = new Client.DirectMethodResponse(200)
                         {
-                            Status = 200,
                             Payload = _arrayResponse,
                         };
 
