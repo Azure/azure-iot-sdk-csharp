@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,6 +24,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     public class RegistryE2ETests : E2EMsTestBase
     {
         private readonly string _idPrefix = $"{nameof(RegistryE2ETests)}_";
+
+        private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
+        // In particular, this should retry on "module not registered on this device" errors
+        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(IotHubServiceException) };
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
@@ -294,7 +299,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // assert
                 bulkDeleteResult.IsSuccessful.Should().BeTrue();
-
 
                 Func<Task> act1 = async () => await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
 
@@ -658,7 +662,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var module = new Module(deviceId, moduleId);
             Device device = await serviceClient.Devices.CreateAsync(new Device(deviceId)).ConfigureAwait(false);
             module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
-            module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
+
+            await RetryOperationHelper
+                .RetryOperationsAsync(
+                    async () =>
+                    {
+                        module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
+                    },
+                    RetryOperationHelper.DefaultRetryPolicy,
+                    s_retryableExceptions,
+                    Logger)
+                .ConfigureAwait(false);
 
             try
             {
