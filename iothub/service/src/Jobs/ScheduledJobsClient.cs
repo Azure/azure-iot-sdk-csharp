@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<ScheduledJob> GetAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting job {jobId}", nameof(GetAsync));
+                Logging.Enter(this, $"Getting job: {jobId}", nameof(GetAsync));
 
             Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
             cancellationToken.ThrowIfCancellationRequested();
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting job {jobId}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting job: {jobId}", nameof(GetAsync));
             }
         }
 
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<ScheduledJob> CancelAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Canceling job {jobId}", nameof(CancelAsync));
+                Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelAsync));
 
             Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
             cancellationToken.ThrowIfCancellationRequested();
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Canceling job {jobId}", nameof(CancelAsync));
+                    Logging.Exit(this, $"Canceling job: {jobId}", nameof(CancelAsync));
             }
         }
 
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Scheduling direct method job {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
+                Logging.Enter(this, $"Scheduling direct method job: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
 
             Argument.AssertNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
 
@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Schedulign direct method job {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
+                    Logging.Enter(this, $"Scheduling direct method job: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
             }
         }
 
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<ScheduledJob> ScheduleTwinUpdateAsync(
+        public virtual async Task<TwinScheduledJob> ScheduleTwinUpdateAsync(
             ScheduledTwinUpdate scheduledTwinUpdate,
             ScheduledJobsOptions scheduledJobsOptions = default,
             CancellationToken cancellationToken = default)
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices
                 : scheduledJobsOptions.JobId;
 
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"queryCondition=[{scheduledJobsOptions.JobId}]", nameof(ScheduleDirectMethodAsync));
+                Logging.Enter(this, $"Scheduling twin update: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
 
             Argument.AssertNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
 
@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<TwinScheduledJob>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Scheduling twin update {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
+                    Logging.Exit(this, $"Scheduling twin update: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
             }
         }
 

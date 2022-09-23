@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task DeviceSak_DeviceCombinedClientOperations_MultipleConnections_Amqp()
+        public async Task DeviceCombinedClientOperations_MultipleConnections_Amqp()
         {
             await DeviceCombinedClientOperationsAsync(
                     new IotHubClientAmqpSettings(),
@@ -33,49 +33,23 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
-        public async Task DeviceSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
-        public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_Amqp()
-        {
-            await DeviceCombinedClientOperationsAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IoTHub)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
-        public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
-        {
-            await DeviceCombinedClientOperationsAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IoTHub)
                 .ConfigureAwait(false);
         }
 
         private async Task DeviceCombinedClientOperationsAsync(
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
-            int devicesCount,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            int devicesCount)
         {
             // Initialize service client for service-side operations
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             // Message payload and properties for C2D operation
             var messagesSent = new Dictionary<string, Tuple<Message, string>>();
@@ -89,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Send C2D Message
                 Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger, out string payload, out string p1Value);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
                 Task sendC2dMessage = serviceClient.Messages.SendAsync(testDevice.Id, msg);
@@ -118,7 +92,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // D2C Operation
                 Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 1: Send D2C for device={testDevice.Id}");
-                Task sendD2cMessage = MessageSendE2ETests.SendSingleMessageAsync(deviceClient, Logger);
+                var message = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string _, out string _);
+                Task sendD2cMessage = deviceClient.SendEventAsync(message);
                 clientOperations.Add(sendD2cMessage);
 
                 // C2D Operation
@@ -168,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync,
-                    authScope,
+                    ConnectionStringAuthScope.Device,
                     false,
                     Logger)
                 .ConfigureAwait(false);

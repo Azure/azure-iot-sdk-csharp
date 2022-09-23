@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using MQTTnet;
 using MQTTnet.Adapter;
 using MQTTnet.Client;
@@ -310,9 +309,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
+                await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
                 _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                 _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
-                await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
             }
             catch (MqttConnectingFailedException cfe)
             {
@@ -585,7 +584,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (!_isSubscribedToTwinResponses)
             {
@@ -636,8 +635,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubClientException(patchTwinResponse.Message);
                 }
 
-                //TODO new twin version should be returned here, but API surface doesn't currently allow it
-                //return patchTwinResponse.Version;
+                return patchTwinResponse.Version;
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -859,7 +857,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private void HandleTwinResponse(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out int version))
+            if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out long version))
             {
                 string payloadString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload ?? new byte[0]);
 
@@ -1047,7 +1045,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return msg;
         }
 
-        private bool ParseResponseTopic(string topicName, out string rid, out int status, out int version)
+        private bool ParseResponseTopic(string topicName, out string rid, out int status, out long version)
         {
             rid = "";
             status = 500;

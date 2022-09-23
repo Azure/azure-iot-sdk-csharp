@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var messages = new List<Client.Message>(MessageCount);
             for (int i = 0; i < MessageCount; i++)
             {
-                (Message msg, string _, string _) = MessageReceiveE2ETests.ComposeC2dTestMessage(logger);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(logger, out string _, out string _);
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
                 using var cts = new CancellationTokenSource(s_oneMinute);

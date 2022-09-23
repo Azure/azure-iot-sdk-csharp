@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -23,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2ETests)}_";
 
-        private static readonly IotHubServiceClient _serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+        private static readonly IotHubServiceClient _serviceClient = new(TestConfiguration.IotHub.ConnectionString);
 
         private static readonly List<object> s_listOfPropertyValues = new()
         {
@@ -360,10 +359,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
 
             int connectionStatusChangeCount = 0;
-            Action<ConnectionStatus, ConnectionStatusChangeReason> connectionStatusChangeHandler = (ConnectionStatus status, ConnectionStatusChangeReason reason) =>
+            void connectionStatusChangeHandler(ConnectionStatusInfo connInfo)
             {
                 Interlocked.Increment(ref connectionStatusChangeCount);
-            };
+            }
+            deviceClient.SetConnectionStatusChangeHandler(connectionStatusChangeHandler);
 
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();
@@ -405,7 +405,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var props = new Client.TwinCollection();
             props[propName] = propValue;
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+            long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
             Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
@@ -416,6 +416,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Twin completeTwin = await _serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Reported[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+            Assert.AreEqual(completeTwin.Properties.Reported.Version, newTwinVersion);
         }
 
         public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(IotHubDeviceClient deviceClient, string expectedPropName, object expectedPropValue, MsTestLogger logger)
@@ -630,7 +631,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string propName2 = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var options = new IotHubClientOptions(transportSettings);
             using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);

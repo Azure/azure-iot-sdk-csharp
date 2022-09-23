@@ -11,17 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class IotHubClientAmqpSettings : IotHubClientTransportSettings
     {
-        private TimeSpan _operationTimeout = DefaultOperationTimeout;
-
-        /// <summary>
-        /// The default operation timeout.
-        /// </summary>
-        public static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
-
-        /// <summary>
-        /// The default idle timeout.
-        /// </summary>
-        public static readonly TimeSpan DefaultIdleTimeout = TimeSpan.FromMinutes(2);
+        private TimeSpan _operationTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// The default pre-fetch count.
@@ -35,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            DefaultReceiveTimeout = DefaultOperationTimeout;
+            DefaultReceiveTimeout = TimeSpan.FromMinutes(1);
         }
 
         /// <summary>
@@ -46,14 +36,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Specify client-side heartbeat interval.
         /// The interval, that the client establishes with the service, for sending keep alive pings.
-        /// The default value is 2 minutes.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// The default value is 2 minutes.
+        /// </para>
+        /// <para>
         /// The client will consider the connection as disconnected if the keep alive ping fails.
         /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
+        /// </para>
         /// </remarks>
-        public TimeSpan IdleTimeout { get; set; } = DefaultIdleTimeout;
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
         /// The time to wait for any operation to complete. The default is 1 minute.

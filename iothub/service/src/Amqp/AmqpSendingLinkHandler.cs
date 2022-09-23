@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Amqp
             _linkName = "CloudToDevieMessageSenderLink-" + Guid.NewGuid();
 
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Opening sending link with address {_linkAddress} and link name {_linkName}");
+                Logging.Enter(this, $"Opening sending link with address {_linkAddress} and link name {_linkName}", nameof(OpenAsync));
 
             try
             {
@@ -67,14 +67,14 @@ namespace Microsoft.Azure.Devices.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening sending link with address {_linkAddress} and link name {_linkName}");
+                    Logging.Exit(this, $"Opening sending link with address {_linkAddress} and link name {_linkName}", nameof(OpenAsync));
             }
         }
 
         public async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Closing sending link with address {_linkAddress} and link name {_linkName}");
+                Logging.Enter(this, $"Closing sending link with address {_linkAddress} and link name {_linkName}", nameof(CloseAsync));
 
             try
             {
@@ -86,14 +86,14 @@ namespace Microsoft.Azure.Devices.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Closing sending link with address {_linkAddress} and link name {_linkName}");
+                    Logging.Exit(this, $"Closing sending link with address {_linkAddress} and link name {_linkName}", nameof(CloseAsync));
             }
         }
 
         public async Task<Outcome> SendAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Sending message with correlation Id {message.Properties?.CorrelationId} and delivery tag {deliveryTag} on link with address {_linkAddress} and link name {_linkName}");
+                Logging.Enter(this, $"Sending message with correlation Id {message.Properties?.CorrelationId} and delivery tag {deliveryTag} on link with address {_linkAddress} and link name {_linkName}", nameof(SendAsync));
 
             try
             {
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Sending message with correlation Id {message.Properties?.CorrelationId} and delivery tag {deliveryTag} on link with address {_linkAddress} and link name {_linkName}");
+                    Logging.Exit(this, $"Sending message with correlation Id {message.Properties?.CorrelationId} and delivery tag {deliveryTag} on link with address {_linkAddress} and link name {_linkName}", nameof(SendAsync));
             }
         }
     }

@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -464,19 +463,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             try
             {
                 if (Logging.IsEnabled)
                     Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
 
-                await _internalRetryPolicy
+                return await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+                            return await base.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);

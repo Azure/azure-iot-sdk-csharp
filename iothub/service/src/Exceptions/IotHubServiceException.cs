@@ -36,7 +36,13 @@ namespace Microsoft.Azure.Devices
         /// <param name="errorCode">The 6-digit error code representing a more specific error in details.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(string message, HttpStatusCode statusCode, IotHubErrorCode errorCode, string trackingId = null, Exception innerException = null)
+        public IotHubServiceException(
+            string message,
+            HttpStatusCode errorCode,
+            IotHubErrorCode iotHubStatusCode,
+            bool isTransient,
+            string trackingId = null,
+            Exception innerException = null)
             : base(message, innerException)
         {
             StatusCode = statusCode;
