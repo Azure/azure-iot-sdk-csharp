@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,7 +24,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _idPrefix = $"{nameof(RegistryE2ETests)}_";
 
-        private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
         // In particular, this should retry on "module not registered on this device" errors
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(IotHubServiceException) };
 
@@ -415,7 +413,18 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // Get device
                 // Get the device and compare ETag values (should remain unchanged);
-                Module retrievedModule = await serviceClient.Modules.GetAsync(testDeviceId, testModuleId).ConfigureAwait(false);
+                Module retrievedModule = null;
+
+                await RetryOperationHelper
+                    .RetryOperationsAsync(
+                    async () =>
+                    {
+                        retrievedModule = await serviceClient.Modules.GetAsync(testDeviceId, testModuleId).ConfigureAwait(false);
+                    },
+                    RetryOperationHelper.DefaultRetryPolicy,
+                    s_retryableExceptions,
+                    Logger)
+                .ConfigureAwait(false);
 
                 retrievedModule.Should().NotBeNull($"When checking for ETag, got null back for GET on module '{testDeviceId}/{testModuleId}'.");
                 retrievedModule.ETag.Should().Be(createdModule.ETag, "ETag value should not have changed between create and get.");
@@ -603,7 +612,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var module = new Module(deviceId, moduleId);
             Device device = await serviceClient.Devices.CreateAsync(new Device(deviceId)).ConfigureAwait(false);
             module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
-            module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
+
+            await RetryOperationHelper
+                .RetryOperationsAsync(
+                    async () =>
+                    {
+                        module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
+                    },
+                    RetryOperationHelper.DefaultRetryPolicy,
+                    s_retryableExceptions,
+                    Logger)
+                .ConfigureAwait(false);
 
             try
             {
