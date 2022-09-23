@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
 
         // Cloud-to-module message callback information
-        private volatile Tuple<Func<Message, object, Task<CloudToDeviceMessageAcknowledgement>>, object> _defaultEventCallback;
+        private volatile Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object> _defaultEventCallback;
 
         /// <summary>
         /// Creates a disposable <c>IotHubModuleClient</c> from the specified connection string.
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The task containing the event</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMessageHandlerAsync(
-            Func<Message, object, Task<CloudToDeviceMessageAcknowledgement>> messageHandler,
+            Func<Message, object, Task<MessageAcknowledgement>> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (messageHandler != null)
                 {
                     await EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                    _defaultEventCallback = new Tuple<Func<Message, object, Task<CloudToDeviceMessageAcknowledgement>>, object>(messageHandler, userContext);
+                    _defaultEventCallback = new Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -328,10 +328,10 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                var response = CloudToDeviceMessageAcknowledgement.Complete;
+                var response = MessageAcknowledgement.Complete;
                 if (_defaultEventCallback?.Item1 != null)
                 {
-                    Func<Message, object, Task<CloudToDeviceMessageAcknowledgement>> userSuppliedCallback = _defaultEventCallback.Item1;
+                    Func<Message, object, Task<MessageAcknowledgement>> userSuppliedCallback = _defaultEventCallback.Item1;
                     object userContext = _defaultEventCallback.Item2;
 
                     response = await userSuppliedCallback
@@ -340,17 +340,17 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(CloudToDeviceMessageAcknowledgement)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
+                    Logging.Info(this, $"{nameof(MessageAcknowledgement)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
 
                 try
                 {
                     switch (response)
                     {
-                        case CloudToDeviceMessageAcknowledgement.Complete:
+                        case MessageAcknowledgement.Complete:
                             await CompleteMessageAsync(message).ConfigureAwait(false);
                             break;
 
-                        case CloudToDeviceMessageAcknowledgement.Abandon:
+                        case MessageAcknowledgement.Abandon:
                             await AbandonMessageAsync(message).ConfigureAwait(false);
                             break;
 
