@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
@@ -21,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_Tcp,
@@ -33,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_Tcp,
@@ -45,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpConnectionLossSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpConn,
@@ -57,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpConn,
@@ -70,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpSess,
@@ -83,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpSess,
@@ -96,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpD2C,
@@ -109,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpD2C,
@@ -122,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -134,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -149,12 +150,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryPoolOverAmqpAsync(
-                        TestDeviceType.Sasl,
                         new IotHubClientAmqpSettings(),
                         PoolingOverAmqp.MultipleConnections_PoolSize,
                         PoolingOverAmqp.MultipleConnections_DevicesCount,
-                        FaultInjection.FaultType_Auth,
-                        FaultInjection.FaultCloseReason_Boom)
+                        FaultInjectionConstants.FaultType_Auth,
+                        FaultInjectionConstants.FaultCloseReason_Boom)
                     .ConfigureAwait(false);
             };
 
@@ -171,12 +171,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryPoolOverAmqpAsync(
-                        TestDeviceType.Sasl,
                         new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                         PoolingOverAmqp.MultipleConnections_PoolSize,
                         PoolingOverAmqp.MultipleConnections_DevicesCount,
-                        FaultInjection.FaultType_Auth,
-                        FaultInjection.FaultCloseReason_Boom)
+                        FaultInjectionConstants.FaultType_Auth,
+                        FaultInjectionConstants.FaultCloseReason_Boom)
                     .ConfigureAwait(false);
             };
 
@@ -196,8 +195,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         new IotHubClientAmqpSettings(),
                         PoolingOverAmqp.MultipleConnections_PoolSize,
                         PoolingOverAmqp.MultipleConnections_DevicesCount,
-                        FaultInjection.FaultType_Auth,
-                        FaultInjection.FaultCloseReason_Boom)
+                        FaultInjectionConstants.FaultType_Auth,
+                        FaultInjectionConstants.FaultCloseReason_Boom)
                     .ConfigureAwait(false);
             };
 
@@ -217,8 +216,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                         PoolingOverAmqp.MultipleConnections_PoolSize,
                         PoolingOverAmqp.MultipleConnections_DevicesCount,
-                        FaultInjection.FaultType_Auth,
-                        FaultInjection.FaultCloseReason_Boom)
+                        FaultInjectionConstants.FaultType_Auth,
+                        FaultInjectionConstants.FaultCloseReason_Boom)
                     .ConfigureAwait(false);
             };
 
@@ -234,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs_WithProxy()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_Tcp,

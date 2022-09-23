@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesTcpConnRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesTcpConnRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesGracefulShutdownRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesGracefulShutdownRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesAmqpConnectionLossRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesAmqpConnectionLossRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesAmqpSessionLossRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesAmqpSessionLossRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesTwinReqLinkDropRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesTwinReqLinkDropRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesTwinRespLinkDropRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceReportedPropertiesTwinRespLinkDropRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_SingleConnection_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_SingleConnection_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_SingleConnection_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_SingleConnection_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_SingleConnection_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_SingleConnection_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_SingleConnection_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_SingleConnection_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_SingleConnection_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_SingleConnection_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
@@ -313,7 +313,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_SingleConnection_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_SingleConnection_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
@@ -340,7 +340,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
@@ -352,7 +352,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -388,7 +388,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
@@ -400,7 +400,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
@@ -426,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
@@ -439,7 +439,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
@@ -465,7 +465,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_Tcp_Only,
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
@@ -478,7 +478,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinRespLinkDropRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
-                Client.TransportType.Amqp_WebSocket_Only,
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
@@ -494,12 +494,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             string proxyAddress = null)
         {
-            async Task InitAsync(DeviceClient deviceClient, TestDevice t, TestDeviceCallbackHandler c)
+            async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice t, TestDeviceCallbackHandler c)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
                 await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(

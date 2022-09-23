@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_Tcp,
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_Tcp,
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpConn,
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpConn,
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpSess,
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpSess,
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpC2dLinkDropReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpC2D,
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpC2dLinkDropReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpC2D,
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger, out string payload, out string p1Value);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);

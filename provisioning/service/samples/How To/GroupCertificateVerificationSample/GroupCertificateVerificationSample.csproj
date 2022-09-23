@@ -4,11 +4,12 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
-    <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BouncyCastle" Version="1.8.9" />
+    <PackageReference Include="BouncyCastle" Version="1.8.9">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

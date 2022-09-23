@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
             await FaultInjection
                 .ActivateFaultInjectionAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,

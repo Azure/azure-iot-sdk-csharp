@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         public static async Task SendSingleMessageAsync(IotHubDeviceClient deviceClient, MsTestLogger logger, int messageSize = 0)
         {
-            using Client.Message testMessage = messageSize == 0
+            Client.Message testMessage = messageSize == 0
                 ? ComposeD2cTestMessage(logger, out string _, out string _)
                 : ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger, out string _, out string _);
 

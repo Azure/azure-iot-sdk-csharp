@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    new IotHubClientMqttSettings(),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    Client.TransportType.Mqtt_WebSocket_Only,
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    new IotHubClientMqttSettings(),
                     FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    Client.TransportType.Mqtt_WebSocket_Only,
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    new IotHubClientMqttSettings(),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
+                    new IotHubClientMqttSettings(),
                     FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
