@@ -794,16 +794,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleReceivedDirectMethodRequestAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            try
-            {
-                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Failed to acknowledge the direct method request. {ex}");
-            }
-
+            receivedEventArgs.AutoAcknowledge = true;
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
             var receivedDirectMethod = new Message(payload);
@@ -827,29 +818,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // is handled elsewhere, so we can simply invoke this callback and continue.
             DirectMethodResponse methodResponse = await _methodListener.Invoke(methodRequest).ConfigureAwait(false);
 
-            var topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
-            byte[] serializedPayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodResponse.Payload));
-            MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(topic)
-                .WithPayload(serializedPayload)
-                .WithQualityOfServiceLevel(publishingQualityOfService)
-                .Build();
-
-            try
+            //TODO Needs to run on separate thread?
+            _ = Task.Run(async () =>
             {
-                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
+                var topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
+                byte[] serializedPayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodResponse.Payload));
+                MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
+                    .WithTopic(topic)
+                    .WithPayload(serializedPayload)
+                    .WithQualityOfServiceLevel(publishingQualityOfService)
+                    .Build();
 
-                if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+                try
+                {
+                    MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage).ConfigureAwait(false);
+
+                    if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, $"Failed to send direct method response with reason code {result.ReasonCode}");
+                    }
+                }
+                catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"Failed to send direct method response with reason code {result.ReasonCode}");
+                        Logging.Error(this, $"Failed to send direct method response. {ex}");
                 }
-            }
-            catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Failed to send direct method response. {ex}");
-            }
+            });
         }
 
         private void HandleReceivedDesiredPropertiesUpdateRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
