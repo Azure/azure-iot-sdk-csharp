@@ -11,27 +11,11 @@ namespace ArmReadWrite
     internal class Parameters
     {
         [Option(
-            'u',
-            "IotHubHostName",
+            'c',
+            "PrimaryConnectionString",
             Required = true,
-            HelpText = "The URI for the IoT hub.")]
-        public string IotHubHostName { get; set; }
-
-        [Option(
-            'd',
-            "DeviceId",
-            Required = true,
-            HelpText = "The device Id that you assigned when registering the device.")]
-        public string DeviceId { get; set; }
-
-        // This is the primary key for the device. This is in the portal.
-        // Find your IoT hub in the portal > IoT devices > select your device > copy the key.
-        [Option(
-            'k',
-            "DeviceKey",
-            Required = true,
-            HelpText = "Find your IoT hub in the portal > IoT devices > select your device > copy the key.")]
-        public string DeviceKey { get; set; }
+            HelpText = "The primary connection string for the device to simulate.")]
+        public string PrimaryConnectionString { get; set; }
 
         [Option(
             "ReadTheFile",
