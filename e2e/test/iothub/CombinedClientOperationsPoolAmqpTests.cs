@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Invoke direct methods
                 Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 3: Direct methods test for device={testDevice.Id}");
-                Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson, Logger);
+                Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_deviceResponsePayload, Logger);
                 clientOperations.Add(serviceInvokeMethod);
 
                 // Set reported twin properties

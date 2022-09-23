@@ -11,11 +11,13 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class DirectMethodResponse
     {
+
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
-        public DirectMethodResponse()
+        public DirectMethodResponse(int status)
         {
+            Status = status;
         }
 
         /// <summary>

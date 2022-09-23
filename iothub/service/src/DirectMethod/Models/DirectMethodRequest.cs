@@ -22,16 +22,6 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Returns JSON payload in a custom type.
-        /// </summary>
-        /// <typeparam name="T">The custom type into which the JSON payload can be deserialized.</typeparam>
-        /// <returns>The JSON payload in custom type.</returns>
-        public T GetPayload<T>()
-        {
-            return JsonConvert.DeserializeObject<T>(PayloadAsJsonString);
-        }
-
-        /// <summary>
         /// The method name to run.
         /// </summary>
         [JsonProperty("methodName", Required = Required.Always)]
@@ -104,5 +94,15 @@ namespace Microsoft.Azure.Devices
 
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
         internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
+
+        /// <summary>
+        /// Returns JSON payload in a custom type.
+        /// </summary>
+        /// <typeparam name="T">The custom type into which the JSON payload can be deserialized.</typeparam>
+        /// <returns>The JSON payload in custom type.</returns>
+        public T GetPayload<T>()
+        {
+            return JsonConvert.DeserializeObject<T>(PayloadAsJsonString);
+        }
     }
 }
