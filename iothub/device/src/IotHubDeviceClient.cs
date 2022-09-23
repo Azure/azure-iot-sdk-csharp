@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         // Cloud-to-device message callback information
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
 
-        private volatile Tuple<Func<Message, object, Task>, object> _deviceReceiveMessageCallback;
+        private volatile Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object> _deviceReceiveMessageCallback;
 
         // File upload operation
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
@@ -87,35 +87,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Receive a message from the device queue using the cancellation token. IotHubDeviceClient instance must be opened already.
-        /// </summary>
-        /// <remarks>
-        /// After handling a received message, a client should call <see cref="IotHubBaseClient.CompleteMessageAsync(Message, CancellationToken)"/>,
-        /// <see cref="IotHubBaseClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="IotHubBaseClient.RejectMessageAsync(Message, CancellationToken)"/>,
-        /// and then dispose the message.
-        /// <para>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </para>
-        /// </remarks>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The received message.</returns>
-        public async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken = default)
-        {
-            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or
-            // unrecoverable (authentication, quota exceed) error occurs.
-            return await InnerHandler.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Sets a new delegate for receiving a message from the device queue using a cancellation token.
         /// IotHubDeviceClient instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// After handling a received message, a client should call <see cref="IotHubBaseClient.CompleteMessageAsync(Message, CancellationToken)"/>,
-        /// <see cref="IotHubBaseClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="IotHubBaseClient.RejectMessageAsync(Message, CancellationToken)"/>,
-        /// and then dispose the message.
         /// <para>
         /// If a delegate is already registered it will be replaced with the new delegate.
         /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
@@ -127,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetReceiveMessageHandlerAsync(
-            Func<Message, object, Task> messageHandler,
+            Func<Message, object, Task<MessageAcknowledgement>> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -148,7 +123,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task>, object>(messageHandler, userContext);
+                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -230,12 +205,37 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<Message, object, Task> callback = _deviceReceiveMessageCallback?.Item1;
+                Func<Message, object, Task<MessageAcknowledgement>> callback = _deviceReceiveMessageCallback?.Item1;
                 object callbackContext = _deviceReceiveMessageCallback?.Item2;
 
                 if (callback != null)
                 {
-                    _ = callback.Invoke(message, callbackContext);
+                    MessageAcknowledgement response = await callback.Invoke(message, callbackContext).ConfigureAwait(false);
+
+                    try
+                    {
+                        switch (response)
+                        {
+                            case MessageAcknowledgement.Complete:
+                                await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            case MessageAcknowledgement.Abandon:
+                                await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            case MessageAcknowledgement.Reject:
+                                await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+                    catch (Exception ex) when (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, ex, nameof(OnDeviceMessageReceivedAsync));
+                    }
                 }
             }
             finally
