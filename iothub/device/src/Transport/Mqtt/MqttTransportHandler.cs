@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311) // 3.1.1
                 .WithCleanSession(_mqttTransportSettings.CleanSession)
                 .WithKeepAlivePeriod(_mqttTransportSettings.IdleTimeout)
-                .WithTimeout(TimeSpan.MaxValue); // MQTTNet will only time out if the cancellation token requests cancellation.
+                .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
 
             if (_mqttTransportSettings.HasWill && _mqttTransportSettings.WillMessage != null)
             {
