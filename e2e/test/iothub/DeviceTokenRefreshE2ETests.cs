@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -30,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
+            var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
             using var deviceClient = new IotHubDeviceClient(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
@@ -53,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
+            var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
             using var deviceClient = new IotHubDeviceClient(
@@ -95,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             string deviceConnectionString = testDevice.ConnectionString;
 
-            var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
+            var config = new TestConfiguration.IotHub.ConnectionStringParser(deviceConnectionString);
             string iotHub = config.IotHubHostName;
             string deviceId = config.DeviceId;
             string key = config.SharedAccessKey;

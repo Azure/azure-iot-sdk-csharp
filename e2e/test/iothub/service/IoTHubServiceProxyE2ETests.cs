@@ -17,6 +17,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("Proxy")]
     public class IotHubServiceProxyE2ETests : E2EMsTestBase
     {
+        private readonly string DevicePrefix = $"{nameof(IotHubServiceProxyE2ETests)}_";
+        private const string JobDeviceId = "JobsSample_Device";
+        private const string JobTestTagName = "JobsSample_Tag";
+        private static readonly string s_connectionString = TestConfiguration.IotHub.ConnectionString;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private const int MaxIterationWait = 30;
         private static readonly string s_devicePrefix = $"{nameof(IotHubServiceProxyE2ETests)}_";
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
@@ -26,12 +31,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             var options = new IotHubServiceClientOptions
             {
-                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress),
+                Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress),
             };
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix).ConfigureAwait(false);
             using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString);
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             (Message testMessage, string messageId, string payload, string p1Value) = ComposeTelemetryMessage();
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messages.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
@@ -45,12 +50,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             var options = new IotHubServiceClientOptions
             {
-                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress),
+                Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress),
             };
 
             string deviceName = s_devicePrefix + Guid.NewGuid();
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             await serviceClient.Devices.CreateAsync(new Device(deviceName)).ConfigureAwait(false);
             await serviceClient.Devices.DeleteAsync(deviceName).ConfigureAwait(false);
         }
@@ -64,9 +69,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var options = new IotHubServiceClientOptions
             {
-                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
+                Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress)
             };
-            using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
+            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             var twin = new Twin(JobDeviceId)
             {

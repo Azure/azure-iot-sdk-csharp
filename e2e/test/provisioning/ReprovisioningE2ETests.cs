@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
-        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
 
         private readonly string _idPrefix = $"E2E-{nameof(ReprovisioningE2ETests).ToLower()}-";
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString);
+            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             var iotHubsToStartAt = new List<string> { TestConfiguration.Provisioning.FarAwayIotHubHostName };
             var iotHubsToReprovisionTo = new List<string> { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString);
+            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             var iotHubsToStartAt = new List<string> { TestConfiguration.Provisioning.FarAwayIotHubHostName };
             var iotHubsToReprovisionTo = new List<string> { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(
@@ -385,7 +385,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString);
+            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             var iotHubsToStartAt = new List<string>() { TestConfiguration.Provisioning.FarAwayIotHubHostName };
             var iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
             await ProvisioningDeviceClient_ReprovisioningFlow(

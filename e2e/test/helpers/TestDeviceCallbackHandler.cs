@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             set => Volatile.Write(ref _expectedMessageSentByService, value);
         }
 
-        public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
+        public async Task SetDeviceReceiveMethodAsync(string methodName, object deviceResponseJson, object expectedServiceRequestJson)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetMethodHandlerAsync(
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         request.MethodName.Should().Be(methodName, "The expected method name should match what was sent from service");
                         request.Payload.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 
-                        var response = new Client.DirectMethodResponse()
+                        var response = new Client.DirectMethodResponse
                         {
                             Status = 200,
                             Payload = deviceResponseJson
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
 
-                        var response = new Client.DirectMethodResponse()
+                        var response = new Client.DirectMethodResponse
                         {
                             Status = 500,
                         };
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null).ConfigureAwait(false);
         }
 
-        public async Task UnSetMessageReceiveCallbackHandlerAsync()
+        public async Task UnsetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);

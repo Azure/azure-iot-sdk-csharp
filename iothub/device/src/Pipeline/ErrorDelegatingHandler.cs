@@ -13,7 +13,6 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport

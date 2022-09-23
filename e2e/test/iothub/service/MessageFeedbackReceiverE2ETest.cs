@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol,
             };
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
 

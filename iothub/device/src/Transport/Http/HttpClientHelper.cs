@@ -13,7 +13,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TpmSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DPS_IDSCOPE": "<yourProvisioningIDScope>"
+      }
+    }
+  }
+}

@@ -16,7 +16,7 @@ function ShouldSkipIotHubTests
     return !(DoChangesAffectAnyOfFolders @("iothub", "common", "authentication", "vsts"))
 }
 
-function ShouldSkipDPSTests 
+function ShouldSkipDPSTests
 {
     if (ShouldSkipIotHubTests) 
     {
@@ -29,7 +29,7 @@ function ShouldSkipDPSTests
 
 # $folderNames is an array of strings where each string is the name of a folder within the codebase to look for in the git diff between the source and target branches
 # For instance, $folderNames can be "iothub", "common", "shared" if you want to see if any changes happened within the iothub folder, the common folder, or in the shared folder
-function DoChangesAffectAnyOfFolders($folderNames) 
+function DoChangesAffectAnyOfFolders($folderNames)
 {
     #TARGET_BRANCH is defined by the yaml file that calls this script. It is equal to the azure devops pre-defined variable "$(System.PullRequest.TargetBranch)" which contains either
     # the target branch of the pull request build if it is a pull request build, or a default value "system.pullrequest.targetbranch" if it is not a pull request build.
@@ -68,7 +68,7 @@ function DoChangesAffectAnyOfFolders($folderNames)
                 }
             }
         }
-        else 
+        else
         {
             foreach ($folderName in $folderNames) 
             {

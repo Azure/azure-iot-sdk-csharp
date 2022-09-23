@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = testDevice.Id;
             string moduleName = "E2E_" + moduleNamePrefix + Guid.NewGuid();
 
-            using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             logger.Trace($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
 
             var requestModule = new Module(deviceName, moduleName);
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             get
             {
-                string iotHubHostName = GetHostName(TestConfiguration.IoTHub.ConnectionString);
+                string iotHubHostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
                 return $"HostName={iotHubHostName};DeviceId={_module.DeviceId};ModuleId={_module.Id};SharedAccessKey={_module.Authentication.SymmetricKey.PrimaryKey}";
             }
         }
