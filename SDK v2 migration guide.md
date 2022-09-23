@@ -38,11 +38,12 @@ to migrate to v2 when they have the chance. For more details on LTS releases, se
 | V1 class#method | Changed? | Equivalent V2 class#method |
 |:------------------------------------------------------------------------------------------------------------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
 | `DeviceClient` | yes | `IotHubDeviceClient` |
-| `TransportType` | yes | `Transport` and `IotHubClientTransportProtocol` |
+| `TransportType` | yes |  |
 | `ReceiveAsync` | yes | `ReceiveMessageAsync` |
 | `CompleteAsync` | yes | `CompleteMessageAsync` |
 | `SetConnectionStatusChangesHandler` | yes | `SetConnectionStatusChangeHandler` |
 
+#### Other notable breaking changes
 (TODO: elaborate on breaking changes)
 
 #### ModuleClient
