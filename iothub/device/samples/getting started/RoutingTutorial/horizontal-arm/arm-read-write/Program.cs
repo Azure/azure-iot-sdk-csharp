@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-//This code that messages to an IoT Hub for testing the routing as defined
-//  in this article: https://docs.microsoft.com/en-us/azure/iot-hub/tutorial-routing
-//The scripts for creating the resources are included in the resources folder in this
-//  Visual Studio solution.
-
+using CommandLine;
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using System;
@@ -15,6 +11,12 @@ using System.Threading.Tasks;
 
 namespace ArmReadWrite
 {
+    /// <summary>
+    /// This code that messages to an IoT Hub for testing the routing as defined
+    ///  in this article: https://docs.microsoft.com/en-us/azure/iot-hub/tutorial-routing
+    /// The scripts for creating the resources are included in the resources folder in this
+    ///  Visual Studio solution.
+    /// </summary>
     internal class Program
     {
         //This is the arm-read-write application that simulates a virtual device.
@@ -24,24 +26,27 @@ namespace ArmReadWrite
         //  This was derived by the (more complicated) tutorial for routing
         //  https://docs.microsoft.com/en-us/azure/iot-hub/tutorial-routing
 
-        private static DeviceClient s_deviceClient;
-        private static string s_myDeviceId;
-        private static string s_iotHubUri;
-        private static string s_deviceKey;
-
-        private static async Task Main()
+        private static async Task Main(string[] args)
         {
-            if (!ReadEnvironmentVariables())
-            {
-                Console.WriteLine();
-                Console.WriteLine("Error! One or more environment variables not set");
-                return;
-            }
+            // Parse application parameters
+            Parameters parameters = null;
+            ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
+                .WithParsed(parsedParams =>
+                {
+                    parameters = parsedParams;
+                })
+                .WithNotParsed(errors =>
+                {
+                    Environment.Exit(1);
+                });
 
             Console.WriteLine("write messages to a hub and use routing to write them to storage");
-
-            s_deviceClient = DeviceClient.Create(s_iotHubUri,
-                new DeviceAuthenticationWithRegistrySymmetricKey(s_myDeviceId, s_deviceKey), TransportType.Mqtt);
+            string myDeviceId = parameters.DeviceId;
+            string deviceKey = parameters.DeviceKey;
+            using var s_deviceClient = DeviceClient.Create(
+                parameters.IotHubHostName,
+                new DeviceAuthenticationWithRegistrySymmetricKey(myDeviceId, deviceKey),
+                TransportType.Mqtt);
 
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
@@ -51,38 +56,16 @@ namespace ArmReadWrite
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
-            Task messages = SendDeviceToCloudMessagesAsync(cts.Token);
+            Task messages = SendDeviceToCloudMessagesAsync(myDeviceId, s_deviceClient, cts.Token);
 
             Console.WriteLine($"Press Control+C at any time to quit the sample.");
             await messages;
         }
 
         /// <summary>
-        /// Read local process environment variables for required values
-        /// </summary>
-        /// <returns>
-        /// True if all required environment variables are set
-        /// </returns>
-        private static bool ReadEnvironmentVariables()
-        {
-            bool result = true;
-
-            s_myDeviceId = Environment.GetEnvironmentVariable("IOT_DEVICE_ID");
-            s_iotHubUri = Environment.GetEnvironmentVariable("IOT_HUB_URI");
-            s_deviceKey = Environment.GetEnvironmentVariable("IOT_DEVICE_KEY");
-
-            if (s_myDeviceId is null || s_iotHubUri is null || s_deviceKey is null)
-            {
-                result = false;
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Send message to the Iot hub. This generates the object to be sent to the hub in the message.
         /// </summary>
-        private static async Task SendDeviceToCloudMessagesAsync(CancellationToken token)
+        private static async Task SendDeviceToCloudMessagesAsync(string myDeviceId, DeviceClient s_deviceClient, CancellationToken token)
         {
             double minTemperature = 20;
             double minHumidity = 60;
@@ -117,7 +100,7 @@ namespace ArmReadWrite
 
                 var telemetryDataPoint = new
                 {
-                    deviceId = s_myDeviceId,
+                    deviceId = myDeviceId,
                     temperature = currentTemperature,
                     humidity = currentHumidity,
                     pointInfo = infoString
