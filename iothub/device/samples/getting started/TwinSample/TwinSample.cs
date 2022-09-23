@@ -11,9 +11,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class TwinSample
     {
-        private readonly DeviceClient _deviceClient;
+        private readonly IotHubDeviceClient _deviceClient;
 
-        public TwinSample(DeviceClient deviceClient)
+        public TwinSample(IotHubDeviceClient deviceClient)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
         }

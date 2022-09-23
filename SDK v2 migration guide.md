@@ -37,20 +37,20 @@ to migrate to v2 when they have the chance. For more details on LTS releases, se
 
 | V1 class#method | Changed? | Equivalent V2 class#method |
 |:------------------------------------------------------------------------------------------------------------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
-| `DeviceClient | yes | `IotHubDeviceClient` |
+| `DeviceClient` | yes | `IotHubDeviceClient` |
+| `TransportType` | yes |  |
+| `ReceiveAsync` | yes | `ReceiveMessageAsync` |
+| `CompleteAsync` | yes | `CompleteMessageAsync` |
+| `SetConnectionStatusChangesHandler` | yes | `SetConnectionStatusChangeHandler` |
 
-(TODO: do these apply to c#?)
-** This method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
-
-*** The options that were previously set in this method are now set at DeviceClient constructor time in the optional ClientOptions parameter.
-
-**** Proxy settings are now set at DeviceClient constructor time in the optional ClientOptions parameter,
+#### Other notable breaking changes
+(TODO: elaborate on breaking changes)
 
 #### ModuleClient
 
 | V1 class#method | Changed? | Equivalent V2 class#method |
 |:------------------------------------------------------------------------------------------------------------------------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
-| `ModuleClient | yes | `IotHubModuleClient` |
+| `ModuleClient` | yes | `IotHubModuleClient` |
 
 #### Other notable breaking changes
 
