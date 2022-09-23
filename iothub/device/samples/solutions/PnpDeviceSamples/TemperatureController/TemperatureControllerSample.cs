@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const string Thermostat2 = "thermostat2";
         private const string SerialNumber = "SR-123456";
 
-        private static readonly Random s_random = new Random();
+        private static readonly Random s_random = new();
 
         private readonly IotHubDeviceClient _deviceClient;
         private readonly ILogger _logger;
@@ -51,8 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the componentName.
-        private readonly IDictionary<string, DesiredPropertyUpdateCallback> _desiredPropertyUpdateCallbacks =
-            new Dictionary<string, DesiredPropertyUpdateCallback>();
+        private readonly Dictionary<string, Func<TwinCollection, object, Task>> _desiredPropertyUpdateCallbacks = new();
 
         // Dictionary to hold the current temperature for each "Thermostat" component.
         private readonly Dictionary<string, double> _temperature = new Dictionary<string, double>();
@@ -97,13 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
             });
 
-            _logger.LogDebug("Set handler for 'reboot' command.");
-            await _deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, _deviceClient, cancellationToken);
-
-            // For a component-level command, the command name is in the format "<component-name>*<command-name>".
-            _logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
-            await _deviceClient.SetMethodHandlerAsync("thermostat1*getMaxMinReport", HandleMaxMinReportCommand, Thermostat1, cancellationToken);
-            await _deviceClient.SetMethodHandlerAsync("thermostat2*getMaxMinReport", HandleMaxMinReportCommand, Thermostat2, cancellationToken);
+            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, null, cancellationToken);
 
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, null, cancellationToken);
@@ -137,6 +130,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 temperatureReset = _temperature[Thermostat1] == 0 && _temperature[Thermostat2] == 0;
                 await Task.Delay(5 * 1000, cancellationToken);
             }
+        }
+
+        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodRequest request, object userContext)
+        {
+            return request.MethodName switch
+            {
+                "reboot" => await HandleRebootCommandAsync(request, userContext),
+                "thermostat1*getMaxMinReport" => await HandleMaxMinReportCommand(request, Thermostat1),
+                "thermostat2*getMaxMinReport" => await HandleMaxMinReportCommand(request, Thermostat2),
+                _ => new DirectMethodResponse { Status = 400 },
+            };
         }
 
         private async Task GetWritablePropertiesAndHandleChangesAsync()
@@ -182,11 +186,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
-        private async Task<MethodResponse> HandleRebootCommandAsync(MethodRequest request, object userContext)
+        private async Task<DirectMethodResponse> HandleRebootCommandAsync(DirectMethodRequest request, object userContext)
         {
             try
             {
-                int delay = JsonConvert.DeserializeObject<int>(request.DataAsJson);
+                int delay = request.GetPayload<int>();
 
                 _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
                 await Task.Delay(delay * 1000);
@@ -203,20 +207,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return new MethodResponse((int)StatusCode.BadRequest);
+                return new DirectMethodResponse { Status = (int)StatusCode.BadRequest };
             }
 
-            return new MethodResponse((int)StatusCode.Completed);
+            return new DirectMethodResponse { Status = (int)StatusCode.Completed };
         }
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the
         // specified time to the current time.
-        private Task<MethodResponse> HandleMaxMinReportCommand(MethodRequest request, object userContext)
+        private Task<DirectMethodResponse> HandleMaxMinReportCommand(DirectMethodRequest request, object userContext)
         {
             try
             {
                 string componentName = (string)userContext;
-                DateTime sinceInUtc = JsonConvert.DeserializeObject<DateTime>(request.DataAsJson);
+                DateTime sinceInUtc = request.GetPayload<DateTime>();
                 var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
 
                 if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))
@@ -244,21 +248,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $"endTime={report.endTime.LocalDateTime}");
 
                         byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-                        return Task.FromResult(new MethodResponse(responsePayload, (int)StatusCode.Completed));
+                        return Task.FromResult(new DirectMethodResponse { Payload = responsePayload, Status = (int)StatusCode.Completed });
                     }
 
                     _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
                         $"cannot generate any report.");
-                    return Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
+                    return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.NotFound });
                 }
 
                 _logger.LogDebug($"Command: component=\"{componentName}\", no temperature readings sent yet, cannot generate any report.");
-                return Task.FromResult(new MethodResponse((int)StatusCode.NotFound));
+                return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.NotFound });
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return Task.FromResult(new MethodResponse((int)StatusCode.BadRequest));
+                return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.BadRequest });
             }
         }
 
@@ -371,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 { workingSetName, workingSet },
             };
 
-            using Message msg = PnpConvention.CreateMessage(telemetry);
+            Message msg = PnpConvention.CreateMessage(telemetry);
 
             await _deviceClient.SendEventAsync(msg, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
@@ -405,7 +409,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string telemetryName = "temperature";
             double currentTemperature = _temperature[componentName];
-            using Message msg = PnpConvention.CreateMessage(telemetryName, currentTemperature, componentName);
+            Message msg = PnpConvention.CreateMessage(telemetryName, currentTemperature, componentName);
 
             await _deviceClient.SendEventAsync(msg, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature} }} in °C.");

@@ -8,8 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Diagnostics.Contracts;
     using System.Threading.Tasks;
     using DotNetty.Transport.Channels;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-
+    
     public sealed class ReadListeningHandler : ChannelHandlerAdapter
     {
         readonly Queue<object> receivedQueue = new Queue<object>();

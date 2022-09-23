@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 
 // If you see intermittent failures on devices that are created by this file, check to see if you have multiple suites
 // running at the same time because one test run could be accidentally destroying devices created by a different test run.
@@ -151,8 +150,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
                 int countBeforeFaultInjection = connectionStatusChangeCount;
-                watch.Start();
                 logger.Trace($"{nameof(FaultInjection)} Testing fault handling");
+                faultInjectionDuration.Start();
                 await ActivateFaultInjectionAsync(transportSettings, faultType, reason, delay, duration, deviceClient, logger).ConfigureAwait(false);
                 logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay} seconds.");
                 await Task.Delay(delay).ConfigureAwait(false);
@@ -185,13 +184,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                     connectionChangeWaitDuration.Start();
                     while (deviceClient.ConnectionStatusInfo.Status != ConnectionStatus.Connected
-                        && sw.Elapsed < duration.Add(LatencyTimeBuffer))
+                        && faultInjectionDuration.Elapsed < duration.Add(LatencyTimeBuffer))
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
                     connectionChangeWaitDuration.Reset();
 
-                    lastConnectionStatus.Should().Be(ConnectionStatus.Connected, $"{testDevice.Id} did not reconnect");
+                    deviceClient.ConnectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected, $"{testDevice.Id} did not reconnect");
 
                     deviceClient.ConnectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected, $"{testDevice.Id} did not reconnect.");
                     logger.Trace($"{nameof(FaultInjection)}: Confirmed device back online.");

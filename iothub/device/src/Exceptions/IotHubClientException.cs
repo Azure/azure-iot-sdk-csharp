@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Azure.Devices.Client.Exceptions
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The exception that is thrown when an error occurs during DeviceClient or ModuleClient operation.

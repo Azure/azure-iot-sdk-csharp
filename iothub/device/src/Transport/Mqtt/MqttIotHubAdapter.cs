@@ -18,7 +18,6 @@ using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt.Packets;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Channels;
-using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {

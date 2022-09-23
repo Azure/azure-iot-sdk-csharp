@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Client.Exceptions
+namespace Microsoft.Azure.Devices.Client
 {
     internal class ExceptionHandlingHelper
     {

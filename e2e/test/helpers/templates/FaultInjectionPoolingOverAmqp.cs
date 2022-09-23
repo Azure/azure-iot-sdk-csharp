@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 int countBeforeFaultInjection = amqpConnectionStatuses.First().ConnectionStatusChangeCount;
 
                 logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={durationInSec}s");
-                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
+                Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
                 faultInjectionDuration.Start();
                 await deviceClients.First().SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
 
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     bool isRecovered = false;
                     while (connectionChangeWaitDuration.Elapsed < durationInSec.Add(FaultInjection.LatencyTimeBuffer))
                     {
-                        isRecovered = amqpConnectionStatuses.All(x => x.LastConnectionStatus == ConnectionStatus.Connected);
+                        isRecovered = deviceClients.All(x => x.ConnectionStatusInfo.Status == ConnectionStatus.Connected);
                         if (isRecovered)
                         {
                             break;
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         var unconnectedDevices = new List<string>();
                         for (int i = 0; i < devicesCount; ++i)
                         {
-                            if (amqpConnectionStatuses[i].LastConnectionStatus != ConnectionStatus.Connected)
+                            if (deviceClients[i].ConnectionStatusInfo.Status != ConnectionStatus.Connected)
                             {
                                 unconnectedDevices.Add(testDevices[i].Id);
                             }
@@ -200,10 +200,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                                 $"The expected connection status change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
                         }
                     }
-                    amqpConnectionStatuses[i].LastConnectionStatus.Should().Be(
-                        ConnectionStatus.Disabled,
-                        $"With reason {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
-                    amqpConnectionStatuses[i].LastConnectionStatusChangeReason.Should().Be(ConnectionStatusChangeReason.Client_Close);
+                    deviceClients[i].ConnectionStatusInfo.Status.Should().Be(
+                        ConnectionStatus.Closed,
+                        $"With reason {deviceClients[i].ConnectionStatusInfo.Status}");
+                    deviceClients[i].ConnectionStatusInfo.Status.Should().Be(ConnectionStatusChangeReason.ClientClosed);
                 }
             }
             finally
