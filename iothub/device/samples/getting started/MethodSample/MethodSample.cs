@@ -72,10 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     return await WriteToConsoleAsync(directMethodRequest, userContext);
 
                 default:
-                    return new DirectMethodResponse
-                    {
-                        Status = 400,
-                    };
+                    return new DirectMethodResponse(400);
             }
         }
 
@@ -90,8 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
             Console.WriteLine($"\t{directMethodRequest.PayloadAsJsonString}\n");
 
-            var directMethodResponse = new DirectMethodResponse();
-            directMethodResponse.Status = 200;
+            var directMethodResponse = new DirectMethodResponse(200);
 
             return Task.FromResult(directMethodResponse);
         }
@@ -100,9 +96,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
 
-            var retValue = new DirectMethodResponse();
+            var retValue = new DirectMethodResponse(200);
             retValue.Payload = Encoding.UTF8.GetBytes("DeviceClientMethodSample");
-            retValue.Status = 200;
 
             return Task.FromResult(retValue);
         }

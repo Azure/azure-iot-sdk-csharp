@@ -111,10 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");
             await deviceClient1.OpenAsync().ConfigureAwait(false);
-            var response = new Client.DirectMethodResponse()
-            {
-                Status = 200,
-            };
+            var response = new Client.DirectMethodResponse(200);
 
             await deviceClient1
                 .SetMethodHandlerAsync(
