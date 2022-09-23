@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private Timer _twinTimeoutTimer;
 
-        private static readonly int s_twinResponseTimeout = Convert.ToInt32(TimeSpan.FromMinutes(60).TotalMilliseconds);
+        private static readonly TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(60);
         private bool _closed;
 
         static AmqpTransportHandler()
@@ -121,10 +121,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (_twinResponseTimeouts.Any())
             {
                 var currentDateTime = DateTime.UtcNow;
-                int difference;
+                TimeSpan difference;
                 foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
                 {
-                    difference = Convert.ToInt32((currentDateTime - entry.Value).TotalMilliseconds);
+                    difference = currentDateTime - entry.Value;
                     if (difference >= s_twinResponseTimeout)
                     {
                         _twinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<Twin> _);

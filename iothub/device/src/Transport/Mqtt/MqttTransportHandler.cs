@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private Timer _twinTimeoutTimer;
 
-        private static int s_twinResponseTimeout = Convert.ToInt32(TimeSpan.FromMinutes(60).TotalMilliseconds);
+        private static TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(60);
 
         // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
         // that is sent over the wire, so we increment this value locally instead.
@@ -667,10 +667,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (_twinResponseTimeouts.Any())
             {
                 var currentDateTime = DateTime.UtcNow;
-                int difference;
+                TimeSpan difference;
                 foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
                 {
-                    difference = Convert.ToInt32((currentDateTime - entry.Value).TotalMilliseconds);
+                    difference = currentDateTime - entry.Value;
                     if (difference >= s_twinResponseTimeout)
                     {
                         _getTwinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<GetTwinResponse> _);
