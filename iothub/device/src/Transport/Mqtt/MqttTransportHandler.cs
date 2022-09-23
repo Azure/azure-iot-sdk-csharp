@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
 
-        private readonly ConcurrentDictionary<DateTime, string> _twinResponseTimeouts = new();
+        private readonly ConcurrentDictionary<string, DateTime> _twinResponseTimeouts = new();
 
         private bool _isSubscribedToTwinResponses;
 
@@ -553,7 +553,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // responds, this layer can correlate the request.
                 var taskCompletionSource = new TaskCompletionSource<GetTwinResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _getTwinResponseCompletions[requestId] = taskCompletionSource;
-                _twinResponseTimeouts[DateTime.UtcNow] = requestId;
+                _twinResponseTimeouts[requestId] = DateTime.UtcNow;
 
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
@@ -592,6 +592,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
                     _getTwinResponseCompletions.TryRemove(requestId, out TaskCompletionSource<GetTwinResponse> _);
+                    if (_twinResponseTimeouts.ContainsKey(requestId))
+                    {
+                        _twinResponseTimeouts.TryRemove(requestId, out DateTime _);
+                    }
                 }
             }
         }
@@ -621,7 +625,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // responds, this layer can correlate the request.
                 var taskCompletionSource = new TaskCompletionSource<PatchTwinResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _reportedPropertyUpdateResponseCompletions[requestId] = taskCompletionSource;
-                _twinResponseTimeouts[DateTime.UtcNow] = requestId;
+                _twinResponseTimeouts[requestId] = DateTime.UtcNow;
 
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
@@ -660,6 +664,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
                     _reportedPropertyUpdateResponseCompletions.TryRemove(requestId, out TaskCompletionSource<PatchTwinResponse> _);
+                    if (_twinResponseTimeouts.ContainsKey(requestId))
+                    {
+                        _twinResponseTimeouts.TryRemove(requestId, out DateTime _);
+                    }
                 }
             }
         }
@@ -670,17 +678,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 var currentDateTime = DateTime.UtcNow;
                 TimeSpan difference;
-                foreach (KeyValuePair<DateTime, string> entry in _twinResponseTimeouts)
+                foreach (KeyValuePair<string, DateTime> entry in _twinResponseTimeouts)
                 {
-                    difference = currentDateTime - entry.Key;
+                    difference = currentDateTime - entry.Value;
                     if (difference >= _twinResponseTimeout)
                     {
-                        if (_getTwinResponseCompletions.ContainsKey(entry.Value))
-                            _getTwinResponseCompletions.TryRemove(entry.Value, out TaskCompletionSource<GetTwinResponse> _);
-                        else if (_reportedPropertyUpdateResponseCompletions.ContainsKey(entry.Value))
-                            _reportedPropertyUpdateResponseCompletions.TryRemove(entry.Value, out TaskCompletionSource<PatchTwinResponse> _);
+                        if (_getTwinResponseCompletions.ContainsKey(entry.Key))
+                            _getTwinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<GetTwinResponse> _);
+                        else if (_reportedPropertyUpdateResponseCompletions.ContainsKey(entry.Key))
+                            _reportedPropertyUpdateResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<PatchTwinResponse> _);
 
-                        _twinResponseTimeouts.TryRemove(entry.Key, out string _);
+                        _twinResponseTimeouts.TryRemove(entry.Key, out DateTime _);
                     }
                 }
             }

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
@@ -20,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
-        private readonly ConcurrentDictionary<DateTime, string> _twinResponseTimeouts = new();
+        private readonly ConcurrentDictionary<string, DateTime> _twinResponseTimeouts = new();
         private Timer _twinTimeoutTimer;
         private TimeSpan _twinResponseTimeout = TimeSpan.FromMinutes(60);
         private bool _closed;
@@ -120,15 +119,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 var currentDateTime = DateTime.UtcNow;
                 TimeSpan difference;
-                foreach (KeyValuePair<DateTime, string> entry in _twinResponseTimeouts)
+                foreach (KeyValuePair<string, DateTime> entry in _twinResponseTimeouts)
                 {
-                    difference = currentDateTime - entry.Key;
+                    difference = currentDateTime - entry.Value;
                     if (difference >= _twinResponseTimeout)
                     {
-                        if (_twinResponseCompletions.ContainsKey(entry.Value))
-                            _twinResponseCompletions.TryRemove(entry.Value, out TaskCompletionSource<Twin> _);
+                        if (_twinResponseCompletions.ContainsKey(entry.Key))
+                            _twinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<Twin> _);
 
-                        _twinResponseTimeouts.TryRemove(entry.Key, out string _);
+                        _twinResponseTimeouts.TryRemove(entry.Key, out DateTime _);
                     }
                 }
             }
@@ -411,7 +410,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 cancellationToken.ThrowIfCancellationRequested();
                 var taskCompletionSource = new TaskCompletionSource<Twin>();
                 _twinResponseCompletions[correlationId] = taskCompletionSource;
-                _twinResponseTimeouts[DateTime.UtcNow] = correlationId;
+                _twinResponseTimeouts[correlationId] = DateTime.UtcNow;
 
                 using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, ctb.Token).ConfigureAwait(false);
@@ -432,6 +431,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (_twinResponseCompletions.ContainsKey(correlationId))
                 {
                     _twinResponseCompletions.TryRemove(correlationId, out _);
+                    if (_twinResponseTimeouts.ContainsKey(correlationId))
+                    {
+                        _twinResponseTimeouts.TryRemove(correlationId, out DateTime _);
+                    }
                 }
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
