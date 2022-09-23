@@ -103,19 +103,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             Device device = null;
 
             await RetryOperationHelper
-                .RetryOperationsAsync1(
+                .RetryOperationsAsync(
                     async () =>
                     {
                         device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
                     s_throttlingStatusCodes,
-                    s_logger)
+                    s_logger,
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             // Confirm the device exists in the registry before calling it good to avoid downstream test failures.
             await RetryOperationHelper
-                .RetryOperationsAsync1(
+                .RetryOperationsAsync(
                     async () =>
                     {
                         device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
@@ -130,7 +131,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     },
                     s_exponentialBackoffRetryStrategy,
                     s_retryableStatusCodes,
-                    s_logger)
+                    s_logger,
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             return device == null
@@ -201,14 +203,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             await RetryOperationHelper
-                .RetryOperationsAsync1(
+                .RetryOperationsAsync(
                     async () =>
                     {
                         await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
                     s_throttlingStatusCodes,
-                    s_logger)
+                    s_logger,
+                    CancellationToken.None)
                 .ConfigureAwait(false);
         }
 

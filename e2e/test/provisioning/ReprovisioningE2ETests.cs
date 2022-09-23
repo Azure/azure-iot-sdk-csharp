@@ -761,7 +761,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
-                        Logger)
+                        Logger,
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (retrievedEnrollment == null)
@@ -783,7 +784,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
-                        Logger)
+                        Logger,
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (updatedEnrollment == null)
@@ -802,7 +804,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
-                        Logger)
+                        Logger,
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (retrievedEnrollmentGroup == null)
@@ -822,7 +825,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
-                        Logger)
+                        Logger,
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (updatedEnrollmentGroup == null)

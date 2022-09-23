@@ -1431,7 +1431,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
-                            logger)
+                            logger,
+                            CancellationToken.None)
                         .ConfigureAwait(false);
                 }
                 else if (enrollmentType == EnrollmentType.Group)
@@ -1444,7 +1445,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
-                            logger)
+                            logger,
+                            CancellationToken.None)
                         .ConfigureAwait(false);
                 }
             }
