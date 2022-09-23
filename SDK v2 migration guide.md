@@ -76,10 +76,15 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | `Device.Capabilities.IotEdge` | `Device.Capabilities.IsIotEdge` |
 | `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` |
 | `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` |
+| `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.CreateAsync<T>(...)` |
 | `RegistryManager.AddConfigurationAsync(...)` | `IotHubServiceClient.Configurations.CreateAsync(...)` |
 | `RegistryManager.GetConfigurationsAsync(int maxCount)`| `IotHubServiceClient.Configurations.GetAsync(int maxCount)` |
 | `RegistryManager.RemoveConfigurationAsync(...)` | `IotHubServiceClient.Configurations.DeleteAsync(...)` |
-| `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.CreateAsync<T>(...)` |
+| `RegistryManager.ImportDevicesAsync(...)` | `IotHubServiceClient.Devices.ImportAsync(...)` |
+| `RegistryManager.ExportDevicesAsync(...)` | `IotHubServiceClient.Devices.ExportAsync(...)` |
+| `JobProperties.CreateForImportJob(...)` | `new JobProperties(Uri, Uri)` |
+| `JobProperties.CreateForExportJob(...)` | `new JobProperties(Uri, bool)` |
+| `RegistryManager.GetJobAsync(...)` | `IotHubServiceClient.Devices.GetJobAsync(...)` |
 
 #### Other notable breaking changes
 
@@ -87,6 +92,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - Operations that offer concurrency protection using `ETag`s, now take a parameter `onlyIfUnchanged` that relies on the ETag property of the submitted entity.
 - `IotHubServiceClient.Query.CreateAsync<T>(...)` is now async.
   - Call `QueryResponse<T>.MoveNextAsync()` in a loop (end when it returns `false`) and access `QueryResponse<T>.Current`.
+- `JobProperties` properties that hold Azure Storage SAS URIs are now of type `System.Uri` instead of `string`.
 
 #### ServiceClient
 
