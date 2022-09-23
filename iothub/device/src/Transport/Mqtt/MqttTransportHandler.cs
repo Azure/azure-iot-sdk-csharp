@@ -85,10 +85,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private const string MessageTimedOutErrorMessage = "Timed out waiting for MQTT message to be acknowledged.";
 
-        // Intentionally not private so that unit tests can mock this field
-        internal IMqttClient _mqttClient;
-
-        private MqttClientOptions _mqttClientOptions;
         private readonly MqttClientOptionsBuilder _mqttClientOptionsBuilder;
 
         private readonly MqttQualityOfServiceLevel _publishingQualityOfService;
@@ -149,6 +145,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId},
             {MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName }
         };
+
+        internal IMqttClient _mqttClient;
+
+        private readonly MqttClientOptions _mqttClientOptions;
 
         // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
         // that is sent over the wire, so we increment this value locally instead.
