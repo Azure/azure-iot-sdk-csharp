@@ -668,17 +668,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private void CheckTimeout(object _)
         {
-            if (_twinResponseTimeouts.Any())
+            if (!_twinResponseTimeouts.Any())
             {
-                var currentDateTime = DateTime.UtcNow;
-                foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
+                return;
+            }
+
+            var currentDateTime = DateTime.UtcNow;
+            foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
+            {
+                if (currentDateTime - entry.Value > s_twinResponseTimeout)
                 {
-                    if (currentDateTime - entry.Value > s_twinResponseTimeout)
-                    {
-                        _getTwinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<GetTwinResponse> _);
-                        _reportedPropertyUpdateResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<PatchTwinResponse> _);
-                        _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
-                    }
+                    _getTwinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<GetTwinResponse> _);
+                    _reportedPropertyUpdateResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<PatchTwinResponse> _);
+                    _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
                 }
             }
         }
