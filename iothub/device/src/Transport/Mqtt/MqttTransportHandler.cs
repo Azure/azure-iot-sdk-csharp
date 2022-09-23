@@ -753,6 +753,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleReceivedCloudToDeviceMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            // Users can only Complete this message over MQTT, so it is safe to auto-acknowledge the message
+            receivedEventArgs.AutoAcknowledge = true;
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
             var receivedCloudToDeviceMessage = new Message(payload);
@@ -774,21 +776,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"MQTT does not support {MessageAcknowledgementType.Abandon} or {MessageAcknowledgementType.Reject}");
-
-                // This will skip acknowledging the message
-                return;
-            }
-
-            try
-            {
-                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // This likely happened because the connection was lost. The service will re-send this message so the user
-                // can acknowledge it on the new connection.
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
             }
         }
 
