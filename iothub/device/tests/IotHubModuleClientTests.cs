@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgementType.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgementType.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgementType.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgementType.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgementType.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgementType.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgementType.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgementType.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     (message, context) =>
                     {
                         isMessageHandlerCalled = true;
-                        return Task.FromResult(MessageAcknowledgementType.Complete);
+                        return Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete);
                     },
                     "custom data")
                 .ConfigureAwait(false);
@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     (message, context) =>
                     {
                         isDefaultCallbackCalled = true;
-                        return Task.FromResult(MessageAcknowledgementType.Complete);
+                        return Task.FromResult(CloudToDeviceMessageAcknowledgement.Complete);
                     },
                     "custom data")
                 .ConfigureAwait(false);
