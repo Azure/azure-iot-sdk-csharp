@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using CommandLine;
 
 namespace SimulatedDevice
@@ -10,10 +12,10 @@ namespace SimulatedDevice
     {
         [Option(
             'u',
-            "IoTHubUri",
+            "IotHubHostName",
             Required = true,
             HelpText = "The URI for the IoT hub.")]
-        public string IotHubUri { get; set; }
+        public string IotHubHostName { get; set; }
 
         [Option(
             'd',
@@ -36,5 +38,13 @@ namespace SimulatedDevice
             Required = false,
             HelpText = "If this is false, it will submit messages to the IoT hub. If this is true, it will read one of the output files and convert it to ASCII.")]
         public bool ReadTheFile { get; set; } = false;
+
+        [Option(
+            "FilePath",
+            Required = false,
+            HelpText = "If this is false, it will submit messages to the IoT hub. If this is true, it will read one of the output files and convert it to ASCII.")]
+        public string FilePath { get; set; }
+
+        // TODO: validate filepath when readthefile is true
     }
 }
