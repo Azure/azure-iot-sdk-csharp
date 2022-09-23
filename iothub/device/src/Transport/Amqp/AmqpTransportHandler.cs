@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
@@ -18,6 +20,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
+        private readonly ConcurrentDictionary<DateTime, string> _twinResponseTimeouts = new();
+        private Timer _twinTimeoutTimer;
+        private TimeSpan _twinResponseTimeout = TimeSpan.FromMinutes(60);
         private bool _closed;
 
         static AmqpTransportHandler()
@@ -98,11 +103,34 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 await _amqpUnit.OpenAsync(ctb.Token).ConfigureAwait(false);
+
+                // Create a timer to remove any expired messages. The timer would invoke callback after first hour of execution and then after every minute.
+                _twinTimeoutTimer = new Timer(checkTimeout, null, _twinResponseTimeout.Milliseconds, TimeSpan.FromMinutes(1).Milliseconds);
             }
             finally
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+            }
+        }
+
+        private void checkTimeout(Object _)
+        {
+            if (_twinResponseTimeouts.Any())
+            {
+                var currentDateTime = DateTime.UtcNow;
+                TimeSpan difference;
+                foreach (KeyValuePair<DateTime, string> entry in _twinResponseTimeouts)
+                {
+                    difference = currentDateTime - entry.Key;
+                    if (difference >= _twinResponseTimeout)
+                    {
+                        if (_twinResponseCompletions.ContainsKey(entry.Value))
+                            _twinResponseCompletions.TryRemove(entry.Value, out TaskCompletionSource<Twin> _);
+
+                        _twinResponseTimeouts.TryRemove(entry.Key, out string _);
+                    }
+                }
             }
         }
 
@@ -116,10 +144,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 _closed = true;
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
+                _twinTimeoutTimer.Dispose();
                 using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 await _amqpUnit.CloseAsync(ctb.Token).ConfigureAwait(false);
             }
@@ -383,6 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 cancellationToken.ThrowIfCancellationRequested();
                 var taskCompletionSource = new TaskCompletionSource<Twin>();
                 _twinResponseCompletions[correlationId] = taskCompletionSource;
+                _twinResponseTimeouts[DateTime.UtcNow] = correlationId;
 
                 using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, ctb.Token).ConfigureAwait(false);
@@ -400,7 +429,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                _twinResponseCompletions.TryRemove(correlationId, out _);
+                if (_twinResponseCompletions.ContainsKey(correlationId))
+                {
+                    _twinResponseCompletions.TryRemove(correlationId, out _);
+                }
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
             }
