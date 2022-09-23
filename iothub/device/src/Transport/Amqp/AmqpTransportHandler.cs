@@ -65,6 +65,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 context.DeviceEventCallback,
                 OnDisconnected);
 
+            // Create a timer to remove any expired messages.
+            _twinTimeoutTimer = new Timer(CheckTimeout);
+
             if (Logging.IsEnabled)
                 Logging.Associate(this, _amqpUnit, nameof(_amqpUnit));
         }
@@ -106,8 +109,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
                 await _amqpUnit.OpenAsync(ctb.Token).ConfigureAwait(false);
 
-                // Create a timer to remove any expired messages. The timer would invoke callback after every hour.
-                _twinTimeoutTimer = new Timer(CheckTimeout, null, s_twinResponseTimeout, s_twinResponseTimeout);
+                // The timer would invoke callback after every hour.
+                _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
             }
             finally
             {

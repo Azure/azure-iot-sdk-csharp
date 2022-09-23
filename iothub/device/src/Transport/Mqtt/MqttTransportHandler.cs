@@ -265,6 +265,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             _receivingQualityOfService = _mqttTransportSettings.ReceivingQoS == QualityOfService.AtLeastOnce
                 ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
+
+            // Create a timer to remove any expired messages.
+            _twinTimeoutTimer = new Timer(CheckTimeout);
         }
 
         private bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
@@ -321,8 +324,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                 _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
-                // Create a timer to remove any expired messages. The timer would invoke callback after every hour.
-                _twinTimeoutTimer = new Timer(CheckTimeout, null, s_twinResponseTimeout, s_twinResponseTimeout);
+                // The timer would invoke callback after every hour.
+                _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
             }
             catch (MqttConnectingFailedException cfe)
             {
