@@ -6,7 +6,7 @@ using static System.Net.WebRequestMethods;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The options for acknowledging a cloud to device message.
+    /// The options for acknowledging a cloud-to-device (C2D) message.
     /// </summary>
     /// <seealso href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>
     public enum MessageAcknowledgementType
