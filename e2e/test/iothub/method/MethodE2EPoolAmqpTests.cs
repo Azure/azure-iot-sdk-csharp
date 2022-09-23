@@ -84,8 +84,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .ServiceSendMethodAndVerifyResponseAsync(
                         testDevice.Id,
                         MethodName,
-                        MethodE2ETests.DeviceResponseJson,
-                        MethodE2ETests.ServiceRequestJson,
+                        MethodE2ETests.s_deviceResponsePayload,
+                        MethodE2ETests.s_serviceRequestPayload,
                         Logger)
                     .ConfigureAwait(false);
             }

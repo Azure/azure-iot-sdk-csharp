@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -17,8 +18,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     [TestCategory("IoTHub")]
     public class MethodE2ETests : E2EMsTestBase
     {
-        public static readonly object DeviceResponseJson = new { name = "e2e_test" };
-        public static readonly object ServiceRequestJson = new { a = 123 };
+        internal static readonly DeviceResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
+        internal static readonly ServiceRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
 
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
         private readonly string _modulePrefix = $"{nameof(MethodE2ETests)}_mod_";
@@ -349,7 +350,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
                     var response = new Client.DirectMethodResponse(200)
                     {
-                        Payload = DeviceResponseJson,
+                        Payload = s_deviceResponsePayload,
                     };
 
                         return Task.FromResult(response);
@@ -378,7 +379,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                                 try
                                 {
                                     request.MethodName.Should().Be(methodName);
-                                    request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(ServiceRequestJson));
+                                    request.TryGetPayload(out ServiceRequestPayload requestPayload).Should().BeTrue();
+                                    requestPayload.Should().BeEquivalentTo(s_serviceRequestPayload);
                                 }
                                 catch (Exception ex)
                                 {
@@ -386,7 +388,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                                 }
                                 var response = new Client.DirectMethodResponse(200)
                                 {
-                                    Payload = DeviceResponseJson,
+                                    Payload = s_deviceResponsePayload,
                                 };
 
                                 return Task.FromResult(response);
@@ -417,7 +419,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         try
                         {
                             request.MethodName.Should().Be(methodName);
-                            request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(ServiceRequestJson));
+                            request.TryGetPayload(out ServiceRequestPayload requestPayload).Should().BeTrue();
+                            requestPayload.Should().BeEquivalentTo(s_serviceRequestPayload);
                         }
                         catch (Exception ex)
                         {
@@ -426,7 +429,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                     var response = new Client.DirectMethodResponse(200)
                     {
-                        Payload = DeviceResponseJson,
+                        Payload = s_deviceResponsePayload,
                     };
 
                         return Task.FromResult(response);
@@ -483,8 +486,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
                 testDevice.Id,
                 MethodName,
-                DeviceResponseJson,
-                ServiceRequestJson,
+                s_deviceResponsePayload,
+                s_serviceRequestPayload,
                 Logger,
                 responseTimeout,
                 serviceClientTransportSettings);
@@ -513,8 +516,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         testModule.DeviceId,
                         testModule.Id,
                         MethodName,
-                        DeviceResponseJson,
-                        ServiceRequestJson,
+                        s_deviceResponsePayload,
+                        s_serviceRequestPayload,
                         Logger,
                         responseTimeout,
                         serviceClientTransportSettings),
@@ -522,6 +525,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
 
             await moduleClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        internal class DeviceResponsePayload
+        {
+            [JsonPropertyName("currentState")]
+            public string CurrentState { get; set; }
+        }
+
+        internal class ServiceRequestPayload
+        {
+            [JsonPropertyName("desiredState")]
+            public string DesiredState { get; set; }
         }
     }
 }

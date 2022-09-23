@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Method to invoke.
+        /// The method name to invoke.
         /// </summary>
         [JsonProperty("methodName", Required = Required.Always)]
         public string MethodName { get; set; }
@@ -55,10 +55,57 @@ namespace Microsoft.Azure.Devices.Client
         public string PayloadAsJsonString { get; internal set; }
 
         /// <summary>
+        /// The amount of time given to the service to connect to the device.
+        /// </summary>
+        /// <remarks>
+        /// A timeout may occur if this value is set to zero and the target device is not connected to
+        /// the cloud.
+        /// If the value is greater than zero, it may also occur if the cloud fails to deliver the request to
+        /// the target device.
+        /// <para>
+        /// This value is propagated to the service in terms of seconds, so this value does not have a level of
+        /// precision below seconds. For example, a value of <c>TimeSpan.FromMilliseconds(500)</c> will be
+        /// interpreted as 0 seconds (using <c>ConnectTimeout.TotalSeconds</c>).
+        /// </para>
+        /// </remarks>
+        [JsonIgnore]
+        public TimeSpan? ConnectionTimeout { get; set; }
+
+        /// <summary>
+        /// The amount of time given to the device to process and respond to the command request.
+        /// </summary>
+        /// <remarks>
+        /// This timeout may happen if the target device is slow in handling the direct method.
+        /// <para>
+        /// This value is propagated to the service in terms of seconds, so this value does not have a level of
+        /// precision below seconds. For example, setting this value to TimeSpan.FromMilliseconds(500) will result
+        /// in this request having a timeout of 0 seconds.
+        /// </para>
+        /// </remarks>
+        [JsonIgnore]
+        public TimeSpan? ResponseTimeout { get; set; }
+
+        /// <summary>
         /// The JSON payload in JRaw type.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
         internal JRaw JsonPayload { get; set; }
+
+        /// <summary>
+        /// Method timeout, in seconds.
+        /// </summary>
+        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
+            ? (int)ResponseTimeout.Value.TotalSeconds
+            : null;
+
+        /// <summary>
+        /// Connection timeout, in seconds.
+        /// </summary>
+        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
+            ? (int)ConnectionTimeout.Value.TotalSeconds
+            : null;
 
         /// <summary>
         /// The request Id for the transport layer.
@@ -69,34 +116,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         [JsonIgnore]
         internal string RequestId { get; set; }
-
-        /// <summary>
-        /// Method timeout.
-        /// </summary>
-        [JsonIgnore]
-        public TimeSpan? ResponseTimeout { get; set; }
-
-        /// <summary>
-        /// Timeout for device to come online.
-        /// </summary>
-        [JsonIgnore]
-        public TimeSpan? ConnectionTimeout { get; set; }
-
-        /// <summary>
-        /// Method timeout, in seconds.
-        /// </summary>
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        public int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
-            ? (int)ResponseTimeout.Value.TotalSeconds
-            : (int?)null;
-
-        /// <summary>
-        /// Connection timeout, in seconds.
-        /// </summary>
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        public int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
-            ? (int)ConnectionTimeout.Value.TotalSeconds
-            : (int?)null;
 
         /// <summary>
         /// The direct method request payload, deserialized to the specified type.
