@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
@@ -109,14 +109,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             }
 
                             // The connection status should be "Disabled", with connection status change reason "Client_close"
-                            Assert.AreEqual(
-                                ConnectionStatus.Disabled,
-                                amqpConnectionStatuses[i].LastConnectionStatus,
-                                $"The actual connection status is = {amqpConnectionStatuses[i].LastConnectionStatus}");
-                            Assert.AreEqual(
-                                ConnectionStatusChangeReason.Client_Close,
-                                amqpConnectionStatuses[i].LastConnectionStatusChangeReason,
-                                $"The actual connection status change reason is = {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
+                                amqpConnectionStatuses[i].LastConnectionStatus.Should().Be(
+                                    ConnectionStatus.Disabled,
+                                    $"Reason {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
+                                amqpConnectionStatuses[i].LastConnectionStatusChangeReason.Should().Be(ConnectionStatusChangeReason.Client_Close);
                         }
                     }
                     if (deviceConnectionStatusAsExpected)
@@ -145,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 }
             } while (reRunTest && totalRuns < MaxTestRunCount);
 
-            Assert.IsFalse(reRunTest, $"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {currentSuccessRate}%.");
+            reRunTest.Should().BeFalse($"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {currentSuccessRate}%.");
         }
 
         private class AmqpConnectionStatusChange

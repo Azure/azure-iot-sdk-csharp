@@ -21,7 +21,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [Obsolete]
         public async Task FileUploadSuccess_TcpLoss_Amqp()
         {
@@ -38,7 +39,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [Obsolete]
         public async Task FileUploadSuccess_Throttled_Amqp()
         {
@@ -56,7 +58,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
         [Obsolete]
         public async Task FileUploadSuccess_QuotaExceed_Amqp()
@@ -92,13 +95,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             TimeSpan operationTimeout = retryDurationInMilliSec == TimeSpan.Zero ? FaultInjection.RecoveryTime : retryDurationInMilliSec;
             deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
 
-            using (var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
-            {
-                // UploadToBlobAsync is obsolete, added [Obsolete] attribute to suppress CS0618 message
-                Task fileUploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
-                Task errorInjectionTask = SendErrorInjectionMessageAsync(deviceClient, faultType, reason, delayInSec, durationInSec);
-                await Task.WhenAll(fileUploadTask, errorInjectionTask).ConfigureAwait(false);
-            }
+            using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            // UploadToBlobAsync is obsolete, added [Obsolete] attribute to suppress CS0618 message
+            Task fileUploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
+            Task errorInjectionTask = SendErrorInjectionMessageAsync(deviceClient, faultType, reason, delayInSec, durationInSec);
+            await Task.WhenAll(fileUploadTask, errorInjectionTask).ConfigureAwait(false);
 
             try
             {
@@ -114,12 +115,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             DeviceClient deviceClient,
             string faultType,
             string reason,
-            TimeSpan delayInSec,
-            TimeSpan durationInSec)
+            TimeSpan faultDelay,
+            TimeSpan faultDuration)
         {
             try
             {
-                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
+                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, faultDelay, faultDuration);
                 await deviceClient.SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
             }
             catch
