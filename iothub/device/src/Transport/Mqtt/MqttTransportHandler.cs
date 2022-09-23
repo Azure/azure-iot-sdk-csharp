@@ -99,12 +99,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
 
-        private readonly ConcurrentDictionary<string, DateTime> _twinResponseTimeouts = new();
+        private readonly ConcurrentDictionary<string, DateTimeOffset> _twinResponseTimeouts = new();
 
         private bool _isSubscribedToTwinResponses;
 
+        // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private Timer _twinTimeoutTimer;
-        private TimeSpan _twinResponseTimeout = TimeSpan.FromMinutes(60);
+
+        private static int s_twinResponseTimeout = Convert.ToInt32(TimeSpan.FromMinutes(60).TotalMilliseconds);
 
         // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
         // that is sent over the wire, so we increment this value locally instead.
@@ -318,8 +320,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                 _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
-                // Create a timer to remove any expired messages. The timer would invoke callback after first hour of execution and then after every minute.
-                _twinTimeoutTimer = new Timer(checkTimeout, null, _twinResponseTimeout.Milliseconds, TimeSpan.FromMinutes(1).Milliseconds);
+                // Create a timer to remove any expired messages. The timer would invoke callback after every hour.
+                _twinTimeoutTimer = new Timer(CheckTimeout, null, s_twinResponseTimeout, s_twinResponseTimeout);
             }
             catch (MqttConnectingFailedException cfe)
             {
@@ -553,7 +555,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // responds, this layer can correlate the request.
                 var taskCompletionSource = new TaskCompletionSource<GetTwinResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _getTwinResponseCompletions[requestId] = taskCompletionSource;
-                _twinResponseTimeouts[requestId] = DateTime.UtcNow;
+                _twinResponseTimeouts[requestId] = DateTimeOffset.UtcNow;
 
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
@@ -588,15 +590,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             finally
             {
-                if (_getTwinResponseCompletions.ContainsKey(requestId))
-                {
-                    // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
-                    _getTwinResponseCompletions.TryRemove(requestId, out TaskCompletionSource<GetTwinResponse> _);
-                    if (_twinResponseTimeouts.ContainsKey(requestId))
-                    {
-                        _twinResponseTimeouts.TryRemove(requestId, out DateTime _);
-                    }
-                }
+                // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
+                _getTwinResponseCompletions.TryRemove(requestId, out _);
+                _twinResponseTimeouts.TryRemove(requestId, out _);
             }
         }
 
@@ -660,35 +656,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             finally
             {
-                if (_reportedPropertyUpdateResponseCompletions.ContainsKey(requestId))
-                {
-                    // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
-                    _reportedPropertyUpdateResponseCompletions.TryRemove(requestId, out TaskCompletionSource<PatchTwinResponse> _);
-                    if (_twinResponseTimeouts.ContainsKey(requestId))
-                    {
-                        _twinResponseTimeouts.TryRemove(requestId, out DateTime _);
-                    }
-                }
+                // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
+                _reportedPropertyUpdateResponseCompletions.TryRemove(requestId, out TaskCompletionSource<PatchTwinResponse> _);
+                _twinResponseTimeouts.TryRemove(requestId, out DateTimeOffset _);
             }
         }
 
-        private void checkTimeout(Object _)
+        private void CheckTimeout(Object _)
         {
             if (_twinResponseTimeouts.Any())
             {
                 var currentDateTime = DateTime.UtcNow;
-                TimeSpan difference;
-                foreach (KeyValuePair<string, DateTime> entry in _twinResponseTimeouts)
+                int difference;
+                foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
                 {
-                    difference = currentDateTime - entry.Value;
-                    if (difference >= _twinResponseTimeout)
+                    difference = Convert.ToInt32((currentDateTime - entry.Value).TotalMilliseconds);
+                    if (difference >= s_twinResponseTimeout)
                     {
-                        if (_getTwinResponseCompletions.ContainsKey(entry.Key))
-                            _getTwinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<GetTwinResponse> _);
-                        else if (_reportedPropertyUpdateResponseCompletions.ContainsKey(entry.Key))
-                            _reportedPropertyUpdateResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<PatchTwinResponse> _);
+                        _getTwinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<GetTwinResponse> _);
+                        _reportedPropertyUpdateResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<PatchTwinResponse> _);
 
-                        _twinResponseTimeouts.TryRemove(entry.Key, out DateTime _);
+                        _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
                     }
                 }
             }
@@ -698,6 +686,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             base.Dispose(disposing);
             _mqttClient?.Dispose();
+            _twinTimeoutTimer?.Dispose();
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
@@ -706,7 +695,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                _twinTimeoutTimer?.Dispose();
                 _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
                 _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
                 await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken).ConfigureAwait(false);
