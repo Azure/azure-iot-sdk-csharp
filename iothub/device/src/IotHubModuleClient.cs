@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                MessageAcknowledgementType response = MessageAcknowledgementType.Complete;
+                var response = MessageAcknowledgementType.Complete;
                 if (_defaultEventCallback?.Item1 != null)
                 {
                     Func<Message, object, Task<MessageAcknowledgementType>> userSuppliedCallback = _defaultEventCallback.Item1;
