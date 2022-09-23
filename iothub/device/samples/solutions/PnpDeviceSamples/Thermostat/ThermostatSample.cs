@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return request.MethodName switch
             {
                 "getMaxMinReport" => await HandleMaxMinReportCommandAsync(request, userContext),
-                _ => new DirectMethodResponse { Status = 400 },
+                _ => new DirectMethodResponse(400),
             };
         }
 
@@ -192,41 +192,45 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             try
             {
-                DateTime sinceInUtc = JsonConvert.DeserializeObject<DateTime>(request.PayloadAsJsonString);
-                var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
-                _logger.LogDebug($"Command: Received - Generating max, min and avg temperature report since " +
-                    $"{sinceInDateTimeOffset.LocalDateTime}.");
+                bool sinceInUtcReceived = request.TryGetPayload(out DateTime sinceInUtc);
 
-                Dictionary<DateTimeOffset, double> filteredReadings = _temperatureReadingsDateTimeOffset
-                    .Where(i => i.Key > sinceInDateTimeOffset)
-                    .ToDictionary(i => i.Key, i => i.Value);
-
-                if (filteredReadings != null && filteredReadings.Any())
+                if (sinceInUtcReceived)
                 {
-                    var report = new
+                    var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
+                    _logger.LogDebug($"Command: Received - Generating max, min and avg temperature report since " +
+                        $"{sinceInDateTimeOffset.LocalDateTime}.");
+
+                    var filteredReadings = _temperatureReadingsDateTimeOffset
+                        .Where(i => i.Key > sinceInDateTimeOffset)
+                        .ToDictionary(i => i.Key, i => i.Value);
+
+                    if (filteredReadings != null && filteredReadings.Any())
                     {
-                        maxTemp = filteredReadings.Values.Max<double>(),
-                        minTemp = filteredReadings.Values.Min<double>(),
-                        avgTemp = filteredReadings.Values.Average(),
-                        startTime = filteredReadings.Keys.Min(),
-                        endTime = filteredReadings.Keys.Max(),
-                    };
+                        var report = new
+                        {
+                            maxTemp = filteredReadings.Values.Max<double>(),
+                            minTemp = filteredReadings.Values.Min<double>(),
+                            avgTemp = filteredReadings.Values.Average(),
+                            startTime = filteredReadings.Keys.Min(),
+                            endTime = filteredReadings.Keys.Max(),
+                        };
 
-                    _logger.LogDebug($"Command: MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
-                        $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, " +
-                        $"startTime={report.startTime.LocalDateTime}, endTime={report.endTime.LocalDateTime}");
+                        _logger.LogDebug($"Command: MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
+                            $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, " +
+                            $"startTime={report.startTime.LocalDateTime}, endTime={report.endTime.LocalDateTime}");
 
-                    byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-                    return Task.FromResult(new DirectMethodResponse { Payload = responsePayload, Status = (int)StatusCode.Completed });
+                        byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
+                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = responsePayload });
+                    }
                 }
 
-                _logger.LogDebug($"Command: No relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, cannot generate any report.");
-                return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.NotFound });
+                _logger.LogDebug($"Command: No relevant readings found, cannot generate any report.");
+                return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
             }
             catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return Task.FromResult(new DirectMethodResponse { Status = (int)StatusCode.BadRequest });
+                return Task.FromResult(new DirectMethodResponse((int)StatusCode.BadRequest));
             }
         }
 
