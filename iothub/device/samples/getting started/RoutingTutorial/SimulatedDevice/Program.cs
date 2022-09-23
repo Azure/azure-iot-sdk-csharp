@@ -62,12 +62,7 @@ namespace SimulatedDevice
                 //  http://docs.microsoft.com/azure/iot-hub/tutorial-routing
 
                 Console.WriteLine("Routing Tutorial: Simulated device\n");
-                string myDeviceId = parameters.DeviceId;
-                string deviceKey = parameters.DeviceKey;
-                using var s_deviceClient = DeviceClient.Create(
-                    parameters.IotHubHostName,
-                    new DeviceAuthenticationWithRegistrySymmetricKey(myDeviceId, deviceKey),
-                    TransportType.Mqtt);
+                using var s_deviceClient = DeviceClient.CreateFromConnectionString(parameters.PrimaryConnectionString);
 
                 using var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (sender, eventArgs) =>
@@ -77,7 +72,7 @@ namespace SimulatedDevice
                     Console.WriteLine("Sample execution cancellation requested; will exit.");
                 };
 
-                Task messages = SendDeviceToCloudMessagesAsync(myDeviceId, s_deviceClient, cts.Token);
+                Task messages = SendDeviceToCloudMessagesAsync(s_deviceClient, cts.Token);
 
                 Console.WriteLine($"Press Control+C at any time to quit the sample.");
                 await s_deviceClient.CloseAsync(cts.Token);
@@ -88,7 +83,7 @@ namespace SimulatedDevice
         /// <summary>
         /// Send message to the Iot hub. This generates the object to be sent to the hub in the message.
         /// </summary>
-        private static async Task SendDeviceToCloudMessagesAsync(string myDeviceId, DeviceClient s_deviceClient, CancellationToken token)
+        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient s_deviceClient, CancellationToken token)
         {
             double minTemperature = 20;
             double minHumidity = 60;
@@ -123,7 +118,6 @@ namespace SimulatedDevice
 
                 var telemetryDataPoint = new
                 {
-                    deviceId = myDeviceId,
                     temperature = currentTemperature,
                     humidity = currentHumidity,
                     pointInfo = infoString
