@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
-            var sample = new DeviceReconnectionSample(parameters.GetConnectionStrings(), parameters.Transport, logger);
+            var sample = new DeviceReconnectionSample(parameters.GetConnectionStrings(), parameters, logger);
             await sample.RunSampleAsync(runningTime);
 
             logger.LogInformation("Done.");

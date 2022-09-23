@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    public class DeviceReconnectionSample
+    internal class DeviceReconnectionSample
     {
         private const int TemperatureThreshold = 30;
         private static readonly Random s_randomGenerator = new();
@@ -20,8 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private readonly SemaphoreSlim _initSemaphore = new(1, 1);
         private readonly List<string> _deviceConnectionStrings;
-        private readonly Transport _transport;
-        private readonly IotHubClientOptions _clientOptions = new() { SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset };
+        private readonly IotHubClientOptions _clientOptions;
 
         // An UnauthorizedException is handled in the connection status change handler through its corresponding status change event.
         // We will ignore this exception when thrown by client API operations.
@@ -45,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // has been processed.
         private static long s_localDesiredPropertyVersion = 1;
 
-        public DeviceReconnectionSample(List<string> deviceConnectionStrings, Transport transport, ILogger logger)
+        public DeviceReconnectionSample(List<string> deviceConnectionStrings, Parameters parameters, ILogger logger)
         {
             _logger = logger;
 
@@ -62,8 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _deviceConnectionStrings = deviceConnectionStrings;
             _logger.LogInformation($"Supplied with {_deviceConnectionStrings.Count} connection string(s).");
 
-            _transport = transport;
-            _logger.LogInformation($"Using {_transport} transport.");
+            _clientOptions = new(parameters.GetHubTransportSettings()) { SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset };
         }
 
         private static bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;

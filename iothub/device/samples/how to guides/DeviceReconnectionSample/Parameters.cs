@@ -44,16 +44,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
            HelpText = "The transport to use to communicate with the device provisioning instance.")]
         public IotHubClientTransportProtocol TransportProtocol { get; set; }
 
-        internal IotHubClientTransportSettings GetHubTransportSettings()
-        {
-            return Transport switch
-            {
-                Transport.Mqtt => new IotHubClientMqttSettings(TransportProtocol),
-                Transport.Amqp => new IotHubClientAmqpSettings(TransportProtocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
-            };
-        }
-
         [Option(
             'r',
             "Application running time (in seconds)",
@@ -61,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
         public double? ApplicationRunningTime { get; set; }
 
-        public List<string> GetConnectionStrings()
+        internal List<string> GetConnectionStrings()
         {
             var cs = new List<string>(2)
             {
@@ -74,6 +64,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             return cs;
+        }
+
+        internal IotHubClientTransportSettings GetHubTransportSettings()
+        {
+            return Transport switch
+            {
+                Transport.Mqtt => new IotHubClientMqttSettings(TransportProtocol),
+                Transport.Amqp => new IotHubClientAmqpSettings(TransportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
+            };
         }
     }
 }
