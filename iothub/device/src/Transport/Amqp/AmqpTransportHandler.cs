@@ -121,16 +121,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void CheckTimeout(object _)
         {
-            if (_twinResponseTimeouts.Any())
+            if (!_twinResponseTimeouts.Any())
             {
-                var currentDateTime = DateTime.UtcNow;
-                foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
+                return;
+            }
+            var currentDateTime = DateTime.UtcNow;
+            foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
+            {
+                if (currentDateTime - entry.Value > s_twinResponseTimeout)
                 {
-                    if (currentDateTime - entry.Value > s_twinResponseTimeout)
-                    {
-                        _twinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<Twin> _);
-                        _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
-                    }
+                    _twinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<Twin> _);
+                    _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
                 }
             }
         }
