@@ -315,7 +315,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         rejected.Error.Description,
                         null,
                         isTransient,
-                        (HttpStatusCode)errorDetails.ErrorCode,
+                        (HttpStatusCode)statusCode,
+                        errorDetails.ErrorCode,
                         errorDetails.TrackingId);
                 }
                 catch (JsonException ex)

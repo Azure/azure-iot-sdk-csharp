@@ -524,6 +524,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // assert
             var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(404201);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

@@ -229,7 +229,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                     ex.Response.Content,
                                     ex,
                                     isTransient,
-                                    (HttpStatusCode)errorDetails.ErrorCode,
+                                    (HttpStatusCode)(errorDetails.ErrorCode/1000),
+                                    errorDetails.ErrorCode,
                                     errorDetails.TrackingId);
                             }
                         }
@@ -283,7 +284,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         ex.Response.Content,
                         ex,
                         isTransient,
-                        (HttpStatusCode)errorDetails.ErrorCode,
+                        (HttpStatusCode)(errorDetails.ErrorCode/1000),
+                        errorDetails.ErrorCode,
                         errorDetails.TrackingId);
                 }
                 catch (JsonException jex)

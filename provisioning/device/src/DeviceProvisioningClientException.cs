@@ -43,12 +43,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="innerException">The inner exception.</param>
         /// <param name="isTransient">True if the error is transient.</param>
         /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
+        /// <param name="errorCode">The specific 6-digit error code in the DPS response, if available.</param>
         /// <param name="trackingId">Service reported tracking Id.</param>
-        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, HttpStatusCode statusCode, string trackingId)
+        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, HttpStatusCode statusCode, int errorCode, string trackingId)
             : base(message, innerException)
         {
             IsTransient = isTransient;
             StatusCode = statusCode;
+            ErrorCode = errorCode;
             TrackingId = trackingId;
         }
 
@@ -81,6 +83,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The 3-digit HTTP status code returned by Device Provisioning Service.
         /// </summary>
         public HttpStatusCode StatusCode { get; private set; }
+
+        /// <summary>
+        /// The specific 6-digit error code in the DPS response, if available.
+        /// </summary>
+        public int ErrorCode { get; private set; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.
