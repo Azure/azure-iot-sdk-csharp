@@ -347,21 +347,21 @@ namespace Microsoft.Azure.Devices.Client
                     switch (response)
                     {
                         case MessageAcknowledgement.Complete:
-                            await CompleteMessageAsync(message).ConfigureAwait(false);
+                            await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
                             break;
 
                         case MessageAcknowledgement.Abandon:
-                            await AbandonMessageAsync(message).ConfigureAwait(false);
+                            await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
                             break;
 
-                        default:
+                        case MessageAcknowledgement.Reject:
+                            await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
                             break;
                     }
                 }
                 catch (Exception ex) when (Logging.IsEnabled)
                 {
                     Logging.Error(this, ex, nameof(OnModuleEventMessageReceivedAsync));
-                    throw;
                 }
             }
             finally

@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
         }
 
-        private async Task OnC2dMessageReceivedAsync(Client.Message message, object context)
+        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Client.Message message, object context)
         {
             _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {message.MessageId}.");
 
@@ -153,25 +153,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     message.UserId.Should().Be(ExpectedMessageSentByService.UserId, "Received user Id should match what was sent by service");
                 }
 
-                await CompleteMessageAsync(message).ConfigureAwait(false);
                 _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
+                return Task.FromResult(MessageAcknowledgement.Complete);
             }
             catch (Exception ex)
             {
                 _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
                 _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                return Task.FromResult(MessageAcknowledgement.Abandon);
             }
             finally
             {
                 // Always notify that we got the callback.
                 _receivedMessageCallbackSemaphore.Release();
             }
-        }
-
-        private async Task CompleteMessageAsync(Client.Message message)
-        {
-            await _deviceClient.OpenAsync().ConfigureAwait(false);
-            await _deviceClient.CompleteMessageAsync(message).ConfigureAwait(false);
         }
 
         public async Task WaitForReceiveMessageCallbackAsync(CancellationToken ct)

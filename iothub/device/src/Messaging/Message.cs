@@ -16,7 +16,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Default instantiation with no telemetry payload.
         /// </summary>
-        public Message() { }
+        public Message()
+        { }
 
         /// <summary>
         /// Creates a telemetry message with the specified payload.
@@ -74,15 +75,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => GetSystemProperty<ulong>(MessageSystemPropertyNames.SequenceNumber);
             internal set => SystemProperties[MessageSystemPropertyNames.SequenceNumber] = value;
-        }
-
-        /// <summary>
-        /// [Required] LockToken of the received message
-        /// </summary>
-        public string LockToken
-        {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.LockToken);
-            internal set => SystemProperties[MessageSystemPropertyNames.LockToken] = value;
         }
 
         /// <summary>
@@ -191,6 +183,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ComponentName);
             set => SystemProperties[MessageSystemPropertyNames.ComponentName] = value;
+        }
+
+        /// <summary>
+        /// Unique string for identifying a received message when acknowledging it.
+        /// </summary>
+        internal string LockToken
+        {
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.LockToken);
+            set => SystemProperties[MessageSystemPropertyNames.LockToken] = value;
         }
 
         /// <summary>
