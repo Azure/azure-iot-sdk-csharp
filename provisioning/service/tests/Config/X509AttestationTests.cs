@@ -461,7 +461,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string json = "{}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
         }
 
         /* SRS_X509_ATTESTATION_21_015: [The constructor shall throws ArgumentException if more than one certificate type are not null.] */
@@ -482,7 +482,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
         }
 
         [TestMethod]
@@ -501,7 +501,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
         }
 
         [TestMethod]
@@ -520,7 +520,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
         }
     }
 }

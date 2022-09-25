@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             catch (ArgumentException e)
             {
-                throw new ProvisioningServiceClientException(e);
+                throw new DeviceProvisioningServiceException(e);
             }
         }
 

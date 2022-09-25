@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, failDateTime, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION);
 
                 // act - assert
-                TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
+                TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
             }
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, failDateTime, SERIAL_NUMBER, VERSION);
 
                 // act - assert
-                TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
+                TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
             }
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
         }
 
         [TestMethod]

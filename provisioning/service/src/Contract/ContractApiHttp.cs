@@ -98,9 +98,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
         /// <exception cref="OperationCanceledException">if the cancellation was requested.</exception>
-        /// <exception cref="ProvisioningServiceClientTransportException">if there is a error in the HTTP communication
-        /// between client and service.</exception>
-        /// <exception cref="ProvisioningServiceClientHttpException">if the service answer the request with error status.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">if there is a error in the HTTP communication
+        /// between client and service or the service answer the request with error status.</exception>
         public async Task<ContractApiResponse> RequestAsync(
             HttpMethod httpMethod,
             Uri requestUri,
@@ -134,8 +133,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     using HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
                     if (httpResponse == null)
                     {
-                        throw new ProvisioningServiceClientTransportException(
-                            $"The response message was null when executing operation {httpMethod}.");
+                        throw new DeviceProvisioningServiceException(
+                            $"The response message was null when executing operation {httpMethod}.", innerException: null, isTransient: true);
                     }
 
                     response = new ContractApiResponse(
@@ -149,22 +148,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
                     if (innerExceptions.Any(e => e is TimeoutException))
                     {
-                        throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                        throw new DeviceProvisioningServiceException(ex.Message, ex, true);
                     }
 
                     throw;
                 }
                 catch (TimeoutException ex)
                 {
-                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                    throw new DeviceProvisioningServiceException(ex.Message, ex, true);
                 }
                 catch (IOException ex)
                 {
-                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                    throw new DeviceProvisioningServiceException(ex.Message, ex, true);
                 }
                 catch (HttpRequestException ex)
                 {
-                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                    throw new DeviceProvisioningServiceException(ex.Message, ex, true);
                 }
                 catch (TaskCanceledException ex)
                 {
@@ -174,7 +173,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         throw new OperationCanceledException(ex.Message, ex);
                     }
 
-                    throw new ProvisioningServiceClientTransportException($"The {httpMethod} operation timed out.", ex);
+                    throw new DeviceProvisioningServiceException($"The {httpMethod} operation timed out.", ex, true);
                 }
             }
 
@@ -188,11 +187,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             if (response.StatusCode >= HttpStatusCode.InternalServerError ||
                 (int)response.StatusCode == 429)
             {
-                throw new ProvisioningServiceClientHttpException(response, isTransient: true);
+                throw new DeviceProvisioningServiceException($"{response.ErrorMessage}:{response.Body}", response.StatusCode, response.Fields, isTransient: true);
             }
             else if (response.StatusCode >= HttpStatusCode.Ambiguous)
             {
-                throw new ProvisioningServiceClientHttpException(response, isTransient: false);
+                throw new DeviceProvisioningServiceException($"{response.ErrorMessage}:{response.Body}", response.StatusCode, response.Fields, isTransient: false);
             }
         }
 

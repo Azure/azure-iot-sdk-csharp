@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="lastUpdatedDateTimeUtc">the <c>DateTime</c> with the date and time that the enrollment was updated. This is optional and can be <c>null</c>.</param>
         /// <param name="eTag">the <c>string</c> with the eTag that identify the correct instance of the enrollment in the service. It cannot be <c>null</c> or empty.</param>
         /// <param name="capabilities">the <see cref="DeviceCapabilities"/> that identifies the device capabilities. This is optional and can be <c>null</c>.</param>
-        /// <exception cref="ProvisioningServiceClientException">if the received JSON is invalid.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">if the received JSON is invalid.</exception>
         [JsonConstructor]
         internal IndividualEnrollment(
             string registrationId,
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (attestation == null)
             {
-                throw new ProvisioningServiceClientException("Service respond an individualEnrollment without attestation.");
+                throw new DeviceProvisioningServiceException("Service respond an individualEnrollment without attestation.");
             }
 
             try
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             catch (ArgumentException e)
             {
-                throw new ProvisioningServiceClientException(e);
+                throw new DeviceProvisioningServiceException(e);
             }
         }
 

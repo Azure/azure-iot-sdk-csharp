@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TestAssert.Throws<ArgumentException>(() => new IndividualEnrollment(SampleRegistrationId, SampleX509RootAttestation));
         }
 
-        /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
+        /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws DeviceProvisioningServiceException if one of the 
                                                 provided parameters in JSON is not valid.] */
         [TestMethod]
         public void IndividualEnrollmentConstructorJSONThrowsOnNonRegistrationID()
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson));
         }
 
         [TestMethod]
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson));
         }
 
         [TestMethod]
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson));
         }
 
         /* SRS_INDIVIDUAL_ENROLLMENT_21_004: [The constructor shall store all parameters in the JSON.] */

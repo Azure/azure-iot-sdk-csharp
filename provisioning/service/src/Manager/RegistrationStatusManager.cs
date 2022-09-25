@@ -35,7 +35,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (contractApiResponse.Body == null)
             {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
+                throw new DeviceProvisioningServiceException(
+                    $"{contractApiResponse.ErrorMessage}:{contractApiResponse.Body}",
+                    contractApiResponse.StatusCode,
+                    contractApiResponse.Fields,
+                    isTransient: true);
             }
 
             return JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body);

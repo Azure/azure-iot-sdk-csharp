@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
                 "SELECT * FROM enrollmentGroups");
 
-            ProvisioningServiceClientTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningServiceClientTransportException>(
+            DeviceProvisioningServiceException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningServiceException>(
                 () => q.NextAsync()).ConfigureAwait(false);
 
 #if NET472

@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string endorsementKey = null;
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new TpmAttestation(endorsementKey));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => new TpmAttestation(endorsementKey));
         }
 
         [TestMethod]
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string endorsementKey = "";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new TpmAttestation(endorsementKey));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => new TpmAttestation(endorsementKey));
         }
 
         /* SRS_TPM_ATTESTATION_21_002: [The StorageRootKey setter shall store the storageRootKey passed.] */
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json));
         }
 
         [TestMethod]
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json));
         }
 
         [TestMethod]

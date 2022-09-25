@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 || notAfterUtc == null
                 || version == null)
             {
-                throw new ProvisioningServiceClientException("DateTime cannot be null");
+                throw new DeviceProvisioningServiceException("DateTime cannot be null");
             }
 
             SubjectName = subjectName;

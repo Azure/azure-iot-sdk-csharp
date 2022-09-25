@@ -342,7 +342,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 && rootCertificates == null
                 && caReferences == null)
             {
-                throw new ProvisioningServiceClientException("Attestation shall receive one no null certificate.");
+                throw new DeviceProvisioningServiceException("Attestation shall receive one no null certificate.");
             }
 
             if (clientCertificates != null
@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 || rootCertificates != null
                 && caReferences != null)
             {
-                throw new ProvisioningServiceClientException("Attestation cannot receive more than one certificate together.");
+                throw new DeviceProvisioningServiceException("Attestation cannot receive more than one certificate together.");
             }
 
             try
@@ -362,7 +362,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             catch (ArgumentException e)
             {
-                throw new ProvisioningServiceClientException(e);
+                throw new DeviceProvisioningServiceException(e);
             }
         }
     }

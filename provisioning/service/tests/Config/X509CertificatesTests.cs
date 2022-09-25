@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => JsonConvert.DeserializeObject<X509Certificates>(json));
+            TestAssert.Throws<DeviceProvisioningServiceException>(() => JsonConvert.DeserializeObject<X509Certificates>(json));
         }
     }
 }

@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 case AttestationMechanismType.Tpm:
                     if (tpm == null)
                     {
-                        throw new ProvisioningServiceClientException("Invalid TPM attestation mechanism.");
+                        throw new DeviceProvisioningServiceException("Invalid TPM attestation mechanism.");
                     }
 
                     Tpm = tpm;
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 case AttestationMechanismType.X509:
                     if (x509 == null)
                     {
-                        throw new ProvisioningServiceClientException("Invalid X509 attestation mechanism.");
+                        throw new DeviceProvisioningServiceException("Invalid X509 attestation mechanism.");
                     }
 
                     X509 = x509;
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     break;
 
                 default:
-                    throw new ProvisioningServiceClientException("Unknown attestation mechanism.");
+                    throw new DeviceProvisioningServiceException("Unknown attestation mechanism.");
             }
         }
 
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 AttestationMechanismType.X509 => _x509,
                 AttestationMechanismType.None => s_none,
                 AttestationMechanismType.SymmetricKey => _symmetricKey,
-                _ => throw new ProvisioningServiceClientException("Unknown attestation type"),
+                _ => throw new DeviceProvisioningServiceException("Unknown attestation type"),
             };
         }
 
