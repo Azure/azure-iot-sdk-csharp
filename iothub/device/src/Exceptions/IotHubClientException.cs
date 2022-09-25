@@ -148,14 +148,9 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal IotHubClientException(bool isTransient) : base()
+        internal IotHubClientException(IotHubStatusCode statusCode) : base()
         {
-            IsTransient = isTransient;
-        }
-
-        internal IotHubClientException(bool isTransient, IotHubStatusCode statusCode) : base()
-        {
-            IsTransient = isTransient;
+            IsTransient = DetermineIfTransient(statusCode);
             StatusCode = statusCode;
         }
 

@@ -357,7 +357,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t =>
                {
                    nextHandlerCallCounter++;
-                   throw new IotHubClientException(true, IotHubStatusCode.NetworkErrors);
+                   throw new IotHubClientException(IotHubStatusCode.NetworkErrors);
                });
 
             // act and assert

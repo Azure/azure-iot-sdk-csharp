@@ -77,6 +77,15 @@ namespace Microsoft.Azure.Devices.Client
         Throttled,
 
         /// <summary>
+        /// The ETag in the request does not match the ETag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>.
+        /// <para>
+        /// The ETag is a mechanism for protecting against the race conditions of multiple clients updating the same resource and overwriting each other.
+        /// In order to get the up-to-date ETag for a twin, see <see cref="TwinsClient.GetAsync(string, System.Threading.CancellationToken)"/> or <see cref="TwinsClient.GetAsync(string, string, System.Threading.CancellationToken)"/>.
+        /// </para>
+        /// </summary>
+        PreconditionFailed,
+
+        /// <summary>
         /// The attempt to send a message fails because the length of the message exceeds the maximum size allowed.
         /// </summary>
         /// <remarks>

@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.ResourceLimitExceeded, amqpSymbol))
             {
-                return new IotHubClientException(message, amqpException);
+                return new IotHubClientException(message, IotHubStatusCode.DeviceMaximumQueueDepthExceeded, amqpException);
             }
             else if (Equals(AmqpErrorCode.NotAllowed, amqpSymbol))
             {
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.PreconditionFailed, amqpSymbol))
             {
-                return new IotHubClientException(message, amqpException);
+                return new IotHubClientException(message, IotHubStatusCode.PreconditionFailed, amqpException);
             }
             else if (Equals(AmqpErrorCode.ResourceDeleted, amqpSymbol))
             {
