@@ -56,10 +56,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates an instance of this class with the supplied error message and the HTTP status statusCode returned by the IoT Hub service.
+        /// Creates an instance of this class with the supplied error message and the HTTP status code returned by the IoT Hub service.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        /// <param name="statusCode">The HTTP status statusCode returned by the IoT hub service.</param>
+        /// <param name="statusCode">The HTTP status code returned by the IoT hub service.</param>
         protected internal IotHubClientException(string message, IotHubStatusCode statusCode)
             : this(message, trackingId: string.Empty, statusCode)
         {
@@ -89,11 +89,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates an instance of this class with a specified error message, the HTTP status statusCode returned
+        /// Creates an instance of this class with a specified error message, the HTTP status code returned
         /// by the IoT Hub service and an optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        /// <param name="statusCode">The HTTP status statusCode returned by the IoT hub service.</param>
+        /// <param name="statusCode">The HTTP status code returned by the IoT hub service.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         protected internal IotHubClientException(string message, IotHubStatusCode statusCode, Exception innerException = null)
             : this(message, trackingId: string.Empty, statusCode, innerException)
@@ -118,11 +118,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Creates an instance of this class with a specified error message, the service returned tracking Id associated with this particular error,
-        /// the HTTP status statusCode returned by the IoT Hub service and an optional reference to the inner exception that caused this exception.
+        /// the HTTP status code returned by the IoT Hub service and an optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
-        /// <param name="statusCode">The HTTP status statusCode returned by the IoT hub service.</param>
+        /// <param name="statusCode">The HTTP status code returned by the IoT hub service.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         protected internal IotHubClientException(string message, string trackingId, IotHubStatusCode statusCode, Exception innerException = null)
             : base(message, innerException)
@@ -134,11 +134,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Creates an instance of this class with a specified error message, the service returned tracking Id associated with this particular error,
-        /// the HTTP status statusCode returned by the IoT Hub service and an optional reference to the inner exception that caused this exception.
+        /// the HTTP status code returned by the IoT Hub service and an optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        /// <param name="statusCode">The HTTP status statusCode returned by the IoT hub service.</param>
+        /// <param name="statusCode">The HTTP status code returned by the IoT hub service.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         protected internal IotHubClientException(string message, bool isTransient, IotHubStatusCode statusCode, Exception innerException = null)
             : base(message, innerException)
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client
         public string TrackingId { get; set; }
 
         /// <summary>
-        /// The HTTP status statusCode returned by the IoT hub service.
+        /// The HTTP status code returned by the IoT hub service.
         /// </summary>
         public IotHubStatusCode StatusCode { get; internal set; }
 
