@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class DeviceProvisioningServiceException : Exception
     {
         /// <summary>
-        /// Initializes the <see cref="DeviceProvisioningServiceException"/> exception type.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message.</param>
         public DeviceProvisioningServiceException(string message)
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Initializes the <see cref="DeviceProvisioningServiceException"/> exception type.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="isTransient">True if the error is transient and the operation should be retried.</param>
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Initializes the <see cref="DeviceProvisioningServiceException"/> exception type.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="innerException">The inner exception.</param>
         public DeviceProvisioningServiceException(Exception innerException)
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Initializes the <see cref="DeviceProvisioningServiceException"/> exception type.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message</param>
         /// <param name="innerException">The inner exception</param>
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Initializes the <see cref="DeviceProvisioningServiceException"/> exception type.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Initializes the <see cref="DeviceProvisioningServiceException"/> exception type.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -190,21 +191,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new DeviceProvisioningServiceException(response.ErrorMessage, response.StatusCode, response.Fields);
             }
 
-            try
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(response.Body);
+                try
+                {
+                    ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(response.Body);
 
-                if (response.StatusCode >= HttpStatusCode.Ambiguous)
+                    if (response.StatusCode >= HttpStatusCode.Ambiguous)
+                    {
+                        throw new DeviceProvisioningServiceException(
+                            $"{response.ErrorMessage}:{response.Body}",
+                            response.StatusCode,
+                            responseBody.ErrorCode,
+                            responseBody.TrackingId,
+                            response.Fields);
+                    }
+                }
+                catch (JsonException jex)
                 {
                     throw new DeviceProvisioningServiceException(
-                        $"{response.ErrorMessage}:{response.Body}",
-                        response.StatusCode,
-                        responseBody.ErrorCode,
-                        responseBody.TrackingId,
-                        response.Fields);
+                        $"Fail to deserialize the received response body: {response.Body}",
+                        jex,
+                        false);
                 }
             }
-            catch (JsonException) { }
         }
 
         private static void InsertIfMatch(HttpRequestMessage requestMessage, string ifMatch)
