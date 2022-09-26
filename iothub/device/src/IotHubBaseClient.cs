@@ -9,7 +9,6 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
-using Microsoft.Azure.Devices.Client.Utilities;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -36,12 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         private object _twinPatchCallbackContext;
         private Func<TwinCollection, object, Task> _desiredPropertyUpdateCallback;
 
-        // Diagnostic information
-
-        // Count of messages sent by the device/ module. This is used for sending diagnostic information.
-        private int _currentMessageCount;
-
-        private int _diagnosticSamplingPercentage;
+        private protected readonly IotHubClientOptions _clientOptions;
 
         internal IotHubBaseClient(
             IotHubConnectionCredentials iotHubConnectionCredentials,
@@ -57,16 +51,16 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;
-            ClientOptions = iotHubClientOptions;
+            _clientOptions = iotHubClientOptions;
 
             ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
             PipelineContext = new PipelineContext
             {
                 IotHubConnectionCredentials = IotHubConnectionCredentials,
-                ProductInfo = ClientOptions.ProductInfo,
-                IotHubClientTransportSettings = ClientOptions.TransportSettings,
-                ModelId = ClientOptions.ModelId,
+                ProductInfo = _clientOptions.UserAgentInfo,
+                IotHubClientTransportSettings = _clientOptions.TransportSettings,
+                ModelId = _clientOptions.ModelId,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
@@ -76,36 +70,13 @@ namespace Microsoft.Azure.Devices.Client
             InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, ClientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
-        }
-
-        /// <summary>
-        /// Diagnostic sampling percentage value, [0-100];
-        /// A value of 0 means no message will carry on diagnostics info.
-        /// </summary>
-        public int DiagnosticSamplingPercentage
-        {
-            get => _diagnosticSamplingPercentage;
-            set
-            {
-                if (value > 100 || value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(DiagnosticSamplingPercentage),
-                        value,
-                        "The range of diagnostic sampling percentage should between [0,100].");
-                }
-
-                _diagnosticSamplingPercentage = value;
-            }
+                Logging.Exit(this, _clientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
         }
 
         /// <summary>
         /// The latest connection status information since the last status change.
         /// </summary>
         public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
-
-        internal IotHubClientOptions ClientOptions { get; private set; }
 
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
 
@@ -181,12 +152,10 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ClientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
             {
                 message.MessageId = Guid.NewGuid().ToString();
             }
-
-            IotHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
 
             await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
         }
@@ -207,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ClientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
             {
                 foreach (Message message in messages)
                 {
@@ -388,8 +357,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal abstract void AddToPipelineContext();
-
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
@@ -482,6 +449,8 @@ namespace Microsoft.Azure.Devices.Client
 
             _ = _desiredPropertyUpdateCallback.Invoke(patch, _twinPatchCallbackContext);
         }
+
+        private protected abstract void AddToPipelineContext();
 
         private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
         {

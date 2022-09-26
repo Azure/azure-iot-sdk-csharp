@@ -71,19 +71,19 @@ namespace Microsoft.Azure.Devices.Client
             if (IotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
                 && x509CertificateAuth.ChainCertificates != null)
             {
-                if (ClientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
+                if (_clientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
                 {
                     throw new ArgumentException("Certificate chains for devices are only supported on MQTT over TCP and AMQP over TCP.");
                 }
             }
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext, ClientOptions.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext, _clientOptions.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
                     $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId}",
-                    ClientOptions);
+                    _clientOptions);
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client
             base.Dispose(disposing);
         }
 
-        internal override void AddToPipelineContext()
+        private protected override void AddToPipelineContext()
         {
             PipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
         }

@@ -66,27 +66,28 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The DTDL model Id associated with the device or module client instance.
         /// </summary>
+        /// <remarks>
         /// This feature is currently supported only over MQTT and AMQP transports.
-        /// <remarks></remarks>
+        /// </remarks>
         public string ModelId { get; set; }
 
         /// <summary>
         /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the device or module client instance.
         /// </summary>
         /// <remarks>
-        /// The default behavior is that MessageId is set only by the user.
+        /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
         /// </remarks>
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
 
         /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
+        /// Specifies additional information that will be appended to the user-agent string that is sent to IoT hub.
         /// </summary>
-        public string CustomProductInfo
+        public string AdditionalUserAgentInfo
         {
-            get => ProductInfo.Extra;
-            set => ProductInfo.Extra = value;
+            get => UserAgentInfo.Extra;
+            set => UserAgentInfo.Extra = value;
         }
 
-        internal virtual ProductInfo ProductInfo { get; } = new();
+        internal virtual ProductInfo UserAgentInfo { get; } = new();
     }
 }

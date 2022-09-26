@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly ConcurrentDictionary<string, DateTimeOffset> _twinResponseTimeouts = new();
 
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
-        private Timer _twinTimeoutTimer;
+        private readonly Timer _twinTimeoutTimer;
 
         private static readonly TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(60);
         private bool _closed;

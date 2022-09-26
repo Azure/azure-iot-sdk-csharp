@@ -13,11 +13,21 @@ namespace Microsoft.Azure.Devices
     public class ScheduledJob : IotHubScheduledJobResponse
     {
         /// <summary>
+        /// This constructor is for deserialization and unit test mocking purposes.
+        /// </summary>
+        /// <remarks>
+        /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
+        /// that can set the properties you want.
+        /// </remarks>
+        protected internal ScheduledJob()
+        { }
+
+        /// <summary>
         /// The type of job to execute.
         /// </summary>
         [JsonProperty(PropertyName = "jobType", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(StringEnumConverter))]
-        public JobType JobType { get; internal set; }
+        public JobType JobType { get; protected internal set; }
 
         // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
         // This private field is a workaround that allows us to deserialize either "type" or "jobType"
@@ -34,7 +44,7 @@ namespace Microsoft.Azure.Devices
         /// Device query condition.
         /// </summary>
         [JsonProperty(PropertyName = "queryCondition", NullValueHandling = NullValueHandling.Ignore)]
-        public string QueryCondition { get; internal set; }
+        public string QueryCondition { get; protected internal set; }
 
         /// <summary>
         /// Max execution time.
@@ -54,7 +64,7 @@ namespace Microsoft.Azure.Devices
         /// Different number of devices in the job.
         /// </summary>
         [JsonProperty(PropertyName = "deviceJobStatistics", NullValueHandling = NullValueHandling.Ignore)]
-        public DeviceJobStatistics DeviceJobStatistics { get; internal set; }
+        public DeviceJobStatistics DeviceJobStatistics { get; protected internal set; }
 
         /// <summary>
         /// The Id of the device for this response.
@@ -63,12 +73,12 @@ namespace Microsoft.Azure.Devices
         /// It can be null (e.g., in case of a parent orchestration).
         /// </remarks>
         [JsonProperty(PropertyName = "deviceId", NullValueHandling = NullValueHandling.Ignore)]
-        public string DeviceId { get; internal set; }
+        public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// The job Id of the parent orchestration, if any.
         /// </summary>
         [JsonProperty(PropertyName = "parentJobId", NullValueHandling = NullValueHandling.Ignore)]
-        public string ParentJobId { get; internal set; }
+        public string ParentJobId { get; protected internal set; }
     }
 }

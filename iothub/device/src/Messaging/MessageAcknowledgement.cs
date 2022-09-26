@@ -29,9 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The message will be negatively acknowledged.
         /// </summary>
         /// <remarks>
-        /// <para>
         /// This removes the message from the queue; it will not be sent again.
-        /// </para>
         /// <para>
         /// This option is not supported over MQTT.
         /// </para>
