@@ -12,6 +12,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FluentAssertions;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
@@ -38,13 +39,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
                 "SELECT * FROM enrollmentGroups");
 
-            DeviceProvisioningServiceException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningServiceException>(
-                () => q.NextAsync()).ConfigureAwait(false);
+            Func<Task> act = async () => await q.NextAsync();
+
+            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
 
 #if NET472
-                Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+                Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
-            Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
+            Assert.IsInstanceOfType(error.And.InnerException.InnerException, typeof(AuthenticationException));
 #endif
         }
 
