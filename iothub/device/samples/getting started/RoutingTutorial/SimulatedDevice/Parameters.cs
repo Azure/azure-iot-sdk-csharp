@@ -20,6 +20,7 @@ namespace SimulatedDevice
         [Option(
             "ReadTheFile",
             Required = false,
+            Default = false,
             HelpText = "If this is false, it will submit messages to the IoT hub. If this is true, it will read one of the output files and convert it to ASCII.")]
         public bool ReadTheFile { get; set; } = false;
 
@@ -28,7 +29,5 @@ namespace SimulatedDevice
             Required = false,
             HelpText = "If this is false, it will submit messages to the IoT hub. If this is true, it will read one of the output files and convert it to ASCII.")]
         public string FilePath { get; set; }
-
-        // TODO: validate filepath when readthefile is true
     }
 }

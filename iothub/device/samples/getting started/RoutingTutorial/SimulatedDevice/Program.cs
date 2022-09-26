@@ -50,7 +50,15 @@ namespace SimulatedDevice
             {
                 // If you want to decode an output file, put the path in ReadOneRowFromFile(),
                 //   uncomment the call here and the return command, then run this application.
-                ReadOneRowFromFile(parameters.FilePath);
+                if (File.Exists(parameters.FilePath))
+                {
+                    ReadOneRowFromFile(parameters.FilePath);
+                }
+                else
+                {
+                    Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(result, null, null));
+                    Environment.Exit(1);
+                }
             }
             else
             {
@@ -62,7 +70,7 @@ namespace SimulatedDevice
                 //  http://docs.microsoft.com/azure/iot-hub/tutorial-routing
 
                 Console.WriteLine("Routing Tutorial: Simulated device\n");
-                using var s_deviceClient = DeviceClient.CreateFromConnectionString(parameters.PrimaryConnectionString);
+                using var deviceClient = DeviceClient.CreateFromConnectionString(parameters.PrimaryConnectionString);
 
                 using var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (sender, eventArgs) =>
@@ -72,18 +80,21 @@ namespace SimulatedDevice
                     Console.WriteLine("Sample execution cancellation requested; will exit.");
                 };
 
-                Task messages = SendDeviceToCloudMessagesAsync(s_deviceClient, cts.Token);
-
                 Console.WriteLine($"Press Control+C at any time to quit the sample.");
-                await s_deviceClient.CloseAsync(cts.Token);
-                await messages;
+
+                try
+                {
+                    Task messages = SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
+                }
+                catch (OperationCanceledException) { }
+                await deviceClient.CloseAsync(cts.Token);
             }
         }
 
         /// <summary>
         /// Send message to the Iot hub. This generates the object to be sent to the hub in the message.
         /// </summary>
-        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient s_deviceClient, CancellationToken token)
+        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, CancellationToken token)
         {
             double minTemperature = 20;
             double minHumidity = 60;
@@ -139,7 +150,7 @@ namespace SimulatedDevice
                 // Submit the message to the hub.
                 try
                 {
-                    await s_deviceClient.SendEventAsync(message, token);
+                    await deviceClient.SendEventAsync(message, token);
                 }
                 catch (OperationCanceledException) { }
 
