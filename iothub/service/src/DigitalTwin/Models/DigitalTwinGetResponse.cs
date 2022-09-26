@@ -14,9 +14,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="digitalTwin">The deserialized digital twin.</param>
-        internal DigitalTwinGetResponse(T digitalTwin, ETag eTag = default)
+        protected internal DigitalTwinGetResponse(T digitalTwin, ETag eTag = default)
         {
             DigitalTwin = digitalTwin;
             ETag = eTag;
@@ -25,11 +28,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets the deserialized digital twin.
         /// </summary>
-        public T DigitalTwin { get; internal set; }
+        public T DigitalTwin { get; }
 
         /// <summary>
         /// Gets the weak ETag of the modified resource.
         /// </summary>
-        public ETag ETag { get; internal set; }
+        public ETag ETag { get; }
     }
 }
