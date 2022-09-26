@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 }
                 catch (TimeoutException ex)
                 {
-                    throw new DeviceProvisioningServiceException(ex.Message, ex, true);
+                    throw new DeviceProvisioningServiceException(ex.Message, HttpStatusCode.RequestTimeout, ex);
                 }
                 catch (IOException ex)
                 {
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         throw new OperationCanceledException(ex.Message, ex);
                     }
 
-                    throw new DeviceProvisioningServiceException($"The {httpMethod} operation timed out.", ex, true);
+                    throw new DeviceProvisioningServiceException($"The {httpMethod} operation timed out.", HttpStatusCode.RequestTimeout, ex);
                 }
             }
 

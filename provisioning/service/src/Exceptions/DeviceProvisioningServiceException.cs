@@ -57,6 +57,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
+        /// <param name="innerException">The inner exception</param>
+        internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, Exception innerException = null)
+            : base(message, innerException)
+        {
+            IsTransient = DetermineIfTransient(statusCode);
+            StatusCode = statusCode;
+        }
+
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
         /// <param name="fields">The HTTP headers.</param>
         internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, IDictionary<string, string> fields)
             : base(message)
@@ -114,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private bool DetermineIfTransient(HttpStatusCode statusCode)
         {
-            return statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
+            return statusCode >= HttpStatusCode.InternalServerError || statusCode == HttpStatusCode.RequestTimeout || (int)statusCode == 429;
         }
     }
 }

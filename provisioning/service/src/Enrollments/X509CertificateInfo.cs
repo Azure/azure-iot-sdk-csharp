@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -44,7 +45,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 || notAfterUtc == null
                 || version == null)
             {
-                throw new DeviceProvisioningServiceException("DateTime cannot be null");
+                throw new DeviceProvisioningServiceException("DateTime cannot be null", HttpStatusCode.BadRequest);
             }
 
             SubjectName = subjectName;

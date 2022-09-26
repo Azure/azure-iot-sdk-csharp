@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -158,7 +159,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (attestation == null)
             {
-                throw new DeviceProvisioningServiceException("Service respond an individualEnrollment without attestation.");
+                throw new DeviceProvisioningServiceException("Service responds an individualEnrollment without attestation.", HttpStatusCode.BadRequest);
             }
 
             try
