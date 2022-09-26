@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
+        /// Creates a disposable <c>IotHubModuleClient</c> instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable client instance.</returns>
@@ -112,6 +112,9 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends an event to IoT hub. IotHubModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// </para>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
         /// Please note that the above list is not exhaustive.
         /// </remarks>
@@ -122,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// if the client encounters a transient retryable exception. </exception>
-        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
@@ -154,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// ModuleClient instance must be opened already.
+        /// IotHubModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
         /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
@@ -163,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event</returns>
-        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken = default)
         {
@@ -175,6 +178,7 @@ namespace Microsoft.Azure.Devices.Client
                 ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
 
                 Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
+
                 var messagesList = messages?.ToList();
                 Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
 
@@ -190,16 +194,20 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new default delegate which applies to all endpoints.
+        /// Sets the listener for receiving events using a cancellation token.
+        /// IotHubModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// If a default delegate was set previously, it will be overwritten.
-        /// A message handler can be unset by setting <paramref name="messageHandler"/> to null.
+        /// <para>
+        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
+        /// A listener can be unset by setting <paramref name="messageHandler"/> to null.
+        /// </para>
+        /// This API call is relevant for both IoT hub modules and IoT Edge modules.
         /// </remarks>
-        /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="messageHandler">The listener to be used when a cloud-to-module message is received by the client.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The task containing the event</returns>
+        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMessageHandlerAsync(
             Func<Message, object, Task<MessageAcknowledgement>> messageHandler,
@@ -237,13 +245,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Interactively invokes a method from an edge module to an edge device.
         /// Both the edge module and the edge device need to be connected to the same edge hub.
-        /// ModuleClient instance must be opened already.
+        /// IotHubModuleClient instance must be opened already.
         /// </summary>
+        /// <remarks>
+        /// This API call is relevant only for IoT Edge modules.
+        /// </remarks>
         /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
         /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The result of the method invocation.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
@@ -254,14 +265,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Interactively invokes a method from an edge module to a different edge module.
         /// Both of the edge modules need to be connected to the same edge hub.
-        /// ModuleClient instance must be opened already.
+        /// IotHubModuleClient instance must be opened already.
         /// </summary>
+        /// <remarks>
+        /// This API call is relevant only for IoT Edge modules.
+        /// </remarks>
         /// <param name="deviceId">The unique identifier of the device.</param>
         /// <param name="moduleId">The unique identifier of the edge module to invoke the method on.</param>
         /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The result of the method invocation.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {

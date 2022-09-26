@@ -87,16 +87,14 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for receiving a message from the device queue using a cancellation token.
+        /// Sets the listener for receiving a message from the device queue using a cancellation token.
         /// IotHubDeviceClient instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// If a delegate is already registered it will be replaced with the new delegate.
-        /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
-        /// </para>
+        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
+        /// A cloud-to-device message handler can be unset by setting <paramref name="messageHandler"/> to null.
         /// </remarks>
-        /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
+        /// <param name="messageHandler">The listener to be used when a cloud-to-device message is received by the client.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>

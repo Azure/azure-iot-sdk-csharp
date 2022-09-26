@@ -131,10 +131,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
-        /// it will be replaced with the new delegate.
+        /// Sets a new listener for the connection status change callback. If a listener is already associated,
+        /// it will be replaced with the new listener.
         /// </summary>
-        /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
+        /// <param name="statusChangeHandler">The listener for the connection status change callback.</param>
         public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
         {
             if (Logging.IsEnabled)
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
         /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
         /// </remarks>
-        /// <param name="methodHandler">The delegate to be used when any method is called by the cloud service.</param>
+        /// <param name="methodHandler">The listener to be used when any method is called by the cloud service.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
