@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_booleanRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_booleanRequest)} but was {request.PayloadAsJsonString}");
                             _booleanRequest.Should().BeTrue();
 
-                            methodCallReceived.SetResult(true);
+                            methodCallReceived.TrySetResult(true);
                         }
                         catch (Exception ex)
                         {
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             request.TryGetPayload(out CustomType customType).Should().BeTrue();
                             customType.Should().BeEquivalentTo(_customTypeRequest, $"The expected respose payload should be {_customTypeRequest} but was {customType}");
 
-                            methodCallReceived.SetResult(true);
+                            methodCallReceived.TrySetResult(true);
                         }
                         catch (Exception ex)
                         {
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             request.TryGetPayload(out List<double> listRequest).Should().BeTrue();
                             listRequest.Should().BeEquivalentTo(_listRequest, $"The expected respose payload should be {_listRequest} but was {listRequest}");
 
-                            methodCallReceived.SetResult(true);
+                            methodCallReceived.TrySetResult(true);
                         }
                         catch (Exception ex)
                         {
@@ -277,11 +277,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             request.TryGetPayload(out Dictionary<string, object> dictRequest).Should().BeTrue();
                             dictRequest.Should().BeEquivalentTo(_dictRequest, $"The expected respose payload should be {_dictRequest} but was {dictRequest}");
 
-                            methodCallReceived.SetResult(true);
+                            methodCallReceived.TrySetResult(true);
                         }
                         catch (Exception ex)
                         {
-                            methodCallReceived.SetException(ex);
+                            methodCallReceived.TrySetException(ex);
                         }
                         var response = new Client.DirectMethodResponse(200)
                         {
@@ -314,11 +314,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             request.TryGetPayload(out byte[] byteRequest).Should().BeTrue();
                             byteRequest.Should().BeEquivalentTo(_arrayRequest, $"The expected respose payload should be {_arrayRequest} but was {byteRequest}");
 
-                            methodCallReceived.SetResult(true);
+                            methodCallReceived.TrySetResult(true);
                         }
                         catch (Exception ex)
                         {
-                            methodCallReceived.SetException(ex);
+                            methodCallReceived.TrySetException(ex);
                         }
                         var response = new Client.DirectMethodResponse(200)
                         {

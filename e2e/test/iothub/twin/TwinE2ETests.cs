@@ -312,38 +312,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Mqtt()
-        {
-            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new IotHubClientMqttSettings())
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ClientHandlesRejectionInvalidPropertyName_MqttWs()
-        {
-            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Amqp()
-        {
-            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new IotHubClientAmqpSettings())
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ClientHandlesRejectionInvalidPropertyName_AmqpWs()
-        {
-            await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
-                .ConfigureAwait(false);
-        }
-
         [DataTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -438,11 +406,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         }
                         catch (Exception e)
                         {
-                            propertyUpdateReceived.SetException(e);
+                            propertyUpdateReceived.TrySetException(e);
                         }
                         finally
                         {
-                            propertyUpdateReceived.SetResult(true);
+                            propertyUpdateReceived.TrySetResult(true);
                         }
 
                         return Task.FromResult<bool>(true);
@@ -623,40 +591,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
             string value2 = serviceTwin.Properties.Reported[propName1].ToString();
             Assert.AreEqual(value2, propEmptyValue);
-        }
-
-        private async Task Twin_ClientHandlesRejectionInvalidPropertyNameAsync(IotHubClientTransportSettings transportSettings)
-        {
-            string propName1 = "$" + Guid.NewGuid().ToString();
-            string propName2 = Guid.NewGuid().ToString();
-
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            var options = new IotHubClientOptions(transportSettings);
-            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
-            bool exceptionThrown = false;
-            try
-            {
-                await deviceClient
-                    .UpdateReportedPropertiesAsync(
-                        new Client.TwinCollection
-                        {
-                            [propName1] = 123,
-                            [propName2] = "abcd",
-                        })
-                    .ConfigureAwait(false);
-            }
-            catch (IotHubClientException)
-            {
-                exceptionThrown = true;
-            }
-
-            Assert.IsTrue(exceptionThrown, "IotHubClientException was expected for updating reported property with an invalid property name, but was not thrown.");
-
-            Twin serviceTwin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
         }
 
         [DataTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]

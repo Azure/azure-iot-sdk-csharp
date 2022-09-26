@@ -56,16 +56,20 @@ namespace Microsoft.Azure.Devices.Client
         public bool CleanSession { get; set; }
 
         /// <summary>
-        /// The interval, in seconds, that the client establishes with the service, for sending protocol-level keep-alive pings.
-        /// The default is 300 seconds.
+        /// Specify client-side heartbeat interval.
+        /// The interval, that the client establishes with the service, for sending keep alive pings.
         /// </summary>
         /// <remarks>
-        /// The client will send a ping request 4 times per keep-alive duration set.
-        /// It will wait for 30 seconds for the ping response, else mark the connection as disconnected.
-        /// Setting a very low keep-alive value can cause aggressive reconnects, and might not give the
+        /// <para>
+        /// The default value is 2 minutes.
+        /// </para>
+        /// <para>
+        /// The client will consider the connection as disconnected if the keep alive ping fails.
+        /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
+        /// </para>
         /// </remarks>
-        public TimeSpan IdleTimeout { get; set; }
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.

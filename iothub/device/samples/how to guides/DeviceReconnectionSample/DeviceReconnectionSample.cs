@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task OnMessageReceivedAsync(Message receivedMessage, object userContext)
+        private Task<MessageAcknowledgement> OnMessageReceivedAsync(Message receivedMessage, object userContext)
         {
             string messageData = Encoding.ASCII.GetString(receivedMessage.Payload);
             var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
@@ -358,8 +358,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
             _logger.LogInformation(formattedMessage.ToString());
 
-            await s_deviceClient.CompleteMessageAsync(receivedMessage);
             _logger.LogInformation($"Completed message [{messageData}].");
+            return Task.FromResult(MessageAcknowledgement.Complete);
         }
 
         private static Message PrepareMessage(int messageId)

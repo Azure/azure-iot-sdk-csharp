@@ -4,13 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Client.Utilities;
 
 namespace Microsoft.Azure.Devices.Client
@@ -218,107 +216,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes a received message from the client queue.
-        /// </summary>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The lock identifier for the previously received message</returns>
-        public async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes the received message from the service's cloud to device message queue for this client.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task CompleteMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await CompleteMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Puts a received message back onto the client queue.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Puts a received message back onto the client queue.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="message">The message to abandon.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task AbandonMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await AbandonMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes a received message from the client queue and indicates to the server that the message could not be processed.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes the received message from the service's cloud to device message queue for this client and indicates to the server that the message could not be processed.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="message">The message to reject.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task RejectMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await RejectMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
