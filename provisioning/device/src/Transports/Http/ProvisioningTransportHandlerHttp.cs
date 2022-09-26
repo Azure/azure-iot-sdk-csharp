@@ -228,8 +228,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 throw new DeviceProvisioningClientException(
                                     ex.Response.Content,
                                     ex,
-                                    isTransient,
-                                    (HttpStatusCode)(errorDetails.ErrorCode/1000),
+                                    ex.Response.StatusCode,
                                     errorDetails.ErrorCode,
                                     errorDetails.TrackingId);
                             }
@@ -283,8 +282,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new DeviceProvisioningClientException(
                         ex.Response.Content,
                         ex,
-                        isTransient,
-                        (HttpStatusCode)(errorDetails.ErrorCode/1000),
+                        ex.Response.StatusCode,
                         errorDetails.ErrorCode,
                         errorDetails.TrackingId);
                 }

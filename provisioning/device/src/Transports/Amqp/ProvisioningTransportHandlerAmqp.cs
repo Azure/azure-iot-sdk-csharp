@@ -314,7 +314,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new DeviceProvisioningClientException(
                         rejected.Error.Description,
                         null,
-                        isTransient,
                         (HttpStatusCode)statusCode,
                         errorDetails.ErrorCode,
                         errorDetails.TrackingId);
