@@ -552,7 +552,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else
             {
-                await EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                await EnableEdgeModuleEventReceiveAsync(cancellationToken).ConfigureAwait(false);
 
                 disposeOutcome = await _eventReceivingLink
                     .DisposeMessageAsync(lockToken, AmqpIotResultAdapter.GetResult(disposeAction), cancellationToken)
@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Event
 
-        public async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public async Task EnableEdgeModuleEventReceiveAsync(CancellationToken cancellationToken)
         {
             if (_closed)
             {
@@ -576,7 +576,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
 
             if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(EnableEventReceiveAsync));
+                Logging.Enter(this, nameof(EnableEdgeModuleEventReceiveAsync));
 
             _amqpIotSession = await EnsureSessionIsOpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -588,7 +588,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP event receiver links are open.", nameof(EnableEventReceiveAsync));
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP event receiver links are open.", nameof(EnableEdgeModuleEventReceiveAsync));
                 }
                 throw;
             }
@@ -625,14 +625,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     _eventReceivingLink.RegisterEventListener(OnEventsReceived);
 
                     if (Logging.IsEnabled)
-                        Logging.Associate(this, this, _eventReceivingLink, nameof(EnableEventReceiveAsync));
+                        Logging.Associate(this, this, _eventReceivingLink, nameof(EnableEdgeModuleEventReceiveAsync));
                 }
             }
             finally
             {
                 _eventReceivingLinkSemaphore.Release();
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(EnableEventReceiveAsync));
+                    Logging.Exit(this, nameof(EnableEdgeModuleEventReceiveAsync));
             }
         }
 

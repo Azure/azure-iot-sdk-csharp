@@ -21,6 +21,9 @@ namespace Microsoft.Azure.Devices.Client
     {
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
+        private readonly SemaphoreSlim _receiveMessageSemaphore = new(1, 1);
+
+        private volatile Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object> _receiveMessageCallback;
 
         // Connection status change information
         private volatile Action<ConnectionStatusInfo> _connectionStatusChangeHandler;
@@ -72,7 +75,6 @@ namespace Microsoft.Azure.Devices.Client
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
             };
 
-            AddToPipelineContext();
             InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             if (Logging.IsEnabled)
@@ -216,6 +218,61 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sets a new delegate for receiving a message from the device queue using a cancellation token.
+        /// This instance must be opened already.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// If a delegate is already registered it will be replaced with the new delegate.
+        /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
+        /// </para>
+        /// </remarks>
+        /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        public async Task SetMessageHandlerAsync(
+            Func<Message, object, Task<MessageAcknowledgement>> messageHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Wait to acquire the _deviceReceiveMessageSemaphore. This ensures that concurrently invoked
+            // SetMessageHandlerAsync calls are invoked in a thread-safe manner.
+            await _receiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                // If a callback is already set on the client, calling SetMessageHandlerAsync
+                // again will cause the delegate to be overwritten.
+                if (messageHandler != null)
+                {
+                    // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
+                    await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                    _receiveMessageCallback = new Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object>(messageHandler, userContext);
+                }
+                else
+                {
+                    // If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
+                    _receiveMessageCallback = null;
+                    await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _receiveMessageSemaphore.Release();
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
+            }
         }
 
         /// <summary>
@@ -388,8 +445,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal abstract void AddToPipelineContext();
-
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
@@ -542,6 +597,77 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return !isFound ? default : (T)handler;
+        }
+
+        internal async Task OnMessageReceivedAsync(Message message)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, message, nameof(OnMessageReceivedAsync));
+
+            if (message == null)
+            {
+                return;
+            }
+
+            // Grab this semaphore so that there is no chance that the _receiveMessageCallback instance is set in between the read of the
+            // item1 and the read of the item2
+            await _receiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                Func<Message, object, Task<MessageAcknowledgement>> callback = _receiveMessageCallback?.Item1;
+                object callbackContext = _receiveMessageCallback?.Item2;
+
+                if (callback != null)
+                {
+                    MessageAcknowledgement response = await callback.Invoke(message, callbackContext).ConfigureAwait(false);
+
+                    try
+                    {
+                        switch (response)
+                        {
+                            case MessageAcknowledgement.Complete:
+                                await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            case MessageAcknowledgement.Abandon:
+                                await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            case MessageAcknowledgement.Reject:
+                                await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+                        }
+                    }
+                    catch (Exception ex) when (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, ex, nameof(OnMessageReceivedAsync));
+                    }
+                }
+            }
+            finally
+            {
+                _receiveMessageSemaphore.Release();
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, message, nameof(OnMessageReceivedAsync));
+        }
+
+        private Task EnableReceiveMessageAsync(CancellationToken cancellationToken = default)
+        {
+            // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
+            return _receiveMessageCallback == null
+                ? InnerHandler.EnableReceiveMessageAsync(cancellationToken)
+                : Task.CompletedTask;
+        }
+
+        private Task DisableReceiveMessageAsync(CancellationToken cancellationToken = default)
+        {
+            // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
+            return _receiveMessageCallback == null
+                ? InnerHandler.DisableReceiveMessageAsync(cancellationToken)
+                : Task.CompletedTask;
         }
     }
 }

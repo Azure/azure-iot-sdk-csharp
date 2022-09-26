@@ -24,6 +24,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private Timer _twinTimeoutTimer;
 
+        internal IotHubConnectionCredentials _connectionCredentials;
+
         private static readonly TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(60);
         private bool _closed;
 
@@ -67,6 +69,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             // Create a timer to remove any expired messages.
             _twinTimeoutTimer = new Timer(CheckTimeout);
+
+            _connectionCredentials = context.IotHubConnectionCredentials;
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, _amqpUnit, nameof(_amqpUnit));
@@ -228,7 +232,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
-                await _amqpUnit.EnableReceiveMessageAsync(ctb.Token).ConfigureAwait(false);
+
+                if (_connectionCredentials.IsEdgeModule)
+                {
+                    // This method is specifically for receiving module events when connecting to Edgehub
+                    await _amqpUnit.EnableEdgeModuleEventReceiveAsync(ctb.Token).ConfigureAwait(false);
+                }
+                else
+                {
+                    // This call determines within it what link address to open,
+                    // so there is no need to make a different call for devices vs modules here.
+                    await _amqpUnit.EnableReceiveMessageAsync(ctb.Token).ConfigureAwait(false);
+                }
             }
             finally
             {
@@ -438,35 +453,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             return response;
-        }
-
-        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            // If an AMQP transport is opened as a module twin instead of an Edge module we need
-            // to enable the deviceBound operations instead of the event receiver link
-            if (isAnEdgeModule)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
-
-                try
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
-
-                    await _amqpUnit.EnableEventReceiveAsync(ctb.Token).ConfigureAwait(false);
-                }
-                finally
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
-                }
-            }
-            else
-            {
-                await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-            }
         }
 
         public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)

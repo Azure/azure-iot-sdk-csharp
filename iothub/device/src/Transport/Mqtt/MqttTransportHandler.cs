@@ -493,7 +493,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(_connectionCredentials.ModuleId))
+                    {
+                        await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        if (_connectionCredentials.IsEdgeModule)
+                        {
+                            await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                }
+                catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
+                {
+                    throw new IotHubClientException("Failed to enable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
+                }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -505,44 +526,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
-            {
-                throw new IotHubClientException("Failed to disable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
-            }
-        }
-
-        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (isAnEdgeModule)
+                if (string.IsNullOrWhiteSpace(_connectionCredentials.ModuleId))
                 {
-                    await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
+                    await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
-            {
-                throw new IotHubClientException("Failed to enable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
-            }
-        }
-
-        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (isAnEdgeModule)
-                {
-                    await UnsubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                    if (_connectionCredentials.IsEdgeModule)
+                    {
+                        await UnsubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)

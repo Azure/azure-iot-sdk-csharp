@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
     /// This sample demonstrates how to receive cloud-to-device messages sent to a device client instance.
-    /// You can receive messages by setting callback to receive messages using SetReceiveMessageHandlerAsync().
+    /// You can receive messages by setting callback to receive messages using SetMessageHandlerAsync().
     /// </summary>
     public class MessageReceiveSample
     {
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"{DateTime.Now}> Press Control+C at any time to quit the sample.");
 
             // Now subscribe to receive C2D messages through a callback (which isn't supported over HTTP).
-            await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, _deviceClient);
+            await _deviceClient.SetMessageHandlerAsync(OnC2dMessageReceivedAsync, _deviceClient);
             Console.WriteLine($"\n{DateTime.Now}> Subscribed to receive C2D messages over callback.");
 
             // Now wait to receive C2D messages through the callback.
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // Now unsubscibe from receiving the callback.
-            await _deviceClient.SetReceiveMessageHandlerAsync(null, null);
+            await _deviceClient.SetMessageHandlerAsync(null, null);
         }
 
         private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Message receivedMessage, object _)

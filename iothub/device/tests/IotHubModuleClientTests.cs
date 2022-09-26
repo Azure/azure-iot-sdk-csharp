@@ -98,134 +98,8 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
 
-            await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
-        {
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString, options);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
-
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-
-            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Mqtt()
-        {
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString, options);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
-
-            await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Mqtt()
-        {
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString, options);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
-
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-
-            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Amqp()
-        {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
-
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Amqp()
-        {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-
-            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Amqp()
-        {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
-
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Amqp()
-        {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
-
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-
-            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -246,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     "custom data")
                 .ConfigureAwait(false);
 
-            await moduleClient.OnModuleEventMessageReceivedAsync(null).ConfigureAwait(false);
+            await moduleClient.OnMessageReceivedAsync(null).ConfigureAwait(false);
             Assert.IsFalse(isMessageHandlerCalled);
         }
 
@@ -274,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 LockToken = "AnyLockToken",
             };
 
-            await moduleClient.OnModuleEventMessageReceivedAsync(testMessage).ConfigureAwait(false);
+            await moduleClient.OnMessageReceivedAsync(testMessage).ConfigureAwait(false);
             Assert.IsTrue(isDefaultCallbackCalled);
         }
     }
