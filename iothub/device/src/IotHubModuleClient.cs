@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.CreateClient(
                     this,
                     $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId}",
-                    ClientOptions);
+                    _clientOptions);
         }
 
         /// <summary>
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client
             base.Dispose(disposing);
         }
 
-        internal override void AddToPipelineContext()
+        override private protected void AddToPipelineContext()
         {
             PipelineContext.ModuleEventCallback = OnModuleEventMessageReceivedAsync;
         }
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices.Client
                 };
 
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
-                var methodInvokeRequest = new DirectMethodRequest()
+                var methodInvokeRequest = new DirectMethodRequest
                 {
                     MethodName = methodRequest.MethodName,
                     Payload = methodRequest.Payload,

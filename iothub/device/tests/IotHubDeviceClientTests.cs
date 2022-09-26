@@ -238,52 +238,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_DefaultDiagnosticSamplingPercentage_Ok()
-        {
-            using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            const int DefaultPercentage = 0;
-            DefaultPercentage.Should().Be(deviceClient.DiagnosticSamplingPercentage);
-        }
-
-        [TestMethod]
-        public void IotHubDeviceClient_SetDiagnosticSamplingPercentageInRange_Ok()
-        {
-            using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            const int ValidPercentage = 80;
-            deviceClient.DiagnosticSamplingPercentage = ValidPercentage;
-            ValidPercentage.Should().Be(deviceClient.DiagnosticSamplingPercentage);
-        }
-
-        [TestMethod]
-        public void IotHubDeviceClient_SetDiagnosticSamplingPercentageOutOfRange_Fail()
-        {
-            using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            const int DefaultPercentage = 0;
-            const int InvalidPercentageExceedUpperLimit = 200;
-            const int InvalidPercentageExceedLowerLimit = -100;
-
-            try
-            {
-                Action act = () => deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedUpperLimit;
-                act.Should().Throw<ArgumentOutOfRangeException>();
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                DefaultPercentage.Should().Be(deviceClient.DiagnosticSamplingPercentage);
-            }
-
-            try
-            {
-                Action act = () => deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedLowerLimit;
-                act.Should().Throw<ArgumentOutOfRangeException>();
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                DefaultPercentage.Should().Be(deviceClient.DiagnosticSamplingPercentage);
-            }
-        }
-
-        [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_Unsubscribe()
         {
             // arrange
