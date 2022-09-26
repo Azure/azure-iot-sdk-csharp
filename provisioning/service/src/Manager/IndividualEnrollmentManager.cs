@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -33,11 +34,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IndividualEnrollment individualEnrollment,
             CancellationToken cancellationToken)
         {
-            if (individualEnrollment == null)
-            {
-                throw new ArgumentNullException(nameof(individualEnrollment));
-            }
-
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Put,
@@ -48,12 +44,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
-
-            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
+            return contractApiResponse.Body == null
+                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
+                : JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
         }
 
         internal static async Task<BulkEnrollmentOperationResult> BulkOperationAsync(
@@ -62,15 +55,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IEnumerable<IndividualEnrollment> individualEnrollments,
             CancellationToken cancellationToken)
         {
-            if (individualEnrollments == null)
-            {
-                throw new ArgumentNullException(nameof(individualEnrollments));
-            }
-
-            if (!individualEnrollments.Any())
-            {
-                throw new ArgumentException($"{nameof(individualEnrollments)} cannot be empty.");
-            }
+            Debug.Assert(individualEnrollments != null);
+            Debug.Assert(individualEnrollments.Any(), $"{nameof(individualEnrollments)} cannot be empty.");
 
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
@@ -82,12 +68,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
-
-            return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
+            return contractApiResponse.Body == null
+                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
+                : JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
         }
 
         internal static async Task<IndividualEnrollment> GetAsync(
@@ -105,12 +88,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
-
-            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
+            return contractApiResponse.Body == null
+                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
+                : JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
         }
 
         internal static async Task DeleteAsync(
@@ -118,11 +98,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IndividualEnrollment individualEnrollment,
             CancellationToken cancellationToken)
         {
-            if (individualEnrollment == null)
-            {
-                throw new ArgumentNullException(nameof(individualEnrollment));
-            }
-
             await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
@@ -158,13 +133,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             int pageSize = 0)
         {
-            Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-
-            if (pageSize < 0)
-            {
-                throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
-            }
-
             return new Query(provisioningConnectionString, ServiceName, query, contractApiHttp, pageSize, cancellationToken);
         }
 
@@ -194,12 +162,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse?.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
-
-            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
+            return contractApiResponse?.Body == null
+                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
+                : JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
         }
 
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)

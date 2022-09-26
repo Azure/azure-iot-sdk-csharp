@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// The following JSON is an example of the result of this class.
-    /// <c>
+    /// <code>
     ///  {
     ///      "certificate": "-----BEGIN CERTIFICATE-----\n" +
     ///                     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n" +
@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///                     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n" +
     ///                     "-----END CERTIFICATE-----\n";
     ///  }
-    /// </c>
+    /// </code>
     ///
     /// After send an X509 certificate to the provisioning service, it will return the <see cref="X509CertificateInfo"/>.
     /// User can get this info from this class,
     ///
     /// The following JSON is an example what info the provisioning service will return for X509.
-    /// <c>
+    /// <code>
     ///  {
     ///      "info": {
     ///           "subjectName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///           "version": 3
     ///      }
     ///  }
-    /// </c>
+    /// </code>
     /// </example>
     public class X509CertificateWithInfo
     {
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         /// <summary>
         /// Certificate properties.
-        /// </summary> 
+        /// </summary>
         [JsonProperty(PropertyName = "info", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public X509CertificateInfo Info { get; private set; }
 

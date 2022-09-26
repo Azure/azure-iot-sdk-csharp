@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
@@ -30,35 +31,6 @@ namespace Microsoft.Azure.Devices
         private string _hostName;
         private IAuthenticationMethod _authenticationMethod;
 
-        private ServiceConnectionStringBuilder()
-        {
-        }
-
-        /// <summary>
-        /// Factory for new Connection String object.
-        /// </summary>
-        /// <remarks>
-        /// The connection string contains a set of information that uniquely identify an IoT Service.
-        ///
-        /// A valid connection string shall be in the following format:
-        /// <c>
-        /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
-        /// </c>
-        ///
-        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
-        /// </remarks>
-        /// <param name="serviceConnectionString">the <c>string</c> with the connection string information.</param>
-        /// <returns>A <c>ServiceConnectionStringBuilder</c> object with the parsed connection string.</returns>
-        public static ServiceConnectionStringBuilder Create(string serviceConnectionString)
-        {
-            var serviceConnectionStringBuilder = new ServiceConnectionStringBuilder();
-            serviceConnectionStringBuilder.Parse(serviceConnectionString);
-            serviceConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory
-                .GetAuthenticationMethod(serviceConnectionStringBuilder);
-
-            return serviceConnectionStringBuilder;
-        }
-
         public string HostName
         {
             get => _hostName;
@@ -79,6 +51,20 @@ namespace Microsoft.Azure.Devices
 
         public string ServiceName { get; private set; }
 
+        private ServiceConnectionStringBuilder()
+        {
+        }
+
+        internal static ServiceConnectionStringBuilder Create(string serviceConnectionString)
+        {
+            var serviceConnectionStringBuilder = new ServiceConnectionStringBuilder();
+            serviceConnectionStringBuilder.Parse(serviceConnectionString);
+            serviceConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory
+                .GetAuthenticationMethod(serviceConnectionStringBuilder);
+
+            return serviceConnectionStringBuilder;
+        }
+
         private void Parse(string serviceConnectionString)
         {
             IDictionary<string, string> map = ToDictionary(serviceConnectionString, ValuePairDelimiter, ValuePairSeparator);
@@ -93,20 +79,11 @@ namespace Microsoft.Azure.Devices
 
         private void Validate()
         {
-            if (string.IsNullOrWhiteSpace(SharedAccessKeyName))
-            {
-                throw new ArgumentException("Should specify SharedAccessKeyName");
-            }
+            Debug.Assert(!string.IsNullOrWhiteSpace(SharedAccessKeyName), "Should specify SharedAccessKeyName");
 
-            if (!(string.IsNullOrWhiteSpace(SharedAccessKey) ^ string.IsNullOrWhiteSpace(SharedAccessSignature)))
-            {
-                throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature");
-            }
+            Debug.Assert(string.IsNullOrWhiteSpace(SharedAccessKey) ^ string.IsNullOrWhiteSpace(SharedAccessSignature), "Should specify either SharedAccessKey or SharedAccessSignature");
 
-            if (string.IsNullOrWhiteSpace(ServiceName))
-            {
-                throw new FormatException("Missing service name");
-            }
+            Debug.Assert(!string.IsNullOrWhiteSpace(ServiceName), "Should specify ServiceName");
 
             if (!string.IsNullOrWhiteSpace(SharedAccessKey))
             {
@@ -191,7 +168,7 @@ namespace Microsoft.Azure.Devices
             return serviceName;
         }
 
-        public static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
+        private static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
         {
             if (string.IsNullOrWhiteSpace(valuePairString))
             {

@@ -17,13 +17,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// The following JSON is an example of a single error operation from a Bulk operation
-    /// <c>
+    /// <code>
     /// {
     ///      "registrationId":"validRegistrationId1",
     ///      "errorCode":200,
     ///      "errorStatus":"Succeeded"
     /// }
-    /// </c>
+    /// </code>
     /// </example>
     public class BulkEnrollmentOperationError
     {

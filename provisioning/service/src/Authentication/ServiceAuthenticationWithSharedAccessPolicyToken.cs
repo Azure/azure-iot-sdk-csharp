@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices
 {
@@ -12,17 +13,6 @@ namespace Microsoft.Azure.Devices
     {
         private string _policyName;
         private string _token;
-
-        /// <summary>
-        /// Creates an instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyToken"/> class.
-        /// </summary>
-        /// <param name="policyName">Name of the shared access policy to use.</param>
-        /// <param name="token">Token associated with the shared access policy.</param>
-        public ServiceAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
-        {
-            SetPolicyName(policyName);
-            SetToken(token);
-        }
 
         public string PolicyName
         {
@@ -45,13 +35,21 @@ namespace Microsoft.Azure.Devices
             return provisioningConnectionStringBuilder;
         }
 
+        internal ServiceAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
+        {
+            SetPolicyName(policyName);
+            SetToken(token);
+        }
+
         private void SetPolicyName(string policyName)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(policyName));
             _policyName = policyName;
         }
 
         private void SetToken(string token)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(token));
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Token must be of type SharedAccessSignature");

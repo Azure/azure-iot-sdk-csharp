@@ -92,9 +92,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="httpMethod">the <see cref="HttpMethod"/> with the HTTP verb.</param>
         /// <param name="requestUri">the rest API <see cref="Uri"/> with for the requested service.</param>
-        /// <param name="customHeaders">the optional <c>Dictionary</c> with additional header fields. It can be <c>null</c>.</param>
-        /// <param name="body">the <c>string</c> with the message body. It can be <c>null</c> or empty.</param>
-        /// <param name="ifMatch">the optional <c>string</c> with the match condition, normally an eTag. It can be <c>null</c>.</param>
+        /// <param name="customHeaders">the optional Dictionary with additional header fields. It can be null.</param>
+        /// <param name="body">the string with the message body. It can be null or empty.</param>
+        /// <param name="ifMatch">the optional string with the match condition, normally an eTag. It can be null.</param>
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
         /// <exception cref="ProvisioningServiceClientException">if the cancellation was requested.</exception>

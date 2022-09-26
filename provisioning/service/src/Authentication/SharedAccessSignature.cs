@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
@@ -15,28 +16,6 @@ namespace Microsoft.Azure.Devices
         private readonly string _encodedAudience;
         private readonly string _expiry;
 
-        private SharedAccessSignature(string shareAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
-        {
-            if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
-            {
-                throw new ArgumentNullException(nameof(shareAccessSignatureName));
-            }
-
-            ExpiresOn = expiresOn;
-
-            if (IsExpired())
-            {
-                throw new UnauthorizedAccessException("The specified SAS token is expired");
-            }
-
-            ShareAccessSignatureName = shareAccessSignatureName;
-            Signature = signature;
-            Audience = WebUtility.UrlDecode(encodedAudience);
-            _encodedAudience = encodedAudience;
-            _expiry = expiry;
-            KeyName = keyName ?? string.Empty;
-        }
-
         public string ShareAccessSignatureName { get; private set; }
 
         public DateTime ExpiresOn { get; private set; }
@@ -47,17 +26,10 @@ namespace Microsoft.Azure.Devices
 
         public string Signature { get; private set; }
 
-        public static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
+        internal static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
         {
-            if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
-            {
-                throw new ArgumentNullException(nameof(shareAccessSignatureName));
-            }
-
-            if (string.IsNullOrWhiteSpace(rawToken))
-            {
-                throw new ArgumentNullException(nameof(rawToken));
-            }
+            Debug.Assert(!string.IsNullOrWhiteSpace(shareAccessSignatureName));
+            Debug.Assert(!string.IsNullOrWhiteSpace(rawToken));
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
@@ -88,7 +60,7 @@ namespace Microsoft.Azure.Devices
                 encodedAudience);
         }
 
-        public static bool IsSharedAccessSignature(string rawSignature)
+        internal static bool IsSharedAccessSignature(string rawSignature)
         {
             if (string.IsNullOrWhiteSpace(rawSignature))
             {
@@ -101,17 +73,17 @@ namespace Microsoft.Azure.Devices
             return isSharedAccessSignature;
         }
 
-        public bool IsExpired()
+        internal bool IsExpired()
         {
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
 
-        public DateTime ExpiryTime()
+        internal DateTime ExpiryTime()
         {
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
         }
 
-        public void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)
+        internal void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)
         {
             if (IsExpired())
             {
@@ -139,17 +111,14 @@ namespace Microsoft.Azure.Devices
             throw new UnauthorizedAccessException("The specified SAS token has an invalid signature. It does not match either the primary or secondary key.");
         }
 
-        public void Authorize(string serviceHostName)
+        internal void Authorize(string serviceHostName)
         {
             SecurityHelper.ValidateServiceHostName(serviceHostName, ShareAccessSignatureName);
         }
 
-        public void Authorize(Uri targetAddress)
+        internal void Authorize(Uri targetAddress)
         {
-            if (targetAddress == null)
-            {
-                throw new ArgumentNullException(nameof(targetAddress));
-            }
+            Debug.Assert(targetAddress != null);
 
             string target = targetAddress.Host + targetAddress.AbsolutePath;
 
@@ -159,7 +128,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public string ComputeSignature(byte[] key)
+        private string ComputeSignature(byte[] key)
         {
             var fields = new List<string>
             {
@@ -170,6 +139,25 @@ namespace Microsoft.Azure.Devices
             using var hmac = new HMACSHA256(key);
             string value = string.Join("\n", fields);
             return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
+        }
+
+        private SharedAccessSignature(string shareAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
+        {
+            Debug.Assert(!string.IsNullOrWhiteSpace(shareAccessSignatureName));
+
+            ExpiresOn = expiresOn;
+
+            if (IsExpired())
+            {
+                throw new UnauthorizedAccessException("The specified SAS token is expired");
+            }
+
+            ShareAccessSignatureName = shareAccessSignatureName;
+            Signature = signature;
+            Audience = WebUtility.UrlDecode(encodedAudience);
+            _encodedAudience = encodedAudience;
+            _expiry = expiry;
+            KeyName = keyName ?? string.Empty;
         }
 
         private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)

@@ -8,25 +8,25 @@ using System.Net;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// This is the subset of the Device Provisioning Service exceptions for the exceptions reported by the Service. 
+    /// This is the subset of the Device Provisioning Service exceptions for the exceptions reported by the Service.
     /// </summary>
     /// <remarks>
     /// This exception identify that the provisioning service respond the HTTP request with a error status code.
-    /// <c>
+    /// <code>
     /// ProvisioningServiceClientHttpException [any exception reported in the HTTP response]
     ///     \ \ \ \__StatusCode [the returned HTTP status code]
     ///      \ \ \___ErrorMessage [the root cause of the error]
     ///       \ \____Body [the HTTP message body with details about the error]
     ///        \_____Filds [the HTTP head fields that may provide more details about the error]
-    ///    
-    /// </c>
+    ///
+    /// </code>
     /// </remarks>
     public class ProvisioningServiceClientHttpException : ProvisioningServiceClientTransportException
     {
         /// <summary>
         /// Initializes the <see cref="ProvisioningServiceClientHttpException"/> class.
         /// </summary>
-        public ProvisioningServiceClientHttpException() 
+        public ProvisioningServiceClientHttpException()
             : base()
         {
         }
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal ProvisioningServiceClientHttpException(ContractApiResponse response, bool isTransient) 
+        internal ProvisioningServiceClientHttpException(ContractApiResponse response, bool isTransient)
             : base($"{response.ErrorMessage}:{response.Body}", isTransient: isTransient)
         {
             Body = response.Body;

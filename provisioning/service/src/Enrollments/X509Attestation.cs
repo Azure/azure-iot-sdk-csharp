@@ -73,16 +73,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary certificate in X509Certificate2 object.
         /// </remarks>
-        /// <param name="primary">the <c>X509Certificate2</c> with the primary certificate. It cannot be <c>null</c>.</param>
+        /// <param name="primary">The X509Certificate2 with the primary certificate. It cannot be null.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c>.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentException">If the primary certificate is null.</exception>
+        /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(X509Certificate2 primary)
         {
+            Argument.AssertNotNull(primary, nameof(primary));
             return new X509Attestation(
-                new X509Certificates(
-                    primary ?? throw new ArgumentException("primary certificate cannot be null."),
-                    null),
+                new X509Certificates(primary, null),
                 null, null);
         }
 
@@ -92,17 +91,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary certificates in X509Certificate2 objects.
         /// </remarks>
-        /// <param name="primary">the <c>X509Certificate2</c> with the primary certificate. It cannot be <c>null</c>.</param>
-        /// <param name="secondary">the <c>X509Certificate2</c> with the secondary certificate. It can be <c>null</c> (ignored).</param>
+        /// <param name="primary">The X509Certificate2 with the primary certificate. It cannot be null.</param>
+        /// <param name="secondary">The X509Certificate2 with the secondary certificate. It can be null (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c>.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentException">If the primary certificate is null.</exception>
+        /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(X509Certificate2 primary, X509Certificate2 secondary)
         {
+            Argument.AssertNotNull(primary, nameof(primary));
             return new X509Attestation(
-                new X509Certificates(
-                    primary ?? throw new ArgumentException("primary certificate cannot be null."),
-                    secondary),
+                new X509Certificates(primary, secondary),
                 null, null);
         }
 
@@ -112,16 +110,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary certificate in a Base64 string.
         /// </remarks>
-        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
+        /// <param name="primary">The string with the primary certificate. It cannot be null or empty.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c> or empty.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentNullException">If the provided primary certificate string is null.</exception>
+        /// <exception cref="ArgumentException">If the provided primary certificate string is empty or white space.</exception>
+        /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(string primary)
         {
-            if (string.IsNullOrWhiteSpace(primary))
-            {
-                throw new ArgumentException("primary certificate cannot be null or empty.");
-            }
+            Argument.AssertNotNullOrEmpty(primary, nameof(primary));
 
             return new X509Attestation(
                 new X509Certificates(primary, null),
@@ -134,17 +130,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary certificates in a Base64 string.
         /// </remarks>
-        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
-        /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
+        /// <param name="primary">The string with the primary certificate. It cannot be null or empty.</param>
+        /// <param name="secondary">The string with the secondary certificate. It can be null or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c> or empty.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentNullException">If the provided primary certificate string is null.</exception>
+        /// <exception cref="ArgumentException">If the provided primary certificate string is empty or white space.</exception>
+        /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(string primary, string secondary)
         {
-            if (string.IsNullOrWhiteSpace(primary))
-            {
-                throw new ArgumentException("primary certificate cannot be null or empty.");
-            }
+            Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
 
             return new X509Attestation(
                 new X509Certificates(primary, secondary),
@@ -157,17 +151,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary certificate in X509Certificate2 objects.
         /// </remarks>
-        /// <param name="primary">the <c>X509Certificate2</c> with the primary certificate. It cannot be <c>null</c>.</param>
+        /// <param name="primary">The X509Certificate2 with the primary certificate. It cannot be null.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c>.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentException">If the primary certificate is null.</exception>
+        /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(X509Certificate2 primary)
         {
+            Argument.AssertNotNull(primary, nameof(primary));
             return new X509Attestation(
                 null,
-                new X509Certificates(
-                    primary ?? throw new ArgumentException("primary certificate cannot be null."),
-                    null),
+                new X509Certificates(primary, null),
                 null);
         }
 
@@ -177,18 +170,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary certificates in X509Certificate2 objects.
         /// </remarks>
-        /// <param name="primary">the <c>X509Certificate2</c> with the primary certificate. It cannot be <c>null</c>.</param>
-        /// <param name="secondary">the <c>X509Certificate2</c> with the secondary certificate. It can be <c>null</c> (ignored).</param>
+        /// <param name="primary">The X509Certificate2 with the primary certificate. It cannot be null.</param>
+        /// <param name="secondary">The X509Certificate2 with the secondary certificate. It can be null (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c>.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentException">If the primary certificate is null.</exception>
+        /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(X509Certificate2 primary, X509Certificate2 secondary)
         {
+            Argument.AssertNotNull(primary, nameof(primary));
             return new X509Attestation(
                 null,
-                new X509Certificates(
-                    primary ?? throw new ArgumentException("primary certificate cannot be null."),
-                    secondary),
+                new X509Certificates(primary, secondary),
                 null);
         }
 
@@ -198,16 +190,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary certificate in Base64 string.
         /// </remarks>
-        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
+        /// <param name="primary">The string with the primary certificate. It cannot be null or empty.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c> or empty.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentNullException">If the provided primary certificate string is null.</exception>
+        /// <exception cref="ArgumentException">If the provided primary certificate string is empty or white space.</exception>
+        /// <exception cref="CryptographicException">If the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(string primary)
         {
-            if (string.IsNullOrWhiteSpace(primary))
-            {
-                throw new ArgumentException("primary certificate cannot be null or empty.");
-            }
+            Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
 
             return new X509Attestation(
                 null,
@@ -221,12 +211,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary certificates in Base64 string.
         /// </remarks>
-        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
-        /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
+        /// <param name="primary">The string with the primary certificate. It cannot be null or empty.</param>
+        /// <param name="secondary">The string with the secondary certificate. It can be null or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the provided primary certificate is null.</exception>
-        /// <exception cref="ArgumentException">if the provided primary certificate is empty or white space.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentException">If the provided primary certificate is empty or white space.</exception>
+        /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(string primary, string secondary)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
@@ -243,11 +233,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary CA reference.
         /// </remarks>
-        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
+        /// <param name="primary">The string with the primary certificate. It cannot be null or empty.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentNullException">If the provided primary certificate is null.</exception>
-        /// <exception cref="ArgumentException">if the provided primary certificate is empty or white space.</exception>
-        /// <exception cref="CryptographicException">if the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentNullException">If the provided primary certificate string is null.</exception>
+        /// <exception cref="ArgumentException">If the provided primary certificate string is empty or white space.</exception>
+        /// <exception cref="CryptographicException">If the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromCAReferences(string primary)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
@@ -263,12 +253,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary CA reference.
         /// </remarks>
-        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
-        /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
+        /// <param name="primary">The string with the primary certificate. It cannot be null or empty.</param>
+        /// <param name="secondary">The string with the secondary certificate. It can be null or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentNullException">If the provided primary certificate is null.</exception>
-        /// <exception cref="ArgumentException">if the provided primary certificate is empty or white space.</exception>
-        /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
+        /// <exception cref="ArgumentNullException">If the provided primary certificate string is null.</exception>
+        /// <exception cref="ArgumentException">If the provided primary certificate string is empty or white space.</exception>
+        /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromCAReferences(string primary, string secondary)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
@@ -285,8 +275,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This method is a getter for the information returned from the provisioning service for the provided
         ///     primary certificate.
         /// </remarks>
-        /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be <c>null</c>.</returns>
-        /// <exception cref="ArgumentException">if no valid certificate information is available.</exception>
+        /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be null.</returns>
+        /// <exception cref="InvalidOperationException">If no valid certificate information was provided on initialization.</exception>
         public X509CertificateInfo GetPrimaryX509CertificateInfo()
         {
             if (ClientCertificates != null)
@@ -304,7 +294,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return null;
             }
 
-            throw new ArgumentException("There is no valid certificate information.");
+            throw new InvalidOperationException("No valid certificate information was provided on initialization.");
         }
 
         /// <summary>
@@ -314,7 +304,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This method is a getter for the information returned from the provisioning service for the provided
         /// secondary certificate.
         /// </remarks>
-        /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be <c>null</c>.</returns>
+        /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be null.</returns>
         public X509CertificateInfo GetSecondaryX509CertificateInfo()
         {
             X509CertificateWithInfo secondaryCertificate = null;

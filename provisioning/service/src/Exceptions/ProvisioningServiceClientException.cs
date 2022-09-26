@@ -9,14 +9,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Super class for the Device Provisioning Service exceptions on the Service Client.
     /// </summary>
     /// <remarks>
-    /// <c>
+    /// <code>
     /// ProvisioningServiceClientException
     ///    |        \__IsTransient [identify if retry is a valid scenario]
     ///    |
     ///    +-->ProvisioningServiceClientTransportException [any transport layer exception]
     ///         |
     ///         +-->ProvisioningServiceClientHttpException [any exception reported in the HTTP response]
-    /// </c>
+    /// </code>
     /// </remarks>
     public class ProvisioningServiceClientException : Exception
     {

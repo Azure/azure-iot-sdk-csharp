@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -23,11 +24,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             EnrollmentGroup enrollmentGroup,
             CancellationToken cancellationToken)
         {
-            if (enrollmentGroup == null)
-            {
-                throw new ArgumentNullException(nameof(enrollmentGroup));
-            }
-
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Put,
@@ -38,12 +34,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
-
-            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
+            return contractApiResponse.Body == null
+                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
+                : JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
         internal static async Task<EnrollmentGroup> GetAsync(
@@ -61,12 +54,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
-
-            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
+            return contractApiResponse.Body == null
+                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
+                : JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
         internal static async Task DeleteAsync(
@@ -74,11 +64,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             EnrollmentGroup enrollmentGroup,
             CancellationToken cancellationToken)
         {
-            if (enrollmentGroup == null)
-            {
-                throw new ArgumentNullException(nameof(enrollmentGroup));
-            }
-
             await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
@@ -114,13 +99,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             int pageSize = 0)
         {
-            Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-
-            if (pageSize < 0)
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(pageSize)} cannot be negative");
-            }
-
             return new Query(provisioningConnectionString, ServiceName, query, contractApiHttp, pageSize, cancellationToken);
         }
 
@@ -145,12 +123,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
-
-            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
+            return contractApiResponse.Body == null
+                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
+                : JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
         }
 
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)

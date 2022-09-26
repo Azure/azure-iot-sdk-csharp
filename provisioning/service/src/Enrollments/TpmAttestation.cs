@@ -15,8 +15,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     public sealed class TpmAttestation : Attestation
     {
-        private string _endorsementKey;
-
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
@@ -25,15 +23,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// with both endorsement and storage root keys. Only the endorsement
         /// key is mandatory.
         /// </remarks>
-        /// <param name="endorsementKey">the <c>string</c> with the TPM endorsement key. It cannot be <c>null</c> or empty.</param>
-        /// <param name="storageRootKey">the <c>string</c> with the TPM storage root key. It can be <c>null</c> or empty.</param>
-        /// <exception cref="ArgumentException">if the endorsementKey is <c>null</c> or empty.</exception>
+        /// <param name="endorsementKey">the string with the TPM endorsement key. It cannot be null or empty.</param>
+        /// <param name="storageRootKey">the string with the TPM storage root key. It can be null or empty.</param>
+        /// <exception cref="ArgumentException">if the endorsementKey is null or empty.</exception>
         [JsonConstructor]
         public TpmAttestation(string endorsementKey, string storageRootKey = null)
         {
             try
             {
-                EndorsementKey = endorsementKey;
+                EndorsementKey = endorsementKey ?? throw new ArgumentNullException(nameof(endorsementKey));
                 StorageRootKey = storageRootKey;
             }
             catch (ArgumentException e)
@@ -46,18 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the endorsement key used for attestation.
         /// </summary>
         [JsonProperty(PropertyName = "endorsementKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string EndorsementKey
-        {
-            get => _endorsementKey;
-            private set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _endorsementKey = value;
-            }
-        }
+        public string EndorsementKey { get; private set; }
 
         /// <summary>
         /// Gets the storage key used for attestation.

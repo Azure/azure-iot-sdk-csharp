@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices
 {
@@ -12,17 +13,6 @@ namespace Microsoft.Azure.Devices
     {
         private string _policyName;
         private string _key;
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="policyName">Name of the shared access policy to use.</param>
-        /// <param name="key">Key associated with the shared access policy.</param>
-        public ServiceAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
-        {
-            SetPolicyName(policyName);
-            SetKey(key);
-        }
 
         public string PolicyName
         {
@@ -38,11 +28,6 @@ namespace Microsoft.Azure.Devices
 
         public ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder)
         {
-            if (provisioningConnectionStringBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(provisioningConnectionStringBuilder));
-            }
-
             provisioningConnectionStringBuilder.SharedAccessKey = Key;
             provisioningConnectionStringBuilder.SharedAccessKeyName = PolicyName;
             provisioningConnectionStringBuilder.SharedAccessSignature = null;
@@ -50,13 +35,21 @@ namespace Microsoft.Azure.Devices
             return provisioningConnectionStringBuilder;
         }
 
+        internal ServiceAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
+        {
+            SetPolicyName(policyName);
+            SetKey(key);
+        }
+
         private void SetPolicyName(string policyName)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(policyName));
             _policyName = policyName;
         }
 
         private void SetKey(string key)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(key));
             _key = key;
         }
     }

@@ -12,17 +12,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// This class creates a representation of an X509 CA references. It can receive primary and secondary
     /// CA references.
     ///
-    /// Users must provide the CA reference as a <c>String</c>. This class will encapsulate both in a
+    /// Users must provide the CA reference as a string. This class will encapsulate both in a
     /// single <see cref="X509Attestation"/>.
     /// </remarks>
     /// <example>
     /// The following JSON is an example of the result of this class.
-    /// <c>
+    /// <code>
     /// {
     ///     "primary": "ValidCAReference-1",
     ///     "secondary": "validCAReference-2"
     /// }
-    /// </c>
+    /// </code>
     /// </example>
     public class X509CAReferences
     {
@@ -32,10 +32,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509 CA references using the provided CA references.
         ///
-        /// The CA reference is a <c>String</c> with the name that you gave for your certificate.
+        /// The CA reference is a String with the name that you gave for your certificate.
         /// </remarks>
-        /// <param name="primary">the <c>String</c> with the primary CA reference.</param>
-        /// <param name="secondary">the <c>String</c> with the secondary CA reference.</param>
+        /// <param name="primary">the String with the primary CA reference.</param>
+        /// <param name="secondary">the String with the secondary CA reference.</param>
         [JsonConstructor]
         internal X509CAReferences(string primary, string secondary = null)
         {

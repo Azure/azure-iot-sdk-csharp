@@ -12,23 +12,17 @@ namespace Microsoft.Azure.Devices
     /// The connection string contains a set of information that uniquely identify an IoT Service.
     ///
     /// A valid connection string shall be in the following format:
-    /// <c>
+    /// <code>
     /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
-    /// </c>
+    /// </code>
     ///
     /// This object parse and store the connection string. It is responsible to provide the authorization token too.
     /// </remarks>
     internal sealed class ServiceConnectionString : IAuthorizationHeaderProvider
     {
         private static readonly TimeSpan s_defaultTokenTimeToLive = TimeSpan.FromHours(1);
-        private const char UserSeparator = '@';
 
-        /// <summary>
-        /// CONSTRUCOR
-        /// </summary>
-        /// <param name="builder">the <see cref="ServiceConnectionStringBuilder"/> with the connection string content.</param>
-        /// <exception cref="ArgumentNullException">if the provided builder is null.</exception>
-        public ServiceConnectionString(ServiceConnectionStringBuilder builder)
+        internal ServiceConnectionString(ServiceConnectionStringBuilder builder)
         {
             HostName = builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
@@ -65,7 +59,7 @@ namespace Microsoft.Azure.Devices
             return GetPassword();
         }
 
-        public static ServiceConnectionString Parse(string connectionString)
+        internal static ServiceConnectionString Parse(string connectionString)
         {
             var builder = ServiceConnectionStringBuilder.Create(connectionString);
             return new ServiceConnectionString(builder);

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// For instance, the following is a valid TwinState, represented as <c>initialTwin</c> in the rest API.
-    /// <c>
+    /// <code>
     /// {
     ///     "initialTwin": {
     ///         "tags":{
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///         }
     ///     }
     /// }
-    /// </c>
+    /// </code>
     /// </example>
     public class TwinState
     {
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <example>
         /// When serialized, this class will looks like the following example:
-        /// <c>
+        /// <code>
         /// {
         ///     "initialTwin": {
         ///         "tags":{
@@ -95,10 +95,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///         }
         ///     }
         /// }
-        /// </c>
+        /// </code>
         /// </example>
-        /// <param name="tags">the <see cref="TwinCollection"/> with the initial tags state. It can be <c>null</c>.</param>
-        /// <param name="desiredProperties">the <see cref="TwinCollection"/> with the initial desired properties. It can be <c>null</c>.</param>
+        /// <param name="tags">the <see cref="TwinCollection"/> with the initial tags state. It can be null.</param>
+        /// <param name="desiredProperties">the <see cref="TwinCollection"/> with the initial desired properties. It can be null.</param>
         public TwinState(TwinCollection tags, TwinCollection desiredProperties)
         {
             Tags = tags;
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
-        /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
+        /// <returns>The string with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);

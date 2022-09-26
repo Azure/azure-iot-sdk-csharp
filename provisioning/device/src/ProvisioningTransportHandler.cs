@@ -38,26 +38,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Gets or sets the inner handler.
         /// </summary>
-        /// <exception cref="ArgumentNullException">When the provided inner handler is null.</exception>
+        /// <exception cref="InvalidOperationException">When the provided inner handler is null.</exception>
         public ProvisioningTransportHandler InnerHandler
         {
             get => _innerHandler;
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
+                _innerHandler = value ?? throw new InvalidOperationException(nameof(value));
                 Logging.Associate(this, value);
-
-                _innerHandler = value;
             }
         }
 
         /// <summary>
         /// Gets or sets the port number.
         /// </summary>
+        /// <exception cref="InvalidOperationException">When the provided port value is out of range.</exception>
         public int Port
         {
             get => _port;
@@ -65,7 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 if (value < 1 || value > 65535)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value));
+                    throw new InvalidOperationException(nameof(value));
                 }
 
                 Logging.Info(this, $"{nameof(Port)} set to {value}");
