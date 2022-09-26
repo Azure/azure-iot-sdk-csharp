@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// This is used by DPS E2E tests.
         /// </remarks>
-        public IDictionary<string, string> Fields { get; private set; }
+        public IDictionary<string, string> Fields { get; private set; } = new Dictionary<string, string>();
 
         private bool DetermineIfTransient(HttpStatusCode statusCode)
         {

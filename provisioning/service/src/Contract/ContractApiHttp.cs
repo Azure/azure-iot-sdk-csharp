@@ -100,8 +100,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
         /// <exception cref="OperationCanceledException">if the cancellation was requested.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">if there is a error in the HTTP communication
-        /// between client and service or the service answer the request with error status.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">If there is an error in the HTTP communication
+        /// between client and service or the service answers the request with error status.</exception>
         public async Task<ContractApiResponse> RequestAsync(
             HttpMethod httpMethod,
             Uri requestUri,
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     if (httpResponse == null)
                     {
                         throw new DeviceProvisioningServiceException(
-                            $"The response message was null when executing operation {httpMethod}.", innerException: null, isTransient: true);
+                            $"The response message was null when executing operation {httpMethod}.", isTransient: true);
                     }
 
                     response = new ContractApiResponse(
