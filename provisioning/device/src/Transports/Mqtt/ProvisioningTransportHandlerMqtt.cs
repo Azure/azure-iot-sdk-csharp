@@ -14,6 +14,7 @@ using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -156,6 +157,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
+            }
+            catch (MqttCommunicationTimedOutException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
+                throw new ProvisioningTransportException("Timed out while provisioning.", ex, true);
+            }
+            catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
+            {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
+                throw new OperationCanceledException("Timed out while provisioning.", ex);
             }
             finally
             {
@@ -368,7 +381,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             mqttClientOptionsBuilder
                 .WithTls(tlsParameters)
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311) // 3.1.1
-                .WithKeepAlivePeriod(IdleTimeout);
+                .WithKeepAlivePeriod(IdleTimeout)
+                .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
 
             return mqttClientOptionsBuilder;
         }
@@ -428,7 +442,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Gets the result of the provided task completion source or throws OperationCancelledException if the provided
+        /// Gets the result of the provided task completion source or throws OperationCanceledException if the provided
         /// cancellation token is cancelled beforehand.
         /// </summary>
         /// <typeparam name="T">The type of the result of the task completion source.</typeparam>
