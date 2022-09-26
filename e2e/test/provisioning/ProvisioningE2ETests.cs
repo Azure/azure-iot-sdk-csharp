@@ -519,7 +519,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Func<Task> act = async () => await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(new IotHubClientAmqpSettings()).ConfigureAwait(false);
 
             // assert
-            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>();
+            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
             error.And.ErrorCode.Should().Be(404201);
             error.And.IsTransient.Should().BeFalse();

@@ -12,6 +12,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FluentAssertions;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
@@ -52,26 +53,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.Tcp);
-            DeviceProvisioningClientException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningClientException>(
-                () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
+            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
 
-            Assert.IsInstanceOfType(exception.InnerException, typeof(AuthenticationException));
+            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+            Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.Tcp);
-            DeviceProvisioningClientException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningClientException>(
-                () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
+            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
 
-            if (exception.InnerException == null)
+            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+            if (error.And.InnerException == null)
             {
-                Assert.AreEqual("MQTT Protocol Exception: Channel closed.", exception.Message);
+                Assert.AreEqual("MQTT Protocol Exception: Channel closed.", error.And.Message);
             }
             else
             {
-                Assert.IsInstanceOfType(exception.InnerException, typeof(AuthenticationException));
+                Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
             }
         }
 
@@ -79,13 +80,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateHttp_Fails()
         {
             using var transport = new ProvisioningTransportHandlerHttp();
-            DeviceProvisioningClientException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningClientException>(
-                () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
+            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
 
+            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
 #if NET472
-                Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+                Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
-            Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
+            Assert.IsInstanceOfType(error.And.InnerException.InnerException, typeof(AuthenticationException));
 #endif
         }
 
@@ -93,20 +94,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             using var transport = new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.WebSocket);
-            DeviceProvisioningClientException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningClientException>(
-                () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
+            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
 
-            Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+            Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             using var transport = new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.WebSocket);
-            DeviceProvisioningClientException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningClientException>(
-                () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
+            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
 
-            Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+            Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 
         private async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
