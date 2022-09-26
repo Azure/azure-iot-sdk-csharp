@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -184,15 +185,33 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static void ValidateHttpResponse(ContractApiResponse response)
         {
-            if (response.StatusCode >= HttpStatusCode.InternalServerError ||
-                (int)response.StatusCode == 429)
+            try
             {
-                throw new DeviceProvisioningServiceException($"{response.ErrorMessage}:{response.Body}", response.StatusCode, response.Fields, isTransient: true);
+                ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(response.Body);
+
+                if (response.StatusCode >= HttpStatusCode.InternalServerError ||
+                    (int)response.StatusCode == 429)
+                {
+                    throw new DeviceProvisioningServiceException(
+                        $"{response.ErrorMessage}:{response.Body}",
+                        response.StatusCode,
+                        responseBody.ErrorCode,
+                        responseBody.TrackingId,
+                        response.Fields,
+                        isTransient: true);
+                }
+                else if (response.StatusCode >= HttpStatusCode.Ambiguous)
+                {
+                    throw new DeviceProvisioningServiceException(
+                        $"{response.ErrorMessage}:{response.Body}",
+                        response.StatusCode,
+                        responseBody.ErrorCode,
+                        responseBody.TrackingId,
+                        response.Fields,
+                        isTransient: false);
+                }
             }
-            else if (response.StatusCode >= HttpStatusCode.Ambiguous)
-            {
-                throw new DeviceProvisioningServiceException($"{response.ErrorMessage}:{response.Body}", response.StatusCode, response.Fields, isTransient: false);
-            }
+            catch (JsonException) { }
         }
 
         private static void InsertIfMatch(HttpRequestMessage requestMessage, string ifMatch)
