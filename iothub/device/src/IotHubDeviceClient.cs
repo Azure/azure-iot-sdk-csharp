@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         // Cloud-to-device message callback information
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
 
-        private volatile Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object> _deviceReceiveMessageCallback;
+        private volatile Func<Message, Task<MessageAcknowledgement>> _deviceReceiveMessageCallback;
 
         // File upload operation
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
@@ -95,17 +95,15 @@ namespace Microsoft.Azure.Devices.Client
         /// A cloud-to-device message handler can be unset by setting <paramref name="messageHandler"/> to null.
         /// </remarks>
         /// <param name="messageHandler">The listener to be used when a cloud-to-device message is received by the client.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetReceiveMessageHandlerAsync(
-            Func<Message, object, Task<MessageAcknowledgement>> messageHandler,
-            object userContext,
+            Func<Message, Task<MessageAcknowledgement>> messageHandler,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messageHandler, userContext, nameof(SetReceiveMessageHandlerAsync));
+                Logging.Enter(this, messageHandler, nameof(SetReceiveMessageHandlerAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -121,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object>(messageHandler, userContext);
+                    _deviceReceiveMessageCallback = messageHandler;
                 }
                 else
                 {
@@ -135,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client
                 _deviceReceiveMessageSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messageHandler, userContext, nameof(SetReceiveMessageHandlerAsync));
+                    Logging.Exit(this, messageHandler, nameof(SetReceiveMessageHandlerAsync));
             }
         }
 
@@ -203,12 +201,9 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<Message, object, Task<MessageAcknowledgement>> callback = _deviceReceiveMessageCallback?.Item1;
-                object callbackContext = _deviceReceiveMessageCallback?.Item2;
-
-                if (callback != null)
+                if (_deviceReceiveMessageCallback != null)
                 {
-                    MessageAcknowledgement response = await callback.Invoke(message, callbackContext).ConfigureAwait(false);
+                    MessageAcknowledgement response = await _deviceReceiveMessageCallback.Invoke(message).ConfigureAwait(false);
 
                     try
                     {

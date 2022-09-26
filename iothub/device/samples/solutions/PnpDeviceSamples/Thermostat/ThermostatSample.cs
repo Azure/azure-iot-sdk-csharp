@@ -78,10 +78,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             });
 
             _logger.LogDebug($"Set handler to receive \"targetTemperature\" updates.");
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, _deviceClient, cancellationToken);
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);
 
             _logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
-            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, null, cancellationToken);
+            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, cancellationToken);
 
             _logger.LogDebug("Check if the device properties are empty on the initial startup.");
             await CheckEmptyPropertiesAsync(cancellationToken);
@@ -101,11 +101,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodRequest request, object userContext)
+        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodRequest request)
         {
             return request.MethodName switch
             {
-                "getMaxMinReport" => await HandleMaxMinReportCommandAsync(request, userContext),
+                "getMaxMinReport" => await HandleMaxMinReportCommandAsync(request),
                 _ => new DirectMethodResponse(400),
             };
         }
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     string propertyName = propertyUpdate.Key;
                     if (propertyName == TargetTemperatureProperty)
                     {
-                        await TargetTemperatureUpdateCallbackAsync(twinCollection, propertyName);
+                        await TargetTemperatureUpdateCallbackAsync(twinCollection);
                     }
                     else
                     {
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and reported property update.
-        private async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
+        private async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties)
         {
             (bool targetTempUpdateReceived, double targetTemperature) = GetPropertyFromTwin<double>(desiredProperties, TargetTemperatureProperty);
             if (targetTempUpdateReceived)
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature
         // from the specified time to the current time.
-        private Task<DirectMethodResponse> HandleMaxMinReportCommandAsync(DirectMethodRequest request, object userContext)
+        private Task<DirectMethodResponse> HandleMaxMinReportCommandAsync(DirectMethodRequest request)
         {
             try
             {

@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
 
         // Cloud-to-module message callback information
-        private volatile Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object> _defaultEventCallback;
+        private volatile Func<Message, Task<MessageAcknowledgement>> _defaultEventCallback;
 
         /// <summary>
         /// Creates a disposable <c>IotHubModuleClient</c> from the specified connection string.
@@ -205,17 +205,15 @@ namespace Microsoft.Azure.Devices.Client
         /// This API call is relevant for both IoT hub modules and IoT Edge modules.
         /// </remarks>
         /// <param name="messageHandler">The listener to be used when a cloud-to-module message is received by the client.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMessageHandlerAsync(
-            Func<Message, object, Task<MessageAcknowledgement>> messageHandler,
-            object userContext,
+            Func<Message, Task<MessageAcknowledgement>> messageHandler,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
+                Logging.Enter(this, messageHandler, nameof(SetMessageHandlerAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
             await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -225,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (messageHandler != null)
                 {
                     await EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                    _defaultEventCallback = new Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object>(messageHandler, userContext);
+                    _defaultEventCallback = messageHandler;
                 }
                 else
                 {
@@ -238,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client
                 _moduleReceiveMessageSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
+                    Logging.Exit(this, messageHandler, nameof(SetMessageHandlerAsync));
             }
         }
 
@@ -343,13 +341,10 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 var response = MessageAcknowledgement.Complete;
-                if (_defaultEventCallback?.Item1 != null)
+                if (_defaultEventCallback != null)
                 {
-                    Func<Message, object, Task<MessageAcknowledgement>> userSuppliedCallback = _defaultEventCallback.Item1;
-                    object userContext = _defaultEventCallback.Item2;
-
-                    response = await userSuppliedCallback
-                        .Invoke(message, userContext)
+                    response = await _defaultEventCallback
+                        .Invoke(message)
                         .ConfigureAwait(false);
                 }
 
