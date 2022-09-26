@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </para>
         /// This API call is relevant for both IoT hub modules and IoT Edge modules.
         /// </remarks>
-        /// <param name="messageHandler">The listener to be used when a cloud to device message is received by the client.</param>
+        /// <param name="messageHandler">The listener to be used when a cloud-to-module message is received by the client.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
