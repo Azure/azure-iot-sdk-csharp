@@ -58,10 +58,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="message">The message.</param>
         /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
         /// <param name="fields">The HTTP headers.</param>
-        /// <param name="isTransient">True if the error is transient and the operation should be retried.True if the error is transient and the operation should be retried.</param>
-        internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, IDictionary<string, string> fields, bool isTransient)
-            : this(message, isTransient)
+        internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, IDictionary<string, string> fields)
+            : base(message)
         {
+            IsTransient = DetermineIfTransient(statusCode);
             StatusCode = statusCode;
             Fields = fields;
         }
@@ -74,10 +74,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="errorCode">The specific 6-digit error code in the DPS response, if available.</param>
         /// <param name="trackingId">Service reported tracking Id. Use this when reporting a service issue.</param>
         /// <param name="fields">The HTTP headers.</param>
-        /// <param name="isTransient">True if the error is transient and the operation should be retried.</param>
-        internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, int errorCode, string trackingId, IDictionary<string, string> fields, bool isTransient)
-            : this(message, isTransient)
+        internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, int errorCode, string trackingId, IDictionary<string, string> fields)
+            : base(message)
         {
+            IsTransient = DetermineIfTransient(statusCode);
             StatusCode = statusCode;
             ErrorCode = errorCode;
             TrackingId = trackingId;
@@ -111,5 +111,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This is used by DPS E2E tests.
         /// </remarks>
         public IDictionary<string, string> Fields { get; private set; }
+
+        private bool DetermineIfTransient(HttpStatusCode statusCode)
+        {
+            return statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
+        }
     }
 }

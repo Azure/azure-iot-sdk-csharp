@@ -185,30 +185,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static void ValidateHttpResponse(ContractApiResponse response)
         {
+            if (response.Body == null)
+            {
+                throw new DeviceProvisioningServiceException(response.ErrorMessage, response.StatusCode, response.Fields);
+            }
+
             try
             {
                 ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(response.Body);
 
-                if (response.StatusCode >= HttpStatusCode.InternalServerError ||
-                    (int)response.StatusCode == 429)
+                if (response.StatusCode >= HttpStatusCode.Ambiguous)
                 {
                     throw new DeviceProvisioningServiceException(
                         $"{response.ErrorMessage}:{response.Body}",
                         response.StatusCode,
                         responseBody.ErrorCode,
                         responseBody.TrackingId,
-                        response.Fields,
-                        isTransient: true);
-                }
-                else if (response.StatusCode >= HttpStatusCode.Ambiguous)
-                {
-                    throw new DeviceProvisioningServiceException(
-                        $"{response.ErrorMessage}:{response.Body}",
-                        response.StatusCode,
-                        responseBody.ErrorCode,
-                        responseBody.TrackingId,
-                        response.Fields,
-                        isTransient: false);
+                        response.Fields);
                 }
             }
             catch (JsonException) { }

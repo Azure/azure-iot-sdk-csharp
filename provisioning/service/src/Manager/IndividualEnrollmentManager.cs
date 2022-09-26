@@ -48,15 +48,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new DeviceProvisioningServiceException(
-                    $"{contractApiResponse.ErrorMessage}:{contractApiResponse.Body}",
-                    contractApiResponse.StatusCode,
-                    contractApiResponse.Fields,
-                    isTransient: true);
-            }
-
             return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
         }
 
@@ -86,15 +77,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new DeviceProvisioningServiceException(
-                    $"{contractApiResponse.ErrorMessage}:{contractApiResponse.Body}",
-                    contractApiResponse.StatusCode,
-                    contractApiResponse.Fields,
-                    isTransient: true);
-            }
-
             return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
         }
 
@@ -112,15 +94,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     null,
                     cancellationToken)
                 .ConfigureAwait(false);
-
-            if (contractApiResponse.Body == null)
-            {
-                throw new DeviceProvisioningServiceException(
-                    $"{contractApiResponse.ErrorMessage}:{contractApiResponse.Body}",
-                    contractApiResponse.StatusCode,
-                    contractApiResponse.Fields,
-                    isTransient: true);
-            }
 
             return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
         }
@@ -205,15 +178,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     null,
                     cancellationToken)
                 .ConfigureAwait(false);
-
-            if (contractApiResponse?.Body == null)
-            {
-                throw new DeviceProvisioningServiceException(
-                    $"{contractApiResponse.ErrorMessage}:{contractApiResponse.Body}",
-                    contractApiResponse.StatusCode,
-                    contractApiResponse.Fields,
-                    isTransient: true);
-            }
 
             return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
         }
