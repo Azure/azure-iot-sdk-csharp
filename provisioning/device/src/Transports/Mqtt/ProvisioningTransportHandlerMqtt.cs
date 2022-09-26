@@ -158,7 +158,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
             }
-            catch (MqttCommunicationTimedOutException ex)
+            catch (MqttCommunicationTimedOutException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
+                throw new ProvisioningTransportException("Timed out while provisioning.", ex, true);
+            }
+            catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
@@ -436,7 +442,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Gets the result of the provided task completion source or throws OperationCancelledException if the provided
+        /// Gets the result of the provided task completion source or throws OperationCanceledException if the provided
         /// cancellation token is cancelled beforehand.
         /// </summary>
         /// <typeparam name="T">The type of the result of the task completion source.</typeparam>
