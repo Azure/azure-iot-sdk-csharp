@@ -9,18 +9,28 @@ namespace Microsoft.Azure.Devices
     public class InvokeDigitalTwinCommandResponse
     {
         /// <summary>
+        /// This constructor is for deserialization and unit test mocking purposes.
+        /// </summary>
+        /// <remarks>
+        /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
+        /// that can set the properties you want.
+        /// </remarks>
+        protected internal InvokeDigitalTwinCommandResponse()
+        { }
+
+        /// <summary>
         /// Command invocation result status, as supplied by the device.
         /// </summary>
-        public int? Status { get; internal set; }
+        public int? Status { get; protected internal set; }
 
         /// <summary>
         /// Command invocation result payload, as supplied by the device.
         /// </summary>
-        public string Payload { get; internal set; }
+        public string Payload { get; protected internal set; }
 
         /// <summary>
         /// Server generated request Id to uniquely identify this request in the service.
         /// </summary>
-        public string RequestId { get; internal set; }
+        public string RequestId { get; protected internal set; }
     }
 }
