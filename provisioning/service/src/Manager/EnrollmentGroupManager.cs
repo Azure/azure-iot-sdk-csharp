@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-
             return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
