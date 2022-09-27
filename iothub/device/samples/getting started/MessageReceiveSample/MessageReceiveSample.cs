@@ -42,7 +42,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"\n{DateTime.Now}> Subscribed to receive C2D messages over callback.");
 
             // Now wait to receive C2D messages through the callback.
-            // Since you are subscribed to receive messages through the callback, any call to the polling ReceiveAsync() API will now return "null".
             Console.WriteLine($"\n{DateTime.Now}> Device waiting for C2D messages from the hub...");
             Console.WriteLine($"{DateTime.Now}> Use the Azure Portal IoT Hub blade or Azure IoT Explorer to send a message to this device.");
 

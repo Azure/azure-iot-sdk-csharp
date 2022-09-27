@@ -322,25 +322,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledReceive()
-        {
-            // arrange
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
-            var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(CancellationToken.None).Returns(Task.CompletedTask);
-            using var cts = new CancellationTokenSource();
-
-            cts.Cancel();
-            nextHandlerMock.ReceiveMessageAsync(cts.Token).Returns(new Task<Message>(() => new Message(new byte[0])));
-            var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
-            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-
-            // act and assert
-            await sut.ReceiveMessageAsync(cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task RetrySetRetryPolicyVerifyInternalsSuccess()
         {
             // arrange
@@ -373,70 +354,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             exception.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
-        }
-
-        [TestMethod]
-        public async Task RetryCancellationTokenCanceledComplete()
-        {
-            // arrange
-            const string lockToken = "fakeLockToken";
-
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
-
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
-
-            var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            nextHandlerMock.CompleteMessageAsync(lockToken, Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-
-            var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
-            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-
-            // act and assert
-            await sut.CompleteMessageAsync(lockToken, cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task RetryCancellationTokenCanceledAbandon()
-        {
-            // arrange
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
-            var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(CancellationToken.None).Returns(Task.CompletedTask);
-            nextHandlerMock.AbandonMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
-
-            var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
-            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
-
-            // act and assert
-            await sut
-                .AbandonMessageAsync(Arg.Any<string>(), cts.Token)
-                .ExpectedAsync<TaskCanceledException>()
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task RetryCancellationTokenCanceledReject()
-        {
-            // arrange
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
-            var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(CancellationToken.None).Returns(Task.CompletedTask);
-            nextHandlerMock.RejectMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
-
-            var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
-            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
-
-            // act and assert
-            await sut.RejectMessageAsync(Arg.Any<string>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
         }
 
         private class TestRetryPolicy : IRetryPolicy

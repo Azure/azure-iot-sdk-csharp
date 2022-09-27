@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly Func<DirectMethodRequest, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<Message, Task> _messageReceivedListener;
+        private readonly Func<Message, Task<MessageAcknowledgement>> _messageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
@@ -417,13 +417,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // is the recommended pattern for sending large numbers of messages over an asynchronous
             // protocol like MQTT
             await Task.WhenAll(messages.Select(x => SendEventAsync(x, cancellationToken))).ConfigureAwait(false);
-        }
-
-        public override Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            //TODO stubbing this method because we plan on removing it from the device client later.
-            Message message = null;
-            return Task.FromResult(message);
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
@@ -918,12 +911,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_messageReceivedListener != null)
             {
-                // We are intentionally not awaiting _messageReceivedListener callback.
-                // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
-                _ = _messageReceivedListener.Invoke(receivedCloudToDeviceMessage);
+                MessageAcknowledgement acknowledgementType = await _messageReceivedListener.Invoke(receivedCloudToDeviceMessage);
 
-                // note that MQTT does not support Abandon or Reject, so always Complete by acknowledging the message like this.
-                // Also note that
+                if (acknowledgementType != MessageAcknowledgement.Complete)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Cannot 'reject' or 'abandon' a received message over MQTT. Message will be acknowledged as 'complete' instead.");
+                }
+
+                // Note that MQTT does not support Abandon or Reject, so always Complete by acknowledging the message like this.
                 try
                 {
                     await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);

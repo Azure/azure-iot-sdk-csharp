@@ -558,14 +558,14 @@ namespace Microsoft.Azure.Devices.Client
             return !isFound ? default : (T)handler;
         }
 
-        internal async Task OnMessageReceivedAsync(Message message)
+        internal async Task<MessageAcknowledgement> OnMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(OnMessageReceivedAsync));
 
             if (message == null)
             {
-                return;
+                return MessageAcknowledgement.Abandon;
             }
 
             // Grab this semaphore so that there is no chance that the _receiveMessageCallback instance is set in between the read of the
@@ -578,38 +578,22 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (callback != null)
                 {
-                    MessageAcknowledgement response = await callback.Invoke(message).ConfigureAwait(false);
-
-                    try
-                    {
-                        switch (response)
-                        {
-                            case MessageAcknowledgement.Complete:
-                                await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-
-                            case MessageAcknowledgement.Abandon:
-                                await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-
-                            case MessageAcknowledgement.Reject:
-                                await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-                        }
-                    }
-                    catch (Exception ex) when (Logging.IsEnabled)
-                    {
-                        Logging.Error(this, ex, nameof(OnMessageReceivedAsync));
-                    }
+                    return await callback.Invoke(message).ConfigureAwait(false);
                 }
+
+                // The SDK should only receive messages when the user sets a listener, so this should never happen.
+                if (Logging.IsEnabled)
+                    Logging.Info(this, "Received a message when no listener was set. Abandoning message.", nameof(OnMessageReceivedAsync));
+
+                return MessageAcknowledgement.Abandon;
             }
             finally
             {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, message, nameof(OnMessageReceivedAsync));
+
                 _receiveMessageSemaphore.Release();
             }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, message, nameof(OnMessageReceivedAsync));
         }
 
         private Task EnableReceiveMessageAsync(CancellationToken cancellationToken = default)
