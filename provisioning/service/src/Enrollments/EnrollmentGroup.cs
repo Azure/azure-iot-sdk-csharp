@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             catch (ArgumentException e)
             {
-                throw new DeviceProvisioningServiceException(e);
+                throw new DeviceProvisioningServiceException(e.Message, HttpStatusCode.BadRequest, e);
             }
         }
 

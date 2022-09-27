@@ -2,7 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using FluentAssertions;
+using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -116,7 +119,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson));
+            Action act = () => JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         /* SRS_ENROLLMENT_GROUP_21_004: [The constructor shall store all parameters in the JSON.] */
@@ -124,7 +130,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void EnrollmentGroupConstructorJSONSucceed()
         {
             // arrange
-            EnrollmentGroup enrollmentGroup = Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(SampleEnrollmentGroupJson);
+            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(SampleEnrollmentGroupJson);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
@@ -166,7 +172,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "   },\n" +
                 "   \"etag\": \"" + SampleEtag + "\"\n" +
                 "}";
-            EnrollmentGroup enrollmentGroup = Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(minJson);
+            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(minJson);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);

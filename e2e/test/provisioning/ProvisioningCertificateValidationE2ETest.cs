@@ -42,7 +42,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Func<Task> act = async () => await q.NextAsync();
 
             var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>().ConfigureAwait(false);
-
 #if NET472
                 Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else

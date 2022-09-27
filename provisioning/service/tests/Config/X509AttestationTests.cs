@@ -2,10 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Text;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using System.Security.Cryptography.X509Certificates;
+using FluentAssertions;
 
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
@@ -396,7 +398,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             string json = MakeX509AttestationJson("clientCertificates");
-            X509Attestation attestation = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json);
+            X509Attestation attestation = JsonConvert.DeserializeObject<X509Attestation>(json);
 
             // act - assert
             Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
@@ -408,7 +410,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             string json = MakeX509AttestationJson("clientCertificates", true);
-            X509Attestation attestation = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json);
+            X509Attestation attestation = JsonConvert.DeserializeObject<X509Attestation>(json);
 
             // act - assert
             Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
@@ -422,7 +424,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             string json = MakeX509AttestationJson("signingCertificates");
-            X509Attestation attestation = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json);
+            X509Attestation attestation = JsonConvert.DeserializeObject<X509Attestation>(json);
 
             // act - assert
             Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
@@ -441,7 +443,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "    \"secondary\": \"" + CA_REFERENCE_STRING + "\"" +
                 "  }" +
                 "}";
-            X509Attestation attestation = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json);
+            X509Attestation attestation = JsonConvert.DeserializeObject<X509Attestation>(json);
 
             // act - assert
             Assert.IsNull(attestation.GetPrimaryX509CertificateInfo());
@@ -461,7 +463,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string json = "{}";
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+            Action act = () => JsonConvert.DeserializeObject<X509Attestation>(json);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         /* SRS_X509_ATTESTATION_21_015: [The constructor shall throws ArgumentException if more than one certificate type are not null.] */
@@ -482,7 +487,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+            Action act = () => JsonConvert.DeserializeObject<X509Attestation>(json);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
@@ -501,7 +509,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+            Action act = () => JsonConvert.DeserializeObject<X509Attestation>(json);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
@@ -520,7 +531,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+            Action act = () => JsonConvert.DeserializeObject<X509Attestation>(json);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
     }
 }

@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using FluentAssertions;
+using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -26,7 +28,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string endorsementKey = null;
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => new TpmAttestation(endorsementKey));
+            Action act = () => new TpmAttestation(endorsementKey);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
@@ -36,7 +41,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string endorsementKey = "";
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => new TpmAttestation(endorsementKey));
+            Action act = () => new TpmAttestation(endorsementKey);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         /* SRS_TPM_ATTESTATION_21_002: [The StorageRootKey setter shall store the storageRootKey passed.] */
@@ -115,7 +123,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // act
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);
+            string json = JsonConvert.SerializeObject(tpmAttestation);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -133,7 +141,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var tpmAttestation = new TpmAttestation(endorsementKey);
 
             // act
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);
+            string json = JsonConvert.SerializeObject(tpmAttestation);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -153,7 +161,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // act
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);
+            string json = JsonConvert.SerializeObject(tpmAttestation);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -172,7 +180,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -190,7 +198,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json));
+            Action act = () => JsonConvert.DeserializeObject<TpmAttestation>(json);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
@@ -205,7 +216,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<DeviceProvisioningServiceException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json));
+            Action act = () => JsonConvert.DeserializeObject<TpmAttestation>(json);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
@@ -219,7 +233,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -238,7 +252,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
