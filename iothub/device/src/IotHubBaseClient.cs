@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -563,20 +564,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(OnMessageReceivedAsync));
 
-            if (message == null)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, "Received a null message. Abandoning message.", nameof(OnMessageReceivedAsync));
-
-                if (_clientOptions.TransportSettings is IotHubClientMqttSettings)
-                {
-                    // MQTT does not support abandoning received messages, so we have no choice
-                    // but to complete it
-                    return MessageAcknowledgement.Complete;
-                }
-
-                return MessageAcknowledgement.Abandon;
-            }
+            Debug.Assert(message != null, "Received a null message");
 
             // Grab this semaphore so that there is no chance that the _receiveMessageCallback instance is set in between the read of the
             // item1 and the read of the item2
