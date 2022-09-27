@@ -19,11 +19,6 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientTransportProtocol Protocol { get; protected set; }
 
         /// <summary>
-        /// The time to wait for a receive operation.
-        /// </summary>
-        public TimeSpan DefaultReceiveTimeout { get; protected set; }
-
-        /// <summary>
         /// The web proxy that will be used to connect to IoT hub using a web socket connection for AMQP, MQTT, or when using the
         /// HTTP protocol.
         /// </summary>
