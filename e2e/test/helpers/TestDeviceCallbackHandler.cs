@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public async Task SetDeviceReceiveMethodAsync<T>(string methodName, object deviceResponseJson, T expectedServiceRequestJson)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
-            await _deviceClient.SetMethodCallbackAsync(
+            await _deviceClient.SetDirectMethodCallbackAsync(
                 (request) =>
                 {
                     try

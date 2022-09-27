@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
             });
 
-            await _deviceClient.SetMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
+            await _deviceClient.SetDirectMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
 
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, cancellationToken);

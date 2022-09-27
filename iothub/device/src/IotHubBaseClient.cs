@@ -247,17 +247,17 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
-        /// A method callback can be unset by setting <paramref name="methodCallback"/> to null.
+        /// A method callback can be unset by setting <paramref name="directMethodCallback"/> to null.
         /// </remarks>
-        /// <param name="methodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
+        /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetMethodCallbackAsync(
-            Func<DirectMethodRequest, Task<DirectMethodResponse>> methodCallback,
+        public async Task SetDirectMethodCallbackAsync(
+            Func<DirectMethodRequest, Task<DirectMethodResponse>> directMethodCallback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, methodCallback, nameof(SetMethodCallbackAsync));
+                Logging.Enter(this, directMethodCallback, nameof(SetDirectMethodCallbackAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -265,10 +265,10 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                if (methodCallback != null)
+                if (directMethodCallback != null)
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceDefaultMethodCallback = methodCallback;
+                    _deviceDefaultMethodCallback = directMethodCallback;
                 }
                 else
                 {
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.Client
                 _methodsSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, methodCallback, nameof(SetMethodCallbackAsync));
+                    Logging.Exit(this, directMethodCallback, nameof(SetDirectMethodCallbackAsync));
             }
         }
 

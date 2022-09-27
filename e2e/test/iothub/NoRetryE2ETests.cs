@@ -114,14 +114,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             var response = new Client.DirectMethodResponse(200);
 
             await deviceClient1
-                .SetMethodCallbackAsync(
+                .SetDirectMethodCallbackAsync(
                     (methodRequest) => Task.FromResult(response))
                 .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 2 calling OpenAsync...");
             await deviceClient2.OpenAsync().ConfigureAwait(false);
             await deviceClient2
-                .SetMethodCallbackAsync(
+                .SetDirectMethodCallbackAsync(
                     (methodRequest) => Task.FromResult(response))
                 .ConfigureAwait(false);
 
