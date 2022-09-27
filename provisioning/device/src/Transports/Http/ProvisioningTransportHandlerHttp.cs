@@ -225,7 +225,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 if (Logging.IsEnabled)
                                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(RegisterAsync));
 
-                                throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient, errorDetails);
+                                throw new DeviceProvisioningClientException(
+                                    ex.Response.Content,
+                                    ex,
+                                    ex.Response.StatusCode,
+                                    errorDetails.ErrorCode,
+                                    errorDetails.TrackingId);
                             }
                         }
                         catch (JsonException jex)
@@ -237,7 +242,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                     $"Parsing error: {jex}. Server response: {ex.Response.Content}",
                                     nameof(RegisterAsync));
 
-                            throw new ProvisioningTransportException(
+                            throw new DeviceProvisioningClientException(
                                 $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
                                 jex,
                                 false);
@@ -274,7 +279,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 try
                 {
                     ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
-                    throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient, errorDetails);
+                    throw new DeviceProvisioningClientException(
+                        ex.Response.Content,
+                        ex,
+                        ex.Response.StatusCode,
+                        errorDetails.ErrorCode,
+                        errorDetails.TrackingId);
                 }
                 catch (JsonException jex)
                 {
@@ -284,18 +294,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                             $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
                             nameof(RegisterAsync));
 
-                    throw new ProvisioningTransportException(
+                    throw new DeviceProvisioningClientException(
                         $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
                         jex,
                         false);
                 }
             }
-            catch (Exception ex) when (!(ex is ProvisioningTransportException))
+            catch (Exception ex) when (!(ex is DeviceProvisioningClientException))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(RegisterAsync));
 
-                throw new ProvisioningTransportException($"HTTP transport exception", ex, true);
+                throw new DeviceProvisioningClientException($"HTTP transport exception", ex, true);
             }
             finally
             {
