@@ -247,12 +247,12 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             await deviceClient
-                .SetMethodHandlerAsync(
+                .SetDirectMethodCallbackAsync(
                     (payload) => Task.FromResult(directMethodResponseWithPayload))
                 .ConfigureAwait(false);
 
             await deviceClient
-                .SetMethodHandlerAsync(null)
+                .SetDirectMethodCallbackAsync(null)
                 .ConfigureAwait(false);
 
             // assert
@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
 
             bool isMethodHandlerCalled = false;
-            await deviceClient.SetMethodHandlerAsync((payload) =>
+            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(directMethodResponseWithPayload);
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
 
             bool isMethodHandlerCalled = false;
-            await deviceClient.SetMethodHandlerAsync((payload) =>
+            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(directMethodResponseWithPayload);
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
-            await deviceClient.SetMethodHandlerAsync((payload) =>
+            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(directMethodResponseWithPayload);
@@ -352,7 +352,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool responseReceivedAsExpected = false;
             bool response = false;
             string responseAsString = null;
-            await deviceClient.SetMethodHandlerAsync((payload) =>
+            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
                 responseReceivedAsExpected = payload.TryGetPayload(out response);
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool responseReceivedAsExpected = false;
             byte[] response = null;
             string responseAsString = null;
-            await deviceClient.SetMethodHandlerAsync((payload) =>
+            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
                 responseReceivedAsExpected = payload.TryGetPayload(out response);
@@ -426,7 +426,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool responseReceivedAsExpected = false;
             List<double> response = null;
             string responseAsString = null;
-            await deviceClient.SetMethodHandlerAsync((payload) =>
+            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
                 responseReceivedAsExpected = payload.TryGetPayload(out response);
@@ -463,7 +463,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool responseReceivedAsExpected = false;
             Dictionary<string, object> response = null;
             string responseAsString = null;
-            await deviceClient.SetMethodHandlerAsync((payload) =>
+            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
                 responseReceivedAsExpected = payload.TryGetPayload(out response);
@@ -497,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
-            await deviceClient.SetMethodHandlerAsync((payload) =>
+            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(directMethodResponseWithNoPayload);
@@ -561,7 +561,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             string methodName = "TestMethodName";
             string methodBody = "{\"grade\":\"good\"}";
-            await deviceClient.SetMethodHandlerAsync(methodCallback).ConfigureAwait(false);
+            await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
             var DirectMethodRequest = new DirectMethodRequest()
             {
                 MethodName = methodName,
@@ -590,7 +590,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             string methodBody2 = "{\"grade\":\"bad\"}";
-            await deviceClient.SetMethodHandlerAsync(methodCallback2).ConfigureAwait(false);
+            await deviceClient.SetDirectMethodCallbackAsync(methodCallback2).ConfigureAwait(false);
             DirectMethodRequest = new DirectMethodRequest()
             {
                 MethodName = methodName,
@@ -630,7 +630,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             string methodName = "TestMethodName";
             string methodBody = "{\"grade\":\"good\"}";
-            await deviceClient.SetMethodHandlerAsync(methodCallback).ConfigureAwait(false);
+            await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
             var DirectMethodRequest = new DirectMethodRequest()
             {
                 MethodName = methodName,
@@ -649,7 +649,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // arrange
             methodCallbackCalled = false;
-            await deviceClient.SetMethodHandlerAsync(null).ConfigureAwait(false);
+            await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
             DirectMethodRequest = new DirectMethodRequest()
             {
                 MethodName = methodName,
@@ -673,7 +673,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
 
-            await deviceClient.SetMethodHandlerAsync(null).ConfigureAwait(false);
+            await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
@@ -688,7 +688,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
+            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -709,8 +709,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
-            deviceClient.SetConnectionStatusChangeHandler(null);
+            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            deviceClient.SetConnectionStatusChangeCallback(null);
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -729,7 +729,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
+            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
             // current status = disabled
 
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -759,7 +759,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
+            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
 
             // current status = disabled
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));

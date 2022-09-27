@@ -36,10 +36,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
-            _deviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandler);
+            _deviceClient.SetConnectionStatusChangeCallback(ConnectionStatusChangeHandler);
 
             // Setup a callback dispatcher for the incoming methods.
-            await _deviceClient.SetMethodHandlerAsync(
+            await _deviceClient.SetDirectMethodCallbackAsync(
                 OnDirectMethodCalledAsync,
                 cts.Token);
 
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // You can unsubscribe from receiving a callback for direct methods by setting a null callback handler.
-            await _deviceClient.SetMethodHandlerAsync(
+            await _deviceClient.SetDirectMethodCallbackAsync(
                 null);
         }
 

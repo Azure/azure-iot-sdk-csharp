@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     c2dMessageReceived.TrySetResult(message);
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 };
-                await dc.SetMessageHandlerAsync(OnC2DMessageReceived).ConfigureAwait(false);
+                await dc.SetMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
                 Client.Message receivedMessage = await TaskCompletionSourceHelper.GetTaskCompletionSourceResultAsync(c2dMessageReceived, cts.Token).ConfigureAwait(false);
 
@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var options = new IotHubClientOptions(transportSettings);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;
-            deviceClient.SetConnectionStatusChangeHandler(connectionStatusInfo =>
+            deviceClient.SetConnectionStatusChangeCallback(connectionStatusInfo =>
             {
                 if (connectionStatusInfo.Status == ConnectionStatus.Disconnected || connectionStatusInfo.Status == ConnectionStatus.DisconnectedRetrying)
                 {
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // This will make the client unsubscribe from the mqtt c2d topic/close the amqp c2d link. Neither event
             // should close the connection as a whole, though.
-            await deviceClient.SetMessageHandlerAsync(null).ConfigureAwait(false);
+            await deviceClient.SetMessageCallbackAsync(null).ConfigureAwait(false);
 
             await Task.Delay(1000).ConfigureAwait(false);
 

@@ -117,8 +117,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         }
 
                         s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
-                        s_deviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandlerAsync);
-                        await s_deviceClient.SetMessageHandlerAsync(OnMessageReceivedAsync, cancellationToken);
+                        s_deviceClient.SetConnectionStatusChangeCallback(ConnectionStatusChangeHandlerAsync);
+                        await s_deviceClient.SetMessageCallbackAsync(OnMessageReceivedAsync, cancellationToken);
                         _logger.LogDebug("Initialized the client instance.");
                     }
                 }

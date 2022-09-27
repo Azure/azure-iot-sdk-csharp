@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Set callback to handle root-level command invocation request.
                 int expectedCommandStatus = 200;
                 string commandName = "getMaxMinReport";
-                await deviceClient.SetMethodHandlerAsync(
+                await deviceClient.SetDirectMethodCallbackAsync(
                     (request) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 string rootCommandName = "reboot";
                 string componentCommandName = "getMaxMinReport";
                 string componentCommandNamePnp = $"{componentName}*{componentCommandName}";
-                await deviceClient.SetMethodHandlerAsync(
+                await deviceClient.SetDirectMethodCallbackAsync(
                     (request) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");

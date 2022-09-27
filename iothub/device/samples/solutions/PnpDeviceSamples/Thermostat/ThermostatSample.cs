@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // -> Periodically send "temperature" over telemetry.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set.
 
-            _deviceClient.SetConnectionStatusChangeHandler(async (info) =>
+            _deviceClient.SetConnectionStatusChangeCallback(async (info) =>
             {
                 _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
 
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);
 
             _logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
-            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, cancellationToken);
+            await _deviceClient.SetDirectMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
 
             _logger.LogDebug("Check if the device properties are empty on the initial startup.");
             await CheckEmptyPropertiesAsync(cancellationToken);
