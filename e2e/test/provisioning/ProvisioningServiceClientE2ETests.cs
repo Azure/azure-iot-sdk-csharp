@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"{nameof(ProvisioningServiceClientE2ETests)}_";
 
-        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
+        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(DeviceProvisioningServiceException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
 #pragma warning disable CA1823
@@ -133,6 +133,36 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation_SymmetricKey()
         {
             await ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType.SymmetricKey);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task ProvisioningServiceClient_GetIndividualEnrollmentAsync_Fails()
+        {
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+
+            // act
+            Func<Task> act = async () => await provisioningServiceClient.GetIndividualEnrollmentAsync("invalid-registration-id").ConfigureAwait(false);
+
+            // assert
+            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(404201);
+            error.And.IsTransient.Should().BeFalse();
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task ProvisioningServiceClient_GetEnrollmentGroupAsync_Fails()
+        {
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+
+            // act
+            Func<Task> act = async () => await provisioningServiceClient.GetEnrollmentGroupAsync("invalid-registration-id").ConfigureAwait(false);
+
+            // assert
+            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(404204);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)

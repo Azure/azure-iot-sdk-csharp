@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using System.Security.Cryptography.X509Certificates;
+using FluentAssertions;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -192,7 +194,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => JsonConvert.DeserializeObject<X509Certificates>(json));
+            Action act = () => JsonConvert.DeserializeObject<X509Certificates>(json);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
     }
 }
