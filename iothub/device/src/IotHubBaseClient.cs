@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for receiving a message from the device queue using a cancellation token.
+        /// Sets a new delegate for receiving a message from the device or module queue using a cancellation token.
         /// This instance must be opened already.
         /// </summary>
         /// <remarks>
