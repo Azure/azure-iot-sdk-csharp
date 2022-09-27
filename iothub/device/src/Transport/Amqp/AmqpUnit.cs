@@ -531,19 +531,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             AmqpIotOutcome disposeOutcome;
             if (string.IsNullOrWhiteSpace(_connectionCredentials.ModuleId) || string.IsNullOrWhiteSpace(_connectionCredentials.GatewayHostName))
             {
-                await EnableEdgeModuleEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                await EnsureMessageReceivingLinkIsOpenAsync(cancellationToken).ConfigureAwait(false);
 
-                // Acknowledge the message over the edgehub to module message receiver link
-                disposeOutcome = await _eventReceivingLink
+                // Acknowledge the message over the cloud to device/module message receiver link
+                disposeOutcome = await _messageReceivingLink
                     .DisposeMessageAsync(deliveryTag, AmqpIotResultAdapter.GetResult(amqpAcknowledgementType), cancellationToken)
                     .ConfigureAwait(false);
             }
             else
             {
-                await EnsureMessageReceivingLinkIsOpenAsync(cancellationToken).ConfigureAwait(false);
+                await EnableEdgeModuleEventReceiveAsync(cancellationToken).ConfigureAwait(false);
 
-                // Acknowledge the message over the cloud to device/module message receiver link
-                disposeOutcome = await _messageReceivingLink
+                // Acknowledge the message over the edgehub to module message receiver link
+                disposeOutcome = await _eventReceivingLink
                     .DisposeMessageAsync(deliveryTag, AmqpIotResultAdapter.GetResult(amqpAcknowledgementType), cancellationToken)
                     .ConfigureAwait(false);
             }
