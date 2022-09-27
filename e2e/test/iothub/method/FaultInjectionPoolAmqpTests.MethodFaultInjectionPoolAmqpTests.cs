@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson)
+                    .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload)
                     .ConfigureAwait(false);
             }
 
@@ -215,8 +215,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     .ServiceSendMethodAndVerifyResponseAsync(
                         testDevice.Id,
                         MethodName,
-                        MethodE2ETests.DeviceResponseJson,
-                        MethodE2ETests.ServiceRequestJson,
+                        MethodE2ETests.s_deviceResponsePayload,
+                        MethodE2ETests.s_serviceRequestPayload,
                         Logger);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
 

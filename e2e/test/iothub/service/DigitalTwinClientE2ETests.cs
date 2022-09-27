@@ -57,11 +57,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 response.ETag.Should().NotBeNull();
 
                 // Set callback handler for receiving root-level twin property updates.
-                await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
+                await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch) =>
                 {
-                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
+                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}.");
                     return Task.FromResult(true);
-                }, deviceClient);
+                });
 
                 // Update the root-level property "targetTemperature".
                 string propertyName = "targetTemperature";
@@ -75,13 +75,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 int expectedCommandStatus = 200;
                 string commandName = "getMaxMinReport";
                 await deviceClient.SetMethodHandlerAsync(
-                    (request, context) =>
+                    (request) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
-                        var response = new Client.DirectMethodResponse()
-                        {
-                            Status = 404,
-                        };
+                        var response = new Client.DirectMethodResponse(404);
 
                         if (request.MethodName == commandName)
                         {
@@ -90,8 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         }
 
                         return Task.FromResult(response);
-                    },
-                    null);
+                    });
 
                 // Invoke the root-level command "getMaxMinReport" on the digital twin.
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
@@ -146,11 +142,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 string componentName = "thermostat1";
 
                 // Set callback handler for receiving twin property updates.
-                await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
+                await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch) =>
                 {
-                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
+                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}.");
                     return Task.FromResult(true);
-                }, deviceClient);
+                });
 
                 // Update the property "targetTemperature" under component "thermostat1" on the digital twin.
                 // NOTE: since this is the first operation on the digital twin, the component "thermostat1" doesn't exist on it yet.
@@ -176,13 +172,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 string componentCommandName = "getMaxMinReport";
                 string componentCommandNamePnp = $"{componentName}*{componentCommandName}";
                 await deviceClient.SetMethodHandlerAsync(
-                    (request, context) =>
+                    (request) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
-                        var response = new Client.DirectMethodResponse()
-                        {
-                            Status = 404,
-                        };
+                        var response = new Client.DirectMethodResponse(404);
 
                         if (request.MethodName == rootCommandName
                             || request.MethodName == componentCommandNamePnp)
@@ -192,8 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         }
 
                         return Task.FromResult(response);
-                    },
-                    null);
+                    });
 
                 // Invoke the root-level command "reboot" on the digital twin.
                 int delay = 1;

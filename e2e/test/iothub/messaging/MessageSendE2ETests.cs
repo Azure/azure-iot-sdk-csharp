@@ -119,43 +119,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendBatchMessages(TestDeviceType.X509, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_ClientThrowsForMqttTopicNameTooLong()
-        {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-
-            try
-            {
-                using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-
-                var msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
-                //Mqtt topic name consists of, among other things, system properties and user properties
-                // setting lots of very long user properties should cause a MessageTooLargeException explaining
-                // that the topic name is too long to publish over mqtt
-                for (int i = 0; i < 100; i++)
-                {
-                    msg.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
-                }
-
-                // act
-                Func<Task> act = async () =>
-                {
-                    await deviceClient.SendEventAsync(msg).ConfigureAwait(false);
-                };
-
-                // assert
-                var error = await act.Should().ThrowAsync<IotHubClientException>();
-                error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
-                error.And.IsTransient.Should().BeFalse();
-            }
-            finally
-            {
-                await testDevice.RemoveDeviceAsync();
-            }
-        }
-
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp, TestDeviceType.Sasl)]
         [DataRow(IotHubClientTransportProtocol.Tcp, TestDeviceType.X509)]
@@ -176,86 +139,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             var transportSettings = new IotHubClientMqttSettings(protocol);
             await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Message_DeviceSendMessageOverAllowedSize_Amqp(IotHubClientTransportProtocol protocol)
-        {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendSingleMessage(
-                        TestDeviceType.Sasl,
-                        new IotHubClientAmqpSettings(protocol),
-                        ExceedAllowedMessageSizeInBytes)
-                    .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
-            error.And.IsTransient.Should().BeFalse();
-        }
-
-        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
-        // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
-        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
-        // and throwing a MessageTooLargeException, if relevant.
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        [ExpectedException(typeof(InvalidOperationException))]
-        public async Task Message_DeviceSendMessageOverAllowedSize_Mqtt(IotHubClientTransportProtocol protocol)
-        {
-            await SendSingleMessage(
-                    TestDeviceType.Sasl,
-                    new IotHubClientMqttSettings(protocol),
-                    ExceedAllowedMessageSizeInBytes)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Message_DeviceSendMessageWayOverAllowedSize_Amqp(IotHubClientTransportProtocol protocol)
-        {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendSingleMessage(
-                        TestDeviceType.Sasl,
-                        new IotHubClientAmqpSettings(protocol),
-                        OverlyExceedAllowedMessageSizeInBytes)
-                    .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
-            error.And.IsTransient.Should().BeFalse();
-        }
-
-        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
-        // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
-        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
-        // and throwing a MessageTooLargeException, if relevant.
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(InvalidOperationException))]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Message_DeviceSendMessageWayOverAllowedSize_Mqtt(IotHubClientTransportProtocol protocol)
-        {
-            await SendSingleMessage(
-                    TestDeviceType.Sasl,
-                    new IotHubClientMqttSettings(protocol),
-                    OverlyExceedAllowedMessageSizeInBytes)
-                .ConfigureAwait(false);
         }
 
         private async Task Message_DeviceSendSingleLargeMessageAsync(TestDeviceType testDeviceType, IotHubClientTransportSettings transportSettings)

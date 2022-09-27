@@ -4,14 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using Microsoft.Azure.Devices.Client.Utilities;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -29,21 +26,13 @@ namespace Microsoft.Azure.Devices.Client
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
-
-        private volatile Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object> _deviceDefaultMethodCallback;
+        private volatile Func<DirectMethodRequest, Task<DirectMethodResponse>> _deviceDefaultMethodCallback;
 
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
+        private Func<TwinCollection, Task> _desiredPropertyUpdateCallback;
 
-        private object _twinPatchCallbackContext;
-        private Func<TwinCollection, object, Task> _desiredPropertyUpdateCallback;
-
-        // Diagnostic information
-
-        // Count of messages sent by the device/ module. This is used for sending diagnostic information.
-        private int _currentMessageCount;
-
-        private int _diagnosticSamplingPercentage;
+        private protected readonly IotHubClientOptions _clientOptions;
 
         internal IotHubBaseClient(
             IotHubConnectionCredentials iotHubConnectionCredentials,
@@ -59,16 +48,16 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;
-            ClientOptions = iotHubClientOptions;
+            _clientOptions = iotHubClientOptions;
 
             ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
             PipelineContext = new PipelineContext
             {
                 IotHubConnectionCredentials = IotHubConnectionCredentials,
-                ProductInfo = ClientOptions.ProductInfo,
-                IotHubClientTransportSettings = ClientOptions.TransportSettings,
-                ModelId = ClientOptions.ModelId,
+                ProductInfo = _clientOptions.UserAgentInfo,
+                IotHubClientTransportSettings = _clientOptions.TransportSettings,
+                ModelId = _clientOptions.ModelId,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
@@ -78,36 +67,13 @@ namespace Microsoft.Azure.Devices.Client
             InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, ClientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
-        }
-
-        /// <summary>
-        /// Diagnostic sampling percentage value, [0-100];
-        /// A value of 0 means no message will carry on diagnostics info.
-        /// </summary>
-        public int DiagnosticSamplingPercentage
-        {
-            get => _diagnosticSamplingPercentage;
-            set
-            {
-                if (value > 100 || value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(DiagnosticSamplingPercentage),
-                        value,
-                        "The range of diagnostic sampling percentage should between [0,100].");
-                }
-
-                _diagnosticSamplingPercentage = value;
-            }
+                Logging.Exit(this, _clientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
         }
 
         /// <summary>
         /// The latest connection status information since the last status change.
         /// </summary>
         public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
-
-        internal IotHubClientOptions ClientOptions { get; private set; }
 
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
 
@@ -133,10 +99,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
-        /// it will be replaced with the new delegate.
+        /// Sets a new listener for the connection status change callback. If a listener is already associated,
+        /// it will be replaced with the new listener.
         /// </summary>
-        /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
+        /// <param name="statusChangeHandler">The listener for the connection status change callback.</param>
         public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
         {
             if (Logging.IsEnabled)
@@ -183,12 +149,10 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ClientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
             {
                 message.MessageId = Guid.NewGuid().ToString();
             }
-
-            IotHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
 
             await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
         }
@@ -209,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (ClientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
             {
                 foreach (Message message in messages)
                 {
@@ -221,124 +185,21 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Deletes a received message from the client queue.
-        /// </summary>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The lock identifier for the previously received message</returns>
-        public async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes the received message from the service's cloud to device message queue for this client.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task CompleteMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await CompleteMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Puts a received message back onto the client queue.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Puts a received message back onto the client queue.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="message">The message to abandon.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task AbandonMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await AbandonMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes a received message from the client queue and indicates to the server that the message could not be processed.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await InnerHandler.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Deletes the received message from the service's cloud to device message queue for this client and indicates to the server that the message could not be processed.
-        /// </summary>
-        /// <remarks>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </remarks>
-        /// <param name="message">The message to reject.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task RejectMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(message, nameof(message));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await RejectMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Sets the listener for all direct method calls from the service.
         /// </summary>
         /// <remarks>
         /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
         /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
         /// </remarks>
-        /// <param name="methodHandler">The delegate to be used when any method is called by the cloud service.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="methodHandler">The listener to be used when any method is called by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMethodHandlerAsync(
-            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
-            object userContext,
+            Func<DirectMethodRequest, Task<DirectMethodResponse>> methodHandler,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, methodHandler, userContext, nameof(SetMethodHandlerAsync));
+                Logging.Enter(this, methodHandler, nameof(SetMethodHandlerAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -349,7 +210,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (methodHandler != null)
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceDefaultMethodCallback = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
+                    _deviceDefaultMethodCallback = methodHandler;
                 }
                 else
                 {
@@ -362,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client
                 _methodsSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, methodHandler, userContext, nameof(SetMethodHandlerAsync));
+                    Logging.Exit(this, methodHandler, nameof(SetMethodHandlerAsync));
             }
         }
 
@@ -408,16 +269,14 @@ namespace Microsoft.Azure.Devices.Client
         /// This has the side-effect of subscribing to the PATCH topic on the service.
         /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied.</param>
-        /// <param name="userContext">Context object that will be passed into callback.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<TwinCollection, object, Task> callback,
-            object userContext,
+            Func<TwinCollection, Task> callback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+                Logging.Enter(this, callback, nameof(SetDesiredPropertyUpdateCallbackAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -437,14 +296,13 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 _desiredPropertyUpdateCallback = callback;
-                _twinPatchCallbackContext = userContext;
             }
             finally
             {
                 _twinDesiredPropertySemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+                    Logging.Exit(this, callback, nameof(SetDesiredPropertyUpdateCallbackAsync));
             }
         }
 
@@ -491,8 +349,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal abstract void AddToPipelineContext();
-
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
@@ -537,9 +393,8 @@ namespace Microsoft.Azure.Devices.Client
 
             if (_deviceDefaultMethodCallback == null)
             {
-                directMethodResponse = new DirectMethodResponse()
+                directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.MethodNotImplemented)
                 {
-                    Status = (int)DirectMethodResponseStatusCode.MethodNotImplemented,
                     RequestId = directMethodRequest.RequestId,
                 };
             }
@@ -547,11 +402,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    Func<DirectMethodRequest, object, Task<DirectMethodResponse>> userSuppliedCallback = _deviceDefaultMethodCallback.Item1;
-                    object userSuppliedContext = _deviceDefaultMethodCallback.Item2;
-
-                    directMethodResponse = await userSuppliedCallback
-                        .Invoke(directMethodRequest, userSuppliedContext)
+                    directMethodResponse = await _deviceDefaultMethodCallback
+                        .Invoke(directMethodRequest)
                         .ConfigureAwait(false);
 
                     directMethodResponse.RequestId = directMethodRequest.RequestId;
@@ -561,9 +413,8 @@ namespace Microsoft.Azure.Devices.Client
                     if (Logging.IsEnabled)
                         Logging.Error(this, ex, nameof(OnMethodCalledAsync));
 
-                    directMethodResponse = new DirectMethodResponse()
+                    directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.UserCodeException)
                     {
-                        Status = (int)DirectMethodResponseStatusCode.UserCodeException,
                         RequestId = directMethodRequest.RequestId,
                     };
                 }
@@ -585,8 +436,10 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Info(this, patch.ToJson(), nameof(OnDesiredStatePatchReceived));
 
-            _ = _desiredPropertyUpdateCallback.Invoke(patch, _twinPatchCallbackContext);
+            _ = _desiredPropertyUpdateCallback.Invoke(patch);
         }
+
+        private protected abstract void AddToPipelineContext();
 
         private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
         {

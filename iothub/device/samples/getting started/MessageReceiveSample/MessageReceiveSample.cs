@@ -10,23 +10,17 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
-    /// This sample demonstrates the two options available for receiving messages sent to a device client instance.
-    /// You can receive messages either by calling the polling ReceiveAsync() API, or by setting callback to receive messages using SetReceiveMessageHandlerAsync().
-    /// If you set a callback for receiving messages, any subsequent calls to the polling ReceiveAsync() API will return null.
-    /// Setting a callback for receiving messages removes the need for you to continuously poll for received messages.
-    /// It is worth noting that the callback is available only over Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_only.
-    /// Http1 does not support setting callbacks since internally we would need to poll for received messages anyway.
+    /// This sample demonstrates how to receive cloud-to-device messages sent to a device client instance.
+    /// You can receive messages by setting callback to receive messages using SetReceiveMessageHandlerAsync().
     /// </summary>
     public class MessageReceiveSample
     {
         private readonly TimeSpan? _maxRunTime;
         private readonly IotHubDeviceClient _deviceClient;
-        private readonly Transport _transport;
 
-        public MessageReceiveSample(IotHubDeviceClient deviceClient, Transport transportType, TimeSpan? maxRunTime)
+        public MessageReceiveSample(IotHubDeviceClient deviceClient, TimeSpan? maxRunTime)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
-            _transport = transportType;
             _maxRunTime = maxRunTime;
         }
 
@@ -43,13 +37,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
             Console.WriteLine($"{DateTime.Now}> Press Control+C at any time to quit the sample.");
 
-            // First receive C2D messages using the polling ReceiveAsync().
-            Console.WriteLine($"\n{DateTime.Now}> Device waiting for C2D messages from the hub...");
-            Console.WriteLine($"{DateTime.Now}> Use the Azure Portal IoT hub blade or Azure IoT Explorer to send a message to this device.");
-            await ReceiveC2dMessagesPollingAndCompleteAsync(cts.Token);
-
             // Now subscribe to receive C2D messages through a callback (which isn't supported over HTTP).
-            await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, _deviceClient);
+            await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync);
             Console.WriteLine($"\n{DateTime.Now}> Subscribed to receive C2D messages over callback.");
 
             // Now wait to receive C2D messages through the callback.
@@ -67,45 +56,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // Now unsubscibe from receiving the callback.
-            await _deviceClient.SetReceiveMessageHandlerAsync(null, null);
+            await _deviceClient.SetReceiveMessageHandlerAsync(null);
         }
 
-        private async Task ReceiveC2dMessagesPollingAndCompleteAsync(CancellationToken ct)
-        {
-            Console.WriteLine($"{DateTime.Now}> Trying to receive C2D messages by polling using the ReceiveAsync() method. Press 'n' to move to the next phase.");
-
-            while (!ct.IsCancellationRequested)
-            {
-                if (Console.IsInputRedirected // the pipeline doesn't have a console or redirects console input
-                    || (Console.KeyAvailable
-                        && ConsoleKey.N == Console.ReadKey().Key))
-                {
-                    Console.WriteLine($"\n{DateTime.Now}> Ending message polling.");
-                    break;
-                }
-
-                Message receivedMessage = await _deviceClient.ReceiveMessageAsync(ct);
-
-                if (receivedMessage == null)
-                {
-                    continue;
-                }
-
-                Console.WriteLine($"{DateTime.Now}> Polling using ReceiveAsync() - received message with Id={receivedMessage.MessageId}");
-                PrintMessage(receivedMessage);
-
-                await _deviceClient.CompleteMessageAsync(receivedMessage, ct);
-                Console.WriteLine($"{DateTime.Now}> Completed C2D message with Id={receivedMessage.MessageId}.");
-            }
-        }
-
-        private async Task OnC2dMessageReceivedAsync(Message receivedMessage, object _)
+        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Message receivedMessage)
         {
             Console.WriteLine($"{DateTime.Now}> C2D message callback - message received with Id={receivedMessage.MessageId}.");
             PrintMessage(receivedMessage);
 
-            await _deviceClient.CompleteMessageAsync(receivedMessage);
             Console.WriteLine($"{DateTime.Now}> Completed C2D message with Id={receivedMessage.MessageId}.");
+            return Task.FromResult(MessageAcknowledgement.Complete);
         }
 
         private static void PrintMessage(Message receivedMessage)

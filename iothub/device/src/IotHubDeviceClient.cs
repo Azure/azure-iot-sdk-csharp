@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         // Cloud-to-device message callback information
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
 
-        private volatile Tuple<Func<Message, object, Task>, object> _deviceReceiveMessageCallback;
+        private volatile Func<Message, Task<MessageAcknowledgement>> _deviceReceiveMessageCallback;
 
         // File upload operation
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
@@ -71,68 +71,39 @@ namespace Microsoft.Azure.Devices.Client
             if (IotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
                 && x509CertificateAuth.ChainCertificates != null)
             {
-                if (ClientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
+                if (_clientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
                 {
                     throw new ArgumentException("Certificate chains for devices are only supported on MQTT over TCP and AMQP over TCP.");
                 }
             }
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext, ClientOptions.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext, _clientOptions.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
                     $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId}",
-                    ClientOptions);
+                    _clientOptions);
         }
 
         /// <summary>
-        /// Receive a message from the device queue using the cancellation token. IotHubDeviceClient instance must be opened already.
-        /// </summary>
-        /// <remarks>
-        /// After handling a received message, a client should call <see cref="IotHubBaseClient.CompleteMessageAsync(Message, CancellationToken)"/>,
-        /// <see cref="IotHubBaseClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="IotHubBaseClient.RejectMessageAsync(Message, CancellationToken)"/>,
-        /// and then dispose the message.
-        /// <para>
-        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
-        /// </para>
-        /// </remarks>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The received message.</returns>
-        public async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken = default)
-        {
-            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or
-            // unrecoverable (authentication, quota exceed) error occurs.
-            return await InnerHandler.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Sets a new delegate for receiving a message from the device queue using a cancellation token.
+        /// Sets the listener for receiving a message from the device queue using a cancellation token.
         /// IotHubDeviceClient instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// After handling a received message, a client should call <see cref="IotHubBaseClient.CompleteMessageAsync(Message, CancellationToken)"/>,
-        /// <see cref="IotHubBaseClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="IotHubBaseClient.RejectMessageAsync(Message, CancellationToken)"/>,
-        /// and then dispose the message.
-        /// <para>
-        /// If a delegate is already registered it will be replaced with the new delegate.
-        /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
-        /// </para>
+        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
+        /// A cloud-to-device message handler can be unset by setting <paramref name="messageHandler"/> to null.
         /// </remarks>
-        /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="messageHandler">The listener to be used when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetReceiveMessageHandlerAsync(
-            Func<Message, object, Task> messageHandler,
-            object userContext,
+            Func<Message, Task<MessageAcknowledgement>> messageHandler,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messageHandler, userContext, nameof(SetReceiveMessageHandlerAsync));
+                Logging.Enter(this, messageHandler, nameof(SetReceiveMessageHandlerAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -148,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task>, object>(messageHandler, userContext);
+                    _deviceReceiveMessageCallback = messageHandler;
                 }
                 else
                 {
@@ -162,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client
                 _deviceReceiveMessageSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messageHandler, userContext, nameof(SetReceiveMessageHandlerAsync));
+                    Logging.Exit(this, messageHandler, nameof(SetReceiveMessageHandlerAsync));
             }
         }
 
@@ -208,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client
             base.Dispose(disposing);
         }
 
-        internal override void AddToPipelineContext()
+        private protected override void AddToPipelineContext()
         {
             PipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
         }
@@ -230,12 +201,31 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<Message, object, Task> callback = _deviceReceiveMessageCallback?.Item1;
-                object callbackContext = _deviceReceiveMessageCallback?.Item2;
-
-                if (callback != null)
+                if (_deviceReceiveMessageCallback != null)
                 {
-                    _ = callback.Invoke(message, callbackContext);
+                    MessageAcknowledgement response = await _deviceReceiveMessageCallback.Invoke(message).ConfigureAwait(false);
+
+                    try
+                    {
+                        switch (response)
+                        {
+                            case MessageAcknowledgement.Complete:
+                                await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            case MessageAcknowledgement.Abandon:
+                                await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            case MessageAcknowledgement.Reject:
+                                await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+                        }
+                    }
+                    catch (Exception ex) when (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, ex, nameof(OnDeviceMessageReceivedAsync));
+                    }
                 }
             }
             finally

@@ -7,6 +7,7 @@ using System.IO;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
@@ -39,13 +40,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
                 "SELECT * FROM enrollmentGroups");
 
-            ProvisioningServiceClientTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningServiceClientTransportException>(
-                () => q.NextAsync()).ConfigureAwait(false);
+            Func<Task> act = async () => await q.NextAsync();
 
+            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>().ConfigureAwait(false);
 #if NET472
-                Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+                Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
-            Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
+            Assert.IsInstanceOfType(error.And.InnerException.InnerException, typeof(AuthenticationException));
 #endif
         }
 

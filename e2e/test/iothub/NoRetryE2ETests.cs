@@ -111,23 +111,18 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");
             await deviceClient1.OpenAsync().ConfigureAwait(false);
-            var response = new Client.DirectMethodResponse()
-            {
-                Status = 200,
-            };
+            var response = new Client.DirectMethodResponse(200);
 
             await deviceClient1
                 .SetMethodHandlerAsync(
-                    (methodRequest, userContext) => Task.FromResult(response),
-                    deviceClient1)
+                    (methodRequest) => Task.FromResult(response))
                 .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 2 calling OpenAsync...");
             await deviceClient2.OpenAsync().ConfigureAwait(false);
             await deviceClient2
                 .SetMethodHandlerAsync(
-                    (methodRequest, userContext) => Task.FromResult(response),
-                    deviceClient2)
+                    (methodRequest) => Task.FromResult(response))
                 .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: waiting device client instance 1 to be kicked off...");

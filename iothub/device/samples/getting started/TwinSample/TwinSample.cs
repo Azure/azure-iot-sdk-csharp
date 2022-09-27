@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Cancellation requested; will exit.");
             };
 
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync, null);
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync);
 
             Console.WriteLine("Retrieving twin...");
             Twin twin = await _deviceClient.GetTwinAsync();
@@ -54,10 +54,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // This is how one can unsubscribe a callback for properties using a null callback handler.
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(null, null);
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(null);
         }
 
-        private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties, object userContext)
+        private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties)
         {
             var reportedProperties = new TwinCollection();
 
