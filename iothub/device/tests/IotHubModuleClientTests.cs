@@ -143,7 +143,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             var testMessage = new Message
             {
                 InputName = "endpoint1",
-                LockToken = "AnyLockToken",
             };
 
             await moduleClient.OnMessageReceivedAsync(testMessage).ConfigureAwait(false);

@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private readonly ReceivingAmqpLink _receivingAmqpLink;
 
-        private Func<Message, Task> _onEventsReceived;
-        private Func<Message, Task> _onDeviceMessageReceived;
+        private Func<Message, ArraySegment<byte>, Task> _onEventsReceived;
+        private Func<Message, ArraySegment<byte>, Task> _onDeviceMessageReceived;
         private Action<DirectMethodRequest> _onMethodReceived;
         private Action<Twin, string, TwinCollection, IotHubClientException> _onTwinMessageReceived;
 
@@ -57,12 +57,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Receive Message
 
-        internal async Task<AmqpIotOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> DisposeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
 
-            ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
             Outcome disposeOutcome =
                 await _receivingAmqpLink.DisposeMessageAsync(
                     deliveryTag,
@@ -91,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new ArraySegment<byte>(lockTokenGuid.ToByteArray());
         }
 
-        internal void RegisterReceiveMessageListener(Func<Message, Task> onDeviceMessageReceived)
+        internal void RegisterReceiveMessageListener(Func<Message, ArraySegment<byte>, Task> onDeviceMessageReceived)
         {
             _onDeviceMessageReceived = onDeviceMessageReceived;
             _receivingAmqpLink.RegisterMessageListener(OnDeviceMessageReceived);
@@ -112,9 +111,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (amqpMessage != null)
                 {
                     message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
-                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
                 }
-                _onDeviceMessageReceived?.Invoke(message);
+                _onDeviceMessageReceived?.Invoke(message, amqpMessage.DeliveryTag);
             }
             finally
             {
@@ -127,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region EventHandling
 
-        internal void RegisterEventListener(Func<Message, Task> onEventsReceived)
+        internal void RegisterEventListener(Func<Message, ArraySegment<byte>, Task> onEventsReceived)
         {
             _onEventsReceived = onEventsReceived;
             _receivingAmqpLink.RegisterMessageListener(OnEventsReceived);
@@ -145,8 +143,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 Message message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
-                message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
-                _onEventsReceived?.Invoke(message);
+                _onEventsReceived?.Invoke(message, amqpMessage.DeliveryTag);
             }
             finally
             {

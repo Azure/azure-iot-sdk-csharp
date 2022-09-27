@@ -107,10 +107,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private static TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(60);
 
-        // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
-        // that is sent over the wire, so we increment this value locally instead.
-        private int _nextLockToken;
-
         private readonly string _deviceId;
         private readonly string _moduleId;
         private readonly string _hostName;
@@ -1067,8 +1063,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public void PopulateMessagePropertiesFromMqttMessage(Message message, MqttApplicationMessage mqttMessage)
         {
-            message.LockToken = (++_nextLockToken).ToString();
-
             // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
             // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
             // Format 2 - going to module endpoint - devices/{deviceId}/modules/{moduleId/endpoints/{endpointId}/{properties}/
