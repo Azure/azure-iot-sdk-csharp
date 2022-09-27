@@ -300,7 +300,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         false);
                 }
             }
-            catch (Exception ex) when (!(ex is DeviceProvisioningClientException))
+            catch (Exception ex) when (ex is not DeviceProvisioningClientException)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(RegisterAsync));

@@ -4,6 +4,7 @@
 using System;
 using System.Net.Http;
 using Microsoft.Azure.Devices.Authentication;
+using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -34,8 +35,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public override DeviceRegistrationHttp CreateDeviceRegistration()
         {
-            byte[] ekBuffer = _authentication.GetEndorsementKey();
-            byte[] srkBuffer = _authentication.GetStorageRootKey();
+            byte[] ekBuffer = Array.Empty<byte>();
+            byte[] srkBuffer = Array.Empty<byte>();
+            try
+            {
+                ekBuffer = _authentication.GetEndorsementKey();
+                srkBuffer = _authentication.GetStorageRootKey();
+            }
+            catch (Exception ex) when (ex is TssException || ex is TpmException)
+            {
+                throw new DeviceProvisioningClientException(ex.Message, ex, false);
+            }
 
             string ek = Convert.ToBase64String(ekBuffer);
             string srk = Convert.ToBase64String(srkBuffer);
@@ -61,7 +71,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled)
                 Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
 
-            _authentication.ActivateIdentityKey(key);
+            try
+            {
+                _authentication.ActivateIdentityKey(key);
+            }
+            catch (Exception ex) when (ex is TssException || ex is TpmException)
+            {
+                throw new DeviceProvisioningClientException(ex.Message, ex, false);
+            }
         }
     }
 }

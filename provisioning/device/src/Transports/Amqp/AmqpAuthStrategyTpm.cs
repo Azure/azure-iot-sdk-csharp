@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Devices.Authentication;
+using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -29,8 +30,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             saslProvider.Versions.Add(AmqpConstants.DefaultProtocolVersion);
             settings.TransportProviders.Add(saslProvider);
 
-            byte[] ekBuffer = _authentication.GetEndorsementKey();
-            byte[] srkBuffer = _authentication.GetStorageRootKey();
+            byte[] ekBuffer = Array.Empty<byte>();
+            byte[] srkBuffer = Array.Empty<byte>();
+            try
+            {
+                ekBuffer = _authentication.GetEndorsementKey();
+                srkBuffer = _authentication.GetStorageRootKey();
+            }
+            catch (Exception ex) when (ex is TssException || ex is TpmException)
+            {
+                throw new DeviceProvisioningClientException(ex.Message, ex, false);
+            }
+
             var tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, _authentication);
             saslProvider.AddHandler(tpmHandler);
 
@@ -61,7 +72,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled)
                 Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
 
-            _authentication.ActivateIdentityKey(key);
+            try
+            {
+                _authentication.ActivateIdentityKey(key);
+            }
+            catch (Exception ex) when (ex is TssException || ex is TpmException)
+            {
+                throw new DeviceProvisioningClientException(ex.Message, ex, false);
+            }
         }
     }
 }

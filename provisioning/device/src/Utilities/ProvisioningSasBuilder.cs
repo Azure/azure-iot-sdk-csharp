@@ -8,6 +8,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Azure.Devices.Authentication;
+using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -18,7 +19,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         internal static string ExtractServiceAuthKey(AuthenticationProviderTpm authenticationProvider, string hostName, byte[] activation)
         {
-            authenticationProvider.ActivateIdentityKey(activation);
+            try
+            {
+                authenticationProvider.ActivateIdentityKey(activation);
+            }
+            catch (Exception ex) when (ex is TssException || ex is TpmException)
+            {
+                throw new DeviceProvisioningClientException(ex.Message, ex, false);
+            }
+
             return BuildSasSignature(authenticationProvider, KeyName, hostName, s_timeToLive);
         }
 
@@ -36,7 +45,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // dh://myiothub.azure-devices-provisioning.net/a/b/c?myvalue1=a
             // <Value for ExpiresOn>
 
-            byte[] signedBytes = authenticationProvider.Sign(Encoding.UTF8.GetBytes(string.Join("\n", fields)));
+            byte[] signedBytes = Array.Empty<byte>();
+            try
+            {
+                signedBytes = authenticationProvider.Sign(Encoding.UTF8.GetBytes(string.Join("\n", fields)));
+            }
+            catch (Exception ex) when (ex is TssException || ex is TpmException)
+            {
+                throw new DeviceProvisioningClientException(ex.Message, ex, false);
+            }
+            
             string signature = Convert.ToBase64String(signedBytes);
 
             // Example returned string:

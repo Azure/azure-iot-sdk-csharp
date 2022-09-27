@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Authentication;
+using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -68,7 +69,16 @@ namespace Microsoft.Azure.Devices.Client
                 Debug.Assert(key == null);
 
                 byte[] encodedBytes = Encoding.UTF8.GetBytes(requestString);
-                byte[] hmac = _authenticationProvider.Sign(encodedBytes);
+                byte[] hmac = Array.Empty<byte>();
+                try
+                {
+                    hmac = _authenticationProvider.Sign(encodedBytes);
+                }
+                catch (Exception ex) when (ex is TssException || ex is TpmException)
+                {
+                    throw new IotHubClientException(ex.Message, false, ex);
+                }
+
                 return Convert.ToBase64String(hmac);
             }
         }
