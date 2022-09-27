@@ -525,13 +525,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         internal class DeviceResponsePayload
         {
-            [JsonPropertyName("currentState")]
+            [JsonProperty(PropertyName = "currentState")]
             public string CurrentState { get; set; }
         }
 
         internal class ServiceRequestPayload
         {
-            [JsonPropertyName("desiredState")]
+            [JsonProperty(PropertyName = "desiredState")]
             public string DesiredState { get; set; }
         }
     }
