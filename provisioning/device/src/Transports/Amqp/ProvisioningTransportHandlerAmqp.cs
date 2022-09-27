@@ -24,9 +24,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         // DPS will generally send a retry-after header that overrides this default value though.
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
 
-        private static readonly TimeSpan s_timeoutConstant = TimeSpan.FromMinutes(1);
-
         private TimeSpan? _retryAfter;
+
+        private CancellationTokenSource _connectionLostCancellationToken;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
@@ -60,16 +60,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
 
             Argument.AssertNotNull(message, nameof(message));
-
-            // We need to create a LinkedTokenSource to include both the default timeout and the cancellation token
-            // AMQP library started supporting CancellationToken starting from version 2.5.5
-            // To preserve current behavior, we will honor both the legacy timeout and the cancellation token parameter.
-            using var timeoutTokenSource = new CancellationTokenSource(s_timeoutConstant);
-            using var cancellationTokenSourceBundle = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
-
-            CancellationToken bundleCancellationToken = cancellationTokenSourceBundle.Token;
-
-            bundleCancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -109,19 +99,33 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 string registrationId = message.Authentication.GetRegistrationId();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
-                using AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
+                using AmqpClientConnection connection = authStrategy.CreateConnection(
+                    builder.Uri,
+                    message.IdScope,
+                    OnConnectionClosed);
 
-                await authStrategy.OpenConnectionAsync(connection, useWebSocket, Proxy, RemoteCertificateValidationCallback, bundleCancellationToken).ConfigureAwait(false);
-                bundleCancellationToken.ThrowIfCancellationRequested();
+                _connectionLostCancellationToken = new CancellationTokenSource();
+
+                await authStrategy.OpenConnectionAsync(connection, useWebSocket, Proxy, RemoteCertificateValidationCallback, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // Link the user-supplied cancellation token with a cancellation token that is cancelled
+                // when the connection is lost so that all operations stop when either the user
+                // cancels the token or when the connection is lost.
+                _connectionLostCancellationToken = new CancellationTokenSource();
+                using CancellationTokenSource linkedCancellationToken =
+                    CancellationTokenSource.CreateLinkedTokenSource(
+                        cancellationToken,
+                        _connectionLostCancellationToken.Token);
 
                 await CreateLinksAsync(
                         connection,
                         linkEndpoint,
                         message.ProductInfo,
-                        bundleCancellationToken)
+                        linkedCancellationToken.Token)
                     .ConfigureAwait(false);
 
-                bundleCancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
                 DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0)
@@ -132,7 +136,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         connection,
                         correlationId,
                         deviceRegistration,
-                        bundleCancellationToken)
+                        linkedCancellationToken.Token)
                     .ConfigureAwait(false);
 
                 // Poll with operationId until registration complete.
@@ -143,11 +147,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0
                     || string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
-                    bundleCancellationToken.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     await Task.Delay(
                             operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval),
-                            bundleCancellationToken)
+                            linkedCancellationToken.Token)
                         .ConfigureAwait(false);
 
                     try
@@ -156,7 +160,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 connection,
                                 operationId,
                                 correlationId,
-                                bundleCancellationToken)
+                                linkedCancellationToken.Token)
                             .ConfigureAwait(false);
                     }
                     catch (DeviceProvisioningClientException e) when (e.IsTransient)
@@ -172,9 +176,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     authStrategy.SaveCredentials(operation);
                 }
 
-                await connection.CloseAsync(bundleCancellationToken).ConfigureAwait(false);
+                await connection.CloseAsync(cancellationToken).ConfigureAwait(false);
 
                 return operation.RegistrationState;
+            }
+            catch (OperationCanceledException) when (_connectionLostCancellationToken.IsCancellationRequested)
+            {
+                // _connectionLostCancellationToken is cancelled when the connection is lost. This acts as
+                // a signal to stop waiting on any service response and to throw the below exception up to the user
+                // so they can retry.
+
+                // Deliberately not including the caught exception as this exception's inner exception because
+                // if the user sees an OperationCancelledException in the thrown exception, they may think they cancelled
+                // the operation even though they didn't.
+                throw new DeviceProvisioningClientException($"AMQP connection was lost during provisioning.", true);
+
+                // If it was the user's cancellation token that requested cancellation, then this catch block
+                // won't execute and the OperationCanceledException will be thrown as expected.
             }
             catch (Exception ex) when (ex is not DeviceProvisioningClientException)
             {
@@ -185,6 +203,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             finally
             {
+                _connectionLostCancellationToken.Dispose();
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
             }
@@ -333,6 +353,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         false);
                 }
             }
+        }
+
+        private void OnConnectionClosed()
+        {
+            if (Logging.IsEnabled)
+                Logging.Error(this, $"AMQP connection was lost.");
+
+            _connectionLostCancellationToken.Cancel();
         }
     }
 }
