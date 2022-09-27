@@ -565,6 +565,16 @@ namespace Microsoft.Azure.Devices.Client
 
             if (message == null)
             {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, "Received a null message. Abandoning message.", nameof(OnMessageReceivedAsync));
+
+                if (_clientOptions.TransportSettings is IotHubClientMqttSettings)
+                {
+                    // MQTT does not support abandoning received messages, so we have no choice
+                    // but to complete it
+                    return MessageAcknowledgement.Complete;
+                }
+
                 return MessageAcknowledgement.Abandon;
             }
 
@@ -583,7 +593,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 // The SDK should only receive messages when the user sets a listener, so this should never happen.
                 if (Logging.IsEnabled)
-                    Logging.Info(this, "Received a message when no listener was set. Abandoning message.", nameof(OnMessageReceivedAsync));
+                    Logging.Error(this, "Received a message when no listener was set. Abandoning message.", nameof(OnMessageReceivedAsync));
 
                 return MessageAcknowledgement.Abandon;
             }
