@@ -203,23 +203,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(ReceiveMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return await _amqpUnit.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(ReceiveMessageAsync));
-            }
-        }
-
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -451,82 +434,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             return response;
-        }
-
-        public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Accepted, cancellationToken);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
-            }
-        }
-
-        public override Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Released, cancellationToken);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
-            }
-        }
-
-        public override Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return DisposeMessageAsync(lockToken, AmqpIotDisposeActions.Rejected, cancellationToken);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
-            }
-        }
-
-        private async Task DisposeMessageAsync(string lockToken, AmqpIotDisposeActions outcome, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
-
-            try
-            {
-                // Currently, the same mechanism is used for sending feedback for C2D messages and events received by modules.
-                // However, devices only support C2D messages (they cannot receive events), and modules only support receiving events
-                // (they cannot receive C2D messages). So we use this to distinguish whether to dispose the message (i.e. send outcome on)
-                // the DeviceBoundReceivingLink or the EventsReceivingLink.
-                // If this changes (i.e. modules are able to receive C2D messages, or devices are able to receive telemetry), this logic
-                // will have to be updated.
-                using var ctb = new CancellationTokenBundle(_operationTimeout, cancellationToken);
-
-                AmqpIotOutcome disposeOutcome = await _amqpUnit.DisposeMessageAsync(lockToken, outcome, ctb.Token).ConfigureAwait(false);
-                disposeOutcome.ThrowIfError();
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, outcome, nameof(DisposeMessageAsync));
-            }
         }
 
         private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection, IotHubClientException ex = default)

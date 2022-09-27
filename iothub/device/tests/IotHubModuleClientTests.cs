@@ -103,27 +103,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task ModuleClient_OnReceiveEventMessageCalled_NullMessageRequest()
-        {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            bool isMessageHandlerCalled = false;
-            await moduleClient
-                .SetMessageHandlerAsync(
-                    (message) =>
-                    {
-                        isMessageHandlerCalled = true;
-                        return Task.FromResult(MessageAcknowledgement.Complete);
-                    })
-                .ConfigureAwait(false);
-
-            await moduleClient.OnMessageReceivedAsync(null).ConfigureAwait(false);
-            Assert.IsFalse(isMessageHandlerCalled);
-        }
-
-        [TestMethod]
         public async Task ModuleClient_OnReceiveEventMessageCalled_DefaultCallbackCalled()
         {
             using var moduleClient = new IotHubModuleClient(FakeConnectionString);
@@ -143,7 +122,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             var testMessage = new Message
             {
                 InputName = "endpoint1",
-                LockToken = "AnyLockToken",
             };
 
             await moduleClient.OnMessageReceivedAsync(testMessage).ConfigureAwait(false);

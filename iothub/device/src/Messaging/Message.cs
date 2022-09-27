@@ -186,23 +186,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Unique string for identifying a received message when acknowledging it.
-        /// </summary>
-        internal string LockToken
-        {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.LockToken);
-            set => SystemProperties[MessageSystemPropertyNames.LockToken] = value;
-        }
-
-        /// <summary>
         /// Gets the dictionary of system properties which are managed internally.
         /// </summary>
         internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Gets or sets the deliveryTag which is used for server side check-pointing.
-        /// </summary>
-        internal ArraySegment<byte> DeliveryTag { get; set; }
 
         /// <summary>
         /// For outgoing messages, contains the Mqtt topic that the message is being sent to.
