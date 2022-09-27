@@ -390,19 +390,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(IotHubDeviceClient deviceClient, string expectedPropName, object expectedPropValue, MsTestLogger logger)
         {
             var propertyUpdateReceived = new TaskCompletionSource<bool>();
-            string userContext = "myContext";
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetDesiredPropertyUpdateCallbackAsync(
-                    (patch, context) =>
+                    (patch) =>
                     {
-                        logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
+                        logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}.");
 
                         try
                         {
                             Assert.AreEqual(JsonConvert.SerializeObject(expectedPropValue), JsonConvert.SerializeObject(patch[expectedPropName]));
-                            Assert.AreEqual(userContext, context, "Context");
                         }
                         catch (Exception e)
                         {
@@ -414,8 +412,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         }
 
                         return Task.FromResult<bool>(true);
-                    },
-                    userContext)
+                    })
                 .ConfigureAwait(false);
 
             return propertyUpdateReceived.Task;
@@ -443,21 +440,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // Set a callback
             await deviceClient.
                 SetDesiredPropertyUpdateCallbackAsync(
-                    (patch, context) =>
+                    (patch) =>
                     {
-                        Logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
+                        Logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}.");
 
                         // After unsubscribing it should never reach here
                         Assert.IsNull(patch);
 
                         return Task.FromResult<bool>(true);
-                    },
-                    null)
+                    })
                 .ConfigureAwait(false);
 
             // Unsubscribe
             await deviceClient
-                .SetDesiredPropertyUpdateCallbackAsync(null, null)
+                .SetDesiredPropertyUpdateCallbackAsync(null)
                 .ConfigureAwait(false);
 
             await RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue)
@@ -495,7 +491,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             dynamic actualProp = completeTwin.Properties.Desired[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
 
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 

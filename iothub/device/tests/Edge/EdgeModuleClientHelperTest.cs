@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -270,14 +270,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
-            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync(null).ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.Received(1).DisableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -305,13 +305,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
-            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync(null).ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.Received(1).DisableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -325,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -339,13 +339,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
-            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync(null).ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.Received(1).DisableEventReceiveAsync(true, Arg.Any<CancellationToken>()).ConfigureAwait(false);

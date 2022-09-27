@@ -96,10 +96,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
             });
 
-            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, null, cancellationToken);
+            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, cancellationToken);
 
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, null, cancellationToken);
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, cancellationToken);
             _desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
             _desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
 
@@ -132,11 +132,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodRequest request, object userContext)
+        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodRequest request)
         {
             return request.MethodName switch
             {
-                "reboot" => await HandleRebootCommandAsync(request, userContext),
+                "reboot" => await HandleRebootCommandAsync(request),
                 "thermostat1*getMaxMinReport" => await HandleMaxMinReportCommand(request, Thermostat1),
                 "thermostat2*getMaxMinReport" => await HandleMaxMinReportCommand(request, Thermostat2),
                 _ => new DirectMethodResponse(400),
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
-        private async Task<DirectMethodResponse> HandleRebootCommandAsync(DirectMethodRequest request, object userContext)
+        private async Task<DirectMethodResponse> HandleRebootCommandAsync(DirectMethodRequest request)
         {
             bool delayReceived = request.TryGetPayload(out int delay);
 
@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private Task SetDesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext)
+        private Task SetDesiredPropertyUpdateCallback(TwinCollection desiredProperties)
         {
             bool callbackNotInvoked = true;
 

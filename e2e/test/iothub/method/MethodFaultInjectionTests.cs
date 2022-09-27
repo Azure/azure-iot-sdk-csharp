@@ -12,6 +12,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -21,8 +22,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     public class MethodFaultInjectionTests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(MethodFaultInjectionTests)}_";
-        private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
-        private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -195,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        private async Task ServiceSendMethodAndVerifyResponseAsync(string deviceName, string methodName, string respJson, string reqJson)
+        private async Task ServiceSendMethodAndVerifyResponseAsync(string deviceName, string methodName, object deviceResponsePayload, object serviceRequestPayload)
         {
             var sw = Stopwatch.StartNew();
             bool done = false;
@@ -212,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     var directMethodRequest = new DirectMethodRequest()
                     {
                         MethodName = methodName,
-                        Payload = reqJson,
+                        Payload = serviceRequestPayload,
                         ResponseTimeout = TimeSpan.FromMinutes(5),
                     };
 
@@ -224,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
                     response.Status.Should().Be(200);
-                    ((string)response.Payload).Should().Be(respJson);
+                    JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(deviceResponsePayload));
 
                     done = true;
                 }
@@ -256,14 +255,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAsync(MethodName, DeviceResponseJson, ServiceRequestJson)
+                    .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload)
                     .ConfigureAwait(false);
             }
 
             // Call the method from the service side and verify the device received the call.
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson);
+                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload);
 
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);

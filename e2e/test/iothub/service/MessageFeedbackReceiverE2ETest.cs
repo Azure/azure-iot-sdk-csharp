@@ -65,12 +65,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 var c2dMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Func<Client.Message, object, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message, context) =>
+                Func<Client.Message, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message) =>
                 {
                     c2dMessageReceived.TrySetResult(true);
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 };
-                await deviceClient.SetReceiveMessageHandlerAsync(OnC2DMessageReceived, null).ConfigureAwait(false);
+                await deviceClient.SetReceiveMessageHandlerAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
                 await Task
                     .WhenAny(

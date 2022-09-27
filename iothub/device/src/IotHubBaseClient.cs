@@ -26,14 +26,11 @@ namespace Microsoft.Azure.Devices.Client
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
-
-        private volatile Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object> _deviceDefaultMethodCallback;
+        private volatile Func<DirectMethodRequest, Task<DirectMethodResponse>> _deviceDefaultMethodCallback;
 
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
-
-        private object _twinPatchCallbackContext;
-        private Func<TwinCollection, object, Task> _desiredPropertyUpdateCallback;
+        private Func<TwinCollection, Task> _desiredPropertyUpdateCallback;
 
         private protected readonly IotHubClientOptions _clientOptions;
 
@@ -195,16 +192,14 @@ namespace Microsoft.Azure.Devices.Client
         /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
         /// </remarks>
         /// <param name="methodHandler">The listener to be used when any method is called by the cloud service.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMethodHandlerAsync(
-            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
-            object userContext,
+            Func<DirectMethodRequest, Task<DirectMethodResponse>> methodHandler,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, methodHandler, userContext, nameof(SetMethodHandlerAsync));
+                Logging.Enter(this, methodHandler, nameof(SetMethodHandlerAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -215,7 +210,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (methodHandler != null)
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceDefaultMethodCallback = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
+                    _deviceDefaultMethodCallback = methodHandler;
                 }
                 else
                 {
@@ -228,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client
                 _methodsSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, methodHandler, userContext, nameof(SetMethodHandlerAsync));
+                    Logging.Exit(this, methodHandler, nameof(SetMethodHandlerAsync));
             }
         }
 
@@ -274,16 +269,14 @@ namespace Microsoft.Azure.Devices.Client
         /// This has the side-effect of subscribing to the PATCH topic on the service.
         /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied.</param>
-        /// <param name="userContext">Context object that will be passed into callback.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<TwinCollection, object, Task> callback,
-            object userContext,
+            Func<TwinCollection, Task> callback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+                Logging.Enter(this, callback, nameof(SetDesiredPropertyUpdateCallbackAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -303,14 +296,13 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 _desiredPropertyUpdateCallback = callback;
-                _twinPatchCallbackContext = userContext;
             }
             finally
             {
                 _twinDesiredPropertySemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+                    Logging.Exit(this, callback, nameof(SetDesiredPropertyUpdateCallbackAsync));
             }
         }
 
@@ -410,11 +402,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    Func<DirectMethodRequest, object, Task<DirectMethodResponse>> userSuppliedCallback = _deviceDefaultMethodCallback.Item1;
-                    object userSuppliedContext = _deviceDefaultMethodCallback.Item2;
-
-                    directMethodResponse = await userSuppliedCallback
-                        .Invoke(directMethodRequest, userSuppliedContext)
+                    directMethodResponse = await _deviceDefaultMethodCallback
+                        .Invoke(directMethodRequest)
                         .ConfigureAwait(false);
 
                     directMethodResponse.RequestId = directMethodRequest.RequestId;
@@ -447,7 +436,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Info(this, patch.ToJson(), nameof(OnDesiredStatePatchReceived));
 
-            _ = _desiredPropertyUpdateCallback.Invoke(patch, _twinPatchCallbackContext);
+            _ = _desiredPropertyUpdateCallback.Invoke(patch);
         }
 
         private protected abstract void AddToPipelineContext();

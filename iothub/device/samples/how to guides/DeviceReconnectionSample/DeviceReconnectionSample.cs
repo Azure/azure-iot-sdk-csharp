@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                         s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         s_deviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandlerAsync);
-                        await s_deviceClient.SetReceiveMessageHandlerAsync(OnMessageReceivedAsync, null, cancellationToken);
+                        await s_deviceClient.SetReceiveMessageHandlerAsync(OnMessageReceivedAsync, cancellationToken);
                         _logger.LogDebug("Initialized the client instance.");
                     }
                 }
@@ -276,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
                         {
                             _logger.LogDebug($"The desired property version cached on local is changing from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
-                            await HandleTwinUpdateNotificationsAsync(twinCollection, cancellationToken);
+                            await HandleTwinUpdateNotificationsAsync(twinCollection);
                         }
                     },
                     shouldExecuteOperation: () => IsDeviceConnected,
@@ -290,9 +290,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest, object userContext)
+        private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest)
         {
-            var cancellationToken = (CancellationToken)userContext;
+            CancellationToken cancellationToken = s_cancellationTokenSource.Token;
 
             if (!cancellationToken.IsCancellationRequested)
             {
@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private Task<MessageAcknowledgement> OnMessageReceivedAsync(Message receivedMessage, object userContext)
+        private Task<MessageAcknowledgement> OnMessageReceivedAsync(Message receivedMessage)
         {
             string messageData = Encoding.ASCII.GetString(receivedMessage.Payload);
             var formattedMessage = new StringBuilder($"Received message: [{messageData}]");

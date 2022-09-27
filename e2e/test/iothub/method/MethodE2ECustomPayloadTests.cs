@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                    (request, context) =>
+                    (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_booleanPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
 
@@ -178,8 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         };
 
                         return Task.FromResult(response);
-                    },
-                    null)
+                    })
                 .ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
@@ -192,7 +191,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                    (request, context) =>
+                    (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_customPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
 
@@ -215,8 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         };
 
                         return Task.FromResult(response);
-                    },
-                    null)
+                    })
                 .ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
@@ -229,7 +227,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                    (request, context) =>
+                    (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_listPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
 
@@ -252,8 +250,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         };
 
                         return Task.FromResult(response);
-                    },
-                    null)
+                    })
                 .ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
@@ -266,7 +263,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                    (request, context) =>
+                    (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_dictionaryPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
 
@@ -289,8 +286,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         };
 
                         return Task.FromResult(response);
-                    },
-                    null)
+                    })
                 .ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
@@ -303,7 +299,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                    (request, context) =>
+                    (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_arrayPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
 
@@ -326,8 +322,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         };
 
                         return Task.FromResult(response);
-                    },
-                    null)
+                    })
                 .ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.

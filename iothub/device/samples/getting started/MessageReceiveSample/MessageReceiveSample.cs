@@ -17,12 +17,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         private readonly TimeSpan? _maxRunTime;
         private readonly IotHubDeviceClient _deviceClient;
-        private readonly Transport _transport;
 
-        public MessageReceiveSample(IotHubDeviceClient deviceClient, Transport transportType, TimeSpan? maxRunTime)
+        public MessageReceiveSample(IotHubDeviceClient deviceClient, TimeSpan? maxRunTime)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
-            _transport = transportType;
             _maxRunTime = maxRunTime;
         }
 
@@ -40,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"{DateTime.Now}> Press Control+C at any time to quit the sample.");
 
             // Now subscribe to receive C2D messages through a callback (which isn't supported over HTTP).
-            await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, _deviceClient);
+            await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync);
             Console.WriteLine($"\n{DateTime.Now}> Subscribed to receive C2D messages over callback.");
 
             // Now wait to receive C2D messages through the callback.
@@ -58,10 +56,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // Now unsubscibe from receiving the callback.
-            await _deviceClient.SetReceiveMessageHandlerAsync(null, null);
+            await _deviceClient.SetReceiveMessageHandlerAsync(null);
         }
 
-        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Message receivedMessage, object _)
+        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Message receivedMessage)
         {
             Console.WriteLine($"{DateTime.Now}> C2D message callback - message received with Id={receivedMessage.MessageId}.");
             PrintMessage(receivedMessage);
