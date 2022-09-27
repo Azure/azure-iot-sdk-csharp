@@ -3,20 +3,20 @@ This folder contains simple samples showing how to use the various features of M
 
 ### Device samples
 
-- [Reconnection sample][d-message-sample]
+- [Reconnection][d-message-sample] sample
     - This sample illustrates how to write a device application to handle connection issues, connection-related exceptions, and how to manage the lifetime of the `DeviceClient`
     - Includes sending messages and symmetric key failover
-- [Method sample][d-method-sample]
-- [Receive message sample][d-receive-message-sample]
-- [Twin sample][d-twin-sample]
-- [File upload sample][d-file-upload-sample]
-- [Connect with X.509 certificate sample][d-x509-cert-sample]
-- [Plug and Play device samples][d-pnp-sample]
-- [Xamarin sample][d-xamarin-sample]
-- [Invoke device method sample][d-invoke-device-method-sample]
-- [Read device-to-cloud messages sample][d-read-d2c-messages-sample]
-- [Simulated device sample][d-simulated-device-sample]
-- [Simulated device with command sample][d-simulated-device-with-command-sample]
+- [Method][d-method-sample] sample
+- [Receive message][d-receive-message-sample] sample
+- [Twin][d-twin-sample] sample
+- [File upload][d-file-upload-sample] sample
+- [Connect with X.509 certificate][d-x509-cert-sample] sample
+- [Plug and Play samples][d-pnp-sample] sample
+- [Xamarin][d-xamarin-sample] sample
+- [Invoke device method][d-invoke-device-method-sample] sample
+- [Read device-to-cloud messages][d-read-d2c-messages-sample] sample
+- [Simulated device][d-simulated-device-sample] sample
+- [Simulated device with command][d-simulated-device-with-command-sample] sample
 
 ### Prerequisites
 

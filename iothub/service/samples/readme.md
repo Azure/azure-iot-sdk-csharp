@@ -4,20 +4,20 @@ This folder contains simple samples showing how to use the various features of M
 
 ### Service samples
 
-- [Automatic device management sample][adm-sample]
-- [Device streaming sample][device-streaming-sample]
-- [Edge deployment sample][edge-deployment-sample]
-- [Import export devices sample][import-export-sample]
-- [Import export devices with managed identity sample][import-export-with-managed-identity-sample]
-- [Jobs sample][jobs-sample]
-- [Registry manager sample][reg-man-sample]
-- [Service client sample][service-client-sample]
-- [Plug and Play service samples ][pnp-service-sample]
-- [Digital twin client samples][digital-twin-client-sample]
-- [File upload notification receiver sample][file-upload-notification-receiver-sample]
-- [Azure SAS Credential Authentication sample][azure-sas-credential-authentication-sample]
-- [Clean up devices sample][clean-up-devices-sample]
-- [Role-based authentication sample][role-based-authentication-sample]
+- [Automatic device management][adm-sample] sample
+- [Device streaming][device-streaming-sample] sample
+- [Edge deployment][edge-deployment-sample] sample
+- [Import export devices][import-export-sample] sample
+- [Import export devices with managed identity][import-export-with-managed-identity-sample] sample
+- [Jobs][jobs-sample] sample
+- [Registry manager][reg-man-sample] sample
+- [Service client][service-client-sample] sample
+- [Plug and Play services][pnp-service-sample] sample
+- [Digital twin clients][digital-twin-client-sample] sample
+- [File upload notification receiver][file-upload-notification-receiver-sample] sample
+- [Azure SAS credential authentication][azure-sas-credential-authentication-sample]  sample
+- [Clean up devices][clean-up-devices-sample] sample
+- [Role-based authentication][role-based-authentication-sample] sample
 
 [adm-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/AutomaticDeviceManagementSample
 [device-streaming-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/service/DeviceStreamingSample
