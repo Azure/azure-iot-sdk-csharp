@@ -2,11 +2,11 @@
 
 ### Service provisioning samples
 
-* [Group certificate verification sample][group-cert-sample]
-* [Bulk operation sample][bulk-op-sample]
-* [Enrollment sample][enrollment-sample]
-* [Enrollment group sample][enrollment-group-sample]
-* [Clean up enrollments sample][clean-up-enrollments-sample]
+- [Group certificate verification][group-cert-sample] sample
+- [Bulk operation][bulk-op-sample] sample
+- [Enrollment][enrollment-sample] sample
+- [Enrollment group][enrollment-group-sample] sample
+- [Clean up enrollments][clean-up-enrollments-sample] sample
 
 [group-cert-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/service/samples/How%20To/GroupCertificateVerificationSample
 [bulk-op-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/service/samples/How%20To/BulkOperationSample
