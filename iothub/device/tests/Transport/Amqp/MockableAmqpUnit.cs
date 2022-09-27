@@ -31,8 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<DirectMethodRequest, Task> onMethodCallback = null,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener = null,
-            Func<Message, Task> onModuleMessageReceivedCallback = null,
-            Func<Message, Task> onDeviceMessageReceivedCallback = null,
+            Func<Message, Task> onMessageReceivedCallback = null,
             Action onUnitDisconnected = null)
             : base(
                   connectionCredentials,
@@ -41,18 +40,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                   amqpConnectionHolder,
                   onMethodCallback,
                   twinMessageListener,
-                  onModuleMessageReceivedCallback,
-                  onDeviceMessageReceivedCallback,
+                  onMessageReceivedCallback,
                   onUnitDisconnected)
         {
         }
 
         public new async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-        }
-
-        public new async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
             await Task.Yield();
         }

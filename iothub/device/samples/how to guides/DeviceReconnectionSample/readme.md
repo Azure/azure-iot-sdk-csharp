@@ -74,11 +74,11 @@ private async Task OnC2dMessageReceived(Message receivedMessage, object userCont
 }
 
 // Subscribe to the receive message API.
-await deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceived, userContext);
+await deviceClient.SetMessageHandlerAsync(OnC2dMessageReceived, userContext);
 
 // Once you are done receiving telemetry messages sent to your device client,
 // you can unsubscribe from the receive callback by setting a null handler.
-await deviceClient.SetReceiveMessageHandlerAsync(null, null);
+await deviceClient.SetMessageHandlerAsync(null, null);
 ```
 
 ### Receive twin desired property update notifications and update device twin's reported properties:

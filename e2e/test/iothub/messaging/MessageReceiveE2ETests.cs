@@ -109,12 +109,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
                 var c2dMessageReceived = new TaskCompletionSource<Client.Message>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Func<Client.Message, object, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message, context) =>
+                Func<Client.Message, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message) =>
                 {
                     c2dMessageReceived.TrySetResult(message);
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 };
-                await dc.SetReceiveMessageHandlerAsync(OnC2DMessageReceived, null).ConfigureAwait(false);
+                await dc.SetMessageHandlerAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
                 Client.Message receivedMessage = await TaskCompletionSourceHelper.GetTaskCompletionSourceResultAsync(c2dMessageReceived, cts.Token).ConfigureAwait(false);
 
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // This will make the client unsubscribe from the mqtt c2d topic/close the amqp c2d link. Neither event
             // should close the connection as a whole, though.
-            await deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
+            await deviceClient.SetMessageHandlerAsync(null).ConfigureAwait(false);
 
             await Task.Delay(1000).ConfigureAwait(false);
 

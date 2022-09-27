@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,6 +13,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -98,9 +100,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
         /// <exception cref="OperationCanceledException">if the cancellation was requested.</exception>
-        /// <exception cref="ProvisioningServiceClientTransportException">if there is a error in the HTTP communication
-        /// between client and service.</exception>
-        /// <exception cref="ProvisioningServiceClientHttpException">if the service answer the request with error status.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">If there is an error in the HTTP communication
+        /// between client and service or the service answers the request with error status.</exception>
         public async Task<ContractApiResponse> RequestAsync(
             HttpMethod httpMethod,
             Uri requestUri,
@@ -134,8 +135,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     using HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
                     if (httpResponse == null)
                     {
-                        throw new ProvisioningServiceClientTransportException(
-                            $"The response message was null when executing operation {httpMethod}.");
+                        throw new DeviceProvisioningServiceException(
+                            $"The response message was null when executing operation {httpMethod}.", isTransient: true);
                     }
 
                     response = new ContractApiResponse(
@@ -149,22 +150,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
                     if (innerExceptions.Any(e => e is TimeoutException))
                     {
-                        throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                        throw new DeviceProvisioningServiceException(ex.Message, ex, true);
                     }
 
                     throw;
                 }
                 catch (TimeoutException ex)
                 {
-                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                    throw new DeviceProvisioningServiceException(ex.Message, HttpStatusCode.RequestTimeout, ex);
                 }
                 catch (IOException ex)
                 {
-                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                    throw new DeviceProvisioningServiceException(ex.Message, ex, true);
                 }
                 catch (HttpRequestException ex)
                 {
-                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                    throw new DeviceProvisioningServiceException(ex.Message, ex, true);
                 }
                 catch (TaskCanceledException ex)
                 {
@@ -174,7 +175,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         throw new OperationCanceledException(ex.Message, ex);
                     }
 
-                    throw new ProvisioningServiceClientTransportException($"The {httpMethod} operation timed out.", ex);
+                    throw new DeviceProvisioningServiceException($"The {httpMethod} operation timed out.", HttpStatusCode.RequestTimeout, ex);
                 }
             }
 
@@ -185,14 +186,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static void ValidateHttpResponse(ContractApiResponse response)
         {
-            if (response.StatusCode >= HttpStatusCode.InternalServerError ||
-                (int)response.StatusCode == 429)
+            if (response.Body == null)
             {
-                throw new ProvisioningServiceClientHttpException(response, isTransient: true);
+                throw new DeviceProvisioningServiceException(response.ErrorMessage, response.StatusCode, response.Fields);
             }
-            else if (response.StatusCode >= HttpStatusCode.Ambiguous)
+
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                throw new ProvisioningServiceClientHttpException(response, isTransient: false);
+                try
+                {
+                    ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(response.Body);
+
+                    if (response.StatusCode >= HttpStatusCode.Ambiguous)
+                    {
+                        throw new DeviceProvisioningServiceException(
+                            $"{response.ErrorMessage}:{response.Body}",
+                            response.StatusCode,
+                            responseBody.ErrorCode,
+                            responseBody.TrackingId,
+                            response.Fields);
+                    }
+                }
+                catch (JsonException jex)
+                {
+                    throw new DeviceProvisioningServiceException(
+                        $"Fail to deserialize the received response body: {response.Body}",
+                        jex,
+                        false);
+                }
             }
         }
 

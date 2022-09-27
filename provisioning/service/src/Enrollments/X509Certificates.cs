@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
@@ -108,7 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonConstructor]
         private X509Certificates(X509CertificateWithInfo primary, X509CertificateWithInfo secondary = null)
         {
-            Primary = primary ?? throw new ProvisioningServiceClientException("Primary certificate cannot be null.");
+            Primary = primary ?? throw new DeviceProvisioningServiceException("Primary certificate cannot be null.", HttpStatusCode.BadRequest);
             Secondary = secondary;
         }
 

@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -53,7 +55,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, failDateTime, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION);
 
                 // act - assert
-                TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
+                Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+                var error = act.Should().Throw<DeviceProvisioningServiceException>();
+                error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+                error.And.IsTransient.Should().BeFalse();
             }
         }
 
@@ -66,7 +71,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, failDateTime, SERIAL_NUMBER, VERSION);
 
                 // act - assert
-                TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
+                Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+                var error = act.Should().Throw<DeviceProvisioningServiceException>();
+                error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+                error.And.IsTransient.Should().BeFalse();
             }
         }
 
@@ -86,7 +94,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json));
+            Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
@@ -96,7 +107,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION);
 
             // act
-            X509CertificateInfo x509CertificateInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+            X509CertificateInfo x509CertificateInfo = JsonConvert.DeserializeObject<X509CertificateInfo>(json);
 
             // assert
             Assert.AreEqual(SUBJECT_NAME, x509CertificateInfo.SubjectName);

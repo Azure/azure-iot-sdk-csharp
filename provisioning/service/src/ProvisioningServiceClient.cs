@@ -145,8 +145,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A <see cref="BulkEnrollmentOperationResult"/> object with the result of operation for each enrollment.</returns>
         /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
-        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
-        /// <exception cref="ProvisioningServiceClientException">If the Device Provisioning Service was not able to execute the bulk operation.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the client failed to send the request or service was not able to execute the bulk operation.
+        /// </exception>
         public Task<BulkEnrollmentOperationResult> RunBulkEnrollmentOperationAsync(
             BulkOperationMode bulkOperationMode,
             IEnumerable<IndividualEnrollment> individualEnrollments,
@@ -171,7 +172,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="individualEnrollment">The individual enrollment.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
         public Task DeleteIndividualEnrollmentAsync(IndividualEnrollment individualEnrollment, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, individualEnrollment, cancellationToken);
@@ -186,14 +186,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// correspond to the <see cref="DeleteIndividualEnrollmentAsync(string, string, CancellationToken)"/> with the <c>eTag="*"</c>.
         ///
         /// Note that delete the enrollment will not remove the Device itself from the IotHub.
-        ///
-        /// If the registrationId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="registrationId">The <c>string</c> that identifies the individualEnrollment. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentException">If the provided registrationId is not correct.</exception>
-        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
-        /// <exception cref="ProvisioningServiceClientException">If the Device Provisioning Service was not able to execute the bulk operation.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the client failed to send the request or service was not able to execute the bulk operation.
+        /// </exception>
         public Task DeleteIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, registrationId, cancellationToken);
@@ -205,7 +204,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="registrationId">The registration id</param>
         /// <param name="eTag">The eTag.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns></returns>
         public Task DeleteIndividualEnrollmentAsync(string registrationId, string eTag, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, registrationId, cancellationToken, eTag);
@@ -281,7 +279,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning was not able to create or update the enrollment.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to create or update the enrollment.
+        /// </exception>
         public Task<EnrollmentGroup> CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.CreateOrUpdateAsync(_contractApiHttp, enrollmentGroup, cancellationToken);
@@ -294,14 +294,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This method will return the enrollment group information for the provided enrollmentGroupId. It will retrieve
         /// the correspondent enrollment group from the Device Provisioning Service, and return it in the
         /// <see cref="EnrollmentGroup"/> object.
-        ///
-        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="EnrollmentGroup"/> with the content of the enrollment group in the Provisioning Device Service.</returns>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to retrieve
-        /// the enrollment group information for the provided enrollmentGroupId.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to retrieve the enrollment group information for the provided <paramref name="enrollmentGroupId"/>.
+        /// </exception>
         public Task<EnrollmentGroup> GetEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.GetAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);
@@ -318,12 +317,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// passing only the enrollmentGroupId.
         ///
         /// Note that delete the enrollment group will not remove the Devices itself from the IotHub.
-        ///
-        /// If the enrollmentGroupId does not exists or the eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> that identifies the enrollmentGroup. It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the enrollment group information for the provided enrollmentGroup.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroup"/>.
+        /// </exception>
         public Task DeleteEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroup, cancellationToken);
@@ -338,12 +337,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// correspond to the <see cref="DeleteEnrollmentGroupAsync(string, string, CancellationToken)"/> with the <c>eTag="*"</c>.
         ///
         /// Note that delete the enrollment group will not remove the Devices itself from the IotHub.
-        ///
-        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the enrollment group information for the provided enrollmentGroupId.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroupId"/>.
+        /// </exception>
         public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);
@@ -359,14 +358,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <c>"*"</c>.
         ///
         /// Note that delete the enrollment group will not remove the Device itself from the IotHub.
-        ///
-        /// If the enrollmentGroupId does not exists or eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="eTag">The <c>string</c> with the enrollment group eTag. It can be <c>null</c> or empty.
         /// The Device Provisioning Service will ignore it in all of these cases.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the enrollment group information for the provided enrollmentGroupId and eTag.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroupId"/> and <paramref name="eTag"/>.
+        /// </exception>
         public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, string eTag, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, cancellationToken, eTag);
@@ -431,13 +430,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This method will return the DeviceRegistrationState for the provided id. It will retrieve
         /// the correspondent DeviceRegistrationState from the Device Provisioning Service, and return it in the
         /// <see cref="DeviceRegistrationState"/> object.
-        ///
-        /// If the id does not exist, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="id">The <c>string</c> that identifies the DeviceRegistrationState. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the DeviceRegistrationState in the Provisioning Device Service.</returns>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to retrieve the DeviceRegistrationState information for the provided registrationId.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to retrieve the registration state for the provided <paramref name="id"/>.
+        /// </exception>
         public Task<DeviceRegistrationState> GetDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken = default)
         {
             return RegistrationStatusManager.GetAsync(_contractApiHttp, id, cancellationToken);
@@ -451,15 +450,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// provided <see cref="DeviceRegistrationState"/> information. The Device Provisioning Service will care about the
         /// id and the eTag on the DeviceRegistrationState. If you want to delete the DeviceRegistrationState regardless the
         /// eTag, you can use the <see cref="DeleteDeviceRegistrationStateAsync(string, CancellationToken)"/> passing only the id.
-        ///
-        /// If the id does not exists or the eTag does not matches, this method will throw
-        /// <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="deviceRegistrationState">The <see cref="DeviceRegistrationState"/> that identifies the DeviceRegistrationState.
         /// It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to
-        /// delete the registration status information for the provided DeviceRegistrationState.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// When the service wasn't able to delete the registration status.
+        /// </exception>
         public Task DeleteDeviceRegistrationStateAsync(DeviceRegistrationState deviceRegistrationState, CancellationToken cancellationToken = default)
         {
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, deviceRegistrationState, cancellationToken);
@@ -472,13 +469,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This method will remove the DeviceRegistrationState from the Device Provisioning Service using the
         /// provided id. It will delete the registration status regardless the eTag. It means that this API
         /// correspond to the <see cref="DeleteDeviceRegistrationStateAsync(string, string, CancellationToken)"/> with the <c>eTag="*"</c>.
-        ///
-        /// If the id does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="id">The <c>string</c> that identifies the DeviceRegistrationState. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the
-        /// DeviceRegistrationState information for the provided registrationId.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to delete the registration state for the provided <paramref name="id"/>.
+        /// </exception>
         public Task DeleteDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken = default)
         {
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, cancellationToken);
@@ -492,16 +488,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// provided id and eTag. If you want to delete the registration status regardless the eTag, you can
         /// use <see cref="DeleteDeviceRegistrationStateAsync(string, CancellationToken)"/> or you can pass the eTag as <c>null</c>, empty, or
         /// <c>"*"</c>.
-        ///
-        /// If the id does not exists or the eTag does not matches, this method will throw
-        /// <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="id">The <c>string</c> that identifies the DeviceRegistrationState. It cannot be <c>null</c> or empty.</param>
         /// <param name="eTag">The <c>string</c> with the DeviceRegistrationState eTag. It can be <c>null</c> or empty.
         /// The Device Provisioning Service will ignore it in all of these cases.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ProvisioningServiceClientException">If the Provisioning Device Service was not able to delete the
-        /// DeviceRegistrationState information for the provided registrationId and eTag.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to delete the registration state for the provided <paramref name="id"/> and <paramref name="eTag"/>.
+        /// </exception>
         public Task DeleteDeviceRegistrationStateAsync(string id, string eTag, CancellationToken cancellationToken = default)
         {
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, cancellationToken, eTag);
@@ -572,12 +566,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Retrieve the attestation information for an individual enrollment.
         /// </summary>
-        /// <remarks>
-        /// If the registrationId does not match any individual enrollment, this method will throw a <see cref="ProvisioningServiceClientException"/>.
-        /// </remarks>
         /// <param name="registrationId">The registration Id of the individual enrollment to retrieve the attestation information of. This may not be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="AttestationMechanism"/> of the individual enrollment associated with the provided registrationId.</returns>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to retrieve the individual enrollment attestation information for the provided <paramref name="registrationId"/>.
+        /// </exception>
+        /// <returns>The <see cref="AttestationMechanism"/> of the individual enrollment associated with the provided <paramref name="registrationId"/>.</returns>
         public Task<AttestationMechanism> GetIndividualEnrollmentAttestationAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.GetEnrollmentAttestationAsync(_contractApiHttp, registrationId, cancellationToken);
@@ -586,12 +580,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Retrieve the enrollment group attestation information.
         /// </summary>
-        /// <remarks>
-        /// If the provided group id does not match up with any enrollment group, this method will throw <see cref="ProvisioningServiceClientException"/>.
-        /// </remarks>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="AttestationMechanism"/> associated with the provided group Id.</returns>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the service was not able to retrieve the enrollment group attestation information for the provided <paramref name="enrollmentGroupId"/>.
+        /// </exception>
+        /// <returns>The <see cref="AttestationMechanism"/> associated with the provided <paramref name="enrollmentGroupId"/>.</returns>
         public Task<AttestationMechanism> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.GetEnrollmentAttestationAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);

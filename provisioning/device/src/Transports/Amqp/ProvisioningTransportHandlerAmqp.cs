@@ -26,6 +26,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private static readonly TimeSpan s_timeoutConstant = TimeSpan.FromMinutes(1);
 
+        private TimeSpan? _retryAfter;
+
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
         /// </summary>
@@ -157,9 +159,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 bundleCancellationToken)
                             .ConfigureAwait(false);
                     }
-                    catch (ProvisioningTransportException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp amqp && e.IsTransient)
+                    catch (DeviceProvisioningClientException e) when (e.IsTransient)
                     {
-                        operation.RetryAfter = amqp.RetryAfter;
+                        operation.RetryAfter = _retryAfter;
                     }
 
                     attempts++;
@@ -174,12 +176,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 return operation.RegistrationState;
             }
-            catch (Exception ex) when (ex is not ProvisioningTransportException)
+            catch (Exception ex) when (ex is not DeviceProvisioningClientException)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}", nameof(RegisterAsync));
 
-                throw new ProvisioningTransportException($"AMQP transport exception", ex, true);
+                throw new DeviceProvisioningClientException($"AMQP transport exception", ex, true);
             }
             finally
             {
@@ -306,13 +308,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     if (isTransient)
                     {
                         errorDetails.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromRejection(rejected, s_defaultOperationPollingInterval);
+                        _retryAfter = errorDetails.RetryAfter;
                     }
 
-                    throw new ProvisioningTransportException(
+                    throw new DeviceProvisioningClientException(
                         rejected.Error.Description,
                         null,
-                        isTransient,
-                        errorDetails);
+                        (HttpStatusCode)statusCode,
+                        errorDetails.ErrorCode,
+                        errorDetails.TrackingId);
                 }
                 catch (JsonException ex)
                 {
@@ -323,7 +327,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
                             nameof(RegisterAsync));
 
-                    throw new ProvisioningTransportException(
+                    throw new DeviceProvisioningClientException(
                         $"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'",
                         ex,
                         false);

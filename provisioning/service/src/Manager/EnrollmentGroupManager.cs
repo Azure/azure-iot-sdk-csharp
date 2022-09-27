@@ -38,11 +38,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
-
             return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
@@ -60,11 +55,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     null,
                     cancellationToken)
                 .ConfigureAwait(false);
-
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
 
             return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
@@ -144,11 +134,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     null,
                     cancellationToken)
                 .ConfigureAwait(false);
-
-            if (contractApiResponse.Body == null)
-            {
-                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
-            }
 
             return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
         }

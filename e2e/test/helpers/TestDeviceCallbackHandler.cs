@@ -47,17 +47,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             set => Volatile.Write(ref _expectedMessageSentByService, value);
         }
 
-        public async Task SetDeviceReceiveMethodAsync(string methodName, object deviceResponseJson, object expectedServiceRequestJson)
+        public async Task SetDeviceReceiveMethodAsync<T>(string methodName, object deviceResponseJson, T expectedServiceRequestJson)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetMethodHandlerAsync(
-                (request, context) =>
+                (request) =>
                 {
                     try
                     {
                         _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.MethodName} with timeout {request.ResponseTimeout}.");
                         request.MethodName.Should().Be(methodName, "The expected method name should match what was sent from service");
-                        request.Payload.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
+                        request.TryGetPayload(out T actualRequestPayload).Should().BeTrue();
+                        actualRequestPayload.Should().BeEquivalentTo(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 
                         var response = new Client.DirectMethodResponse(200)
                         {
@@ -80,8 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         // Always notify that we got the callback.
                         _methodCallbackSemaphore.Release();
                     }
-                },
-                null).ConfigureAwait(false);
+                }).ConfigureAwait(false);
         }
 
         public async Task WaitForMethodCallbackAsync(CancellationToken ct)
@@ -92,13 +92,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetTwinPropertyUpdateCallbackHandlerAsync(string expectedPropName)
         {
-            string userContext = "myContext";
-
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
-                (patch, context) =>
+                (patch) =>
                 {
-                    _logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback twin: DesiredProperty: {patch}, {context}");
+                    _logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback twin: DesiredProperty: {patch}");
 
                     try
                     {
@@ -107,7 +105,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                         string propertyValue = patch[expectedPropName];
                         propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
-                        context.Should().Be(userContext, "The context should match what was set by service");
                     }
                     catch (Exception ex)
                     {
@@ -120,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     }
 
                     return Task.FromResult<bool>(true);
-                }, userContext).ConfigureAwait(false);
+                }).ConfigureAwait(false);
         }
 
         public async Task WaitForTwinCallbackAsync(CancellationToken ct)
@@ -132,16 +129,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public async Task SetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
-            await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null).ConfigureAwait(false);
+            await _deviceClient.SetMessageHandlerAsync(OnC2dMessageReceivedAsync).ConfigureAwait(false);
         }
 
         public async Task UnsetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
-            await _deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
+            await _deviceClient.SetMessageHandlerAsync(null).ConfigureAwait(false);
         }
 
-        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Client.Message message, object context)
+        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Client.Message message)
         {
             _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {message.MessageId}.");
 
