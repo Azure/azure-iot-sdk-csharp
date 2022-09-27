@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -134,15 +135,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </example>
         /// <param name="registrationId">the string with a unique id for the individualEnrollment. It cannot be null or empty.</param>
         /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM`, `X509` or `SymmetricKey`.</param>
-        /// <param name="deviceId">the string with the device name. This is optional and can be null or empty.</param>
-        /// <param name="iotHubHostName">the string with the target IoTHub name. This is optional and can be null or empty.</param>
-        /// <param name="initialTwinState">the <see cref="TwinState"/> with the initial Twin condition. This is optional and can be null.</param>
-        /// <param name="provisioningStatus">the <see cref="ProvisioningStatus"/> that determine the initial status of the device. This is optional and can be null.</param>
-        /// <param name="createdDateTimeUtc">the DateTimewith the date and time that the enrollment was created. This is optional and can be null.</param>
-        /// <param name="lastUpdatedDateTimeUtc">the DateTime with the date and time that the enrollment was updated. This is optional and can be null.</param>
-        /// <param name="eTag">the string with the eTag that identify the correct instance of the enrollment in the service. It cannot be null or empty.</param>
-        /// <param name="capabilities">the <see cref="DeviceCapabilities"/> that identifies the device capabilities. This is optional and can be null.</param>
-        /// <exception cref="ProvisioningServiceClientException">if the received JSON is invalid.</exception>
+        /// <param name="deviceId">the <c>string</c> with the device name. This is optional and can be <c>null</c> or empty.</param>
+        /// <param name="iotHubHostName">the <c>string</c> with the target IoTHub name. This is optional and can be <c>null</c> or empty.</param>
+        /// <param name="initialTwinState">the <see cref="TwinState"/> with the initial Twin condition. This is optional and can be <c>null</c>.</param>
+        /// <param name="provisioningStatus">the <see cref="ProvisioningStatus"/> that determine the initial status of the device. This is optional and can be <c>null</c>.</param>
+        /// <param name="createdDateTimeUtc">the <c>DateTime</c> with the date and time that the enrollment was created. This is optional and can be <c>null</c>.</param>
+        /// <param name="lastUpdatedDateTimeUtc">the <c>DateTime</c> with the date and time that the enrollment was updated. This is optional and can be <c>null</c>.</param>
+        /// <param name="eTag">the <c>string</c> with the eTag that identify the correct instance of the enrollment in the service. It cannot be <c>null</c> or empty.</param>
+        /// <param name="capabilities">the <see cref="DeviceCapabilities"/> that identifies the device capabilities. This is optional and can be <c>null</c>.</param>
+        /// <exception cref="DeviceProvisioningServiceException">If the received JSON is invalid.</exception>
         [JsonConstructor]
         internal IndividualEnrollment(
             string registrationId,
@@ -158,7 +159,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (attestation == null)
             {
-                throw new ProvisioningServiceClientException("Service respond an individualEnrollment without attestation.");
+                throw new DeviceProvisioningServiceException("Service responds an individualEnrollment without attestation.", HttpStatusCode.BadRequest);
             }
 
             try
@@ -176,7 +177,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             catch (ArgumentException e)
             {
-                throw new ProvisioningServiceClientException(e);
+                throw new DeviceProvisioningServiceException(e.Message, HttpStatusCode.BadRequest, e);
             }
         }
 

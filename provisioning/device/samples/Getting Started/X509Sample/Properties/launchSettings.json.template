@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "X509Sample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DPS_IDSCOPE": "<yourProvisioningIDScope>"
+      }
+    }
+  }
+}

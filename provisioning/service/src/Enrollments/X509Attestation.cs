@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
@@ -329,7 +330,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 && rootCertificates == null
                 && caReferences == null)
             {
-                throw new ProvisioningServiceClientException("Attestation shall receive one no null certificate.");
+                throw new DeviceProvisioningServiceException("Attestation shall receive one non-null certificate.", HttpStatusCode.BadRequest);
             }
 
             if (clientCertificates != null
@@ -338,7 +339,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 || rootCertificates != null
                 && caReferences != null)
             {
-                throw new ProvisioningServiceClientException("Attestation cannot receive more than one certificate together.");
+                throw new DeviceProvisioningServiceException("Attestation cannot receive more than one certificate.", HttpStatusCode.BadRequest);
             }
 
             try
@@ -349,7 +350,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             catch (ArgumentException e)
             {
-                throw new ProvisioningServiceClientException(e);
+                throw new DeviceProvisioningServiceException(e);
             }
         }
     }

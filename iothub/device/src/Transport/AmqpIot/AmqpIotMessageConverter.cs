@@ -12,7 +12,6 @@ using System.Text;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Client.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
@@ -251,12 +250,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         amqpMessage.ApplicationProperties.Map[pair.Key] = amqpObject;
                     }
                 }
-            }
-
-            if (IotHubClientDiagnostic.HasDiagnosticProperties(data))
-            {
-                amqpMessage.MessageAnnotations.Map[AmqpDiagIdKey] = data.SystemProperties[MessageSystemPropertyNames.DiagId];
-                amqpMessage.MessageAnnotations.Map[AmqpDiagCorrelationContextKey] = data.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext];
             }
         }
 

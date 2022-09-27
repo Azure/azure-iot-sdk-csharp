@@ -13,7 +13,6 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -64,16 +63,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken));
         }
 
-        public override Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken));
-        }
-
-        public override Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken));
-        }
-
         public override Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableTwinPatchAsync(cancellationToken));
@@ -89,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinGetAsync(cancellationToken));
         }
 
-        public override Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken));
         }

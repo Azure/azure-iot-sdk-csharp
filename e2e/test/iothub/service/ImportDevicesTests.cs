@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string devicesFileName = $"{idPrefix}-devices-{StorageContainer.GetRandomSuffix(4)}.txt";
             string configsFileName = $"{idPrefix}-configs-{StorageContainer.GetRandomSuffix(4)}.txt";
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             try
             {
@@ -95,13 +95,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 ManagedIdentity identity = isUserAssignedMsi
                     ? new ManagedIdentity
                     {
-                        UserAssignedIdentity = TestConfiguration.IoTHub.UserAssignedMsiResourceId
+                        UserAssignedIdentity = TestConfiguration.IotHub.UserAssignedMsiResourceId
                     }
                     : null;
 
                 // act
 
-                JobProperties importJobResponse = await CreateAndWaitForJobAsync(
+                ImportJobProperties importJobResponse = await CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         devicesFileName,
                         configsFileName,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             foundBlob.Should().BeTrue($"Failed to find {fileName} in storage container - required for test.");
         }
 
-        private async Task<JobProperties> CreateAndWaitForJobAsync(
+        private async Task<ImportJobProperties> CreateAndWaitForJobAsync(
             StorageAuthenticationType storageAuthenticationType,
             string devicesFileName,
             string configsFileName,
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Uri containerUri,
             ManagedIdentity identity)
         {
-            var jobProperties = new JobProperties(containerUri)
+            var importJobProperties = new ImportJobProperties(containerUri)
             {
                 InputBlobName = devicesFileName,
                 StorageAuthenticationType = storageAuthenticationType,
@@ -201,14 +201,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var sw = Stopwatch.StartNew();
 
-            while (!jobProperties.IsFinished)
+            while (!importJobProperties.IsFinished)
             {
                 try
                 {
-                    jobProperties = await serviceClient.Devices.ImportAsync(jobProperties).ConfigureAwait(false);
-                    if (!string.IsNullOrWhiteSpace(jobProperties.FailureReason))
+                    importJobProperties = (ImportJobProperties)await serviceClient.Devices.ImportAsync(importJobProperties).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(importJobProperties.FailureReason))
                     {
-                        Logger.Trace($"Job failed due to {jobProperties.FailureReason}");
+                        Logger.Trace($"Job failed due to {importJobProperties.FailureReason}");
                     }
                     break;
                 }
@@ -227,14 +227,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             sw.Restart();
 
             // Wait for job to complete
-            while (!jobProperties.IsFinished)
+            while (!importJobProperties.IsFinished)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
-                jobProperties = await serviceClient.Devices.GetJobAsync(jobProperties.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {jobProperties.JobId} is {jobProperties.Status} after {sw.Elapsed}.");
+                importJobProperties = (ImportJobProperties)await serviceClient.Devices.GetJobAsync(importJobProperties.JobId).ConfigureAwait(false);
+                Logger.Trace($"Job {importJobProperties.JobId} is {importJobProperties.Status} after {sw.Elapsed}.");
             }
 
-            return jobProperties;
+            return importJobProperties;
         }
     }
 }

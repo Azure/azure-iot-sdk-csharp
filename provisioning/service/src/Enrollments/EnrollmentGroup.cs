@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -165,7 +166,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="lastUpdatedDateTimeUtc">the DateTime with the date and time that the enrollment was updated. This is optional and can be null.</param>
         /// <param name="eTag">the string with the eTag that identify the correct instance of the enrollment in the service. It cannot be null or empty.</param>
         /// <param name="capabilities">The capabilities of the device (ie: is it an edge device?)</param>
-        /// <exception cref="ProvisioningServiceClientException">if the received JSON is invalid.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">If the received JSON is invalid.</exception>
         [JsonConstructor]
         internal EnrollmentGroup(
             string enrollmentGroupId,
@@ -180,7 +181,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (attestation == null)
             {
-                throw new ProvisioningServiceClientException("Service respond an enrollmentGroup without attestation.");
+                throw new DeviceProvisioningServiceException("Service responds an enrollmentGroup without attestation.", HttpStatusCode.BadRequest);
             }
 
             try
@@ -197,7 +198,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             catch (ArgumentException e)
             {
-                throw new ProvisioningServiceClientException(e);
+                throw new DeviceProvisioningServiceException(e.Message, HttpStatusCode.BadRequest, e);
             }
         }
 

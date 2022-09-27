@@ -22,11 +22,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            Func<TwinCollection, object, Task> myCallback = (p, c) => Task.CompletedTask;
-            var context = new object();
+            Func<TwinCollection, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
 
             // assert
             await innerHandler.
@@ -41,12 +40,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            Func<TwinCollection, object, Task> myCallback = (p, c) => Task.CompletedTask;
-            var context = new object();
+            Func<TwinCollection, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
 
             // assert
             await innerHandler
@@ -62,12 +60,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            Func<TwinCollection, object, Task> myCallback = (p, c) => Task.CompletedTask;
+            Func<TwinCollection, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
 
             // assert
             await innerHandler.
@@ -134,13 +132,13 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             int callCount = 0;
             TwinCollection receivedPatch = null;
-            Func<TwinCollection, object, Task> myCallback = (p, c) =>
+            Func<TwinCollection, Task> myCallback = (p) =>
             {
                 callCount++;
                 receivedPatch = p;
                 return Task.CompletedTask;
             };
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
 
             // act
             client.OnDesiredStatePatchReceived(myPatch);

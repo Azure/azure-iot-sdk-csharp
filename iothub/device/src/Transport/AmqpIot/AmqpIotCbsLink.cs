@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
@@ -39,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (AmqpException ex) when (!Fx.IsFatal(ex))
             {
-                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex);
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, null);
                 if (ReferenceEquals(ex, iotEx))
                 {
                     throw;

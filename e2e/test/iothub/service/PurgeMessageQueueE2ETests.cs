@@ -24,26 +24,22 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task PurgeMessageQueueOperation()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            var deviceId = testDevice.Device.Id;
-            using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false); // making sure the queue is empty
+            string expectedDeviceId = testDevice.Device.Id;
+            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false); // making sure the queue is empty
 
             Message testMessage = ComposeD2CTestMessage();
-            var expectedResult = new PurgeMessageQueueResult
-            {
-                DeviceId = deviceId,
-                TotalMessagesPurged = 3
-            };
 
             await sc.Messages.OpenAsync().ConfigureAwait(false);
-            for (int i = 0; i < 3; ++i)
+            const int numberOfSends = 3;
+            for (int i = 0; i < numberOfSends; ++i)
             {
-                await sc.Messages.SendAsync(deviceId, testMessage);
+                await sc.Messages.SendAsync(expectedDeviceId, testMessage);
             }
             await sc.Messages.CloseAsync().ConfigureAwait(false);
-            result = await sc.Messages.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false);
-            result.DeviceId.Should().Be(deviceId);
-            result.TotalMessagesPurged.Should().Be(expectedResult.TotalMessagesPurged);
+            result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false);
+            result.DeviceId.Should().Be(expectedDeviceId);
+            result.TotalMessagesPurged.Should().Be(numberOfSends);
         }
 
         private Message ComposeD2CTestMessage()

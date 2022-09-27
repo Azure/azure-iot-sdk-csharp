@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -27,18 +28,18 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
 
             var mockMqttClient = new Mock<IMqttClient>();
 
-            var mqttTransportHandler = createTransportHandler(mockMqttClient.Object);
+            var mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
             await mqttTransportHandler.OpenAsync(cancellationToken);
 
             mockMqttClient.Verify(p => p.ConnectAsync(It.IsAny<MqttClientOptions>(), cancellationToken));
         }
 
-        internal MqttTransportHandler createTransportHandler(IMqttClient mockMqttClient)
+        internal MqttTransportHandler CreateTransportHandler(IMqttClient mockMqttClient)
         {
             var pipelineContext = new PipelineContext();
             var clientOptionsMock = new Mock<IotHubClientOptions>();
-            clientOptionsMock.SetupGet(x => x.ProductInfo).Returns(new ProductInfo());
+            clientOptionsMock.SetupGet(x => x.UserAgentInfo).Returns(new ProductInfo());
             var clientConfigurationMock = new IotHubConnectionCredentials();
             //clientConfigurationMock.SetupGet(x => x.ClientOptions).Returns(clientOptionsMock.Object);
             pipelineContext.IotHubConnectionCredentials = clientConfigurationMock;

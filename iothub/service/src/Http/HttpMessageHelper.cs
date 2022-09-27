@@ -61,9 +61,8 @@ namespace Microsoft.Azure.Devices
                 Tuple<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(responseMessage);
                 string trackingId = pair.Item1;
                 IotHubErrorCode errorCode = pair.Item2;
-                bool isTransient = DetermineIfTransient(responseMessage.StatusCode, errorCode);
 
-                throw new IotHubServiceException(errorMessage, responseMessage.StatusCode, errorCode, isTransient, trackingId);
+                throw new IotHubServiceException(errorMessage, responseMessage.StatusCode, errorCode, trackingId);
             }
         }
 
@@ -127,22 +126,6 @@ namespace Microsoft.Azure.Devices
             }
 
             return escapedETagBuilder.ToString();
-        }
-
-        private static bool DetermineIfTransient(HttpStatusCode statusCode, IotHubErrorCode errorCode)
-        {
-            switch (errorCode)
-            {
-                case IotHubErrorCode.ThrottlingException:
-                case IotHubErrorCode.IotHubQuotaExceeded:
-                    return true;
-
-                case IotHubErrorCode.Unknown:
-                    return statusCode == HttpStatusCode.RequestTimeout;
-
-                default:
-                    return false;
-            }
         }
     }
 }

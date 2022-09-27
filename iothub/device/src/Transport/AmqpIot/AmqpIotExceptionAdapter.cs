@@ -2,15 +2,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal class AmqpIotExceptionAdapter
     {
-        internal static Exception ConvertToIotHubException(Exception exception)
+        internal static Exception ConvertToIotHubException(Exception exception, AmqpObject source)
         {
+            if (source != null 
+                && source.IsClosing() 
+                && exception is InvalidOperationException)
+            {
+                return new IotHubClientException("AMQP resource is disconnected.", trackingId: null, IotHubStatusCode.NetworkErrors, exception);
+            }
+
             if (exception is TimeoutException)
             {
                 return new IotHubClientException(exception.Message, IotHubStatusCode.NetworkErrors, exception);
@@ -35,21 +41,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
 
             return exception;
-        }
-
-        internal static Exception ConvertToIotHubException(Exception exception, AmqpObject source)
-        {
-            Exception ex = ConvertToIotHubException(exception);
-            if (source.IsClosing() &&
-                (ex is InvalidOperationException
-                || ex is OperationCanceledException))
-            {
-                return new IotHubClientException("Amqp resource is disconnected.", null, IotHubStatusCode.NetworkErrors);
-            }
-            else
-            {
-                return ex;
-            }
         }
     }
 }

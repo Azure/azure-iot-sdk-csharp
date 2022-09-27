@@ -11,6 +11,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
     public static class PoolingOverAmqp
     {
+        public const int SingleConnection_DevicesCount = 2;
+        public const int SingleConnection_PoolSize = 1;
         public const int MultipleConnections_DevicesCount = 4;
         public const int MultipleConnections_PoolSize = 2;
         public const int MaxTestRunCount = 5;
@@ -50,8 +52,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 totalRuns++;
 
                 // Arrange
-
-                logger.Trace($">>> {nameof(PoolingOverAmqp)} Initializing device clients for multiplexing test - Test run {totalRuns}");
+                // Initialize the test device client instances
+                // Set the device client connection status change handler
+                logger.Trace($"{nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test - Test run {totalRuns}");
                 for (int i = 0; i < devicesCount; i++)
                 {
                     // Initialize the test device client instances

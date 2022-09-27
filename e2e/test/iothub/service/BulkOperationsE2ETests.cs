@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string tagValue = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             Twin twin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
 
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string tagValue = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             var twin = new Twin(testDevice.Id);
             twin.Tags[tagName] = tagValue;
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string tagValue = Guid.NewGuid().ToString();
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var twin = new Twin(testModule.DeviceId)
             {
                 ModuleId = testModule.Id

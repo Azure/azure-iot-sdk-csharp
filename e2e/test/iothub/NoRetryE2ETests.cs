@@ -40,12 +40,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjection.FaultType_Tcp}...");
+            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
             await FaultInjection
                 .ActivateFaultInjectionAsync(
                     new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjectionConstants.FaultType_Tcp,
+                    FaultInjectionConstants.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
                     deviceClient,
@@ -111,23 +111,18 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");
             await deviceClient1.OpenAsync().ConfigureAwait(false);
-            var response = new Client.DirectMethodResponse()
-            {
-                Status = 200,
-            };
+            var response = new Client.DirectMethodResponse(200);
 
             await deviceClient1
                 .SetMethodHandlerAsync(
-                    (methodRequest, userContext) => Task.FromResult(response),
-                    deviceClient1)
+                    (methodRequest) => Task.FromResult(response))
                 .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 2 calling OpenAsync...");
             await deviceClient2.OpenAsync().ConfigureAwait(false);
             await deviceClient2
                 .SetMethodHandlerAsync(
-                    (methodRequest, userContext) => Task.FromResult(response),
-                    deviceClient2)
+                    (methodRequest) => Task.FromResult(response))
                 .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: waiting device client instance 1 to be kicked off...");

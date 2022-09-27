@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,14 +20,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class DeviceClientX509AuthenticationE2ETests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"{nameof(DeviceClientX509AuthenticationE2ETests)}_";
-        private static X509Certificate2 s_selfSignedCertificateWithPrivateKey = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
-        private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IoTHub.GetChainDeviceCertificateWithPrivateKey();
-        private readonly string _hostName;
-
-        public DeviceClientX509AuthenticationE2ETests()
-        {
-            _hostName = GetHostName(TestConfiguration.IoTHub.ConnectionString);
-        }
+        private static X509Certificate2 s_selfSignedCertificateWithPrivateKey = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
+        private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IotHub.GetChainDeviceCertificateWithPrivateKey();
+        private readonly string _hostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -99,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
             using var auth = new DeviceAuthenticationWithX509Certificate(
-                TestConfiguration.IoTHub.X509ChainDeviceName,
+                TestConfiguration.IotHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
             using var deviceClient = new IotHubDeviceClient(
@@ -127,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
             };
             using var auth = new DeviceAuthenticationWithX509Certificate(
-                TestConfiguration.IoTHub.X509ChainDeviceName,
+                TestConfiguration.IotHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
             using var deviceClient = new IotHubDeviceClient(
@@ -169,7 +163,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSetting));
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, Logger).ConfigureAwait(false);
+            var message = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string _, out string _);
+            await deviceClient.SendEventAsync(message).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 

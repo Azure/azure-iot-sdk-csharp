@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             retryInterval = TimeSpan.Zero;
 
-            var provisioningException = lastException as ProvisioningServiceClientHttpException;
+            var provisioningException = lastException as DeviceProvisioningServiceException;
 
             if (provisioningException == null || currentRetryCount > MaxRetryCount)
             {

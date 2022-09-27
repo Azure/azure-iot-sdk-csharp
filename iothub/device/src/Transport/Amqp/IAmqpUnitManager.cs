@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -16,8 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             IotHubClientAmqpSettings amqpSettings,
             Func<DirectMethodRequest, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
-            Func<Message, Task> onModuleMessageReceivedCallback,
-            Func<Message, Task> onDeviceMessageReceivedCallback,
+            Func<Message, Task> onMessageReceivedCallback,
             Action onUnitDisconnected);
 
         void RemoveAmqpUnit(AmqpUnit amqpUnit);

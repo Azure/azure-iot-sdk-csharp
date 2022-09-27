@@ -34,9 +34,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return contractApiResponse.Body == null
-                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
-                : JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
+
+            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
         internal static async Task<EnrollmentGroup> GetAsync(
@@ -54,9 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return contractApiResponse.Body == null
-                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
-                : JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
         internal static async Task DeleteAsync(
@@ -123,9 +120,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return contractApiResponse.Body == null
-                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
-                : JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
         }
 
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)

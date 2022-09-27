@@ -33,9 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return contractApiResponse.Body == null
-                ? throw new ProvisioningServiceClientHttpException(contractApiResponse, true)
-                : JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body);
         }
 
         internal static async Task DeleteAsync(

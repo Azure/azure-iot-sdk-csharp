@@ -9,9 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Messaging
@@ -36,9 +34,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private readonly string _devicePrefix = $"{nameof(MessageSendE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
-        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Amqp(IotHubClientTransportProtocol protocol)
@@ -46,7 +45,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, new IotHubClientAmqpSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Mqtt(IotHubClientTransportProtocol protocol)
@@ -54,7 +54,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats(IotHubClientTransportProtocol protocol)
@@ -79,43 +80,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, amqpTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Proxy")]
-        public async Task Message_DeviceSendSingleMessage_MqttWs_WithProxy()
-        {
-            var mqttTransportSettings = new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)
-            {
-                Proxy = new WebProxy(s_proxyServerAddress),
-            };
-
-            await SendSingleMessage(TestDeviceType.Sasl, mqttTransportSettings).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Proxy")]
-        public async Task Message_ModuleSendSingleMessage_AmqpWs_WithProxy()
-        {
-            var amqpTransportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)
-            {
-                Proxy = new WebProxy(s_proxyServerAddress),
-            };
-
-            await SendSingleMessageModule(amqpTransportSettings).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Proxy")]
-        public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
-        {
-            var mqttTransportSettings = new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)
-            {
-                Proxy = new WebProxy(s_proxyServerAddress),
-            };
-
-            await SendSingleMessageModule(mqttTransportSettings).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task X509_DeviceSendSingleMessage_Amqp(IotHubClientTransportProtocol protocol)
@@ -123,7 +89,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.X509, new IotHubClientAmqpSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -132,7 +99,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.X509, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -141,49 +109,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendBatchMessages(TestDeviceType.X509, new IotHubClientAmqpSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task X509_DeviceSendBatchMessages_Mqtt(IotHubClientTransportProtocol protocol)
         {
             await SendBatchMessages(TestDeviceType.X509, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_ClientThrowsForMqttTopicNameTooLong()
-        {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            try
-            {
-                using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
-
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-
-                var msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
-                //Mqtt topic name consists of, among other things, system properties and user properties
-                // setting lots of very long user properties should cause a MessageTooLargeException explaining
-                // that the topic name is too long to publish over mqtt
-                for (int i = 0; i < 100; i++)
-                {
-                    msg.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
-                }
-
-                // act
-                Func<Task> act = async () =>
-                {
-                    await deviceClient.SendEventAsync(msg).ConfigureAwait(false);
-                };
-
-                // assert
-                var error = await act.Should().ThrowAsync<IotHubClientException>();
-                error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
-                error.And.IsTransient.Should().BeFalse();
-            }
-            finally
-            {
-                await testDevice.RemoveDeviceAsync();
-            }
         }
 
         [DataTestMethod]
@@ -206,82 +139,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             var transportSettings = new IotHubClientMqttSettings(protocol);
             await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Message_DeviceSendMessageOverAllowedSize_Amqp(IotHubClientTransportProtocol protocol)
-        {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendSingleMessage(
-                        TestDeviceType.Sasl,
-                        new IotHubClientAmqpSettings(protocol),
-                        ExceedAllowedMessageSizeInBytes)
-                    .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
-            error.And.IsTransient.Should().BeFalse();
-        }
-
-        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
-        // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
-        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
-        // and throwing a MessageTooLargeException, if relevant.
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        [ExpectedException(typeof(InvalidOperationException))]
-        public async Task Message_DeviceSendMessageOverAllowedSize_Mqtt(IotHubClientTransportProtocol protocol)
-        {
-            await SendSingleMessage(
-                    TestDeviceType.Sasl,
-                    new IotHubClientMqttSettings(protocol),
-                    ExceedAllowedMessageSizeInBytes)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Message_DeviceSendMessageWayOverAllowedSize_Amqp(IotHubClientTransportProtocol protocol)
-        {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendSingleMessage(
-                        TestDeviceType.Sasl,
-                        new IotHubClientAmqpSettings(protocol),
-                        OverlyExceedAllowedMessageSizeInBytes)
-                    .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
-            error.And.IsTransient.Should().BeFalse();
-        }
-
-        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
-        // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
-        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
-        // and throwing a MessageTooLargeException, if relevant.
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(InvalidOperationException))]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Message_DeviceSendMessageWayOverAllowedSize_Mqtt(IotHubClientTransportProtocol protocol)
-        {
-            await SendSingleMessage(
-                    TestDeviceType.Sasl,
-                    new IotHubClientMqttSettings(protocol),
-                    OverlyExceedAllowedMessageSizeInBytes)
-                .ConfigureAwait(false);
         }
 
         private async Task Message_DeviceSendSingleLargeMessageAsync(TestDeviceType testDeviceType, IotHubClientTransportSettings transportSettings)
@@ -324,16 +181,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         public static async Task SendSingleMessageAsync(IotHubDeviceClient deviceClient, MsTestLogger logger, int messageSize = 0)
         {
-            Client.Message testMessage;
-
-            if (messageSize == 0)
-            {
-                (testMessage, _, _) = ComposeD2cTestMessage(logger);
-            }
-            else
-            {
-                (testMessage, _, _) = ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger);
-            }
+            Client.Message testMessage = messageSize == 0
+                ? ComposeD2cTestMessage(logger, out string _, out string _)
+                : ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger, out string _, out string _);
 
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
@@ -344,25 +194,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             for (int i = 0; i < MessageBatchCount; i++)
             {
-                (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage(logger);
+                Client.Message testMessage = ComposeD2cTestMessage(logger, out string payload, out string p1Value);
                 messagesToBeSent.Add(testMessage, Tuple.Create(payload, p1Value));
             }
 
+            await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient.SendEventBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
         }
 
         private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
         {
-            (Client.Message testMessage, _, _) = ComposeD2cTestMessage(Logger);
+            Client.Message testMessage = ComposeD2cTestMessage(Logger, out string _, out string _);
 
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
-        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessage(MsTestLogger logger)
+        public static Client.Message ComposeD2cTestMessage(MsTestLogger logger, out string payload, out string p1Value)
         {
             string messageId = Guid.NewGuid().ToString();
-            string payload = Guid.NewGuid().ToString();
-            string p1Value = Guid.NewGuid().ToString();
+            payload = Guid.NewGuid().ToString();
+            p1Value = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
@@ -374,14 +225,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             message.Properties.Add("property1", p1Value);
             message.Properties.Add("property2", null);
 
-            return (message, payload, p1Value);
+            return message;
         }
 
-        public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessageOfSpecifiedSize(int messageSize, MsTestLogger logger)
+        public static Client.Message ComposeD2cTestMessageOfSpecifiedSize(int messageSize, MsTestLogger logger, out string payload, out string p1Value)
         {
             string messageId = Guid.NewGuid().ToString();
-            string payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";
-            string p1Value = Guid.NewGuid().ToString();
+            payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";
+            p1Value = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
@@ -391,7 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             message.Properties.Add("property1", p1Value);
             message.Properties.Add("property2", null);
 
-            return (message, payload, p1Value);
+            return message;
         }
     }
 }

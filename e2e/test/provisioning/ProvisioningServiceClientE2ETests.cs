@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -20,10 +21,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningServiceClientE2ETests : E2EMsTestBase
     {
-        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"{nameof(ProvisioningServiceClientE2ETests)}_";
 
-        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
+        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(DeviceProvisioningServiceException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
 #pragma warning disable CA1823
@@ -134,6 +135,36 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType.SymmetricKey);
         }
 
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task ProvisioningServiceClient_GetIndividualEnrollmentAsync_Fails()
+        {
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+
+            // act
+            Func<Task> act = async () => await provisioningServiceClient.GetIndividualEnrollmentAsync("invalid-registration-id").ConfigureAwait(false);
+
+            // assert
+            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(404201);
+            error.And.IsTransient.Should().BeFalse();
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task ProvisioningServiceClient_GetEnrollmentGroupAsync_Fails()
+        {
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+
+            // act
+            Func<Task> act = async () => await provisioningServiceClient.GetEnrollmentGroupAsync("invalid-registration-id").ConfigureAwait(false);
+
+            // assert
+            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(404204);
+            error.And.IsTransient.Should().BeFalse();
+        }
+
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
@@ -161,7 +192,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     },
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
-                    Logger)
+                    Logger,
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (attestationMechanism == null)
@@ -210,7 +242,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     },
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
-                    Logger)
+                    Logger,
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (attestationMechanism == null)
@@ -302,7 +335,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     },
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
-                    Logger)
+                    Logger,
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (individualEnrollmentResult == null)
@@ -367,7 +401,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
-                        Logger)
+                        Logger,
+                        CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (enrollmentGroupResult == null)
@@ -437,7 +472,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 },
                                 s_provisioningServiceRetryPolicy,
                                 s_retryableExceptions,
-                                logger)
+                                logger,
+                                CancellationToken.None)
                             .ConfigureAwait(false);
 
                         if (temporaryCreatedEnrollment == null)
@@ -458,7 +494,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 },
                                 s_provisioningServiceRetryPolicy,
                                 s_retryableExceptions,
-                                logger)
+                                logger,
+                                CancellationToken.None)
                             .ConfigureAwait(false);
 
                         if (createdEnrollment == null)
@@ -502,7 +539,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     },
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
-                    logger)
+                    logger,
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (createdEnrollment == null)
@@ -559,7 +597,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                    },
                    s_provisioningServiceRetryPolicy,
                    s_retryableExceptions,
-                   logger)
+                   logger,
+                   CancellationToken.None)
                .ConfigureAwait(false);
 
             if (createdEnrollmentGroup == null)
@@ -590,7 +629,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
-                            logger)
+                            logger,
+                            CancellationToken.None)
                         .ConfigureAwait(false);
                 }
                 else if (enrollmentType == EnrollmentType.Group)
@@ -603,7 +643,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
-                            logger)
+                            logger,
+                            CancellationToken.None)
                         .ConfigureAwait(false);
                 }
             }
