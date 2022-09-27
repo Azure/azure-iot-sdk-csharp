@@ -63,16 +63,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken));
         }
 
-        public override Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken));
-        }
-
-        public override Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken));
-        }
-
         public override Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableTwinPatchAsync(cancellationToken));

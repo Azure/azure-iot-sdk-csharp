@@ -93,8 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly Func<DirectMethodRequest, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<Message, Task> _moduleMessageReceivedListener;
-        private readonly Func<Message, Task> _deviceMessageReceivedListener;
+        private readonly Func<Message, Task> _messageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
@@ -172,8 +171,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _moduleId = context.IotHubConnectionCredentials.ModuleId;
 
             _methodListener = context.MethodCallback;
-            _deviceMessageReceivedListener = context.DeviceEventCallback;
-            _moduleMessageReceivedListener = context.ModuleEventCallback;
+            _messageReceivedListener = context.MessageEventCallback;
             _onDesiredStatePatchListener = context.DesiredPropertyUpdateCallback;
 
             _deviceToCloudMessagesTopic = string.Format(CultureInfo.InvariantCulture, DeviceToCloudMessagesTopicFormat, _deviceId);
@@ -493,7 +491,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(_connectionCredentials.ModuleId))
+                    {
+                        await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        if (_connectionCredentials.IsEdgeModule)
+                        {
+                            await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                }
+                catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
+                {
+                    throw new IotHubClientException("Failed to enable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
+                }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -505,44 +524,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
-            {
-                throw new IotHubClientException("Failed to disable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
-            }
-        }
-
-        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (isAnEdgeModule)
+                if (string.IsNullOrWhiteSpace(_connectionCredentials.ModuleId))
                 {
-                    await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
+                    await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
-            {
-                throw new IotHubClientException("Failed to enable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
-            }
-        }
-
-        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (isAnEdgeModule)
-                {
-                    await UnsubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                    if (_connectionCredentials.IsEdgeModule)
+                    {
+                        await UnsubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
@@ -921,11 +916,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             PopulateMessagePropertiesFromMqttMessage(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
 
-            if (_deviceMessageReceivedListener != null)
+            if (_messageReceivedListener != null)
             {
-                // We are intentionally not awaiting _deviceMessageReceivedListener callback.
+                // We are intentionally not awaiting _messageReceivedListener callback.
                 // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
-                _ = _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage);
+                _ = _messageReceivedListener.Invoke(receivedCloudToDeviceMessage);
 
                 // note that MQTT does not support Abandon or Reject, so always Complete by acknowledging the message like this.
                 // Also note that
@@ -1071,7 +1066,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 iotHubMessage.SystemProperties.Add(MessageSystemPropertyNames.InputName, tokens[5]);
             }
 
-            await (_moduleMessageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
+            await (_messageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
         }
 
         public void PopulateMessagePropertiesFromMqttMessage(Message message, MqttApplicationMessage mqttMessage)

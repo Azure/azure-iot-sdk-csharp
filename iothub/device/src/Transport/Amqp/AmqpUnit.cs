@@ -19,8 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private readonly Func<DirectMethodRequest, Task> _onMethodCallback;
         private readonly Action<Twin, string, TwinCollection, IotHubClientException> _twinMessageListener;
-        private readonly Func<Message, Task> _onModuleMessageReceivedCallback;
-        private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
+        private readonly Func<Message, Task> _onMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
         private readonly Action _onUnitDisconnected;
         private volatile bool _disposed;
@@ -61,8 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<DirectMethodRequest, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
-            Func<Message, Task> onModuleMessageReceivedCallback,
-            Func<Message, Task> onDeviceMessageReceivedCallback,
+            Func<Message, Task> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {
             _connectionCredentials = connectionCredentials;
@@ -71,8 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             _onMethodCallback = onMethodCallback;
             _twinMessageListener = twinMessageListener;
-            _onModuleMessageReceivedCallback = onModuleMessageReceivedCallback;
-            _onDeviceMessageReceivedCallback = onDeviceMessageReceivedCallback;
+            _onMessageReceivedCallback = onMessageReceivedCallback;
 
             _amqpConnectionHolder = amqpConnectionHolder;
             _onUnitDisconnected = onUnitDisconnected;
@@ -331,7 +328,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (enableCallback)
                 {
-                    _messageReceivingLink.RegisterReceiveMessageListener(OnDeviceMessageReceived);
+                    _messageReceivingLink.RegisterReceiveMessageListener(OnMessageReceived);
                 }
             }
             finally
@@ -520,19 +517,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnDeviceMessageReceived(Message message)
+        private void OnMessageReceived(Message message)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, message, nameof(OnDeviceMessageReceived));
+                Logging.Enter(this, message, nameof(OnMessageReceived));
 
             try
             {
-                _onDeviceMessageReceivedCallback?.Invoke(message);
+                _onMessageReceivedCallback?.Invoke(message);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, message, nameof(OnDeviceMessageReceived));
+                    Logging.Exit(this, message, nameof(OnMessageReceived));
             }
         }
 
@@ -552,7 +549,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else
             {
-                await EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                await EnableEdgeModuleEventReceiveAsync(cancellationToken).ConfigureAwait(false);
 
                 disposeOutcome = await _eventReceivingLink
                     .DisposeMessageAsync(lockToken, AmqpIotResultAdapter.GetResult(disposeAction), cancellationToken)
@@ -568,7 +565,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Event
 
-        public async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        public async Task EnableEdgeModuleEventReceiveAsync(CancellationToken cancellationToken)
         {
             if (_closed)
             {
@@ -576,7 +573,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
 
             if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(EnableEventReceiveAsync));
+                Logging.Enter(this, nameof(EnableEdgeModuleEventReceiveAsync));
 
             _amqpIotSession = await EnsureSessionIsOpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -588,7 +585,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP event receiver links are open.", nameof(EnableEventReceiveAsync));
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP event receiver links are open.", nameof(EnableEdgeModuleEventReceiveAsync));
                 }
                 throw;
             }
@@ -625,14 +622,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     _eventReceivingLink.RegisterEventListener(OnEventsReceived);
 
                     if (Logging.IsEnabled)
-                        Logging.Associate(this, this, _eventReceivingLink, nameof(EnableEventReceiveAsync));
+                        Logging.Associate(this, this, _eventReceivingLink, nameof(EnableEdgeModuleEventReceiveAsync));
                 }
             }
             finally
             {
                 _eventReceivingLinkSemaphore.Release();
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(EnableEventReceiveAsync));
+                    Logging.Exit(this, nameof(EnableEdgeModuleEventReceiveAsync));
             }
         }
 
@@ -670,7 +667,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         public void OnEventsReceived(Message message)
         {
-            _onModuleMessageReceivedCallback?.Invoke(message);
+            _onMessageReceivedCallback?.Invoke(message);
         }
 
         #endregion Event

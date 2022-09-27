@@ -20,16 +20,21 @@ namespace Microsoft.Azure.Devices.Client
     {
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
+        private readonly SemaphoreSlim _receiveMessageSemaphore = new(1, 1);
+
+        private volatile Func<Message, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
         // Connection status change information
         private volatile Action<ConnectionStatusInfo> _connectionStatusChangeHandler;
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
+
         private volatile Func<DirectMethodRequest, Task<DirectMethodResponse>> _deviceDefaultMethodCallback;
 
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
+
         private Func<TwinCollection, Task> _desiredPropertyUpdateCallback;
 
         private protected readonly IotHubClientOptions _clientOptions;
@@ -61,9 +66,9 @@ namespace Microsoft.Azure.Devices.Client
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
+                MessageEventCallback = OnMessageReceivedAsync,
             };
 
-            AddToPipelineContext();
             InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             if (Logging.IsEnabled)
@@ -182,6 +187,59 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sets a new delegate for receiving a message from the device or module queue using a cancellation token.
+        /// This instance must be opened already.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// If a delegate is already registered it will be replaced with the new delegate.
+        /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
+        /// </para>
+        /// </remarks>
+        /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        public async Task SetMessageHandlerAsync(
+            Func<Message, Task<MessageAcknowledgement>> messageHandler,
+            CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, messageHandler, nameof(SetMessageHandlerAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Wait to acquire the _deviceReceiveMessageSemaphore. This ensures that concurrently invoked
+            // SetMessageHandlerAsync calls are invoked in a thread-safe manner.
+            await _receiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                // If a callback is already set on the client, calling SetMessageHandlerAsync
+                // again will cause the delegate to be overwritten.
+                if (messageHandler != null)
+                {
+                    // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
+                    await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                    _receiveMessageCallback = new Func<Message, Task<MessageAcknowledgement>>(messageHandler);
+                }
+                else
+                {
+                    // If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
+                    _receiveMessageCallback = null;
+                    await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _receiveMessageSemaphore.Release();
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, messageHandler, nameof(SetMessageHandlerAsync));
+            }
         }
 
         /// <summary>
@@ -439,8 +497,6 @@ namespace Microsoft.Azure.Devices.Client
             _ = _desiredPropertyUpdateCallback.Invoke(patch);
         }
 
-        private protected abstract void AddToPipelineContext();
-
         private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
         {
             await InnerHandler.SendMethodResponseAsync(directMethodResponse, cancellationToken).ConfigureAwait(false);
@@ -500,6 +556,76 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return !isFound ? default : (T)handler;
+        }
+
+        internal async Task OnMessageReceivedAsync(Message message)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, message, nameof(OnMessageReceivedAsync));
+
+            if (message == null)
+            {
+                return;
+            }
+
+            // Grab this semaphore so that there is no chance that the _receiveMessageCallback instance is set in between the read of the
+            // item1 and the read of the item2
+            await _receiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                Func<Message, Task<MessageAcknowledgement>> callback = _receiveMessageCallback;
+
+                if (callback != null)
+                {
+                    MessageAcknowledgement response = await callback.Invoke(message).ConfigureAwait(false);
+
+                    try
+                    {
+                        switch (response)
+                        {
+                            case MessageAcknowledgement.Complete:
+                                await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            case MessageAcknowledgement.Abandon:
+                                await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+
+                            case MessageAcknowledgement.Reject:
+                                await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                                break;
+                        }
+                    }
+                    catch (Exception ex) when (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, ex, nameof(OnMessageReceivedAsync));
+                    }
+                }
+            }
+            finally
+            {
+                _receiveMessageSemaphore.Release();
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, message, nameof(OnMessageReceivedAsync));
+        }
+
+        private Task EnableReceiveMessageAsync(CancellationToken cancellationToken = default)
+        {
+            // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
+            return _receiveMessageCallback == null
+                ? InnerHandler.EnableReceiveMessageAsync(cancellationToken)
+                : Task.CompletedTask;
+        }
+
+        private Task DisableReceiveMessageAsync(CancellationToken cancellationToken = default)
+        {
+            // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
+            return _receiveMessageCallback == null
+                ? InnerHandler.DisableReceiveMessageAsync(cancellationToken)
+                : Task.CompletedTask;
         }
     }
 }

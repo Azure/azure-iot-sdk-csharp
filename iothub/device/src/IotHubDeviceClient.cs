@@ -14,11 +14,6 @@ namespace Microsoft.Azure.Devices.Client
     /// <threadsafety static="true" instance="true" />
     public class IotHubDeviceClient : IotHubBaseClient
     {
-        // Cloud-to-device message callback information
-        private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
-
-        private volatile Func<Message, Task<MessageAcknowledgement>> _deviceReceiveMessageCallback;
-
         // File upload operation
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
 
@@ -87,57 +82,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets the listener for receiving a message from the device queue using a cancellation token.
-        /// IotHubDeviceClient instance must be opened already.
-        /// </summary>
-        /// <remarks>
-        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
-        /// A cloud-to-device message handler can be unset by setting <paramref name="messageHandler"/> to null.
-        /// </remarks>
-        /// <param name="messageHandler">The listener to be used when a cloud-to-device message is received by the client.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetReceiveMessageHandlerAsync(
-            Func<Message, Task<MessageAcknowledgement>> messageHandler,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, messageHandler, nameof(SetReceiveMessageHandlerAsync));
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Wait to acquire the _deviceReceiveMessageSemaphore. This ensures that concurrently invoked
-            // SetReceiveMessageHandlerAsync calls are invoked in a thread-safe manner.
-            await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                // If a ReceiveMessageCallback is already set on the DeviceClient, calling SetReceiveMessageHandlerAsync
-                // again will cause the delegate to be overwritten.
-                if (messageHandler != null)
-                {
-                    // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
-                    await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceReceiveMessageCallback = messageHandler;
-                }
-                else
-                {
-                    // If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
-                    _deviceReceiveMessageCallback = null;
-                    await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                _deviceReceiveMessageSemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, messageHandler, nameof(SetReceiveMessageHandlerAsync));
-            }
-        }
-
-        /// <summary>
         /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device
         /// </summary>
         /// <remarks>
@@ -171,88 +115,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (disposing)
             {
-                _deviceReceiveMessageSemaphore?.Dispose();
                 _fileUploadHttpTransportHandler?.Dispose();
             }
 
             // Call the base class implementation.
             base.Dispose(disposing);
-        }
-
-        private protected override void AddToPipelineContext()
-        {
-            PipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
-        }
-
-        // The delegate for handling c2d messages received
-        private async Task OnDeviceMessageReceivedAsync(Message message)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, message, nameof(OnDeviceMessageReceivedAsync));
-
-            if (message == null)
-            {
-                return;
-            }
-
-            // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the
-            // item1 and the read of the item2
-            await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
-
-            try
-            {
-                if (_deviceReceiveMessageCallback != null)
-                {
-                    MessageAcknowledgement response = await _deviceReceiveMessageCallback.Invoke(message).ConfigureAwait(false);
-
-                    try
-                    {
-                        switch (response)
-                        {
-                            case MessageAcknowledgement.Complete:
-                                await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-
-                            case MessageAcknowledgement.Abandon:
-                                await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-
-                            case MessageAcknowledgement.Reject:
-                                await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-                        }
-                    }
-                    catch (Exception ex) when (Logging.IsEnabled)
-                    {
-                        Logging.Error(this, ex, nameof(OnDeviceMessageReceivedAsync));
-                    }
-                }
-            }
-            finally
-            {
-                _deviceReceiveMessageSemaphore.Release();
-            }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, message, nameof(OnDeviceMessageReceivedAsync));
-        }
-
-        // Enable telemetry downlink for devices
-        private Task EnableReceiveMessageAsync(CancellationToken cancellationToken = default)
-        {
-            // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
-            return _deviceReceiveMessageCallback == null
-                ? InnerHandler.EnableReceiveMessageAsync(cancellationToken)
-                : Task.CompletedTask;
-        }
-
-        // Disable telemetry downlink for devices
-        private Task DisableReceiveMessageAsync(CancellationToken cancellationToken = default)
-        {
-            // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
-            return _deviceReceiveMessageCallback == null
-                ? InnerHandler.DisableReceiveMessageAsync(cancellationToken)
-                : Task.CompletedTask;
         }
     }
 }

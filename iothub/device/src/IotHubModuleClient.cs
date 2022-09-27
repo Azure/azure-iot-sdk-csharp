@@ -26,13 +26,9 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
-        private readonly bool _isAnEdgeModule;
         private readonly ICertificateValidator _certValidator;
 
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
-
-        // Cloud-to-module message callback information
-        private volatile Func<Message, Task<MessageAcknowledgement>> _defaultEventCallback;
 
         /// <summary>
         /// Creates a disposable <c>IotHubModuleClient</c> from the specified connection string.
@@ -74,11 +70,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new InvalidOperationException("A valid module Id should be specified in the authentication credentails to create an IotHubModuleClient.");
             }
-
-            // There is a distinction between a Module Twin and and Edge module. We set this flag in order
-            // to correctly select the receiver link for AMQP on a Module Twin. This does not affect MQTT.
-            // We can determine that this is an edge module if the connection string is using a gateway host.
-            _isAnEdgeModule = !IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
 
             _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
 
@@ -194,53 +185,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets the listener for receiving events using a cancellation token.
-        /// IotHubModuleClient instance must be opened already.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
-        /// A listener can be unset by setting <paramref name="messageHandler"/> to null.
-        /// </para>
-        /// This API call is relevant for both IoT hub modules and IoT Edge modules.
-        /// </remarks>
-        /// <param name="messageHandler">The listener to be used when a cloud-to-module message is received by the client.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetMessageHandlerAsync(
-            Func<Message, Task<MessageAcknowledgement>> messageHandler,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, messageHandler, nameof(SetMessageHandlerAsync));
-
-            cancellationToken.ThrowIfCancellationRequested();
-            await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (messageHandler != null)
-                {
-                    await EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                    _defaultEventCallback = messageHandler;
-                }
-                else
-                {
-                    _defaultEventCallback = null;
-                    await DisableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                _moduleReceiveMessageSemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, messageHandler, nameof(SetMessageHandlerAsync));
-            }
-        }
-
-        /// <summary>
         /// Interactively invokes a method from an edge module to an edge device.
         /// Both the edge module and the edge device need to be connected to the same edge hub.
         /// IotHubModuleClient instance must be opened already.
@@ -293,90 +237,11 @@ namespace Microsoft.Azure.Devices.Client
             base.Dispose(disposing);
         }
 
-        override private protected void AddToPipelineContext()
-        {
-            PipelineContext.ModuleEventCallback = OnModuleEventMessageReceivedAsync;
-        }
-
         private void ValidateModuleTransportHandler(string apiName)
         {
             if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
             {
                 throw new InvalidOperationException($"{apiName} is available for Modules only.");
-            }
-        }
-
-        // Enable telemetry downlink for modules
-        private Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
-        {
-            // The telemetry downlink needs to be enabled only for the first time that the _defaultEventCallback delegate is set.
-            return _defaultEventCallback == null
-                ? InnerHandler.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken)
-                : Task.CompletedTask;
-        }
-
-        // Disable telemetry downlink for modules
-        private Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
-        {
-            // The telemetry downlink should be disabled only after _defaultEventCallback delegate has been removed.
-            return _defaultEventCallback == null
-                ? InnerHandler.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken)
-                : Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// The delegate for handling event messages received
-        /// </summary>
-        /// <param name="message">The message received</param>
-        internal async Task OnModuleEventMessageReceivedAsync(Message message)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, message?.InputName, nameof(OnModuleEventMessageReceivedAsync));
-
-            if (message == null)
-            {
-                return;
-            }
-
-            try
-            {
-                var response = MessageAcknowledgement.Complete;
-                if (_defaultEventCallback != null)
-                {
-                    response = await _defaultEventCallback
-                        .Invoke(message)
-                        .ConfigureAwait(false);
-                }
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(MessageAcknowledgement)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
-
-                try
-                {
-                    switch (response)
-                    {
-                        case MessageAcknowledgement.Complete:
-                            await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                            break;
-
-                        case MessageAcknowledgement.Abandon:
-                            await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                            break;
-
-                        case MessageAcknowledgement.Reject:
-                            await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                            break;
-                    }
-                }
-                catch (Exception ex) when (Logging.IsEnabled)
-                {
-                    Logging.Error(this, ex, nameof(OnModuleEventMessageReceivedAsync));
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, message?.InputName, nameof(OnModuleEventMessageReceivedAsync));
             }
         }
 
