@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
@@ -27,6 +28,24 @@ namespace Microsoft.Azure.Devices.Client
             IotHubClientErrorCode.Throttled,
             IotHubClientErrorCode.Timeout,
             IotHubClientErrorCode.NetworkErrors,
+        };
+
+        private Dictionary<IotHubClientErrorCode, HttpStatusCode> httpStatusCodes = new Dictionary<IotHubClientErrorCode, HttpStatusCode>()
+        {
+            { IotHubClientErrorCode.Ok, HttpStatusCode.OK },
+            { IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded, HttpStatusCode.Forbidden },
+            { IotHubClientErrorCode.QuotaExceeded, HttpStatusCode.Forbidden },
+            { IotHubClientErrorCode.DeviceMessageLockLost, HttpStatusCode.PreconditionFailed },
+            { IotHubClientErrorCode.DeviceNotFound, HttpStatusCode.NotFound },
+            { IotHubClientErrorCode.NetworkErrors, HttpStatusCode.BadRequest },
+            { IotHubClientErrorCode.Suspended, HttpStatusCode.BadRequest },
+            { IotHubClientErrorCode.Timeout, HttpStatusCode.RequestTimeout },
+            { IotHubClientErrorCode.Throttled, (HttpStatusCode)429 },
+            { IotHubClientErrorCode.PreconditionFailed, HttpStatusCode.PreconditionFailed },
+            { IotHubClientErrorCode.MessageTooLarge, HttpStatusCode.RequestEntityTooLarge },
+            { IotHubClientErrorCode.ServerBusy, HttpStatusCode.ServiceUnavailable },
+            { IotHubClientErrorCode.ServerError, HttpStatusCode.InternalServerError },
+            { IotHubClientErrorCode.Unauthorized, HttpStatusCode.Unauthorized },
         };
 
         /// <summary>
@@ -124,6 +143,15 @@ namespace Microsoft.Azure.Devices.Client
             IsTransient = DetermineIfTransient(errorCode);
             TrackingId = trackingId;
             ErrorCode = errorCode;
+
+            if (httpStatusCodes.TryGetValue(errorCode, out HttpStatusCode value))
+            {
+                StatusCode = value;
+            }
+            else
+            {
+                StatusCode = 0;
+            }
         }
 
         /// <summary>
@@ -145,6 +173,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             IsTransient = DetermineIfTransient(errorCode);
             ErrorCode = errorCode;
+            
+            if (httpStatusCodes.TryGetValue(errorCode, out HttpStatusCode value))
+            {
+                StatusCode = value;
+            }
+            else
+            {
+                StatusCode = 0;
+            }
         }
 
         /// <summary>
@@ -156,6 +193,15 @@ namespace Microsoft.Azure.Devices.Client
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
         public string TrackingId { get; set; }
+
+        /// <summary>
+        /// The HTTP status code.
+        /// </summary>
+        /// <remarks>
+        /// This property is not actually obtained from the response, but mapped from the property <see cref="ErrorCode"/> with the best effort.
+        /// For more details, check <see cref="httpStatusCodes"/>.
+        /// </remarks>
+        public HttpStatusCode StatusCode { get; private set; }
 
         /// <summary>
         /// The specific error code.

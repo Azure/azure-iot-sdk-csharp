@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -160,6 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
@@ -181,6 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
@@ -202,6 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
@@ -223,6 +227,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
