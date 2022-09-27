@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // -> Periodically send "temperature" over telemetry - on "Thermostat" components.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set - on "Thermostat" components.
 
-            _deviceClient.SetConnectionStatusChangeHandler(async (info) =>
+            _deviceClient.SetConnectionStatusChangeCallback(async (info) =>
             {
                 _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
             });
 
-            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, cancellationToken);
+            await _deviceClient.SetMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
 
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, cancellationToken);

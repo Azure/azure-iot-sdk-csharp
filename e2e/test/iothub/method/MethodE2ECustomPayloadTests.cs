@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var methodCallReceived = new TaskCompletionSource<bool>();
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
-                .SetMethodHandlerAsync(
+                .SetMethodCallbackAsync(
                     (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_booleanPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var methodCallReceived = new TaskCompletionSource<bool>();
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
-                .SetMethodHandlerAsync(
+                .SetMethodCallbackAsync(
                     (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_customPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var methodCallReceived = new TaskCompletionSource<bool>();
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
-                .SetMethodHandlerAsync(
+                .SetMethodCallbackAsync(
                     (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_listPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var methodCallReceived = new TaskCompletionSource<bool>();
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
-                .SetMethodHandlerAsync(
+                .SetMethodCallbackAsync(
                     (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_dictionaryPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var methodCallReceived = new TaskCompletionSource<bool>();
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
-                .SetMethodHandlerAsync(
+                .SetMethodCallbackAsync(
                     (request) =>
                     {
                         logger.Trace($"{nameof(SetDeviceReceiveMethod_arrayPayloadAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");

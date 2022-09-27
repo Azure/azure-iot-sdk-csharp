@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             {
                 Interlocked.Increment(ref connectionStatusChangeCount);
             }
-            deviceClient.SetConnectionStatusChangeHandler(connectionStatusChangeHandler);
+            deviceClient.SetConnectionStatusChangeCallback(connectionStatusChangeHandler);
 
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();

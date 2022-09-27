@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
+            await moduleClient.SetMessageCallbackAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             bool isDefaultCallbackCalled = false;
             await moduleClient
-                .SetMessageHandlerAsync(
+                .SetMessageCallbackAsync(
                     (message) =>
                     {
                         isDefaultCallbackCalled = true;
