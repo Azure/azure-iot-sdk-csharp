@@ -40,13 +40,13 @@ namespace Microsoft.Azure.Devices.Tests
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
             string trackingId = pair.Item1;
-            IotHubErrorCode errorCode = pair.Item2;
+            IotHubServiceErrorCode errorCode = pair.Item2;
 
             // assert
             trackingId.Should().Be("b575211ff5194d56b18721941e82c3d5");
-            errorCode.Should().Be(IotHubErrorCode.DeviceNotOnline);
+            errorCode.Should().Be(IotHubServiceErrorCode.DeviceNotOnline);
         }
 
         [TestMethod]
@@ -62,11 +62,11 @@ namespace Microsoft.Azure.Devices.Tests
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
-            IotHubErrorCode errorCode = pair.Item2;
+            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            IotHubServiceErrorCode errorCode = pair.Item2;
 
             // assert
-            errorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+            errorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
         }
 
         [TestMethod]
@@ -89,11 +89,11 @@ namespace Microsoft.Azure.Devices.Tests
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
-            IotHubErrorCode errorCode = pair.Item2;
+            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            IotHubServiceErrorCode errorCode = pair.Item2;
 
             // assert
-            errorCode.Should().Be(IotHubErrorCode.Unknown);
+            errorCode.Should().Be(IotHubServiceErrorCode.Unknown);
         }
 
         [TestMethod]
@@ -109,11 +109,11 @@ namespace Microsoft.Azure.Devices.Tests
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
-            IotHubErrorCode errorCode = pair.Item2;
+            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            IotHubServiceErrorCode errorCode = pair.Item2;
 
             // assert
-            errorCode.Should().Be(IotHubErrorCode.Unknown);
+            errorCode.Should().Be(IotHubServiceErrorCode.Unknown);
         }
 
         [TestMethod]
@@ -128,11 +128,11 @@ namespace Microsoft.Azure.Devices.Tests
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
-            IotHubErrorCode errorCode = pair.Item2;
+            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            IotHubServiceErrorCode errorCode = pair.Item2;
 
             // assert
-            errorCode.Should().Be(IotHubErrorCode.Unknown);
+            errorCode.Should().Be(IotHubServiceErrorCode.Unknown);
         }
     }
 }

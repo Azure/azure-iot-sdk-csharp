@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Samples
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on component {Thermostat1Component}." +
                     $"\nDevice returned status: {result.Status}. \nReport: {result.Payload}");
             }
-            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubErrorCode.DeviceNotFound)
+            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotFound)
             {
                 _logger.LogWarning($"Unable to execute command {getMaxMinReportCommandName} on component {Thermostat1Component}." +
                     $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Samples
                 _logger.LogDebug($"Command {commandToInvoke} was invoked on the {_deviceId} device twin." +
                     $"\nDevice returned status: {result.Status}.");
             }
-            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubErrorCode.DeviceNotFound)
+            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotFound)
             {
                 _logger.LogWarning($"Unable to execute command {commandToInvoke} on component {Thermostat1Component}." +
                     $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");

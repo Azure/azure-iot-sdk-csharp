@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.ModuleNotFound);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.ModuleNotFound);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotOnline);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotOnline);
             error.And.IsTransient.Should().BeTrue();
         }
 

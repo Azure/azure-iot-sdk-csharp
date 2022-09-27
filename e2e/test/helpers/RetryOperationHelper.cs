@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public static async Task RetryOperationsAsync(
             Func<Task> asyncOperation,
             IRetryPolicy retryPolicy,
-            HashSet<IotHubErrorCode> retryableStatusCodes,
+            HashSet<IotHubServiceErrorCode> retryableStatusCodes,
             MsTestLogger logger,
             CancellationToken cancellationToken = default)
         {
