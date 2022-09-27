@@ -4,9 +4,9 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The IoT Hub status code.
+    /// The IoT hub device/module client error code.
     /// </summary>
-    public enum IotHubStatusCode
+    public enum IotHubClientErrorCode
     {
         /// <summary>
         /// The request completed without exception.
