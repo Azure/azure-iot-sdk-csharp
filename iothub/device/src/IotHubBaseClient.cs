@@ -507,8 +507,6 @@ namespace Microsoft.Azure.Devices.Client
             _ = _desiredPropertyUpdateCallback.Invoke(patch, _twinPatchCallbackContext);
         }
 
-        private protected abstract void AddToPipelineContext();
-
         private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
         {
             await InnerHandler.SendMethodResponseAsync(directMethodResponse, cancellationToken).ConfigureAwait(false);
