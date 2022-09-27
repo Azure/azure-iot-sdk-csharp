@@ -19,14 +19,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         (t, st) => ((AsyncCallback)state)(t),
                         callback,
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<T>(state);
+            var tcs = new TaskCompletionSource<T>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 t =>
                 {
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;

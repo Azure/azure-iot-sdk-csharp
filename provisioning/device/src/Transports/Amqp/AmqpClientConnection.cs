@@ -169,14 +169,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 _connectionSemaphore.Release();
             }
-        }
 
         internal void Close()
         {
             AmqpConnection connection = AmqpConnection;
             if (connection != null)
             {
-                connection.Close();
+                _connectionSemaphore.Release();
             }
         }
 

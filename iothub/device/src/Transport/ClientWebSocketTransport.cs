@@ -63,13 +63,14 @@ namespace Microsoft.Azure.Amqp.Transport
             Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
             args.Exception = null; // null out any exceptions
 
+            // We can't await this properly because the abstract method, defined by the AMQP layer, is not Task<bool>.
             Task taskResult = WriteImplAsync(args);
             if (WriteTaskDone(taskResult, args))
             {
                 return false;
             }
 
-            ToAsyncResult(taskResult, s_onWriteComplete, args);
+            _ = ToAsyncResult(taskResult, s_onWriteComplete, args);
             return true;
         }
 
@@ -188,13 +189,13 @@ namespace Microsoft.Azure.Amqp.Transport
 
                 succeeded = true;
             }
-            catch (WebSocketException webSocketException)
+            catch (WebSocketException ex)
             {
-                throw new IOException(webSocketException.Message, webSocketException);
+                throw new IOException(ex.Message, ex);
             }
-            catch (HttpListenerException httpListenerException)
+            catch (HttpListenerException ex)
             {
-                throw new IOException(httpListenerException.Message, httpListenerException);
+                throw new IOException(ex.Message, ex);
             }
             finally
             {
@@ -360,14 +361,14 @@ namespace Microsoft.Azure.Amqp.Transport
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<object>(state);
+            var tcs = new TaskCompletionSource<object>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 _ =>
                 {
@@ -387,7 +388,7 @@ namespace Microsoft.Azure.Amqp.Transport
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;
@@ -402,14 +403,14 @@ namespace Microsoft.Azure.Amqp.Transport
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<TResult>(state);
+            var tcs = new TaskCompletionSource<TResult>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 _ =>
                 {
@@ -429,7 +430,7 @@ namespace Microsoft.Azure.Amqp.Transport
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;
