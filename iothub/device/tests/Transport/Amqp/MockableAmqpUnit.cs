@@ -49,10 +49,5 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             await Task.Yield();
         }
-
-        public new async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-        }
     }
 }
