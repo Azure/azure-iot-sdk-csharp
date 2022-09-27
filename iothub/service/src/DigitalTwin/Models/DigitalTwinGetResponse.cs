@@ -28,11 +28,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets the deserialized digital twin.
         /// </summary>
-        public T DigitalTwin { get; }
+        public T DigitalTwin { get; protected internal set }
 
         /// <summary>
         /// Gets the weak ETag of the modified resource.
         /// </summary>
-        public ETag ETag { get; }
+        public ETag ETag { get; protected internal set }
     }
 }
