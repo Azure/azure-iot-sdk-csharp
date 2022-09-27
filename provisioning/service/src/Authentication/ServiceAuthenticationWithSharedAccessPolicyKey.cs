@@ -14,6 +14,12 @@ namespace Microsoft.Azure.Devices
         private string _policyName;
         private string _key;
 
+        internal ServiceAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
+        {
+            SetPolicyName(policyName);
+            SetKey(key);
+        }
+
         public string PolicyName
         {
             get => _policyName;
@@ -35,21 +41,13 @@ namespace Microsoft.Azure.Devices
             return provisioningConnectionStringBuilder;
         }
 
-        internal ServiceAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
-        {
-            SetPolicyName(policyName);
-            SetKey(key);
-        }
-
         private void SetPolicyName(string policyName)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(policyName));
             _policyName = policyName;
         }
 
         private void SetKey(string key)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(key));
             _key = key;
         }
     }

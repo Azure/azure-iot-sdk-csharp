@@ -14,6 +14,12 @@ namespace Microsoft.Azure.Devices
         private string _policyName;
         private string _token;
 
+        internal ServiceAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
+        {
+            SetPolicyName(policyName);
+            SetToken(token);
+        }
+
         public string PolicyName
         {
             get => _policyName;
@@ -35,21 +41,13 @@ namespace Microsoft.Azure.Devices
             return provisioningConnectionStringBuilder;
         }
 
-        internal ServiceAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
-        {
-            SetPolicyName(policyName);
-            SetToken(token);
-        }
-
         private void SetPolicyName(string policyName)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(policyName));
             _policyName = policyName;
         }
 
         private void SetToken(string token)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(token));
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Token must be of type SharedAccessSignature");

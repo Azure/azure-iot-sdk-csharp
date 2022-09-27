@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="primary">The X509Certificate2 with the primary certificate. It cannot be null.</param>
         /// <param name="secondary">The X509Certificate2 with the secondary certificate. It can be null (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">If the primary certificate is null.</exception>
+        /// <exception cref="ArgumentNullException">If the primary certificate is null.</exception>
         /// <exception cref="CryptographicException">If the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(X509Certificate2 primary, X509Certificate2 secondary)
         {

@@ -14,6 +14,11 @@ namespace Microsoft.Azure.Devices
     {
         private string _key;
 
+        internal SharedAccessSignatureBuilder()
+        {
+            TimeToLive = TimeSpan.FromMinutes(20);
+        }
+
         public string KeyName { get; set; }
 
         public string Key
@@ -25,11 +30,6 @@ namespace Microsoft.Azure.Devices
         public string Target { get; set; }
 
         public TimeSpan TimeToLive { get; set; }
-
-        internal SharedAccessSignatureBuilder()
-        {
-            TimeToLive = TimeSpan.FromMinutes(20);
-        }
 
         internal string ToSignature()
         {

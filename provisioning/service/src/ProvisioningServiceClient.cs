@@ -78,7 +78,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="options"> The options that allow configuration of the provisioning service client instance during initialization.</param>
         /// <returns>The ProvisioningServiceClient with the new instance of this object.</returns>
         /// <exception cref="ArgumentNullException">If the provided connection string is null.</exception>
-        /// <exception cref="ArgumentException">if the provided connection string is empty or white space.</exception>
+        /// <exception cref="ArgumentException">If the provided connection string is empty or white space.</exception>
+        /// <exception cref="FormatException">If the provided connection string has incorrect value for host name.</exception>
+        /// <exception cref="InvalidOperationException">If the provided connection string is missing host name,
+        /// shared access key name or either shared access key or shared access signature.</exception>
+        /// <exception cref="UnauthorizedAccessException">If the provided shared access signature is expired.</exception>
         public ProvisioningServiceClient(string connectionString, ProvisioningServiceClientOptions options = default)
         {
             if (options == default)
@@ -112,7 +116,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>An individual enrollment</returns>
         /// <exception cref="ArgumentNullException">If the provided individualEnrollment is null.</exception>
-        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">If the service was not able to create or update the enrollment.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task<IndividualEnrollment> CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment individualEnrollment, CancellationToken cancellationToken = default)
         {
@@ -132,15 +136,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="individualEnrollments">The collection of <see cref="IndividualEnrollment"/> that contains the description of each individualEnrollment. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A <see cref="BulkEnrollmentOperationResult"/> object with the result of operation for each enrollment.</returns>
-        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
+        /// <exception cref="ArgumentNullException">If the provided individualEnrollments is null.</exception>
+        /// <exception cref="ArgumentException">If the provided individualEnrollments is an empty collection.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the client failed to send the request or service was not able to execute the bulk operation.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task<BulkEnrollmentOperationResult> RunBulkEnrollmentOperationAsync(
             BulkOperationMode bulkOperationMode,
             IEnumerable<IndividualEnrollment> individualEnrollments,
             CancellationToken cancellationToken = default)
         {
+            Argument.AssertNotNullOrEmpty(individualEnrollments, nameof(individualEnrollments));
             return IndividualEnrollmentManager.BulkOperationAsync(_contractApiHttp, bulkOperationMode, individualEnrollments, cancellationToken);
         }
 
@@ -151,8 +158,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The enrollment.</returns>
         /// <exception cref="ArgumentNullException">If the provided registrationId is null.</exception>
-        /// <exception cref="ArgumentException">if the provided registrationId is empty or white space.</exception>
-        /// <exception cref="ProvisioningServiceClientTransportException">If the SDK failed to send the request to the Device Provisioning Service.</exception>
+        /// <exception cref="ArgumentException">If the provided registrationId is empty or white space.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">If the service was not able to get the enrollment.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task<IndividualEnrollment> GetIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken = default)
         {
@@ -166,6 +173,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="individualEnrollment">The individual enrollment.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentNullException">If the provided individualEnrollment is null.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the client failed to send the request or service was not able to execute the operation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteIndividualEnrollmentAsync(IndividualEnrollment individualEnrollment, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(individualEnrollment, nameof(individualEnrollment));
@@ -185,10 +197,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="registrationId">The string that identifies the individualEnrollment. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentException">If the provided registrationId is not correct.</exception>
+        /// <exception cref="ArgumentNullException">If the provided registrationId is null.</exception>
+        /// <exception cref="ArgumentException">If the provided registrationId is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
-        /// If the client failed to send the request or service was not able to execute the bulk operation.
+        /// If the client failed to send the request or service was not able to execute the operation.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
@@ -202,6 +216,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="registrationId">The registration id</param>
         /// <param name="eTag">The eTag.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentNullException">If the provided registrationId is null.</exception>
+        /// <exception cref="ArgumentException">If the provided registrationId is empty or white space.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the client failed to send the request or service was not able to execute the operation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteIndividualEnrollmentAsync(string registrationId, string eTag, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
@@ -223,7 +243,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
-        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
+        /// <exception cref="ArgumentException">If the provided query is empty or white space.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Query CreateIndividualEnrollmentQuery(string query, CancellationToken cancellationToken = default)
         {
@@ -255,8 +275,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
-        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">if the provided page size value is less than zero.</exception>
+        /// <exception cref="ArgumentException">If the provided query is empty or white space.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the provided page size value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Query CreateIndividualEnrollmentQuery(string query, int pageSize, CancellationToken cancellationToken = default)
         {
@@ -288,9 +308,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
+        /// <exception cref="ArgumentNullException">If the provided enrollment group is null.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to create or update the enrollment.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task<EnrollmentGroup> CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(enrollmentGroup, nameof(enrollmentGroup));
@@ -309,9 +331,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroupId">The string that identifies the enrollmentGroup. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="EnrollmentGroup"/> with the content of the enrollment group in the Provisioning Device Service.</returns>
+        /// <exception cref="ArgumentNullException">If the provided enrollment groupId is null.</exception>
+        /// <exception cref="ArgumentException">If the provided enrollment groupId is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to retrieve the enrollment group information for the provided <paramref name="enrollmentGroupId"/>.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task<EnrollmentGroup> GetEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
@@ -333,9 +358,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> that identifies the enrollmentGroup. It cannot be null.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentNullException">If the provided enrollment group is null.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroup"/>.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(enrollmentGroup, nameof(enrollmentGroup));
@@ -355,9 +382,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="enrollmentGroupId">The string that identifies the enrollmentGroup. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentNullException">If the provided enrollment groupId is null.</exception>
+        /// <exception cref="ArgumentException">If the provided enrollment groupId is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroupId"/>.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
@@ -379,9 +409,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">The string with the enrollment group eTag. It can be null or empty.
         /// The Device Provisioning Service will ignore it in all of these cases.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentNullException">If the provided enrollment groupId is null.</exception>
+        /// <exception cref="ArgumentException">If the provided enrollment groupId is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroupId"/> and <paramref name="eTag"/>.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, string eTag, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
@@ -403,7 +436,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
-        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
+        /// <exception cref="ArgumentException">If the provided query is empty or white space.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Query CreateEnrollmentGroupQuery(string query, CancellationToken cancellationToken = default)
         {
@@ -435,8 +468,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentNullException">If the provided query is null.</exception>
-        /// <exception cref="ArgumentException">if the provided query is empty or white space.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">if the provided page size value is less than zero.</exception>
+        /// <exception cref="ArgumentException">If the provided query is empty or white space.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the provided page size value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Query CreateEnrollmentGroupQuery(string query, int pageSize, CancellationToken cancellationToken = default)
         {
@@ -461,9 +494,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="id">The string that identifies the DeviceRegistrationState. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the DeviceRegistrationState in the Provisioning Device Service.</returns>
+        /// <exception cref="ArgumentNullException">If the provided Id is null.</exception>
+        /// <exception cref="ArgumentException">If the provided Id is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to retrieve the registration state for the provided <paramref name="id"/>.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task<DeviceRegistrationState> GetDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(id, nameof(id));
@@ -483,9 +519,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="deviceRegistrationState">The <see cref="DeviceRegistrationState"/> that identifies the DeviceRegistrationState.
         /// It cannot be null.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentNullException">If the provided deviceRegistrationState is null.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// When the service wasn't able to delete the registration status.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteDeviceRegistrationStateAsync(DeviceRegistrationState deviceRegistrationState, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(deviceRegistrationState, nameof(deviceRegistrationState));
@@ -503,9 +541,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="id">The string that identifies the DeviceRegistrationState. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentNullException">If the provided Id is null.</exception>
+        /// <exception cref="ArgumentException">If the provided Id is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to delete the registration state for the provided <paramref name="id"/>.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(id, nameof(id));
@@ -526,9 +567,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">The string with the DeviceRegistrationState eTag. It can be null or empty.
         /// The Device Provisioning Service will ignore it in all of these cases.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentNullException">If the provided Id is null.</exception>
+        /// <exception cref="ArgumentException">If the provided Id is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to delete the registration state for the provided <paramref name="id"/> and <paramref name="eTag"/>.
         /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteDeviceRegistrationStateAsync(string id, string eTag, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(id, nameof(id));
@@ -551,7 +595,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentNullException">If the provided query or enrollment groupId is null.</exception>
-        /// <exception cref="ArgumentException">if the provided query or enrollment groupId is empty or white space.</exception>
+        /// <exception cref="ArgumentException">If the provided query or enrollment groupId is empty or white space.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
             string query,
@@ -589,8 +633,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="pageSize">The int with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentNullException">If the provided query or enrollment groupId is null.</exception>
-        /// <exception cref="ArgumentException">if the provided query or enrollment groupId is empty or white space.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">if the provided page size value is less than zero.</exception>
+        /// <exception cref="ArgumentException">If the provided query or enrollment groupId is empty or white space.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the provided page size value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
             string query,
@@ -615,10 +659,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="registrationId">The registration Id of the individual enrollment to retrieve the attestation information of. This may not be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="AttestationMechanism"/> of the individual enrollment associated with the provided <paramref name="registrationId"/>.</returns>
+        /// <exception cref="ArgumentNullException">If the provided registrationId is null.</exception>
+        /// <exception cref="ArgumentException">If the provided registrationId is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to retrieve the individual enrollment attestation information for the provided <paramref name="registrationId"/>.
         /// </exception>
-        /// <returns>The <see cref="AttestationMechanism"/> of the individual enrollment associated with the provided <paramref name="registrationId"/>.</returns>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task<AttestationMechanism> GetIndividualEnrollmentAttestationAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
@@ -631,10 +678,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="AttestationMechanism"/> associated with the provided <paramref name="enrollmentGroupId"/>.</returns>
+        /// <exception cref="ArgumentNullException">If the provided enrollment groupId is null.</exception>
+        /// <exception cref="ArgumentException">If the provided enrollment groupId is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to retrieve the enrollment group attestation information for the provided <paramref name="enrollmentGroupId"/>.
         /// </exception>
-        /// <returns>The <see cref="AttestationMechanism"/> associated with the provided <paramref name="enrollmentGroupId"/>.</returns>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task<AttestationMechanism> GetEnrollmentGroupAttestationAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));

@@ -31,6 +31,10 @@ namespace Microsoft.Azure.Devices
         private string _hostName;
         private IAuthenticationMethod _authenticationMethod;
 
+        private ServiceConnectionStringBuilder()
+        {
+        }
+
         public string HostName
         {
             get => _hostName;
@@ -50,10 +54,6 @@ namespace Microsoft.Azure.Devices
         public string SharedAccessSignature { get; internal set; }
 
         public string ServiceName { get; private set; }
-
-        private ServiceConnectionStringBuilder()
-        {
-        }
 
         internal static ServiceConnectionStringBuilder Create(string serviceConnectionString)
         {
@@ -79,11 +79,15 @@ namespace Microsoft.Azure.Devices
 
         private void Validate()
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(SharedAccessKeyName), "Should specify SharedAccessKeyName");
+            if (string.IsNullOrWhiteSpace(SharedAccessKeyName))
+            {
+                throw new InvalidOperationException("Should specify SharedAccessKeyName");
+            }
 
-            Debug.Assert(string.IsNullOrWhiteSpace(SharedAccessKey) ^ string.IsNullOrWhiteSpace(SharedAccessSignature), "Should specify either SharedAccessKey or SharedAccessSignature");
-
-            Debug.Assert(!string.IsNullOrWhiteSpace(ServiceName), "Should specify ServiceName");
+            if (!(string.IsNullOrWhiteSpace(SharedAccessKey) ^ string.IsNullOrWhiteSpace(SharedAccessSignature)))
+            {
+                throw new InvalidOperationException("Should specify either SharedAccessKey or SharedAccessSignature");
+            }
 
             if (!string.IsNullOrWhiteSpace(SharedAccessKey))
             {
@@ -114,7 +118,7 @@ namespace Microsoft.Azure.Devices
 
             if (string.IsNullOrWhiteSpace(ServiceName))
             {
-                throw new FormatException("Missing service name");
+                throw new FormatException("Missing service name value from host name.");
             }
         }
 
@@ -129,9 +133,8 @@ namespace Microsoft.Azure.Devices
         {
             if (!regex.IsMatch(value))
             {
-                throw new ArgumentException(
-                    $"The connection string has an invalid value for property: {propertyName}",
-                    nameof(value));
+                throw new InvalidOperationException(
+                    $"The connection string has an invalid value for property {propertyName}: {value}");
             }
         }
 
@@ -147,9 +150,8 @@ namespace Microsoft.Azure.Devices
         {
             if (!map.TryGetValue(propertyName, out string value))
             {
-                throw new ArgumentException(
-                    $"The connection string is missing the property: {propertyName}",
-                    nameof(map));
+                throw new InvalidOperationException(
+                    $"The connection string is missing the property: {propertyName}");
             }
 
             return value;

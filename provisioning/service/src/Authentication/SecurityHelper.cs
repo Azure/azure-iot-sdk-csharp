@@ -9,11 +9,9 @@ namespace Microsoft.Azure.Devices
 {
     internal static class SecurityHelper
     {
-        internal static void ValidateServiceHostName(string serviceHostName, string serviceName)
+        internal static void ValidateServiceHostName(string serviceHostName, string shareAccessSignatureName)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(serviceHostName));
-            Debug.Assert(!string.IsNullOrWhiteSpace(serviceName));
-            if (!serviceHostName.StartsWith(serviceName.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+            if (!serviceHostName.StartsWith(shareAccessSignatureName.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
             {
                 throw new UnauthorizedAccessException("Service does not correspond to host name");
             }

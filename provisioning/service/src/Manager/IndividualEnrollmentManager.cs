@@ -53,9 +53,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IEnumerable<IndividualEnrollment> individualEnrollments,
             CancellationToken cancellationToken)
         {
-            Debug.Assert(individualEnrollments != null);
-            Debug.Assert(individualEnrollments.Any(), $"{nameof(individualEnrollments)} cannot be empty.");
-
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Post,

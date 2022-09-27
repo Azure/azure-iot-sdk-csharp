@@ -16,6 +16,23 @@ namespace Microsoft.Azure.Devices
         private readonly string _encodedAudience;
         private readonly string _expiry;
 
+        private SharedAccessSignature(string shareAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
+        {
+            ExpiresOn = expiresOn;
+
+            if (IsExpired())
+            {
+                throw new UnauthorizedAccessException("The specified SAS token is expired");
+            }
+
+            ShareAccessSignatureName = shareAccessSignatureName;
+            Signature = signature;
+            Audience = WebUtility.UrlDecode(encodedAudience);
+            _encodedAudience = encodedAudience;
+            _expiry = expiry;
+            KeyName = keyName ?? string.Empty;
+        }
+
         public string ShareAccessSignatureName { get; private set; }
 
         public DateTime ExpiresOn { get; private set; }
@@ -28,9 +45,6 @@ namespace Microsoft.Azure.Devices
 
         internal static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(shareAccessSignatureName));
-            Debug.Assert(!string.IsNullOrWhiteSpace(rawToken));
-
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
@@ -139,25 +153,6 @@ namespace Microsoft.Azure.Devices
             using var hmac = new HMACSHA256(key);
             string value = string.Join("\n", fields);
             return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
-        }
-
-        private SharedAccessSignature(string shareAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
-        {
-            Debug.Assert(!string.IsNullOrWhiteSpace(shareAccessSignatureName));
-
-            ExpiresOn = expiresOn;
-
-            if (IsExpired())
-            {
-                throw new UnauthorizedAccessException("The specified SAS token is expired");
-            }
-
-            ShareAccessSignatureName = shareAccessSignatureName;
-            Signature = signature;
-            Audience = WebUtility.UrlDecode(encodedAudience);
-            _encodedAudience = encodedAudience;
-            _expiry = expiry;
-            KeyName = keyName ?? string.Empty;
         }
 
         private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
