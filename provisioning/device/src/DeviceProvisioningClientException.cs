@@ -101,7 +101,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private bool DetermineIfTransient(HttpStatusCode statusCode)
         {
-            return statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
+            return statusCode >= HttpStatusCode.InternalServerError
+                || statusCode == HttpStatusCode.RequestTimeout
+                || (int)statusCode == 429;
         }
     }
 }

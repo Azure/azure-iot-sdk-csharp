@@ -1035,9 +1035,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
-                DeviceProvisioningClientException exception = await Assert.ThrowsExceptionAsync<DeviceProvisioningClientException>(
-                () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
-
+                Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
+                var exception = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
                 Logger.Trace($"Exception: {exception}");
             }
             finally
@@ -1094,9 +1093,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
-                DeviceProvisioningClientException exception = await Assert.
-                ThrowsExceptionAsync<DeviceProvisioningClientException>(() => provClient.RegisterAsync(cts.Token))
-                .ConfigureAwait(false);
+                Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
+                var exception = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
 
                 Logger.Trace($"Exception: {exception}");
             }
