@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
-using Microsoft.Azure.Devices.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
+using Microsoft.Azure.Devices.Client;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SimulatedDevice
 {
@@ -56,6 +56,7 @@ namespace SimulatedDevice
                 }
                 else
                 {
+                    Console.WriteLine("Could not find file at provided location");
                     Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(result, null, null));
                     Environment.Exit(1);
                 }
@@ -84,7 +85,7 @@ namespace SimulatedDevice
 
                 try
                 {
-                    Task messages = SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
+                    await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
                 }
                 catch (OperationCanceledException) { }
                 await deviceClient.CloseAsync(cts.Token);
@@ -147,15 +148,15 @@ namespace SimulatedDevice
                 // Add one property to the message.
                 message.Properties.Add("level", levelValue);
 
-                // Submit the message to the hub.
                 try
                 {
+                    // Submit the message to the hub.
                     await deviceClient.SendEventAsync(message, token);
+
+                    // Print out the message.
+                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, telemetryDataString);
                 }
                 catch (OperationCanceledException) { }
-
-                // Print out the message.
-                Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, telemetryDataString);
 
                 try
                 {
