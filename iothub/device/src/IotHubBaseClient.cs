@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
         private readonly SemaphoreSlim _receiveMessageSemaphore = new(1, 1);
 
-        private volatile Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object> _receiveMessageCallback;
+        private volatile Func<Message, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
         // Connection status change information
         private volatile Action<ConnectionStatusInfo> _connectionStatusChangeHandler;
@@ -200,17 +200,15 @@ namespace Microsoft.Azure.Devices.Client
         /// </para>
         /// </remarks>
         /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMessageHandlerAsync(
             Func<Message, Task<MessageAcknowledgement>> messageHandler,
-            object userContext,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
+                Logging.Enter(this, messageHandler, nameof(SetMessageHandlerAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -226,7 +224,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _receiveMessageCallback = new Tuple<Func<Message, object, Task<MessageAcknowledgement>>, object>(messageHandler, userContext);
+                    _receiveMessageCallback = new Func<Message, Task<MessageAcknowledgement>>(messageHandler);
                 }
                 else
                 {
@@ -240,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client
                 _receiveMessageSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
+                    Logging.Exit(this, messageHandler, nameof(SetMessageHandlerAsync));
             }
         }
 
@@ -576,12 +574,11 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<Message, object, Task<MessageAcknowledgement>> callback = _receiveMessageCallback?.Item1;
-                object callbackContext = _receiveMessageCallback?.Item2;
+                Func<Message, Task<MessageAcknowledgement>> callback = _receiveMessageCallback;
 
                 if (callback != null)
                 {
-                    MessageAcknowledgement response = await callback.Invoke(message, callbackContext).ConfigureAwait(false);
+                    MessageAcknowledgement response = await callback.Invoke(message).ConfigureAwait(false);
 
                     try
                     {
