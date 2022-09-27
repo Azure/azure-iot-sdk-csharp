@@ -29,10 +29,12 @@ namespace Microsoft.Azure.Devices.Client
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
+
         private volatile Func<DirectMethodRequest, Task<DirectMethodResponse>> _deviceDefaultMethodCallback;
 
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
+
         private Func<TwinCollection, Task> _desiredPropertyUpdateCallback;
 
         private protected readonly IotHubClientOptions _clientOptions;
@@ -203,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMessageHandlerAsync(
-            Func<Message, object, Task<MessageAcknowledgement>> messageHandler,
+            Func<Message, Task<MessageAcknowledgement>> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
