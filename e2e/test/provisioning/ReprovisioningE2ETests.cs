@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private readonly string _idPrefix = $"E2E-{nameof(ReprovisioningE2ETests).ToLower()}-";
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
 
-        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
+        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(DeviceProvisioningServiceException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
         private static DirectoryInfo s_x509CertificatesFolder;

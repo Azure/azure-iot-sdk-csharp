@@ -2,12 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Threading;
 using System.Diagnostics;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -42,7 +41,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Setup a callback dispatcher for the incoming methods.
             await _deviceClient.SetMethodHandlerAsync(
                 OnDirectMethodCalledAsync,
-                null,
                 cts.Token);
 
             var timer = Stopwatch.StartNew();
@@ -57,19 +55,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // You can unsubscribe from receiving a callback for direct methods by setting a null callback handler.
             await _deviceClient.SetMethodHandlerAsync(
-                null,
                 null);
         }
 
-        private async Task<DirectMethodResponse> OnDirectMethodCalledAsync(DirectMethodRequest directMethodRequest, object userContext)
+        private async Task<DirectMethodResponse> OnDirectMethodCalledAsync(DirectMethodRequest directMethodRequest)
         {
             switch (directMethodRequest.MethodName)
             {
                 case "GetDeviceName":
-                    return await GetDeviceNameAsync(directMethodRequest, userContext);
+                    return await GetDeviceNameAsync(directMethodRequest);
 
                 case "WriteToConsole":
-                    return await WriteToConsoleAsync(directMethodRequest, userContext);
+                    return await WriteToConsoleAsync(directMethodRequest);
 
                 default:
                     return new DirectMethodResponse(400);
@@ -82,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"Connection status changed reason is {connectionInfo.ChangeReason}.\n");
         }
 
-        private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodRequest directMethodRequest, object userContext)
+        private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodRequest directMethodRequest)
         {
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
             Console.WriteLine($"\t{directMethodRequest.PayloadAsJsonString}\n");
@@ -92,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.FromResult(directMethodResponse);
         }
 
-        private Task<DirectMethodResponse> GetDeviceNameAsync(DirectMethodRequest directMethodRequest, object userContext)
+        private Task<DirectMethodResponse> GetDeviceNameAsync(DirectMethodRequest directMethodRequest)
         {
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
 

@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageAcknowledgement.Complete), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -112,12 +112,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isMessageHandlerCalled = false;
             await moduleClient
                 .SetMessageHandlerAsync(
-                    (message, context) =>
+                    (message) =>
                     {
                         isMessageHandlerCalled = true;
                         return Task.FromResult(MessageAcknowledgement.Complete);
-                    },
-                    "custom data")
+                    })
                 .ConfigureAwait(false);
 
             await moduleClient.OnMessageReceivedAsync(null).ConfigureAwait(false);
@@ -134,12 +133,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isDefaultCallbackCalled = false;
             await moduleClient
                 .SetMessageHandlerAsync(
-                    (message, context) =>
+                    (message) =>
                     {
                         isDefaultCallbackCalled = true;
                         return Task.FromResult(MessageAcknowledgement.Complete);
-                    },
-                    "custom data")
+                    })
                 .ConfigureAwait(false);
 
             var testMessage = new Message

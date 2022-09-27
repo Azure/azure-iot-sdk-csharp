@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
 
-        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
+        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(DeviceProvisioningServiceException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";

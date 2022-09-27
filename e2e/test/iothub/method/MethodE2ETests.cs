@@ -207,15 +207,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient
                     .SetMethodHandlerAsync(
-                        (methodRequest, userContext) =>
+                        (methodRequest) =>
                         {
                             methodRequest.MethodName.Should().Be(commandName);
                             deviceMethodCalledSuccessfully = true;
                             var response = new Client.DirectMethodResponse(200);
 
                             return Task.FromResult(response);
-                        },
-                        null)
+                        })
                     .ConfigureAwait(false);
 
                 using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -240,7 +239,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 // clean up
 
-                await deviceClient.SetMethodHandlerAsync(null, null).ConfigureAwait(false);
+                await deviceClient.SetMethodHandlerAsync(null).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
             }
@@ -343,7 +342,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                (request, context) =>
+                (request) =>
                 {
                     // This test only verifies that unsubscripion works.
                     // For this reason, the direct method subscription callback does not implement any method-specific dispatcher.
@@ -354,11 +353,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     };
 
                         return Task.FromResult(response);
-                    },
-                    null)
+                    })
                 .ConfigureAwait(false);
 
-            await deviceClient.SetMethodHandlerAsync(null, null).ConfigureAwait(false);
+            await deviceClient.SetMethodHandlerAsync(null).ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
             return methodCallReceived.Task;
@@ -370,7 +368,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
-                    (request, context) =>
+                    (request) =>
                         {
                             logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
 
@@ -397,8 +395,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             {
                                 methodCallReceived.TrySetResult(true);
                             }
-                        },
-                    null)
+                        })
                 .ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
@@ -410,7 +407,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var methodCallReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await moduleClient.OpenAsync().ConfigureAwait(false);
             await moduleClient.SetMethodHandlerAsync(
-                (request, context) =>
+                (request) =>
                 {
                     logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: ModuleClient method: {request.MethodName} {request.ResponseTimeout}.");
 
@@ -438,8 +435,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     {
                         methodCallReceived.TrySetResult(true);
                     }
-                },
-                null).ConfigureAwait(false);
+                }).ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
             return methodCallReceived.Task;
@@ -529,13 +525,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         internal class DeviceResponsePayload
         {
-            [JsonPropertyName("currentState")]
+            [JsonProperty(PropertyName = "currentState")]
             public string CurrentState { get; set; }
         }
 
         internal class ServiceRequestPayload
         {
-            [JsonPropertyName("desiredState")]
+            [JsonProperty(PropertyName = "desiredState")]
             public string DesiredState { get; set; }
         }
     }
