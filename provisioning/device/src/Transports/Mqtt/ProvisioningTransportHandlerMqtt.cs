@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new ProvisioningTransportException("Timed out while provisioning.", ex, true);
+                throw new DeviceProvisioningClientException("Timed out while provisioning.", ex, true);
             }
             catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
             {
