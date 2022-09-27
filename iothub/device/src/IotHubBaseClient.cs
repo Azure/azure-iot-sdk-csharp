@@ -67,6 +67,7 @@ namespace Microsoft.Azure.Devices.Client
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
+                MessageEventCallback = OnMessageReceivedAsync,
             };
 
             InnerHandler = pipelineBuilder.Build(PipelineContext);

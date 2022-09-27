@@ -31,8 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             IotHubClientAmqpSettings amqpSettings,
             Func<DirectMethodRequest, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
-            Func<Message, Task> onModuleMessageReceivedCallback,
-            Func<Message, Task> onDeviceMessageReceivedCallback,
+            Func<Message, Task> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {
             IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(connectionCredentials.HostName);
@@ -42,8 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpSettings,
                 onMethodCallback,
                 twinMessageListener,
-                onModuleMessageReceivedCallback,
-                onDeviceMessageReceivedCallback,
+                onMessageReceivedCallback,
                 onUnitDisconnected);
         }
 

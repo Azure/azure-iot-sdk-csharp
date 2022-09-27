@@ -57,20 +57,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 ModelId = context.ModelId,
             };
 
+            _connectionCredentials = context.IotHubConnectionCredentials;
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
-                context.IotHubConnectionCredentials,
+                _connectionCredentials,
                 additionalClientInformation,
                 transportSettings,
                 context.MethodCallback,
                 TwinMessageListener,
-                context.ModuleEventCallback,
-                context.DeviceEventCallback,
+                context.MessageEventCallback,
                 OnDisconnected);
 
             // Create a timer to remove any expired messages.
             _twinTimeoutTimer = new Timer(CheckTimeout);
-
-            _connectionCredentials = context.IotHubConnectionCredentials;
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, _amqpUnit, nameof(_amqpUnit));
