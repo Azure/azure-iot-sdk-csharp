@@ -13,6 +13,9 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Serialization constructor.
         /// </summary>
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
         protected internal TwinScheduledJob()
         { }
 
@@ -20,7 +23,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class for twin scheduled job.
         /// </summary>
         /// <param name="updateTwin">The update twin tags and desired properties.</param>
-        public TwinScheduledJob(Twin updateTwin)
+        protected internal TwinScheduledJob(Twin updateTwin)
         {
             JobType = JobType.ScheduleUpdateTwin;
             UpdateTwin = updateTwin;
@@ -30,6 +33,6 @@ namespace Microsoft.Azure.Devices
         /// The update twin tags and desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "updateTwin", NullValueHandling = NullValueHandling.Ignore)]
-        public Twin UpdateTwin { get; internal set; }
+        public Twin UpdateTwin { get; }
     }
 }
