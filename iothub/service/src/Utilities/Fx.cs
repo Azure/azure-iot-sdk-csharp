@@ -4,35 +4,32 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Common
 {
     internal static class Fx
     {
-        public static bool IsFatal(Exception exception)
+        public static bool IsFatal(Exception ex)
         {
-            while (exception != null)
+            while (ex != null)
             {
-                // FYI, CallbackException is-a FatalException
-                if (exception is FatalException || exception is OutOfMemoryException)
-                {
-                    return true;
-                }
-
-                if (exception is NullReferenceException)
+                if (ex is OutOfMemoryException
+                    || ex is SEHException
+                    || ex is NullReferenceException)
                 {
                     return true;
                 }
 
                 // These exceptions aren't themselves fatal, but since the CLR uses them to wrap other exceptions,
-                // we want to check to see whether they've been used to wrap a fatal exception.  If so, then they
+                // we want to check to see whether they've been used to wrap a fatal exception. If so, then they
                 // count as fatal.
-                if (exception is TypeInitializationException
-                    || exception is TargetInvocationException)
+                if (ex is TypeInitializationException
+                    || ex is TargetInvocationException)
                 {
-                    exception = exception.InnerException;
+                    ex = ex.InnerException;
                 }
-                else if (exception is AggregateException aggEx)
+                else if (ex is AggregateException aggEx)
                 {
                     // AggregateExceptions have a collection of inner exceptions, which may themselves be other
                     // wrapping exceptions (including nested AggregateExceptions).  Recursively walk this
