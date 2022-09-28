@@ -18,7 +18,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private const string MethodName = "MethodE2EPoolAmqpTests";
         private readonly string _devicePrefix = $"{nameof(MethodE2EPoolAmqpTests)}_";
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
@@ -29,7 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(
@@ -40,7 +42,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
         {
             await SendMethodAndRespondPoolOverAmqp(
@@ -52,7 +55,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
         {
             await SendMethodAndRespondPoolOverAmqp(

@@ -19,7 +19,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private readonly string DevicePrefix = $"{nameof(MessageReceiveE2EPoolAmqpTests)}_";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
             await ReceiveMessage_PoolOverAmqpAsync(
@@ -29,7 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
         {
             await ReceiveMessage_PoolOverAmqpAsync(
@@ -39,7 +41,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
             await ReceiveMessage_PoolOverAmqpAsync(
@@ -50,7 +53,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {
             await ReceiveMessage_PoolOverAmqpAsync(
@@ -61,7 +65,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
@@ -71,7 +76,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
@@ -81,7 +87,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
@@ -92,7 +99,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallback_PoolOverAmqpAsync(

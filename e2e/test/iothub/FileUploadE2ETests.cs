@@ -24,7 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string _devicePrefix = $"{nameof(FileUploadE2ETests)}_";
         private static readonly X509Certificate2 s_selfSignedCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Mqtt_x509_NoFileTransportSettingSpecified()
         {
@@ -32,7 +33,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(new IotHubClientMqttSettings(), new IotHubClientHttpSettings(), smallFileBlobName, true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Amqp_x509_NoFileTransportSettingSpecified()
         {
@@ -40,7 +42,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(new IotHubClientAmqpSettings(), new IotHubClientHttpSettings(), smallFileBlobName, true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps()
         {
@@ -51,7 +54,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps_x509()
         {
@@ -62,7 +66,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, useX509auth: true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps_Proxy()
         {

@@ -338,7 +338,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetDirectMethodCallbackAsync(
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         public static async Task<Task> SetDeviceReceiveMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetDirectMethodCallbackAsync(

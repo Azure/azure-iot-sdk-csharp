@@ -22,7 +22,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _idPrefix = $"{nameof(ConfigurationsClientE2ETests)}_";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationOperations_Work()
         {
             // arrange
@@ -90,7 +91,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_SetETag_Works()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -153,7 +155,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_DeleteETag_Works()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);

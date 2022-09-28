@@ -67,7 +67,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, amqpTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_AmqpWs_WithProxy()
