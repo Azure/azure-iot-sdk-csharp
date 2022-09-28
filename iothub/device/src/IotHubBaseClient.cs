@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -25,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
         private volatile Func<Message, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
         // Connection status change information
-        private volatile Action<ConnectionStatusInfo> _connectionStatusChangeHandler;
+        private volatile Action<ConnectionStatusInfo> _connectionStatusChangeCallback;
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
@@ -104,16 +105,16 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new listener for the connection status change callback. If a listener is already associated,
-        /// it will be replaced with the new listener.
+        /// Sets a new callback for receiving connection status change notifications. If a callback is already associated,
+        /// it will be replaced with the new callback.
         /// </summary>
-        /// <param name="statusChangeHandler">The listener for the connection status change callback.</param>
-        public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
+        /// <param name="statusChangeHandler">The callback for the connection status change notifications.</param>
+        public void SetConnectionStatusChangeCallback(Action<ConnectionStatusInfo> statusChangeHandler)
         {
             if (Logging.IsEnabled)
-                Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeHandler));
+                Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeCallback));
 
-            _connectionStatusChangeHandler = statusChangeHandler;
+            _connectionStatusChangeCallback = statusChangeHandler;
         }
 
         /// <summary>
@@ -186,45 +187,43 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for receiving a message from the device or module queue using a cancellation token.
+        /// Sets a callback for receiving a message from the device or module queue using a cancellation token.
         /// This instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// If a delegate is already registered it will be replaced with the new delegate.
-        /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
-        /// </para>
+        /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
+        /// A method callback can be unset by setting <paramref name="messageCallback"/> to null.
         /// </remarks>
-        /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
+        /// <param name="messageCallback">The callback to be invoked when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetMessageHandlerAsync(
-            Func<Message, Task<MessageAcknowledgement>> messageHandler,
+        public async Task SetMessageCallbackAsync(
+            Func<Message, Task<MessageAcknowledgement>> messageCallback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messageHandler, nameof(SetMessageHandlerAsync));
+                Logging.Enter(this, messageCallback, nameof(SetMessageCallbackAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
             // Wait to acquire the _deviceReceiveMessageSemaphore. This ensures that concurrently invoked
-            // SetMessageHandlerAsync calls are invoked in a thread-safe manner.
+            // SetMessageCallbackAsync calls are invoked in a thread-safe manner.
             await _receiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                // If a callback is already set on the client, calling SetMessageHandlerAsync
-                // again will cause the delegate to be overwritten.
-                if (messageHandler != null)
+                // If a callback is already set on the client, calling SetMessageCallbackAsync
+                // again will cause the callback to be overwritten.
+                if (messageCallback != null)
                 {
-                    // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
+                    // If this is the first time the callback is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _receiveMessageCallback = new Func<Message, Task<MessageAcknowledgement>>(messageHandler);
+                    _receiveMessageCallback = new Func<Message, Task<MessageAcknowledgement>>(messageCallback);
                 }
                 else
                 {
-                    // If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
+                    // If a null callback is passed, it will disable the callback triggered on receiving messages from the service.
                     _receiveMessageCallback = null;
                     await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -234,26 +233,27 @@ namespace Microsoft.Azure.Devices.Client
                 _receiveMessageSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messageHandler, nameof(SetMessageHandlerAsync));
+                    Logging.Exit(this, messageCallback, nameof(SetMessageCallbackAsync));
             }
         }
 
         /// <summary>
-        /// Sets the listener for all direct method calls from the service.
+        /// Sets the callback for all direct method calls from the service.
+        /// This instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
-        /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
+        /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
+        /// A method callback can be unset by setting <paramref name="directMethodCallback"/> to null.
         /// </remarks>
-        /// <param name="methodHandler">The listener to be used when any method is called by the cloud service.</param>
+        /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetMethodHandlerAsync(
-            Func<DirectMethodRequest, Task<DirectMethodResponse>> methodHandler,
+        public async Task SetDirectMethodCallbackAsync(
+            Func<DirectMethodRequest, Task<DirectMethodResponse>> directMethodCallback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, methodHandler, nameof(SetMethodHandlerAsync));
+                Logging.Enter(this, directMethodCallback, nameof(SetDirectMethodCallbackAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -261,10 +261,10 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                if (methodHandler != null)
+                if (directMethodCallback != null)
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceDefaultMethodCallback = methodHandler;
+                    _deviceDefaultMethodCallback = directMethodCallback;
                 }
                 else
                 {
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.Client
                 _methodsSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, methodHandler, nameof(SetMethodHandlerAsync));
+                    Logging.Exit(this, directMethodCallback, nameof(SetDirectMethodCallbackAsync));
             }
         }
 
@@ -317,12 +317,16 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a desired state update
-        /// from the service. A desired property handler can be unset by setting <paramref name="callback"/> to null.
+        /// from the service. The client instance must be opened already.
         /// </summary>
         /// <remarks>
+        /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
+        /// A method callback can be unset by setting <paramref name="callback"/> to null.
+        ///  <para>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
+        ///  </para>
         /// </remarks>
-        /// <param name="callback">Callback to call after the state update has been received and applied.</param>
+        /// <param name="callback">The callback to be invoked when a desired property update is received from the service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
@@ -404,12 +408,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The delegate for handling disrupted connection/links in the transport layer.
+        /// The callback for handling disrupted connection/links in the transport layer.
         /// </summary>
         internal void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
         {
-            var status = connectionStatusInfo.Status;
-            var reason = connectionStatusInfo.ChangeReason;
+            ConnectionStatus status = connectionStatusInfo.Status;
+            ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
 
             try
             {
@@ -420,7 +424,7 @@ namespace Microsoft.Azure.Devices.Client
                     || ConnectionStatusInfo.ChangeReason != reason)
                 {
                     ConnectionStatusInfo = new ConnectionStatusInfo(status, reason);
-                    _connectionStatusChangeHandler?.Invoke(ConnectionStatusInfo);
+                    _connectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
                 }
             }
             finally
@@ -431,7 +435,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The delegate for handling direct methods received from service.
+        /// The callback for handling direct methods received from service.
         /// </summary>
         internal async Task OnMethodCalledAsync(DirectMethodRequest directMethodRequest)
         {
@@ -554,15 +558,12 @@ namespace Microsoft.Azure.Devices.Client
             return !isFound ? default : (T)handler;
         }
 
-        internal async Task OnMessageReceivedAsync(Message message)
+        internal async Task<MessageAcknowledgement> OnMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(OnMessageReceivedAsync));
 
-            if (message == null)
-            {
-                return;
-            }
+            Debug.Assert(message != null, "Received a null message");
 
             // Grab this semaphore so that there is no chance that the _receiveMessageCallback instance is set in between the read of the
             // item1 and the read of the item2
@@ -574,43 +575,27 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (callback != null)
                 {
-                    MessageAcknowledgement response = await callback.Invoke(message).ConfigureAwait(false);
-
-                    try
-                    {
-                        switch (response)
-                        {
-                            case MessageAcknowledgement.Complete:
-                                await InnerHandler.CompleteMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-
-                            case MessageAcknowledgement.Abandon:
-                                await InnerHandler.AbandonMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-
-                            case MessageAcknowledgement.Reject:
-                                await InnerHandler.RejectMessageAsync(message.LockToken, CancellationToken.None).ConfigureAwait(false);
-                                break;
-                        }
-                    }
-                    catch (Exception ex) when (Logging.IsEnabled)
-                    {
-                        Logging.Error(this, ex, nameof(OnMessageReceivedAsync));
-                    }
+                    return await callback.Invoke(message).ConfigureAwait(false);
                 }
+
+                // The SDK should only receive messages when the user sets a listener, so this should never happen.
+                if (Logging.IsEnabled)
+                    Logging.Error(this, "Received a message when no listener was set. Abandoning message.", nameof(OnMessageReceivedAsync));
+
+                return MessageAcknowledgement.Abandon;
             }
             finally
             {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, message, nameof(OnMessageReceivedAsync));
+
                 _receiveMessageSemaphore.Release();
             }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, message, nameof(OnMessageReceivedAsync));
         }
 
         private Task EnableReceiveMessageAsync(CancellationToken cancellationToken = default)
         {
-            // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
+            // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback callback is set.
             return _receiveMessageCallback == null
                 ? InnerHandler.EnableReceiveMessageAsync(cancellationToken)
                 : Task.CompletedTask;
@@ -618,7 +603,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private Task DisableReceiveMessageAsync(CancellationToken cancellationToken = default)
         {
-            // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
+            // The telemetry downlink should be disabled only after _receiveMessageCallback callback has been removed.
             return _receiveMessageCallback == null
                 ? InnerHandler.DisableReceiveMessageAsync(cancellationToken)
                 : Task.CompletedTask;

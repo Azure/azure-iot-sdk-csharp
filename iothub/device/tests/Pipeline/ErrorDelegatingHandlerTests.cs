@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
-        using Microsoft.Azure.Devices.Client.Transport;
+    using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
 
@@ -138,32 +138,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                 di => di.OpenAsync(Arg.Any<CancellationToken>()),
                 di => di.OpenAsync(cancellationToken),
                 di => di.Received(2).OpenAsync(Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            string lockToken = "lockToken";
-
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.CompleteMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.CompleteMessageAsync(lockToken, cancellationToken),
-                di => di.Received(2).CompleteMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.AbandonMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.AbandonMessageAsync(lockToken, cancellationToken),
-                di => di.Received(2).AbandonMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.RejectMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.RejectMessageAsync(lockToken, cancellationToken),
-                di => di.Received(2).RejectMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.ReceiveMessageAsync(Arg.Any<CancellationToken>()),
-                di => di.ReceiveMessageAsync(cancellationToken),
-                di => di.Received(2).ReceiveMessageAsync(Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
         }
 

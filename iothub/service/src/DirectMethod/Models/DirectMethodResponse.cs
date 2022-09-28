@@ -12,10 +12,20 @@ namespace Microsoft.Azure.Devices
     public class DirectMethodResponse
     {
         /// <summary>
+        /// This constructor is for deserialization and unit test mocking purposes.
+        /// </summary>
+        /// <remarks>
+        /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
+        /// that can set the properties you want.
+        /// </remarks>
+        protected internal DirectMethodResponse()
+        { }
+
+        /// <summary>
         /// Gets or sets the status of device method invocation.
         /// </summary>
         [JsonProperty("status")]
-        public int Status { get; internal set; }
+        public int Status { get; protected internal set; }
 
         /// <summary>
         /// Get the payload object. May be null or empty.

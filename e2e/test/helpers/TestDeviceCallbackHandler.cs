@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public async Task SetDeviceReceiveMethodAsync<T>(string methodName, object deviceResponseJson, T expectedServiceRequestJson)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
-            await _deviceClient.SetMethodHandlerAsync(
+            await _deviceClient.SetDirectMethodCallbackAsync(
                 (request) =>
                 {
                     try
@@ -129,13 +129,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public async Task SetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
-            await _deviceClient.SetMessageHandlerAsync(OnC2dMessageReceivedAsync).ConfigureAwait(false);
+            await _deviceClient.SetMessageCallbackAsync(OnC2dMessageReceivedAsync).ConfigureAwait(false);
         }
 
         public async Task UnsetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
-            await _deviceClient.SetMessageHandlerAsync(null).ConfigureAwait(false);
+            await _deviceClient.SetMessageCallbackAsync(null).ConfigureAwait(false);
         }
 
         private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Client.Message message)

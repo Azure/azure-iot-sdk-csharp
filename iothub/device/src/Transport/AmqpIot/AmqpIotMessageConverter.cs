@@ -70,7 +70,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, Message message)
         {
             Fx.AssertAndThrow(amqpMessage.DeliveryTag != null, "AmqpMessage should always contain delivery tag.");
-            message.DeliveryTag = amqpMessage.DeliveryTag;
 
             SectionFlag sections = amqpMessage.Sections;
             if ((sections & SectionFlag.Properties) != 0)
@@ -103,11 +102,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
             {
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(LockTokenName, out string lockToken))
-                {
-                    message.LockToken = lockToken;
-                }
-
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(SequenceNumberName, out ulong sequenceNumber))
                 {
                     message.SequenceNumber = sequenceNumber;

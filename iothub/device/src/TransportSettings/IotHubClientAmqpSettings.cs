@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            DefaultReceiveTimeout = TimeSpan.FromMinutes(1);
         }
 
         /// <summary>

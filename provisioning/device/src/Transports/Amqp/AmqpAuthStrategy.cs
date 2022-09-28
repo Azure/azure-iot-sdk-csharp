@@ -13,14 +13,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal abstract class AmqpAuthStrategy
     {
-        public virtual AmqpClientConnection CreateConnection(Uri uri, string idScope)
+        public virtual AmqpClientConnection CreateConnection(Uri uri, string idScope, Action onConnectionClosed)
         {
             AmqpSettings settings = CreateAmqpSettings(idScope);
             var amqpProvider = new AmqpTransportProvider();
             amqpProvider.Versions.Add(AmqpConstants.DefaultProtocolVersion);
             settings.TransportProviders.Add(amqpProvider);
 
-            return new AmqpClientConnection(uri, settings);
+            return new AmqpClientConnection(uri, settings, onConnectionClosed);
         }
 
         public abstract AmqpSettings CreateAmqpSettings(string idScope);
