@@ -40,7 +40,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         ///
         ///     var optionsWithProxy = new ProvisioningClientOptions(mqttSettings);
         ///
-        ///     return new ProvisioningDeviceClient("global endpoint", "id scope", securityProvider, optionsWithProxy);
+        ///     return new ProvisioningDeviceClient(
+        ///         "global endpoint",
+        ///         "your id scope",
+        ///         securityProvider,
+        ///         optionsWithProxy);
         /// }
         /// </c>
         /// </example>
