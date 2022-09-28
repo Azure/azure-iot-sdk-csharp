@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -343,6 +344,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act and assert
             var exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
+            exception.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
             exception.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(2);
             retryPolicy.Counter.Should().Be(2);
@@ -351,6 +353,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             sut.SetRetryPolicy(noretry);
 
             exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
+            exception.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
             exception.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
@@ -364,6 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 Counter++;
                 lastException.Should().BeOfType(typeof(IotHubClientException));
+                ((IotHubClientException)lastException).StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
                 ((IotHubClientException)lastException).ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
 
                 retryInterval = TimeSpan.MinValue;

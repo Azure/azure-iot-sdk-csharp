@@ -675,6 +675,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 else if (hubException.ErrorCode is IotHubClientErrorCode.DeviceNotFound)
                 {
+                    // The change reason of DeviceDisabled represents that the device has been deleted or marked
+                    // as disabled in the IoT hub instance, which matches the error code of DeviceNotFound.
                     reason = ConnectionStatusChangeReason.DeviceDisabled;
                 }
             }
