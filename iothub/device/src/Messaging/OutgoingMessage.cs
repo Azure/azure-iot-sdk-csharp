@@ -44,6 +44,15 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// A string property that typically contains the MessageId of the request, in request-reply patterns.
+        /// </summary>
+        public string CorrelationId
+        {
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.CorrelationId);
+            set => SystemProperties[MessageSystemPropertyNames.CorrelationId] = value;
+        }
+
+        /// <summary>
         /// An ID used to specify the origin of messages.
         /// </summary>
         public string UserId
@@ -76,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime ExpiryTimeUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
-            internal set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
+            set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
         }
 
         /// <summary>
@@ -96,15 +105,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageSchema);
             set => SystemProperties[MessageSystemPropertyNames.MessageSchema] = value;
-        }
-
-        /// <summary>
-        /// A string property that typically contains the MessageId of the request, in request-reply patterns.
-        /// </summary>
-        public string CorrelationId
-        {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.CorrelationId);
-            set => SystemProperties[MessageSystemPropertyNames.CorrelationId] = value;
         }
 
         /// <summary>
