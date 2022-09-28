@@ -44,17 +44,6 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
-        /// The time to wait for any operation to complete. The default is 1 minute.
-        /// </summary>
-        public TimeSpan OperationTimeout
-        {
-            get => _operationTimeout;
-            set => _operationTimeout = value > TimeSpan.Zero
-                ? value
-                : throw new ArgumentOutOfRangeException(nameof(OperationTimeout), "Must be greather than zero.");
-        }
-
-        /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
