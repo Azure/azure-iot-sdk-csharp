@@ -87,12 +87,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             throw new InvalidOperationException($"Could not find the certificate file {CertificateName} in the sample execution folder or any parent folder.");
         }
 
-        internal ProvisioningTransportHandler GetTransportHandler()
+        internal ProvisioningClientOptions GetClientOptions()
         {
             return Transport switch
             {
-                Transport.Mqtt => new ProvisioningTransportHandlerMqtt(TransportProtocol),
-                Transport.Amqp => new ProvisioningTransportHandlerAmqp(TransportProtocol),
+                Transport.Mqtt => new ProvisioningClientOptions(new ProvisioningClientMqttSettings(TransportProtocol)),
+                Transport.Amqp => new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(TransportProtocol)),
                 _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
             };
         }

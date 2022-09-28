@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
@@ -750,7 +751,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     : _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             }
 
-            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
+            ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
@@ -765,7 +766,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             if (ImplementsWebProxy(transportSettings) && setCustomProxy)
             {
-                transport.Proxy = proxyServerAddress == null
+                clientOptions.TransportSettings.Proxy = proxyServerAddress == null
                     ? null
                     : new WebProxy(s_proxyServerAddress);
             }
@@ -774,7 +775,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                new ProvisioningClientOptions(transport));
+                clientOptions);
 
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
@@ -905,7 +906,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 ApiVersion = "2019-03-31",
             };
 
-            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
+            ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
@@ -919,14 +920,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // Check basic provisioning
             if (ImplementsWebProxy(transportSettings) && setCustomProxy)
             {
-                transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
+                clientOptions.TransportSettings.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
             var provClient = new ProvisioningDeviceClient(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                new ProvisioningClientOptions(transport));
+                clientOptions);
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
             // Test registering with valid additional data payload
@@ -974,7 +975,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(IotHubClientTransportSettings transportSettings)
         {
-            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
+            ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             using var auth = new AuthenticationProviderTpmSimulator("invalidregistrationid");
 
             try
@@ -983,7 +984,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     s_globalDeviceEndpoint,
                     TestConfiguration.Provisioning.IdScope,
                     auth,
-                    new ProvisioningClientOptions(transport));
+                    clientOptions);
 
                 using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
@@ -1014,7 +1015,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             EnrollmentType? enrollmentType,
             string groupId)
         {
-            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
+            ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
@@ -1029,7 +1030,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_globalDeviceEndpoint,
                 InvalidIdScope,
                 auth,
-                new ProvisioningClientOptions(transport));
+                clientOptions);
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
@@ -1070,7 +1071,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             EnrollmentType? enrollmentType,
             string groupId = "")
         {
-            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
+            ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
@@ -1085,7 +1086,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 InvalidGlobalAddress,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                new ProvisioningClientOptions(transport));
+                clientOptions);
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
@@ -1123,25 +1124,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static ProvisioningTransportHandler CreateTransportHandlerFromName(IotHubClientTransportSettings transportSettings)
+        public static ProvisioningClientOptions CreateProvisioningClientOptionsFromName(IotHubClientTransportSettings transportSettings)
         {
             if (transportSettings is IotHubClientAmqpSettings)
             {
                 return transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
-                    ? new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.Tcp)
-                    : new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.WebSocket);
+                    ? new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp))
+                    : new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
             }
 
             if (transportSettings is IotHubClientMqttSettings)
             {
                 return transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
-                    ? new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.Tcp)
-                    : new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.WebSocket);
+                    ? new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp))
+                    : new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
             }
 
             if (transportSettings is IotHubClientHttpSettings)
             {
-                return new ProvisioningTransportHandlerHttp();
+                return new ProvisioningClientOptions(new ProvisioningClientHttpSettings());
             }
 
             throw new NotSupportedException($"Unknown transport: '{transportSettings}'.");

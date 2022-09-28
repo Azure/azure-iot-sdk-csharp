@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents the MQTT protocol implementation for the provisioning transport handler.
     /// </summary>
-    public class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
+    internal class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
     {
         private const int MqttTcpPort = 8883;
         private const string UsernameFormat = "{0}/registrations/{1}/api-version={2}&ClientVersion={3}";
@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private const string BasicProxyAuthentication = "Basic";
 
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
-        private static readonly MqttQualityOfServiceLevel QoS = MqttQualityOfServiceLevel.AtLeastOnce;
 
         private readonly MqttFactory s_mqttFactory = new MqttFactory(new MqttLogger());
 
@@ -46,20 +45,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private bool _isClosing;
         private Exception _connectionLossCause;
 
+        private readonly ProvisioningClientOptions _options;
+        private readonly ProvisioningClientMqttSettings _settings;
+        private readonly MqttQualityOfServiceLevel _publishingQualityOfService;
+        private readonly MqttQualityOfServiceLevel _receivingQualityOfService;
+
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerMqtt class using the specified fallback type.
         /// </summary>
-        /// <param name="transportProtocol">The protocol over which the MQTT transport communicates (i.e., TCP or web socket).</param>
-        public ProvisioningTransportHandlerMqtt(
-            ProvisioningClientTransportProtocol transportProtocol = ProvisioningClientTransportProtocol.Tcp)
+        /// <param name="options">The options for the connection and messages sent/received on the connection.</param>
+        internal ProvisioningTransportHandlerMqtt(ProvisioningClientOptions options)
         {
-            TransportProtocol = transportProtocol;
-        }
+            _options = options;
+            _settings = (ProvisioningClientMqttSettings)options.TransportSettings;
 
-        /// <summary>
-        /// The protocol over which the MQTT transport communicates (i.e., TCP or web socket).
-        /// </summary>
-        public ProvisioningClientTransportProtocol TransportProtocol { get; private set; }
+            _publishingQualityOfService = _settings.PublishToServerQoS == QualityOfService.AtLeastOnce
+                ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
+
+            _receivingQualityOfService = _settings.ReceivingQoS == QualityOfService.AtLeastOnce
+                ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
+        }
 
         /// <summary>
         /// Registers a device described by the message.
@@ -67,7 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="provisioningRequest">The provisioning request message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public override async Task<DeviceRegistrationResult> RegisterAsync(
+        internal override async Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterRequest provisioningRequest,
             CancellationToken cancellationToken)
         {
@@ -183,7 +188,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             try
             {
                 MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
-                    .WithTopicFilter(SubscribeFilter, QoS)
+                    .WithTopicFilter(SubscribeFilter, _receivingQualityOfService)
                     .Build();
 
                 MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(subscribeOptions, cancellationToken).ConfigureAwait(false);
@@ -220,6 +225,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             var message = new MqttApplicationMessageBuilder()
                 .WithPayload(payload)
                 .WithTopic(registrationTopic)
+                .WithQualityOfServiceLevel(_publishingQualityOfService)
                 .Build();
 
             _startProvisioningRequestStatusSource = new TaskCompletionSource<RegistrationOperationStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -265,6 +271,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 string topicName = string.Format(CultureInfo.InvariantCulture, GetOperationsTopic, ++_packetId, operationId);
                 var message = new MqttApplicationMessageBuilder()
                     .WithTopic(topicName)
+                    .WithQualityOfServiceLevel(_publishingQualityOfService)
                     .Build();
 
                 _checkRegistrationOperationStatusSource = new TaskCompletionSource<RegistrationOperationStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -309,7 +316,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             string hostName = provisioningRequest.GlobalDeviceEndpoint;
 
-            if (TransportProtocol == ProvisioningClientTransportProtocol.Tcp)
+            if (_settings.Protocol == ProvisioningClientTransportProtocol.Tcp)
             {
                 // "ssl://" prefix is not needed here because the MQTT library adds it for us.
                 var uri = hostName;
@@ -320,14 +327,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 var uri = $"wss://{hostName}";
                 mqttClientOptionsBuilder.WithWebSocketServer(uri);
 
-                if (Proxy != null)
+                if (_settings.Proxy != null)
                 {
                     Uri serviceUri = new(uri);
-                    Uri proxyUri = Proxy.GetProxy(serviceUri);
+                    Uri proxyUri = _settings.Proxy.GetProxy(serviceUri);
 
-                    if (Proxy.Credentials != null)
+                    if (_settings.Proxy.Credentials != null)
                     {
-                        NetworkCredential credentials = Proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
+                        NetworkCredential credentials = _settings.Proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
                         string proxyUsername = credentials.UserName;
                         string proxyPassword = credentials.Password;
                         mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri, proxyUsername, proxyPassword);
@@ -365,23 +372,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     provisioningRequest.IdScope,
                     provisioningRequest.Authentication.GetRegistrationId(),
                     ClientApiVersionHelper.ApiVersion,
-                    Uri.EscapeDataString(provisioningRequest.ProductInfo));
+                    Uri.EscapeDataString(_options.UserAgentInfo.ToString()));
 
             mqttClientOptionsBuilder
                 .WithClientId(provisioningRequest.Authentication.GetRegistrationId())
                 .WithCredentials(username, password);
 
-            if (RemoteCertificateValidationCallback != null)
+            if (_settings.RemoteCertificateValidationCallback != null)
             {
                 tlsParameters.CertificateValidationHandler = CertificateValidationHandler;
             }
 
             tlsParameters.UseTls = true;
-            tlsParameters.SslProtocol = SslProtocols;
+            tlsParameters.SslProtocol = _settings.SslProtocols;
             mqttClientOptionsBuilder
                 .WithTls(tlsParameters)
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311) // 3.1.1
-                .WithKeepAlivePeriod(IdleTimeout)
+                .WithKeepAlivePeriod(_settings.IdleTimeout)
                 .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
 
             return mqttClientOptionsBuilder;
@@ -389,7 +396,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
         {
-            return RemoteCertificateValidationCallback.Invoke(
+            return _settings.RemoteCertificateValidationCallback.Invoke(
                 new object(), //TODO Tim to check with Abhipsa about this and if it is necessary
                 args.Certificate,
                 args.Chain,

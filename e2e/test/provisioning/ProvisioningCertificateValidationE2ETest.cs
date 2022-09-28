@@ -13,6 +13,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Azure.Core;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
@@ -52,8 +53,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
-            using var transport = new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.Tcp);
-            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp));
+            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
             var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
             Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
@@ -62,8 +63,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
-            using var transport = new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.Tcp);
-            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp));
+            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
             var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
             if (error.And.InnerException == null)
@@ -79,8 +80,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateHttp_Fails()
         {
-            using var transport = new ProvisioningTransportHandlerHttp();
-            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientHttpSettings());
+            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
             var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
 #if NET472
@@ -93,8 +94,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
-            using var transport = new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.WebSocket);
-            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
+            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
             var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
             Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
@@ -103,17 +104,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
-            using var transport = new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.WebSocket);
-            Func<Task> act = async () => await TestInvalidServiceCertificate(transport);
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket));
+            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
             var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
             Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 
-        private async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
+        private async Task TestInvalidServiceCertificate(ProvisioningClientOptions clientOptions)
         {
             // Shorten the file name to avoid overall file path become too long and cause error in the test
-            string certificateSubject = "cert-"+Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace('+', '-').Replace('/', '.').Trim('=');
+            string certificateSubject = "cert-" + Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace('+', '-').Replace('/', '.').Trim('=');
             X509Certificate2Helper.GenerateSelfSignedCertificateFiles(certificateSubject, s_x509CertificatesFolder, Logger);
 
             using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_x509CertificatesFolder);
@@ -122,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",
                 auth,
-                new ProvisioningClientOptions(transport));
+                clientOptions);
 
             await provisioningDeviceClient.RegisterAsync().ConfigureAwait(false);
         }

@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Both Thermostat models are identical in definition but this is done to allow IoT Central to handle
         // TemperatureController model correctly.
         private const string ModelId = "dtmi:com:example:TemperatureController;2";
+
         private const string SdkEventProviderPrefix = "Microsoft-Azure-";
 
         public static async Task Main(string[] args)
@@ -127,8 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static async Task<DeviceRegistrationResult> ProvisionDeviceAsync(Parameters parameters, CancellationToken cancellationToken)
         {
             var symmetricKeyProvider = new AuthenticationProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
-            using ProvisioningTransportHandler mqttTransportHandler = new ProvisioningTransportHandlerMqtt();
-            var pdc = new ProvisioningDeviceClient(parameters.DpsEndpoint, parameters.DpsIdScope, symmetricKeyProvider, new ProvisioningClientOptions(mqttTransportHandler));
+            var pdc = new ProvisioningDeviceClient(parameters.DpsEndpoint, parameters.DpsIdScope, symmetricKeyProvider);
 
             var pnpPayload = new ProvisioningRegistrationAdditionalData
             {

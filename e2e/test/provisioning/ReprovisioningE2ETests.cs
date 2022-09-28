@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
@@ -433,7 +434,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             bool transportProtocolSupportsTwinOperations = transportSettings is not IotHubClientHttpSettings;
 
-            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
+            ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthenticationProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
@@ -447,7 +448,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             //Check basic provisioning
             if (ImplementsWebProxy(transportSettings) && setCustomProxy)
             {
-                transport.Proxy = proxyServerAddress == null
+                clientOptions.TransportSettings.Proxy = proxyServerAddress == null
                     ? null
                     : new WebProxy(s_proxyServerAddress);
             }
@@ -456,7 +457,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                new ProvisioningClientOptions(transport));
+                clientOptions);
+
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
             DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
             ValidateDeviceRegistrationResult(result);

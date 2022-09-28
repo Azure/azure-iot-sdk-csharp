@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly string _idScope;
         private readonly AuthenticationProvider _authentication;
         private readonly ProvisioningClientOptions _options;
+        private readonly ProvisioningTransportHandler _provisioningTransportHandler;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -39,6 +40,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (options == default)
             {
                 options = new();
+            }
+
+            if (options.TransportSettings is ProvisioningClientMqttSettings)
+            {
+                _provisioningTransportHandler = new ProvisioningTransportHandlerMqtt(options);
+            }
+            else if (options.TransportSettings is ProvisioningClientAmqpSettings)
+            {
+                _provisioningTransportHandler = new ProvisioningTransportHandlerAmqp(options);
+            }
+            else
+            {
+                _provisioningTransportHandler = new ProvisioningTransportHandlerHttp(options);
             }
 
             _globalDeviceEndpoint = globalDeviceEndpoint;
@@ -80,12 +94,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
-            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData)
-            {
-                ProductInfo = ProductInfo,
-            };
+            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData);
 
-            return _options.ProvisioningTransportHandler.RegisterAsync(request, cancellationToken);
+            return _provisioningTransportHandler.RegisterAsync(request, cancellationToken);
         }
     }
 }

@@ -18,32 +18,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents the AMQP protocol implementation for the provisioning transport handler.
     /// </summary>
-    public class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
+    internal class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
         // This polling interval is the default time between checking if the device has reached a terminal state in its registration process
         // DPS will generally send a retry-after header that overrides this default value though.
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
 
-        private static readonly TimeSpan s_timeoutConstant = TimeSpan.FromMinutes(1);
-
         private TimeSpan? _retryAfter;
+
+        private readonly ProvisioningClientOptions _options;
+        private readonly ProvisioningClientAmqpSettings _settings;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
         /// </summary>
-        /// <param name="transportProtocol">The protocol over which the AMQP transport communicates (i.e., TCP or web socket).</param>
-        public ProvisioningTransportHandlerAmqp(
-            ProvisioningClientTransportProtocol transportProtocol = ProvisioningClientTransportProtocol.Tcp)
+        /// <param name="options">The options for the connection and messages sent/received on the connection.</param>
+        public ProvisioningTransportHandlerAmqp(ProvisioningClientOptions options)
         {
-            TransportProtocol = transportProtocol;
-            bool useWebSocket = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket;
-            Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
+            _options = options;
+            _settings = (ProvisioningClientAmqpSettings)options.TransportSettings;
         }
-
-        /// <summary>
-        /// The protocol over which the AMQP transport communicates (i.e., TCP or web socket).
-        /// </summary>
-        public ProvisioningClientTransportProtocol TransportProtocol { get; private set; }
 
         /// <summary>
         /// Registers a device described by the message. Because the AMQP library does not accept cancellation tokens, the provided cancellation token
@@ -52,7 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="message">The provisioning message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public override async Task<DeviceRegistrationResult> RegisterAsync(
+        internal override async Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
@@ -60,16 +54,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
 
             Argument.AssertNotNull(message, nameof(message));
-
-            // We need to create a LinkedTokenSource to include both the default timeout and the cancellation token
-            // AMQP library started supporting CancellationToken starting from version 2.5.5
-            // To preserve current behavior, we will honor both the legacy timeout and the cancellation token parameter.
-            using var timeoutTokenSource = new CancellationTokenSource(s_timeoutConstant);
-            using var cancellationTokenSourceBundle = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
-
-            CancellationToken bundleCancellationToken = cancellationTokenSourceBundle.Token;
-
-            bundleCancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -97,13 +81,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Associate(authStrategy, this);
 
-                bool useWebSocket = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket;
-
+                bool useWebSocket = _settings.Protocol == ProvisioningClientTransportProtocol.WebSocket;
                 var builder = new UriBuilder
                 {
                     Scheme = useWebSocket ? AmqpWebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
                     Host = message.GlobalDeviceEndpoint,
-                    Port = Port,
+                    Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort,
                 };
 
                 string registrationId = message.Authentication.GetRegistrationId();
@@ -111,17 +94,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 using AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
 
-                await authStrategy.OpenConnectionAsync(connection, useWebSocket, Proxy, RemoteCertificateValidationCallback, bundleCancellationToken).ConfigureAwait(false);
-                bundleCancellationToken.ThrowIfCancellationRequested();
+                await authStrategy.OpenConnectionAsync(connection, useWebSocket, _settings.Proxy, _settings.RemoteCertificateValidationCallback, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
 
                 await CreateLinksAsync(
                         connection,
                         linkEndpoint,
-                        message.ProductInfo,
-                        bundleCancellationToken)
+                        _options.UserAgentInfo.ToString(),
+                        cancellationToken)
                     .ConfigureAwait(false);
 
-                bundleCancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
                 DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0)
@@ -132,7 +115,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         connection,
                         correlationId,
                         deviceRegistration,
-                        bundleCancellationToken)
+                        cancellationToken)
                     .ConfigureAwait(false);
 
                 // Poll with operationId until registration complete.
@@ -143,11 +126,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0
                     || string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
-                    bundleCancellationToken.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     await Task.Delay(
                             operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval),
-                            bundleCancellationToken)
+                            cancellationToken)
                         .ConfigureAwait(false);
 
                     try
@@ -156,7 +139,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 connection,
                                 operationId,
                                 correlationId,
-                                bundleCancellationToken)
+                                cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch (DeviceProvisioningClientException e) when (e.IsTransient)
@@ -172,7 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     authStrategy.SaveCredentials(operation);
                 }
 
-                await connection.CloseAsync(bundleCancellationToken).ConfigureAwait(false);
+                await connection.CloseAsync(cancellationToken).ConfigureAwait(false);
 
                 return operation.RegistrationState;
             }
