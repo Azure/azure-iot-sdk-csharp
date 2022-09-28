@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, 
+            HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -30,19 +30,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-            if(response.StatusCode == HttpStatusCode.Unauthorized)
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 if (request.Properties.TryGetValue(ProvisioningHeaderName, out object result))
                 {
                     if (result is Action<string> setSasToken)
                     {
                         string target = GetTarget(request.RequestUri.LocalPath);
-                        string responseContent = await response.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                        string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                         TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent);
 
                         string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(
                             _authProvider,
-                            target, 
+                            target,
                             Convert.FromBase64String(challenge.AuthenticationKey));
 
                         setSasToken(sasToken);
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 throw new ArgumentException($"Invalid RequestUri LocalPath");
             }
 
-            return string.Concat(parameters[0], "/" , parameters[1], "/", parameters[2]);
+            return string.Concat(parameters[0], "/", parameters[1], "/", parameters[2]);
         }
     }
 }

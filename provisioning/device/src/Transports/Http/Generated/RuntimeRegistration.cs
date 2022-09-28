@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// RuntimeRegistration operations.
     /// </summary>
-    internal partial class RuntimeRegistration: IServiceOperations<DeviceProvisioningServiceRuntimeClient>, IRuntimeRegistration
+    internal partial class RuntimeRegistration : IServiceOperations<DeviceProvisioningServiceRuntimeClient>, IRuntimeRegistration
     {
         /// <summary>
         /// Creates an instance of the RuntimeRegistration class.
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", statusCode));
                 responseContent = httpResponse.Content == null
                     ? string.Empty
-                    : await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    : await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 ex.Request = new HttpRequestMessageWrapper(httpRequest, requestContent);
                 ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
                 if (shouldTrace)
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // Deserialize Response
             if ((int)statusCode == 200)
             {
-                responseContent = await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
                     result.Body = SafeJsonConvert.DeserializeObject<RegistrationOperationStatus>(responseContent, Client.DeserializationSettings);
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // Deserialize Response
             if ((int)statusCode == 202)
             {
-                responseContent = await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
                     result.Body = SafeJsonConvert.DeserializeObject<RegistrationOperationStatus>(responseContent, Client.DeserializationSettings);
@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", _statusCode));
                 if (_httpResponse.Content != null)
                 {
-                    _responseContent = await _httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
                 else
                 {
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // Deserialize Response
             if ((int)_statusCode == 200)
             {
-                _responseContent = await _httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
                     _result.Body = SafeJsonConvert.DeserializeObject<DeviceRegistrationResult>(_responseContent, Client.DeserializationSettings);
@@ -543,7 +543,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", _statusCode));
                 if (_httpResponse.Content != null)
                 {
-                    _responseContent = await _httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
                 else
                 {
@@ -571,7 +571,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // Deserialize Response
             if ((int)_statusCode == 202)
             {
-                _responseContent = await _httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
                     _result.Body = SafeJsonConvert.DeserializeObject<RegistrationOperationStatus>(_responseContent, Client.DeserializationSettings);
