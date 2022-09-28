@@ -3,10 +3,8 @@
 
 using System;
 using System.Linq;
-using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +15,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal class AmqpIotTransport : IDisposable
     {
+        private const string Amqpwsb10 = "AMQPWSB10";
+        private const string Scheme = "wss://";
+        private const string UriSuffix = "/$iothub/websocket";
+        private const string SecurePort = "443";
+
         private readonly bool _disableServerCertificateValidation;
         private readonly string _hostName;
         private readonly IConnectionCredentials _connectionCredentials;
@@ -105,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     Logging.Enter(this, nameof(CreateClientWebSocketTransportAsync));
 
                 string additionalQueryParams = "";
-                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{_hostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
+                var websocketUri = new Uri($"{Scheme}{_hostName}:{SecurePort}{UriSuffix}{additionalQueryParams}");
                 // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
                 ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, cancellationToken).ConfigureAwait(false);
                 return new ClientWebSocketTransport(websocket, null, null);
@@ -127,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 var websocket = new ClientWebSocket();
 
                 // Set SubProtocol to AMQPWSB10
-                websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
+                websocket.Options.AddSubProtocol(Amqpwsb10);
 
                 if (_amqpTransportSettings.Proxy != null)
                 {
