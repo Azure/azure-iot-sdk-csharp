@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Core;
 using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
 
@@ -35,14 +36,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 _parameters.PrimaryKey,
                 null);
 
-            using ProvisioningTransportHandler transportHandler = _parameters.GetTransportHandler();
-            var options = new ProvisioningClientOptions(transportHandler);
+            ProvisioningClientOptions clientOptions = _parameters.GetClientOptions();
 
             var provClient = new ProvisioningDeviceClient(
                 _parameters.GlobalDeviceEndpoint,
                 _parameters.IdScope,
                 security,
-                options);
+                clientOptions);
 
             Console.WriteLine($"Initialized for registration Id {security.GetRegistrationId()}.");
 
@@ -66,7 +66,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             Console.WriteLine($"Testing the provisioned device with IoT Hub...");
             var hubOptions = new IotHubClientOptions(_parameters.GetHubTransportSettings())
             {
-                
             };
             using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
 

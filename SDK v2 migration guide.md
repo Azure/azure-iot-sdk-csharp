@@ -163,6 +163,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 #### Other notable breaking changes
 
 - The security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
+- The previous way of providing transport level settings (`ProvisioningTransportHandler`) has been replaced with `ProvisioningClientTransportSettings`
 
 ### DPS service client
 

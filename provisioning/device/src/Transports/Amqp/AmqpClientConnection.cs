@@ -24,16 +24,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private Action _onConnectionClosed;
 
-        internal AmqpClientConnection(Uri uri, AmqpSettings amqpSettings, Action OnConnectionClosed)
+        private ProvisioningClientAmqpSettings _clientSettings;
+
+        internal AmqpClientConnection(Uri uri, AmqpSettings amqpSettings, Action OnConnectionClosed, ProvisioningClientAmqpSettings clientSettings)
         {
             _uri = uri;
             _amqpSettings = amqpSettings;
             _onConnectionClosed = OnConnectionClosed;
+            _clientSettings = clientSettings;
 
             AmqpConnectionSettings = new AmqpConnectionSettings
             {
                 ContainerId = Guid.NewGuid().ToString(),
-                HostName = _uri.Host
+                HostName = _uri.Host,
+                IdleTimeOut = Convert.ToUInt32(_clientSettings.IdleTimeout.TotalMilliseconds),
             };
         }
 
@@ -65,12 +69,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             string hostName = _uri.Host;
 
-            var tcpSettings = new TcpTransportSettings { Host = hostName, Port = _uri.Port != -1 ? _uri.Port : AmqpConstants.DefaultSecurePort };
+            var tcpSettings = new TcpTransportSettings
+            {
+                Host = hostName,
+                Port = _uri.Port != -1 ? _uri.Port : AmqpConstants.DefaultSecurePort,
+            };
+
             TransportSettings = new TlsTransportSettings(tcpSettings)
             {
                 TargetHost = hostName,
                 Certificate = clientCert,
                 CertificateValidationCallback = remoteCerificateValidationCallback,
+                Protocols = _clientSettings.SslProtocols,
             };
 
             if (useWebSocket)
@@ -177,7 +187,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
             websocket.Options.AddSubProtocol(AmqpWebSocketConstants.SubProtocols.Amqpwsb10);
-            websocket.Options.KeepAliveInterval = AmqpWebSocketConstants.KeepAliveInterval;
+            if (_clientSettings.WebSocketKeepAlive.HasValue)
+            {
+                websocket.Options.KeepAliveInterval = _clientSettings.WebSocketKeepAlive.Value;
+            }
+
             websocket.Options.SetBuffer(AmqpWebSocketConstants.BufferSize, AmqpWebSocketConstants.BufferSize);
 
             //Check if we're configured to use a proxy server

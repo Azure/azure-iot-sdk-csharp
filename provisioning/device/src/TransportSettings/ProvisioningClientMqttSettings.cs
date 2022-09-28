@@ -1,31 +1,40 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Net.Security;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Contains AMQP transport-specific settings for the device and module clients.
+    /// Contains MQTT transport-specific settings for a provisioning device client.
     /// </summary>
-    public sealed class IotHubClientAmqpSettings : IotHubClientTransportSettings
+    public class ProvisioningClientMqttSettings : ProvisioningClientTransportSettings
     {
-        private TimeSpan _operationTimeout = TimeSpan.FromMinutes(1);
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
-        public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
+        public ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol transportProtocol = ProvisioningClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
         }
 
         /// <summary>
-        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
+        /// The QoS to be used when sending packets to service.
         /// </summary>
-        internal string AuthenticationChain { get; set; }
+        /// <remarks>
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </remarks>
+        public QualityOfService PublishToServerQoS { get; set; } = QualityOfService.AtLeastOnce;
+
+        /// <summary>
+        /// The QoS to be used when subscribing to receive packets from the service.
+        /// </summary>
+        /// <remarks>
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </remarks>
+        public QualityOfService ReceivingQoS { get; set; } = QualityOfService.AtLeastOnce;
 
         /// <summary>
         /// Specify client-side heartbeat interval.
@@ -44,27 +53,12 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
-        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
-        /// </summary>
-        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
-        public TimeSpan? WebSocketKeepAlive { get; set; }
-
-        /// <summary>
-        /// The pre-fetch count
-        /// </summary>
-        public uint PrefetchCount { get; set; } = 50;
-
-        /// <summary>
         /// A callback for remote certificate validation.
         /// </summary>
         /// <remarks>
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
+        /// If incorrectly implemented, your device may fail to connect to Device Provisioning Service
+        /// and/or be open to security vulnerabilities.
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
-
-        /// <summary>
-        /// The connection pool settings for AMQP
-        /// </summary>
-        public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
     }
 }

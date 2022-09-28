@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    // TODO: Unify ProductInfo with DeviceClient.
     internal class ProductInfo
     {
         public string Extra { get; set; } = "";

@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents the AMQP protocol implementation for the provisioning transport handler.
     /// </summary>
-    public class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
+    internal class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
         private const string Register = "iotdps-register";
         private const string GetRegistration = "iotdps-get-registration";
@@ -35,24 +35,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private TimeSpan? _retryAfter;
 
+        private readonly ProvisioningClientOptions _options;
+        private readonly ProvisioningClientAmqpSettings _settings;
         private CancellationTokenSource _connectionLostCancellationToken;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
         /// </summary>
-        /// <param name="transportProtocol">The protocol over which the AMQP transport communicates (i.e., TCP or web socket).</param>
-        public ProvisioningTransportHandlerAmqp(
-            ProvisioningClientTransportProtocol transportProtocol = ProvisioningClientTransportProtocol.Tcp)
+        /// <param name="options">The options for the connection and messages sent/received on the connection.</param>
+        internal ProvisioningTransportHandlerAmqp(ProvisioningClientOptions options)
         {
-            TransportProtocol = transportProtocol;
-            bool useWebSocket = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket;
-            Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
+            _options = options;
+            _settings = (ProvisioningClientAmqpSettings)options.TransportSettings;
         }
-
-        /// <summary>
-        /// The protocol over which the AMQP transport communicates (i.e., TCP or web socket).
-        /// </summary>
-        public ProvisioningClientTransportProtocol TransportProtocol { get; private set; }
 
         /// <summary>
         /// Registers a device described by the message. Because the AMQP library does not accept cancellation tokens, the provided cancellation token
@@ -61,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="message">The provisioning message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public override async Task<DeviceRegistrationResult> RegisterAsync(
+        internal override async Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
@@ -96,13 +91,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Associate(authStrategy, this);
 
-                bool useWebSocket = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket;
-
+                bool useWebSocket = _settings.Protocol == ProvisioningClientTransportProtocol.WebSocket;
                 var builder = new UriBuilder
                 {
                     Scheme = useWebSocket ? AmqpWebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
                     Host = message.GlobalDeviceEndpoint,
-                    Port = Port,
+                    Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort,
                 };
 
                 string registrationId = message.Authentication.GetRegistrationId();
@@ -111,11 +105,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 using AmqpClientConnection connection = authStrategy.CreateConnection(
                     builder.Uri,
                     message.IdScope,
-                    OnConnectionClosed);
+                    OnConnectionClosed,
+                    _settings);
 
                 _connectionLostCancellationToken = new CancellationTokenSource();
 
-                await authStrategy.OpenConnectionAsync(connection, useWebSocket, Proxy, RemoteCertificateValidationCallback, cancellationToken).ConfigureAwait(false);
+                await authStrategy.OpenConnectionAsync(connection, useWebSocket, _settings.Proxy, _settings.RemoteCertificateValidationCallback, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Link the user-supplied cancellation token with a cancellation token that is cancelled
@@ -130,7 +125,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 await CreateLinksAsync(
                         connection,
                         linkEndpoint,
-                        message.ProductInfo,
+                        _options.UserAgentInfo.ToString(),
                         linkedCancellationToken.Token)
                     .ConfigureAwait(false);
 

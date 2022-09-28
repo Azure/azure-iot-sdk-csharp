@@ -90,12 +90,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             HelpText = "The transport to use to communicate with the device provisioning instance.")]
         public ProvisioningClientTransportProtocol TransportProtocol { get; set; }
 
-        internal ProvisioningTransportHandler GetTransportHandler()
+        internal ProvisioningClientOptions GetClientOptions()
         {
             return Transport switch
             {
-                Transport.Mqtt => new ProvisioningTransportHandlerMqtt(TransportProtocol),
-                Transport.Amqp => new ProvisioningTransportHandlerAmqp(TransportProtocol),
+                Transport.Mqtt => new ProvisioningClientOptions(new ProvisioningClientMqttSettings(TransportProtocol)),
+                Transport.Amqp => new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(TransportProtocol)),
                 _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
             };
         }

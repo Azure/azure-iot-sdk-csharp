@@ -12,12 +12,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class IotHubClientMqttSettings : IotHubClientTransportSettings
     {
-        private const bool DefaultCleanSession = false;
-        private const bool DefaultHasWill = false;
-        private readonly TimeSpan DefaultKeepAlive = TimeSpan.FromMinutes(5);
-        private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
-        private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -25,25 +19,23 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientMqttSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            CleanSession = DefaultCleanSession;
-            HasWill = DefaultHasWill;
-            IdleTimeout = DefaultKeepAlive;
-            PublishToServerQoS = DefaultPublishToServerQoS;
-            ReceivingQoS = DefaultReceivingQoS;
-            WillMessage = null;
         }
 
         /// <summary>
         /// The QoS to be used when sending packets to service.
-        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
         /// </summary>
-        public QualityOfService PublishToServerQoS { get; set; }
+        /// <remarks>
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </remarks>
+        public QualityOfService PublishToServerQoS { get; set; } = QualityOfService.AtLeastOnce;
 
         /// <summary>
         /// The QoS to be used when subscribing to receive packets from the service.
-        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
         /// </summary>
-        public QualityOfService ReceivingQoS { get; set; }
+        /// <remarks>
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </remarks>
+        public QualityOfService ReceivingQoS { get; set; } = QualityOfService.AtLeastOnce;
 
         /// <summary>
         /// Flag to specify if a subscription should persist across different sessions. The default value is false.
@@ -53,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <para>If set to true: the device will receive only those messages that were sent to it
         /// after it successfully subscribed to the device bound message topic.</para>
         /// </remarks>
-        public bool CleanSession { get; set; }
+        public bool CleanSession { get; set; } // false by default
 
         /// <summary>
         /// Specify client-side heartbeat interval.
@@ -89,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT hub routing.
         /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
         /// </remarks>
-        public bool HasWill { get; set; }
+        public bool HasWill { get; set; } // false by default
 
         /// <summary>
         /// The configured will message that is sent to the telemetry channel on an ungraceful disconnect.
@@ -102,8 +94,10 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// A callback for remote certificate validation.
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
         /// </summary>
+        /// <remarks>
+        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
+        /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>

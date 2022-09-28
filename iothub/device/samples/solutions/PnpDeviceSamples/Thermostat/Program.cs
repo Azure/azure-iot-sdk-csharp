@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         // DTDL interface used: https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/com/example/thermostat-1.json
         private const string ModelId = "dtmi:com:example:Thermostat;1";
+
         private const string SdkEventProviderPrefix = "Microsoft-Azure-";
 
         public static async Task Main(string[] args)
@@ -58,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             logger.LogDebug($"Set up the device client.");
-            
+
             try
             {
                 using IotHubDeviceClient deviceClient = await SetupDeviceClientAsync(parameters, logger, cts.Token);
@@ -75,7 +76,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await deviceClient.CloseAsync(CancellationToken.None);
             }
             catch (OperationCanceledException) { } // User canceled operation
-
         }
 
         private static ILogger InitializeConsoleDebugLogger()
@@ -122,12 +122,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static async Task<DeviceRegistrationResult> ProvisionDeviceAsync(Parameters parameters, CancellationToken cancellationToken)
         {
             var symmetricKeyProvider = new AuthenticationProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
-            using ProvisioningTransportHandler mqttTransportHandler = new ProvisioningTransportHandlerMqtt();
             var pdc = new ProvisioningDeviceClient(
                 parameters.DpsEndpoint,
                 parameters.DpsIdScope,
-                symmetricKeyProvider,
-                new ProvisioningClientOptions(mqttTransportHandler)); ;
+                symmetricKeyProvider);
 
             var pnpPayload = new ProvisioningRegistrationAdditionalData
             {

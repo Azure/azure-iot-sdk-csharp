@@ -4,28 +4,21 @@
 using System;
 using System.Net.Security;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Contains AMQP transport-specific settings for the device and module clients.
+    /// Contains AMQP transport-specific settings for a provisioning device client.
     /// </summary>
-    public sealed class IotHubClientAmqpSettings : IotHubClientTransportSettings
+    public sealed class ProvisioningClientAmqpSettings : ProvisioningClientTransportSettings
     {
-        private TimeSpan _operationTimeout = TimeSpan.FromMinutes(1);
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
-        public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
+        public ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol transportProtocol = ProvisioningClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
         }
-
-        /// <summary>
-        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
-        /// </summary>
-        internal string AuthenticationChain { get; set; }
 
         /// <summary>
         /// Specify client-side heartbeat interval.
@@ -50,21 +43,12 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan? WebSocketKeepAlive { get; set; }
 
         /// <summary>
-        /// The pre-fetch count
-        /// </summary>
-        public uint PrefetchCount { get; set; } = 50;
-
-        /// <summary>
         /// A callback for remote certificate validation.
         /// </summary>
         /// <remarks>
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
+        /// If incorrectly implemented, your device may fail to connect to Device Provisioning Service
+        /// and/or be open to security vulnerabilities.
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
-
-        /// <summary>
-        /// The connection pool settings for AMQP
-        /// </summary>
-        public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
     }
 }

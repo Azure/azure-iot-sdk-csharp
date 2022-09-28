@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -17,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents the HTTP protocol implementation for the Provisioning Transport Handler.
     /// </summary>
-    public class ProvisioningTransportHandlerHttp : ProvisioningTransportHandler
+    internal class ProvisioningTransportHandlerHttp : ProvisioningTransportHandler
     {
         private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
         private const int DefaultHttpsPort = 443;
@@ -38,31 +37,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L29
         private static readonly TimeSpan DefaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
 
+        private readonly ProvisioningClientOptions _options;
+        private readonly ProvisioningClientHttpSettings _settings;
+
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerHttp class.
         /// </summary>
-        public ProvisioningTransportHandlerHttp()
+        internal ProvisioningTransportHandlerHttp(ProvisioningClientOptions options)
         {
-            Port = DefaultHttpsPort;
-        }
-
-        /// <summary>
-        /// Registers a device described by the message.
-        /// </summary>
-        /// <param name="message">The provisioning message.</param>
-        /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
-        /// <returns>The registration result.</returns>
-        public override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterRequest message,
-            TimeSpan timeout)
-        {
-            if (TimeSpan.Zero.Equals(timeout))
-            {
-                throw new OperationCanceledException();
-            }
-
-            using var cts = new CancellationTokenSource(timeout);
-            return await RegisterAsync(message, cts.Token).ConfigureAwait(false);
+            _options = options;
+            _settings = (ProvisioningClientHttpSettings)options.TransportSettings;
         }
 
         /// <summary>
@@ -71,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="message">The provisioning message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public override async Task<DeviceRegistrationResult> RegisterAsync(
+        internal override async Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
@@ -119,13 +103,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
                     // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
-                    //SslProtocols = TlsVersions.Preferred,
+                    SslProtocols = _settings.SslProtocols,
                 };
 
-                if (Proxy != null)
+                if (_settings.Proxy != null)
                 {
                     httpClientHandler.UseProxy = true;
-                    httpClientHandler.Proxy = Proxy;
+                    httpClientHandler.Proxy = _settings.Proxy;
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"{nameof(RegisterAsync)} Setting HttpClientHandler.Proxy");
                 }
@@ -134,7 +118,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 {
                     Scheme = Uri.UriSchemeHttps,
                     Host = message.GlobalDeviceEndpoint,
-                    Port = Port,
+                    Port = DefaultHttpsPort,
                 };
 
                 httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
@@ -142,9 +126,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 servicePoint.ConnectionLeaseTimeout = DefaultConnectionLeaseTimeout.Milliseconds;
 
                 using DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri, httpClientHandler);
-                client.HttpClient.DefaultRequestHeaders.Add("User-Agent", message.ProductInfo);
+                client.HttpClient.DefaultRequestHeaders.Add("User-Agent", _options.UserAgentInfo.ToString());
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
+                    Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {_options.UserAgentInfo}");
 
                 DeviceRegistrationHttp deviceRegistration = authStrategy.CreateDeviceRegistration();
                 if (message.Payload != null

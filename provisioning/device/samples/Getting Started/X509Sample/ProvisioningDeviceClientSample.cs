@@ -32,13 +32,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             Console.WriteLine($"Initializing the device provisioning client...");
 
-            using ProvisioningTransportHandler transportHandler = _parameters.GetTransportHandler();
-            var options = new ProvisioningClientOptions(transportHandler);
+            ProvisioningClientOptions clientOptions = _parameters.GetClientOptions();
             var provClient = new ProvisioningDeviceClient(
                 _parameters.GlobalDeviceEndpoint,
                 _parameters.IdScope,
                 security,
-                options);
+                clientOptions);
 
             Console.WriteLine($"Initialized for registration Id {security.GetRegistrationId()}.");
 
