@@ -30,24 +30,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>.
         /// The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
         /// <c>
-        /// IotHubDeviceClient GetDeviceClient()
+        /// ProvisioningDeviceClient GetProvisioningDeviceClient()
         /// {
         ///     var proxy = new WebProxy("localhost", "8888");
-        ///     var mqttSettings = new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)
+        ///     var mqttSettings = new ProvisioningClientMqttSettings()
         ///     {
-        ///         // Specify the WebProxy to be used for the connection
-        ///         Proxy = proxy,
+        ///         Proxy = proxy
         ///     };
-        ///     var fileUploadSettings = new IotHubClientHttpSettings
-        ///     {
-        ///         // Also configure the proxy for file uploads.
-        ///         Proxy = proxy,
-        ///     };
-        ///     var options = new IotHubClientOptions(mqttSettings)
-        ///     {
-        ///         FileUploadTransportSettings = fileUploadSettings,
-        ///     };
-        ///     return new IotHubDeviceClient("a connection string", options);
+        ///
+        ///     var optionsWithProxy = new ProvisioningClientOptions(mqttSettings);
+        ///
+        ///     return new ProvisioningDeviceClient("global endpoint", "id scope", securityProvider, optionsWithProxy);
         /// }
         /// </c>
         /// </example>
@@ -60,14 +53,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Defaults to "None", which means let the OS decide the proper TLS version (SChannel in Windows / OpenSSL in Linux).
         /// </remarks>
         public SslProtocols SslProtocols { get; set; } = SslProtocols.None;
-
-        /// <summary>
-        /// To enable certificate revocation check.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to false.
-        /// </remarks>
-        public bool CertificateRevocationCheck { get; set; }
 
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]

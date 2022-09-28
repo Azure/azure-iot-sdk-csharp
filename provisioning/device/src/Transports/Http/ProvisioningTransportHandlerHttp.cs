@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
                     // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
-                    //SslProtocols = TlsVersions.Preferred,
+                    SslProtocols = _settings.SslProtocols,
                 };
 
                 if (_settings.Proxy != null)

@@ -13,8 +13,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public const int BufferSize = 8 * 1024;
 
-        public static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(15);
-
         internal static class SubProtocols
         {
             public const string Amqpwsb10 = "AMQPWSB10";

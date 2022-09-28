@@ -12,8 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class ProvisioningClientMqttSettings : ProvisioningClientTransportSettings
     {
         private const bool DefaultCleanSession = false;
-        private const bool DefaultHasWill = false;
-        private readonly TimeSpan DefaultKeepAlive = TimeSpan.FromMinutes(5);
+        private readonly TimeSpan DefaultKeepAlive = TimeSpan.FromMinutes(2);
         private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
         private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
 
@@ -67,15 +66,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </para>
         /// </remarks>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
-
-        /// <summary>
-        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
-        /// </summary>
-        /// <remarks>
-        /// This value is different from the protocol-level keep-alive packets that are sent over the overlaying MQTT transport protocol.
-        /// </remarks>
-        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
-        public TimeSpan? WebSocketKeepAlive { get; set; }
 
         /// <summary>
         /// A callback for remote certificate validation.

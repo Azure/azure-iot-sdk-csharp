@@ -105,7 +105,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 using AmqpClientConnection connection = authStrategy.CreateConnection(
                     builder.Uri,
                     message.IdScope,
-                    OnConnectionClosed);
+                    OnConnectionClosed,
+                    _settings);
 
                 _connectionLostCancellationToken = new CancellationTokenSource();
 
