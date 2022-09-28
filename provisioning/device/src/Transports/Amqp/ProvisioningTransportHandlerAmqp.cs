@@ -20,6 +20,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// </summary>
     public class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
+        private const string Register = "iotdps-register";
+        private const string GetRegistration = "iotdps-get-registration";
+        private const string GetOperationStatus = "iotdps-get-operationstatus";
+        private const string Prefix = "iotdps-";
+        private const string OperationType = Prefix + "operation-type";
+        private const string OperationId = Prefix + "operation-id";
+        private const string Status = Prefix + "status";
+        private const string ForceRegistration = Prefix + "forceRegistration";
+
         // This polling interval is the default time between checking if the device has reached a terminal state in its registration process
         // DPS will generally send a retry-after header that overrides this default value though.
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
@@ -251,8 +260,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 }
 
                 amqpMessage.Properties.CorrelationId = correlationId;
-                amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] = DeviceOperations.Register;
-                amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.ForceRegistration] = false;
+                amqpMessage.ApplicationProperties.Map[OperationType] = Register;
+                amqpMessage.ApplicationProperties.Map[ForceRegistration] = false;
 
                 Outcome outcome = await client.AmqpSession.SendingLink
                     .SendMessageAsync(
@@ -286,11 +295,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string correlationId,
             CancellationToken cancellationToken)
         {
-            using var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = DeviceOperations.GetOperationStatus });
+            using var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = GetOperationStatus });
 
             amqpMessage.Properties.CorrelationId = correlationId;
-            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] = DeviceOperations.GetOperationStatus;
-            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationId] = operationId;
+            amqpMessage.ApplicationProperties.Map[OperationType] = GetOperationStatus;
+            amqpMessage.ApplicationProperties.Map[OperationId] = operationId;
 
             Outcome outcome = await client.AmqpSession.SendingLink
                 .SendMessageAsync(
