@@ -32,14 +32,14 @@ namespace InvokeDeviceMethod
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
             using var serviceClient = ServiceClient.CreateFromConnectionString(parameters.HubConnectionString);
 
-            await InvokeMethodAsync(parameters.DeviceId);
+            await InvokeMethodAsync(parameters.DeviceId, serviceClient);
 
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
         }
 
         // Invoke the direct method on the device, passing the payload.
-        private static async Task InvokeMethodAsync(string deviceId)
+        private static async Task InvokeMethodAsync(string deviceId, ServiceClient serviceClient)
         {
             var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval")
             {
@@ -50,7 +50,7 @@ namespace InvokeDeviceMethod
             Console.WriteLine($"Invoking direct method for device: {deviceId}");
 
             // Invoke the direct method asynchronously and get the response from the simulated device.
-            CloudToDeviceMethodResult response = await s_serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
+            CloudToDeviceMethodResult response = await serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
 
             Console.WriteLine($"Response status: {response.Status}, payload:\n\t{response.GetPayloadAsJson()}");
 
