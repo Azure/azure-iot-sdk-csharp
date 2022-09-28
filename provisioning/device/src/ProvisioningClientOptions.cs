@@ -13,6 +13,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Creates an instances of this class with the default transport settings.
         /// </summary>
+        /// <remarks>
+        /// The default transport protocol is MQTT over TCP.
+        /// </remarks>
         public ProvisioningClientOptions()
             : this(new ProvisioningClientMqttSettings())
         {

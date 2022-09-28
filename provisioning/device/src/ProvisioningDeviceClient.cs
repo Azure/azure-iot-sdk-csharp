@@ -65,11 +65,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Stores product information that will be appended to the user agent string that is sent to IoT hub.
-        /// </summary>
-        public string ProductInfo { get; set; }
-
-        /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>

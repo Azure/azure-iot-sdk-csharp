@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// The policy for which a particular message will be sent. Note that IoT hub does not support QoS 2.
+    /// The policy for which a particular message will be sent. Note that Device Provisioning Service does not support QoS 2.
     /// </summary>
     public enum QualityOfService
     {
