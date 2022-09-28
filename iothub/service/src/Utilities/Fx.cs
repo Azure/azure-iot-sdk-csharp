@@ -14,7 +14,6 @@ namespace Microsoft.Azure.Devices.Common
         {
             while (ex != null)
             {
-                // FYI, CallbackException is-a FatalException
                 if (ex is OutOfMemoryException
                     || ex is SEHException
                     || ex is NullReferenceException)
