@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 deviceClient.Dispose();
                 await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
 
-                if (FaultShouldDisconnect(faultType))
+                if (!FaultShouldDisconnect(faultType))
                 {
                     faultInjectionDuration.Stop();
 
