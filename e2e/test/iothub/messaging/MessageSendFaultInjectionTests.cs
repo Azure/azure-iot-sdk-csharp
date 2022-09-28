@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -205,7 +206,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Throttled);
+            error.And.StatusCode.Should().Be((HttpStatusCode)429);
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Throttled);
             error.And.IsTransient.Should().BeTrue();
         }
 
@@ -227,7 +229,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Throttled);
+            error.And.StatusCode.Should().Be((HttpStatusCode)429);
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Throttled);
             error.And.IsTransient.Should().BeTrue();
         }
 
@@ -248,7 +251,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
+            error.And.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -269,7 +273,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
+            error.And.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -289,7 +294,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -309,7 +315,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
 

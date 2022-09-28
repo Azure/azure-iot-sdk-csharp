@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -45,13 +46,24 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task FileUpload_SmallFile_GranularSteps()
+        public async Task FileUpload_SmallFile_GranularSteps_ValidCorrelationId()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var fileUploadTransportSettings = new IotHubClientHttpSettings();
 
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
+            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
+        public async Task FileUpload_SmallFile_GranularSteps_InvalidCorrelationId()
+        {
+            string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
+            using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            var fileUploadTransportSettings = new IotHubClientHttpSettings();
+
+            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: false).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -63,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var fileUploadTransportSettings = new IotHubClientHttpSettings();
 
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, useX509auth: true).ConfigureAwait(false);
+            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, useX509auth: true).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -78,10 +90,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress)
             };
 
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
+            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true).ConfigureAwait(false);
         }
 
-        private async Task UploadFileGranularAsync(Stream source, string filename, IotHubClientHttpSettings fileUploadTransportSettings, bool useX509auth = false)
+        private async Task UploadFileGranularAsync(Stream source, string filename, IotHubClientHttpSettings fileUploadTransportSettings, bool isCorrelationIdValid, bool useX509auth = false)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
                 Logger,
@@ -121,13 +133,33 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Task uploadTask = blob.UploadFromStreamAsync(source);
                 await uploadTask.ConfigureAwait(false);
 
-                var notification = new FileUploadCompletionNotification
+                if (isCorrelationIdValid)
                 {
-                    CorrelationId = fileUploadSasUriResponse.CorrelationId,
-                    IsSuccess = uploadTask.IsCompleted
-                };
+                    var notification = new FileUploadCompletionNotification
+                    {
+                        CorrelationId = fileUploadSasUriResponse.CorrelationId,
+                        IsSuccess = uploadTask.IsCompleted
+                    };
 
-                await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
+                    await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
+                }
+                else
+                {
+                    var notification = new FileUploadCompletionNotification
+                    {
+                        CorrelationId = "invalid-correlation-id",
+                        IsSuccess = uploadTask.IsCompleted
+                    };
+
+                    // act
+                    Func<Task> act = async () => await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
+
+                    // assert
+                    var error = await act.Should().ThrowAsync<IotHubClientException>();
+                    error.And.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+                    error.And.ErrorCode.Should().Be(IotHubClientErrorCode.ServerError);
+                    error.And.IsTransient.Should().BeTrue();
+                }
             }
 
             x509Auth?.Dispose();

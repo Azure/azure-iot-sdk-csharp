@@ -309,13 +309,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 var error1 = await act1.Should().ThrowAsync<IotHubServiceException>("Expected the request to fail with a \"not found\" error");
                 error1.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-                error1.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+                error1.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
 
                 Func<Task> act2 = async () => await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
 
                 var error2 = await act2.Should().ThrowAsync<IotHubServiceException>("Expected the request to fail with a \"not found\" error");
                 error2.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-                error2.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+                error2.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
             }
             finally
             {
@@ -536,7 +536,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Func<Task> act = async () => await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
                 var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
                 error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
                 error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
@@ -590,7 +590,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Func<Task> act = async () => await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false);
                 var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
                 error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
                 error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
@@ -606,7 +606,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
                 }
                 catch (IotHubServiceException ex)
-                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
+                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubServiceErrorCode.DeviceNotFound)
                 {
                     // device was already deleted during the normal test flow
                 }
@@ -656,7 +656,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Func<Task> act = async () => await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false);
                 var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
                 error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
                 error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
@@ -726,7 +726,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Func<Task> act = async () => await serviceClient.Modules.DeleteAsync(module, true).ConfigureAwait(false);
                 var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
                 error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
                 error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
@@ -743,7 +743,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await CleanupAsync(serviceClient, deviceId).ConfigureAwait(false);
                 }
                 catch (IotHubServiceException ex)
-                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
+                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubServiceErrorCode.DeviceNotFound)
                 {
                     // device was already deleted during the normal test flow
                 }

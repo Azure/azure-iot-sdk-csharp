@@ -192,28 +192,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // TODO: pradeepc - need to confirm this with ASP.NET team
                 if (innerExceptions.Any(e => e is TimeoutException))
                 {
-                    throw new IotHubClientException(ex.Message, IotHubStatusCode.NetworkErrors, ex);
+                    throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
                 }
 
                 throw new IotHubClientException(ex.Message, ex);
             }
             catch (TimeoutException ex)
             {
-                throw new IotHubClientException(ex.Message, IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
             }
             catch (IOException ex)
             {
-                throw new IotHubClientException(ex.Message, IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
             }
             catch (HttpRequestException ex)
             {
-                throw new IotHubClientException(ex.Message, IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
             }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
+            catch (Exception ex) when (!Fx.IsFatal(ex) && ex is not OperationCanceledException)
             {
                 throw new IotHubClientException(ex.Message, ex);
             }

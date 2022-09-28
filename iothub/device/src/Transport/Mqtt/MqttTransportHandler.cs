@@ -330,12 +330,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case MqttClientConnectResultCode.BadUserNameOrPassword:
                     case MqttClientConnectResultCode.NotAuthorized:
                     case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", false, IotHubStatusCode.Unauthorized, cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", IotHubClientErrorCode.Unauthorized, cfe);
                     case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                         // Should never happen since the protocol version (3.1.1) is hardcoded
                         throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", cfe);
                     case MqttClientConnectResultCode.ServerUnavailable:
-                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", true, IotHubStatusCode.ServerBusy, cfe);
+                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", IotHubClientErrorCode.ServerBusy, cfe);
                     default:
                         if (cfe.InnerException is MqttCommunicationTimedOutException)
                         {
@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                             // This execption may be thrown even if cancellation has not been requested yet.
                             // This case is treated as a timeout error rather than an OperationCanceledException
-                            throw new IotHubClientException(ConnectTimedOutErrorMessage, IotHubStatusCode.Timeout, cfe);
+                            throw new IotHubClientException(ConnectTimedOutErrorMessage, IotHubClientErrorCode.Timeout, cfe);
                         }
 
                         // MQTT 3.1.1 only supports the above connect return codes, so this default case
@@ -383,14 +383,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                     {
-                        throw new IotHubClientException($"Failed to publish the MQTT packet for message with correlation Id {message.CorrelationId} with reason code {result.ReasonCode}", IotHubStatusCode.NetworkErrors);
+                        throw new IotHubClientException($"Failed to publish the MQTT packet for message with correlation Id {message.CorrelationId} with reason code {result.ReasonCode}", IotHubClientErrorCode.NetworkErrors);
                     }
                 }
                 catch (MqttCommunicationTimedOutException ex) when (!cancellationToken.IsCancellationRequested)
                 {
                     // This execption may be thrown even if cancellation has not been requested yet.
                     // This case is treated as a timeout error rather than an OperationCanceledException
-                    throw new IotHubClientException(MessageTimedOutErrorMessage, IotHubStatusCode.Timeout, ex);
+                    throw new IotHubClientException(MessageTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
                 }
                 catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
                 {
@@ -401,7 +401,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send message.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to send message.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -423,7 +423,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving direct methods.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to enable receiving direct methods.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -435,7 +435,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving direct methods.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to disable receiving direct methods.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -455,14 +455,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubClientException($"Failed to send direct method response with reason code {result.ReasonCode}", IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException($"Failed to send direct method response with reason code {result.ReasonCode}", IotHubClientErrorCode.NetworkErrors);
                 }
             }
             catch (MqttCommunicationTimedOutException ex) when (!cancellationToken.IsCancellationRequested)
             {
                 // This execption may be thrown even if cancellation has not been requested yet.
                 // This case is treated as a timeout error rather than an OperationCanceledException
-                throw new IotHubClientException(MessageTimedOutErrorMessage, IotHubStatusCode.Timeout, ex);
+                throw new IotHubClientException(MessageTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
             }
             catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -472,7 +472,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send direct method response.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to send direct method response.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -500,12 +500,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
                 {
-                    throw new IotHubClientException("Failed to enable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
+                    throw new IotHubClientException("Failed to enable receiving messages.", IotHubClientErrorCode.NetworkErrors, ex);
                 }
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to enable receiving messages.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -531,7 +531,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving messages.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to disable receiving messages.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -543,7 +543,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to enable receiving twin patches.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to enable receiving twin patches.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -555,7 +555,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to disable receiving twin patches.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to disable receiving twin patches.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -586,7 +586,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubClientException($"Failed to publish the MQTT packet for getting this client's twin with reason code {result.ReasonCode}", IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException($"Failed to publish the MQTT packet for getting this client's twin with reason code {result.ReasonCode}", IotHubClientErrorCode.NetworkErrors);
                 }
 
                 if (Logging.IsEnabled)
@@ -604,7 +604,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (getTwinResponse.Status != 200)
                 {
-                    throw new IotHubClientException(getTwinResponse.Message, IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException(getTwinResponse.Message, IotHubClientErrorCode.NetworkErrors);
                 }
 
                 return getTwinResponse.Twin;
@@ -613,7 +613,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // This execption may be thrown even if cancellation has not been requested yet.
                 // This case is treated as a timeout error rather than an OperationCanceledException
-                throw new IotHubClientException(MessageTimedOutErrorMessage, IotHubStatusCode.Timeout, ex);
+                throw new IotHubClientException(MessageTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
             }
             catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -623,7 +623,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to get the twin.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to get the twin.", IotHubClientErrorCode.NetworkErrors, ex);
             }
             finally
             {
@@ -664,7 +664,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubClientException($"Failed to publish the MQTT packet for patching this client's twin with reason code {result.ReasonCode}", IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException($"Failed to publish the MQTT packet for patching this client's twin with reason code {result.ReasonCode}", IotHubClientErrorCode.NetworkErrors);
                 }
 
                 if (Logging.IsEnabled)
@@ -682,7 +682,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (patchTwinResponse.Status != 204)
                 {
-                    throw new IotHubClientException(patchTwinResponse.Message, IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException(patchTwinResponse.Message, IotHubClientErrorCode.NetworkErrors);
                 }
 
                 return patchTwinResponse.Version;
@@ -691,7 +691,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // This execption may be thrown even if cancellation has not been requested yet.
                 // This case is treated as a timeout error rather than an OperationCanceledException
-                throw new IotHubClientException(MessageTimedOutErrorMessage, IotHubStatusCode.Timeout, ex);
+                throw new IotHubClientException(MessageTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
             }
             catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -701,7 +701,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send twin patch.", IotHubStatusCode.NetworkErrors, ex);
+                throw new IotHubClientException("Failed to send twin patch.", IotHubClientErrorCode.NetworkErrors, ex);
             }
             finally
             {
@@ -783,21 +783,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (subscribeResults?.Items == null)
                 {
-                    throw new IotHubClientException($"Failed to subscribe to topic {fullTopic}", IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException($"Failed to subscribe to topic {fullTopic}", IotHubClientErrorCode.NetworkErrors);
                 }
 
                 MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
 
                 if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
                 {
-                    throw new IotHubClientException($"Received unexpected subscription to topic {subscribeResult.TopicFilter.Topic}", IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException($"Received unexpected subscription to topic {subscribeResult.TopicFilter.Topic}", IotHubClientErrorCode.NetworkErrors);
                 }
             }
             catch (MqttCommunicationTimedOutException ex) when (!cancellationToken.IsCancellationRequested)
             {
                 // This execption may be thrown even if cancellation has not been requested yet.
                 // This case is treated as a timeout error rather than an OperationCanceledException
-                throw new IotHubClientException(SubscriptionTimedOutErrorMessage, IotHubStatusCode.Timeout, ex);
+                throw new IotHubClientException(SubscriptionTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
             }
             catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -821,25 +821,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (unsubscribeResults?.Items == null || unsubscribeResults.Items.Count != 1)
                 {
-                    throw new IotHubClientException($"Failed to unsubscribe to topic {fullTopic}", IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException($"Failed to unsubscribe to topic {fullTopic}", IotHubClientErrorCode.NetworkErrors);
                 }
 
                 MqttClientUnsubscribeResultItem unsubscribeResult = unsubscribeResults.Items.FirstOrDefault();
                 if (!unsubscribeResult.TopicFilter.Equals(fullTopic))
                 {
-                    throw new IotHubClientException($"Received unexpected unsubscription from topic {unsubscribeResult.TopicFilter}", IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException($"Received unexpected unsubscription from topic {unsubscribeResult.TopicFilter}", IotHubClientErrorCode.NetworkErrors);
                 }
 
                 if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
                 {
-                    throw new IotHubClientException($"Failed to unsubscribe from topic {fullTopic} with reason {unsubscribeResult.ResultCode}", IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException($"Failed to unsubscribe from topic {fullTopic} with reason {unsubscribeResult.ResultCode}", IotHubClientErrorCode.NetworkErrors);
                 }
             }
             catch (MqttCommunicationTimedOutException ex) when (!cancellationToken.IsCancellationRequested)
             {
                 // This execption may be thrown even if cancellation has not been requested yet.
                 // This case is treated as a timeout error rather than an OperationCanceledException
-                throw new IotHubClientException(UnsubscriptionTimedOutErrorMessage, IotHubStatusCode.Timeout, ex);
+                throw new IotHubClientException(UnsubscriptionTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
             }
             catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
             {

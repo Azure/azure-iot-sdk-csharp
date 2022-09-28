@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // assert
                 var error = await act.Should().ThrowAsync<IotHubServiceException>();
                 error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
                 error.And.IsTransient.Should().BeFalse();
             }
             finally
@@ -300,9 +300,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
                 // AmqpErrorCode doesn't provide specific codes (6 digits) for the error NotFound 404,
-                // as a result, we are mapping all of NotFound errors to IotHubStatusCode.DeviceNotFound for AMQP operations.
+                // as a result, we are mapping all of NotFound errors to IotHubServiceErrorCode.DeviceNotFound for AMQP operations.
                 // For more details of this error, see error message via IotHubServiceException.Message.
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
                 error.And.IsTransient.Should().BeFalse();
             }
             finally

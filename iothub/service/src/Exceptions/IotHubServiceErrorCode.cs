@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Error codes for common IoT hub response errors.
     /// </summary>
-    public enum IotHubErrorCode
+    public enum IotHubServiceErrorCode
     {
         /// <summary>
         /// Used when the error code returned by the hub is unrecognized. If encountered, please report the issue so it can be added here.

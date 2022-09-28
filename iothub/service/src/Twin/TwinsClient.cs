@@ -66,8 +66,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -113,8 +113,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="twinPatch">Twin with updated fields.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
         /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
@@ -171,8 +171,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="twinPatch">Twin with updated fields.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
         /// if the provided device/module identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
@@ -206,8 +206,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="twins">List of <see cref="Twin"/>s with updated fields.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
         /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
@@ -254,8 +254,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="InvalidOperationException">When a twin is missing an expected ETag.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="newTwin">New twin object to replace with.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
         /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
@@ -312,8 +312,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">When the provided <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="newTwin">New Twin object to replace with.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
         /// if the provided device/module identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
@@ -347,8 +347,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">When the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server

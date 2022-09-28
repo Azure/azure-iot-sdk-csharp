@@ -141,15 +141,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// if the client encounters a transient retryable exception. </exception>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception and should be retried,
-        /// but if <c>false</c> then it is a non-transient exception and should probably not be retried.</exception>
+        /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public async Task SendEventAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));

@@ -151,8 +151,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">If the provided <paramref name="deviceId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task SendAsync(string deviceId, Message message, CancellationToken cancellationToken = default)
         {
@@ -208,8 +208,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">If the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task SendAsync(string deviceId, string moduleId, Message message, CancellationToken cancellationToken = default)
         {
@@ -267,8 +267,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">If IoT hub responded to the request with a non-successful status code.
         /// For example, if the provided request was throttled, <see cref="IotHubServiceException"/> wit.
-        /// <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="HttpRequestException">If the HTTP request fails due to an underlying issue such as network connectivity,
         /// DNS failure, or server certificate validation.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
