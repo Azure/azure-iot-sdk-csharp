@@ -13,7 +13,6 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Azure.Core;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {

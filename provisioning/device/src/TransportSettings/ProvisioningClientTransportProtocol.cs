@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// The protocol over which a transport (i.e., MQTT, AMQP) communicates.
+    /// The protocol over which a transport (i.e., MQTT, AMQP, HTTP) communicates.
     /// </summary>
     public enum ProvisioningClientTransportProtocol
     {
@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Communicate over TCP using the default port of the transport.
         /// </summary>
         /// <remarks>
-        /// For MQTT, this this is 8883.
+        /// For MQTT, this is 8883.
         /// For AMQP, this is 5671.
         /// </remarks>
         Tcp,

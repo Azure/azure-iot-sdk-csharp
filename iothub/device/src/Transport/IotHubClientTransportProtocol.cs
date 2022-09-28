@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Communicate over TCP using the default port of the transport.
         /// </summary>
         /// <remarks>
-        /// For MQTT, this this is 8883.
+        /// For MQTT, this is 8883.
         /// For AMQP, this is 5671.
         /// </remarks>
         Tcp,

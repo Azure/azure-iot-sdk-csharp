@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
         /// </summary>
         /// <param name="options">The options for the connection and messages sent/received on the connection.</param>
-        public ProvisioningTransportHandlerAmqp(ProvisioningClientOptions options)
+        internal ProvisioningTransportHandlerAmqp(ProvisioningClientOptions options)
         {
             _options = options;
             _settings = (ProvisioningClientAmqpSettings)options.TransportSettings;

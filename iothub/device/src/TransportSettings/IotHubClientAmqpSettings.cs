@@ -14,11 +14,6 @@ namespace Microsoft.Azure.Devices.Client
         private TimeSpan _operationTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// The default pre-fetch count.
-        /// </summary>
-        public const uint DefaultPrefetchCount = 50;
-
-        /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
@@ -68,12 +63,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The pre-fetch count
         /// </summary>
-        public uint PrefetchCount { get; set; } = DefaultPrefetchCount;
+        public uint PrefetchCount { get; set; } = 50;
 
         /// <summary>
         /// A callback for remote certificate validation.
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
         /// </summary>
+        /// <remarks>
+        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
+        /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>

@@ -7,15 +7,10 @@ using System.Net.Security;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Contains MQTT transport-specific settings for the device and module clients.
+    /// Contains MQTT transport-specific settings for a provisioning device client.
     /// </summary>
     public class ProvisioningClientMqttSettings : ProvisioningClientTransportSettings
     {
-        private const bool DefaultCleanSession = false;
-        private readonly TimeSpan DefaultKeepAlive = TimeSpan.FromMinutes(2);
-        private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
-        private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -23,33 +18,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol transportProtocol = ProvisioningClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            CleanSession = DefaultCleanSession;
-            IdleTimeout = DefaultKeepAlive;
-            PublishToServerQoS = DefaultPublishToServerQoS;
-            ReceivingQoS = DefaultReceivingQoS;
         }
 
         /// <summary>
         /// The QoS to be used when sending packets to service.
-        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
         /// </summary>
-        public QualityOfService PublishToServerQoS { get; set; }
+        /// <remarks>
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </remarks>
+        public QualityOfService PublishToServerQoS { get; set; } = QualityOfService.AtLeastOnce;
 
         /// <summary>
         /// The QoS to be used when subscribing to receive packets from the service.
-        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
-        /// </summary>
-        public QualityOfService ReceivingQoS { get; set; }
-
-        /// <summary>
-        /// Flag to specify if a subscription should persist across different sessions. The default value is false.
         /// </summary>
         /// <remarks>
-        /// <para>If set to false: the device will receive messages that were sent to it while it was disconnected.</para>
-        /// <para>If set to true: the device will receive only those messages that were sent to it
-        /// after it successfully subscribed to the device bound message topic.</para>
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
         /// </remarks>
-        public bool CleanSession { get; set; }
+        public QualityOfService ReceivingQoS { get; set; } = QualityOfService.AtLeastOnce;
 
         /// <summary>
         /// Specify client-side heartbeat interval.
@@ -69,8 +54,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         /// <summary>
         /// A callback for remote certificate validation.
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
         /// </summary>
+        /// <remarks>
+        /// If incorrectly implemented, your device may fail to connect to Device Provisioning Service
+        /// and/or be open to security vulnerabilities.
+        /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
     }
 }

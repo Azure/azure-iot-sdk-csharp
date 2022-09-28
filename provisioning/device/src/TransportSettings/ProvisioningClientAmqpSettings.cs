@@ -7,7 +7,7 @@ using System.Net.Security;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Contains AMQP transport-specific settings for the device and module clients.
+    /// Contains AMQP transport-specific settings for a provisioning device client.
     /// </summary>
     public sealed class ProvisioningClientAmqpSettings : ProvisioningClientTransportSettings
     {
@@ -44,8 +44,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         /// <summary>
         /// A callback for remote certificate validation.
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
         /// </summary>
+        /// <remarks>
+        /// If incorrectly implemented, your device may fail to connect to Device Provisioning Service
+        /// and/or be open to security vulnerabilities.
+        /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
     }
 }
