@@ -20,6 +20,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// </summary>
     internal class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
+        private const string Register = "iotdps-register";
+        private const string GetRegistration = "iotdps-get-registration";
+        private const string GetOperationStatus = "iotdps-get-operationstatus";
+        private const string Prefix = "iotdps-";
+        private const string OperationType = Prefix + "operation-type";
+        private const string OperationId = Prefix + "operation-id";
+        private const string Status = Prefix + "status";
+        private const string ForceRegistration = Prefix + "forceRegistration";
+
         // This polling interval is the default time between checking if the device has reached a terminal state in its registration process
         // DPS will generally send a retry-after header that overrides this default value though.
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
@@ -28,6 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private readonly ProvisioningClientOptions _options;
         private readonly ProvisioningClientAmqpSettings _settings;
+        private CancellationTokenSource _connectionLostCancellationToken;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
@@ -92,16 +102,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 string registrationId = message.Authentication.GetRegistrationId();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
-                using AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
+                using AmqpClientConnection connection = authStrategy.CreateConnection(
+                    builder.Uri,
+                    message.IdScope,
+                    OnConnectionClosed);
+
+                _connectionLostCancellationToken = new CancellationTokenSource();
 
                 await authStrategy.OpenConnectionAsync(connection, useWebSocket, _settings.Proxy, _settings.RemoteCertificateValidationCallback, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
+
+                // Link the user-supplied cancellation token with a cancellation token that is cancelled
+                // when the connection is lost so that all operations stop when either the user
+                // cancels the token or when the connection is lost.
+                _connectionLostCancellationToken = new CancellationTokenSource();
+                using CancellationTokenSource linkedCancellationToken =
+                    CancellationTokenSource.CreateLinkedTokenSource(
+                        cancellationToken,
+                        _connectionLostCancellationToken.Token);
 
                 await CreateLinksAsync(
                         connection,
                         linkEndpoint,
                         _options.UserAgentInfo.ToString(),
-                        cancellationToken)
+                        linkedCancellationToken.Token)
                     .ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -115,7 +139,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         connection,
                         correlationId,
                         deviceRegistration,
-                        cancellationToken)
+                        linkedCancellationToken.Token)
                     .ConfigureAwait(false);
 
                 // Poll with operationId until registration complete.
@@ -130,7 +154,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                     await Task.Delay(
                             operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval),
-                            cancellationToken)
+                            linkedCancellationToken.Token)
                         .ConfigureAwait(false);
 
                     try
@@ -139,7 +163,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 connection,
                                 operationId,
                                 correlationId,
-                                cancellationToken)
+                                linkedCancellationToken.Token)
                             .ConfigureAwait(false);
                     }
                     catch (DeviceProvisioningClientException e) when (e.IsTransient)
@@ -159,6 +183,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 return operation.RegistrationState;
             }
+            catch (OperationCanceledException) when (_connectionLostCancellationToken.IsCancellationRequested)
+            {
+                // _connectionLostCancellationToken is cancelled when the connection is lost. This acts as
+                // a signal to stop waiting on any service response and to throw the below exception up to the user
+                // so they can retry.
+
+                // Deliberately not including the caught exception as this exception's inner exception because
+                // if the user sees an OperationCancelledException in the thrown exception, they may think they cancelled
+                // the operation even though they didn't.
+                throw new DeviceProvisioningClientException($"AMQP connection was lost during provisioning.", true);
+
+                // If it was the user's cancellation token that requested cancellation, then this catch block
+                // won't execute and the OperationCanceledException will be thrown as expected.
+            }
             catch (Exception ex) when (ex is not DeviceProvisioningClientException)
             {
                 if (Logging.IsEnabled)
@@ -168,6 +206,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             finally
             {
+                _connectionLostCancellationToken.Dispose();
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
             }
@@ -214,8 +254,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 }
 
                 amqpMessage.Properties.CorrelationId = correlationId;
-                amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] = DeviceOperations.Register;
-                amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.ForceRegistration] = false;
+                amqpMessage.ApplicationProperties.Map[OperationType] = Register;
+                amqpMessage.ApplicationProperties.Map[ForceRegistration] = false;
 
                 Outcome outcome = await client.AmqpSession.SendingLink
                     .SendMessageAsync(
@@ -249,11 +289,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string correlationId,
             CancellationToken cancellationToken)
         {
-            using var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = DeviceOperations.GetOperationStatus });
+            using var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = GetOperationStatus });
 
             amqpMessage.Properties.CorrelationId = correlationId;
-            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] = DeviceOperations.GetOperationStatus;
-            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationId] = operationId;
+            amqpMessage.ApplicationProperties.Map[OperationType] = GetOperationStatus;
+            amqpMessage.ApplicationProperties.Map[OperationId] = operationId;
 
             Outcome outcome = await client.AmqpSession.SendingLink
                 .SendMessageAsync(
@@ -316,6 +356,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         false);
                 }
             }
+        }
+
+        private void OnConnectionClosed()
+        {
+            if (Logging.IsEnabled)
+                Logging.Error(this, $"AMQP connection was lost.");
+
+            _connectionLostCancellationToken.Cancel();
         }
     }
 }

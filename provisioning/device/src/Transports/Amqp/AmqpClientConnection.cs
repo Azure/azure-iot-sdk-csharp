@@ -22,10 +22,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private bool _isDisposed;
 
-        internal AmqpClientConnection(Uri uri, AmqpSettings amqpSettings)
+        private Action _onConnectionClosed;
+
+        internal AmqpClientConnection(Uri uri, AmqpSettings amqpSettings, Action OnConnectionClosed)
         {
             _uri = uri;
             _amqpSettings = amqpSettings;
+            _onConnectionClosed = OnConnectionClosed;
 
             AmqpConnectionSettings = new AmqpConnectionSettings
             {
@@ -41,8 +44,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public TlsTransportSettings TransportSettings { get; private set; }
 
         public AmqpClientSession AmqpSession { get; private set; }
-
-        public bool IsConnectionClosed { get; private set; }
 
         private TaskCompletionSource<TransportBase> _tcs;
 
@@ -121,7 +122,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             AmqpConnection = new AmqpConnection(_transport, _amqpSettings, AmqpConnectionSettings);
             AmqpConnection.Closed += OnConnectionClosed;
             await AmqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-            IsConnectionClosed = false;
         }
 
         public async Task CloseAsync(CancellationToken cancellationToken)
@@ -151,7 +151,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private void OnConnectionClosed(object o, EventArgs args)
         {
-            IsConnectionClosed = true;
+            if (Logging.IsEnabled)
+                Logging.Error(this, $"AMQP connection was lost.");
+
+            _onConnectionClosed.Invoke();
         }
 
         private async Task<TransportBase> CreateClientWebSocketTransportAsync(IWebProxy proxy, CancellationToken cancellationToken)
