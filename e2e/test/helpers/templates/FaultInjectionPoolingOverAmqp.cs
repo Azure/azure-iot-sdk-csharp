@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 deviceClients.ForEach(x => x.Dispose());
                 await Task.WhenAll(testDevices.Select(x => x.RemoveDeviceAsync())).ConfigureAwait(false);
 
-                if (FaultInjection.FaultShouldDisconnect(faultType))
+                if (!FaultInjection.FaultShouldDisconnect(faultType))
                 {
                     faultInjectionDuration.Stop();
 
