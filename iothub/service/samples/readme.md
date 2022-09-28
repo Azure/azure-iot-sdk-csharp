@@ -9,6 +9,7 @@ This folder contains simple samples showing how to use the various features of M
 - [Edge deployment][edge-deployment-sample] sample
 - [Import export devices][import-export-sample] sample
 - [Import export devices with managed identity][import-export-with-managed-identity-sample] sample
+- [Invoke device method][d-invoke-device-method-sample] sample
 - [Jobs][jobs-sample] sample
 - [Registry manager][reg-man-sample] sample
 - [Service client][service-client-sample] sample
@@ -33,3 +34,4 @@ This folder contains simple samples showing how to use the various features of M
 [clean-up-devices-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/CleanupDevicesSample
 [import-export-with-managed-identity-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/ImportExportDevicesWithManagedIdentitySample
 [role-based-authentication-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/RoleBasedAuthenticationSample
+[d-invoke-device-method-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/InvokeDeviceMethod

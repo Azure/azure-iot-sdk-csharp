@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\samples\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
+    <ProjectReference Include="..\JobsSample\JobsSample.csproj" />
   </ItemGroup>
 
 </Project>
