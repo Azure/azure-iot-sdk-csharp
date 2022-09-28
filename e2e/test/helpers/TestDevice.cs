@@ -225,11 +225,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 disposableCert?.Dispose();
             }
             _authCertificate = null;
-
-            if (AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509Auth)
-            {
-                x509Auth?.Dispose();
-            }
             AuthenticationMethod = null;
         }
     }

@@ -161,8 +161,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     error.And.IsTransient.Should().BeTrue();
                 }
             }
-
-            x509Auth?.Dispose();
         }
 
         private async Task GetSasUriAsync(
@@ -206,8 +204,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     .ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
-
-            x509Auth?.Dispose();
         }
 
         private static async Task<string> GetTestFileNameAsync(int fileSize)

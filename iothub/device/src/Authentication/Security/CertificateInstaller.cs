@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal static class CertificateInstaller
     {
-        private static readonly object s_certOperationsLock = new object();
+        private static readonly object s_certOperationsLock = new();
 
         /// <summary>
         /// Ensures the specified certs (presumably in a chain) are installed in the cert store.
@@ -43,7 +43,8 @@ namespace Microsoft.Azure.Devices.Client
                                 false);
                             if (results.Count == 0)
                             {
-                                if (Logging.IsEnabled) Logging.Info(null, $"{nameof(CertificateInstaller)} adding cert with thumbprint {certificate.Thumbprint} to X509 store.");
+                                if (Logging.IsEnabled)
+                                    Logging.Info(null, $"{nameof(CertificateInstaller)} adding cert with thumbprint {certificate.Thumbprint} to X509 store.");
 
                                 store.Add(certificate);
                             }

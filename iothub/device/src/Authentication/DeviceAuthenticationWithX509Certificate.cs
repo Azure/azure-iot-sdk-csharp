@@ -9,17 +9,21 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a X.509 certificate
     /// </summary>
-    public sealed class DeviceAuthenticationWithX509Certificate : IAuthenticationMethod, IDisposable
+    public sealed class DeviceAuthenticationWithX509Certificate : IAuthenticationMethod
     {
         private string _deviceId;
 
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="certificate">X.509 Certificate.</param>
+        /// <remarks>
+        /// The <paramref name="certificate"/> managed resource should be disposed by the user.
+        /// This class doesn't dispose it since the user might want to reuse it.
+        /// </remarks>
+        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="certificate">X.509 certificate.</param>
         /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
-        /// <exception cref="ArgumentException"><paramref name="certificate"/> is null.</exception>
+        /// <exception cref="ArgumentException">When <paramref name="certificate"/> is null.</exception>
         public DeviceAuthenticationWithX509Certificate(
             string deviceId,
             X509Certificate2 certificate,
@@ -84,15 +88,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             _deviceId = deviceId;
-        }
-
-        /// <summary>
-        /// The <see cref="Certificate"/> managed resource should be disposed by the user.
-        /// This library intentionally does not dispose it here since the user might want to
-        /// reuse the certificate instance elsewhere for some other operation.
-        /// </summary>
-        public void Dispose()
-        {
         }
     }
 }
