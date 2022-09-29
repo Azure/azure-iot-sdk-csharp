@@ -428,6 +428,8 @@ jobs:
           inputs:
             packageType: sdk
             version: 3.1.x
+            performMultiLevelLookup: true
+            installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - ${{ if eq(variables['testNetcore21'], 'True') }}:
         - task: CmdLine@2

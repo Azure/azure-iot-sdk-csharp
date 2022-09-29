@@ -125,8 +125,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="propertyName">Name of the property to get</param>
         /// <returns>Value for the given property name</returns>
-        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
-            Justification = "AppCompat. Changing the exception to ArgumentException might break existing applications.")]
         public dynamic this[string propertyName]
         {
             get
