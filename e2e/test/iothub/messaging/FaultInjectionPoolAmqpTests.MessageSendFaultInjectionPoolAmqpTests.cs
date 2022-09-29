@@ -202,6 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_AuthenticationNoRecovery_MultipleConnections_Amqp()
         {
             // act
@@ -225,7 +226,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_IoTHubSak_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
+        [ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
         {
             // act
             Func<Task> act = async () =>

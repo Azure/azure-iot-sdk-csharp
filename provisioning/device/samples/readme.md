@@ -1,11 +1,13 @@
-Device provisioning samples were moved to [Azure-Samples/azure-iot-samples-csharp][samples-repo] repository
+## Provisioning Device Client Sample - Microsoft Azure IoT SDK for .NET
 
-### [Service provisioning samples][service-device-samples]
-* [ProvisioningDeviceClientTpm][tpm-sample]
-* [ProvisioningDeviceClientX509][x509-sample]
+### Device client provisioning samples
 
+* [Provisioning device client TPM][tpm-sample] sample
+* [Provisioning device client X.509][x509-sample] sample
+* [Provisioning device client symmetric key][symmetric-key-sample] sample
+* [Compute derived symmetric key][compute-derived-symmetric-key-sample] sample
 
-[samples-repo]: https://github.com/Azure-Samples/azure-iot-samples-csharp
-[service-device-samples]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/provisioning/Samples/device
-[x509-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/provisioning/Samples/device/X509Sample
-[tpm-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/provisioning/Samples/device/TpmSample
+[x509-sample]:https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/Getting%20Started/X509Sample
+[tpm-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/How%20To/TpmSample
+[symmetric-key-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/How%20To/SymmetricKeySample
+[compute-derived-symmetric-key-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/Getting%20Started/ComputeDerivedSymmetricKeySample

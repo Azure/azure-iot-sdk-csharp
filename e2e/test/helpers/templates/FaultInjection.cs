@@ -134,11 +134,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                if (initOperation != null)
-                {
-                    await initOperation(deviceClient, testDevice).ConfigureAwait(false);
-                }
-
+                await initOperation(deviceClient, testDevice).ConfigureAwait(false);
+                
                 int countBeforeFaultInjection = connectionStatusChangeCount;
                 logger.Trace($"{nameof(FaultInjection)} Testing fault handling");
                 faultInjectionDuration.Start();

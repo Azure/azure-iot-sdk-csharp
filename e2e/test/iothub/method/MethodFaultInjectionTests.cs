@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     reason,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDelay, // we want a quick one because we need time to recover
-                    InitAsync,
+                    InitOperationAsync,
                     TestOperationAsync,
                     CleanupAsync,
                     Logger)
