@@ -87,32 +87,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpTransportSettings_UnderOperationTimeoutMin()
-        {
-            _ = new IotHubClientAmqpSettings
-            {
-                OperationTimeout = TimeSpan.Zero,
-            };
-        }
-
-        [TestMethod]
-        public void AmqpTransportSettings_TimeoutPropertiesSet()
-        {
-            // arrange
-            var tenMinutes = TimeSpan.FromMinutes(10);
-
-            // act
-            var transportSetting = new IotHubClientAmqpSettings
-            {
-                OperationTimeout = tenMinutes,
-            };
-
-            // assert
-            transportSetting.OperationTimeout.Should().Be(tenMinutes);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void AmqpConnectionPoolSettings_UnderMinPoolSize()
         {
             _ = new AmqpConnectionPoolSettings { MaxPoolSize = 0 };

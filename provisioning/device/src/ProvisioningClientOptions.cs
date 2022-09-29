@@ -13,26 +13,46 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Creates an instances of this class with the default transport settings.
         /// </summary>
+        /// <remarks>
+        /// The default transport protocol is MQTT over TCP.
+        /// </remarks>
         public ProvisioningClientOptions()
+            : this(new ProvisioningClientMqttSettings())
         {
-            ProvisioningTransportHandler = new ProvisioningTransportHandlerMqtt();
         }
 
         /// <summary>
         /// Creates an instance of this class with the specified transport settings.
         /// </summary>
-        /// <param name="transportHandler">The transport settings to use (i.e., <see cref="ProvisioningTransportHandlerAmqp"/>,
+        /// <param name="transportSettings">The transport settings to use (i.e., <see cref="ProvisioningTransportHandlerAmqp"/>,
         /// <see cref="ProvisioningTransportHandlerMqtt"/>, or <see cref="ProvisioningTransportHandlerHttp"/>).</param>
-        /// <exception cref="ArgumentNullException">When <paramref name="transportHandler"/> is null.</exception>
-        public ProvisioningClientOptions(ProvisioningTransportHandler transportHandler)
+        /// <exception cref="ArgumentNullException">When <paramref name="transportSettings"/> is null.</exception>
+        public ProvisioningClientOptions(ProvisioningClientTransportSettings transportSettings)
         {
-            ProvisioningTransportHandler = transportHandler ?? throw new ArgumentNullException(nameof(transportHandler));
+            TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
+            if (transportSettings is not ProvisioningClientMqttSettings
+                && transportSettings is not ProvisioningClientAmqpSettings
+                && transportSettings is not ProvisioningClientHttpSettings)
+            {
+                throw new ArgumentException("Transport settings must be MQTT, AMQP, or HTTP.", nameof(transportSettings));
+            }
         }
 
         /// <summary>
-        /// The transport settings to use (i.e., <see cref="ProvisioningTransportHandlerAmqp"/>, <see cref="ProvisioningTransportHandlerMqtt"/>,
-        /// or <see cref="ProvisioningTransportHandlerHttp"/>).
+        /// The transport settings to use (i.e., <see cref="ProvisioningClientMqttSettings"/>,
+        /// <see cref="ProvisioningClientAmqpSettings"/>, or <see cref="ProvisioningClientHttpSettings"/>).
         /// </summary>
-        public ProvisioningTransportHandler ProvisioningTransportHandler { get; }
+        public ProvisioningClientTransportSettings TransportSettings { get; }
+
+        /// <summary>
+        /// Specifies additional information that will be appended to the user-agent string that is sent to IoT hub.
+        /// </summary>
+        public string AdditionalUserAgentInfo
+        {
+            get => UserAgentInfo.Extra;
+            set => UserAgentInfo.Extra = value;
+        }
+
+        internal virtual ProductInfo UserAgentInfo { get; } = new();
     }
 }

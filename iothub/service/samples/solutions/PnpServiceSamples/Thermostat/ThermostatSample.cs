@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Samples
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on device twin {_deviceId}." +
                     $"\nDevice returned status: {result.Status}. \nReport: {result.Payload}");
             }
-            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubErrorCode.DeviceNotFound)
+            catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotFound)
             {
                 _logger.LogWarning($"Unable to execute command {getMaxMinReportCommandName} on {_deviceId}." +
                     $"\nMake sure that the device sample Thermostat located in " +

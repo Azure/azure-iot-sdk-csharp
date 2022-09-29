@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
-        using Microsoft.Azure.Devices.Client.Transport;
+    using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
 
@@ -80,15 +80,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
-            await sut.SendEventAsync(new Message(new byte[0]), cancellationToken).ConfigureAwait(false);
+            await sut.SendEventAsync(new OutgoingMessage(new byte[0]), cancellationToken).ConfigureAwait(false);
 
             await innerHandler.Received(1).OpenAsync(cancellationToken).ConfigureAwait(false);
-            await innerHandler.Received(1).SendEventAsync(Arg.Any<Message>(), cancellationToken).ConfigureAwait(false);
+            await innerHandler.Received(1).SendEventAsync(Arg.Any<OutgoingMessage>(), cancellationToken).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private static async Task TestExceptionThrown(Type thrownExceptionType, Type expectedExceptionType)
         {
-            var message = new Message(new byte[0]);
+            var message = new OutgoingMessage(new byte[0]);
             var cancellationToken = new CancellationToken();
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
@@ -138,32 +138,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                 di => di.OpenAsync(Arg.Any<CancellationToken>()),
                 di => di.OpenAsync(cancellationToken),
                 di => di.Received(2).OpenAsync(Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            string lockToken = "lockToken";
-
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.CompleteMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.CompleteMessageAsync(lockToken, cancellationToken),
-                di => di.Received(2).CompleteMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.AbandonMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.AbandonMessageAsync(lockToken, cancellationToken),
-                di => di.Received(2).AbandonMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.RejectMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.RejectMessageAsync(lockToken, cancellationToken),
-                di => di.Received(2).RejectMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.ReceiveMessageAsync(Arg.Any<CancellationToken>()),
-                di => di.ReceiveMessageAsync(cancellationToken),
-                di => di.Received(2).ReceiveMessageAsync(Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
         }
 

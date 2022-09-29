@@ -10,8 +10,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// </summary>
     public class ProvisioningTransportRegisterRequest
     {
-        private readonly ProductInfo _productInfo = new();
-
         /// <summary>
         /// Creates a new instance of this class.
         /// </summary>
@@ -69,14 +67,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The custom content.
         /// </summary>
         public string Payload { get; }
-
-        /// <summary>
-        /// The product information sent to the Provisioning service. The application can specify extra information.
-        /// </summary>
-        public string ProductInfo
-        {
-            get => _productInfo.ToString();
-            set => _productInfo.Extra = value;
-        }
     }
 }

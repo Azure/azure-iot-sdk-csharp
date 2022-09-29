@@ -25,7 +25,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string _devicePrefix = $"{nameof(DigitalTwinClientE2ETests)}_";
         private static readonly string s_connectionString = TestConfiguration.IotHub.ConnectionString;
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
         {
             // Create a new test device instance.
@@ -74,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Set callback to handle root-level command invocation request.
                 int expectedCommandStatus = 200;
                 string commandName = "getMaxMinReport";
-                await deviceClient.SetMethodHandlerAsync(
+                await deviceClient.SetDirectMethodCallbackAsync(
                     (request) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
@@ -108,7 +109,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithComponentOperationsAsync()
         {
             // Create a new test device instance.
@@ -171,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 string rootCommandName = "reboot";
                 string componentCommandName = "getMaxMinReport";
                 string componentCommandNamePnp = $"{componentName}*{componentCommandName}";
-                await deviceClient.SetMethodHandlerAsync(
+                await deviceClient.SetDirectMethodCallbackAsync(
                     (request) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");

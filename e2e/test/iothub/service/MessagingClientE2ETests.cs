@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string DevicePrefix = $"{nameof(MessagingClientE2ETests)}_";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(OperationCanceledException))]
         [TestCategory("Flaky")]
         public async Task Message_TimeOutReachedResponse()
@@ -28,7 +29,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await FastTimeout().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_NoTimeoutPassed()
         {
             await DefaultTimeout().ConfigureAwait(false);
@@ -74,7 +76,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessagingClient_SendsMessage(IotHubTransportProtocol protocol)
@@ -94,7 +97,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await sender.Messages.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessagingClient_CanReopenClosedClient(IotHubTransportProtocol protocol)
@@ -118,7 +122,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await sender.Messages.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessagingClient_CanSendMultipleMessagesInOneConnection(IotHubTransportProtocol protocol)
@@ -145,7 +150,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultNotSet_SendEventDoesNotSetMessageId()
         {
             // arrange
@@ -173,7 +179,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultSetToNull_SendEventDoesNotSetMessageId()
         {
             // arrange
@@ -205,7 +212,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultSetToGuid_SendEventSetMessageIdIfNotSet()
         {
             // arrange
@@ -234,7 +242,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             messageWithId.MessageId.Should().Be(messageId);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessagingClient_SendToNonexistentDevice_ThrowIotHubServiceException(IotHubTransportProtocol protocol)
@@ -256,7 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // assert
                 var error = await act.Should().ThrowAsync<IotHubServiceException>();
                 error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
                 error.And.IsTransient.Should().BeFalse();
             }
             finally
@@ -265,7 +274,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessagingClient_SendToNonexistentModule_ThrowIotHubServiceException(IotHubTransportProtocol protocol)
@@ -290,9 +300,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
                 // AmqpErrorCode doesn't provide specific codes (6 digits) for the error NotFound 404,
-                // as a result, we are mapping all of NotFound errors to IotHubStatusCode.DeviceNotFound for AMQP operations.
+                // as a result, we are mapping all of NotFound errors to IotHubServiceErrorCode.DeviceNotFound for AMQP operations.
                 // For more details of this error, see error message via IotHubServiceException.Message.
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
                 error.And.IsTransient.Should().BeFalse();
             }
             finally

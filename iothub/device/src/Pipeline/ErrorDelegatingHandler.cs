@@ -38,11 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(cancellationToken));
         }
 
-        public override Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.ReceiveMessageAsync(cancellationToken));
-        }
-
         public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.EnableReceiveMessageAsync(cancellationToken));
@@ -83,27 +78,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken));
         }
 
-        public override Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.AbandonMessageAsync(lockToken, cancellationToken));
-        }
-
-        public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.CompleteMessageAsync(lockToken, cancellationToken));
-        }
-
-        public override Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.RejectMessageAsync(lockToken, cancellationToken));
-        }
-
-        public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(messages, cancellationToken));
         }
 
-        public override Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(message, cancellationToken));
         }
@@ -174,13 +154,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw new AuthenticationException("TLS authentication error.", innerException);
                     }
                     // For historic reasons, part of the Error handling is done within the transport handlers.
-                    else if (ex is IotHubClientException hubEx && hubEx.StatusCode is IotHubStatusCode.NetworkErrors)
+                    else if (ex is IotHubClientException hubEx && hubEx.ErrorCode is IotHubClientErrorCode.NetworkErrors)
                     {
                         throw;
                     }
                     else if (IsNetworkExceptionChain(ex))
                     {
-                        throw new IotHubClientException("Transient network error occurred, please retry.", IotHubStatusCode.NetworkErrors, ex);
+                        throw new IotHubClientException("Transient network error occurred, please retry.", IotHubClientErrorCode.NetworkErrors, ex);
                     }
                     else
                     {

@@ -5,7 +5,7 @@ using CommandLine;
 using Microsoft.Azure.Devices;
 using System;
 
-namespace InvokeDeviceMethod
+namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
 {
     /// <summary>
     /// Command line parameters for the InvokeDeviceMethod sample

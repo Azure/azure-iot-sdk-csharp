@@ -24,7 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _devicePrefix = $"{nameof(TokenCredentialAuthenticationTests)}_";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -44,7 +45,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -81,7 +83,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -116,7 +119,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_TokenCredentialAuth_Success()
         {
             // arrange
@@ -133,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
             error.And.IsTransient.Should().BeFalse();
 
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);

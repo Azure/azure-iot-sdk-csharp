@@ -17,16 +17,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         public event EventHandler Closed;
 
         private readonly ReceivingAmqpLink _receivingAmqpLink;
+        private readonly PayloadConvention _payloadConvention;
 
-        private Action<Message> _onEventsReceived;
-        private Action<Message> _onDeviceMessageReceived;
+        private Func<IncomingMessage, ArraySegment<byte>, Task> _onEventsReceived;
+        private Func<IncomingMessage, ArraySegment<byte>, Task> _onDeviceMessageReceived;
         private Action<DirectMethodRequest> _onMethodReceived;
         private Action<Twin, string, TwinCollection, IotHubClientException> _onTwinMessageReceived;
 
-        public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink)
+        public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink, PayloadConvention payloadConvention)
         {
             _receivingAmqpLink = receivingAmqpLink;
             _receivingAmqpLink.Closed += ReceivingAmqpLinkClosed;
+
+            _payloadConvention = payloadConvention;
         }
 
         private void ReceivingAmqpLinkClosed(object sender, EventArgs e)
@@ -57,51 +60,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Receive Message
 
-        internal async Task<Message> ReceiveAmqpMessageAsync(CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(ReceiveAmqpMessageAsync));
-
-            try
-            {
-                AmqpMessage amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                Message message = null;
-                if (amqpMessage != null)
-                {
-                    message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
-                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
-                }
-                return message;
-            }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
-            {
-                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, _receivingAmqpLink);
-                if (ReferenceEquals(ex, iotEx))
-                {
-                    throw;
-                }
-
-                if (iotEx is IotHubClientException hubEx && hubEx.InnerException is AmqpException)
-                {
-                    _receivingAmqpLink.SafeClose();
-                    throw iotEx;
-                }
-
-                throw iotEx;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(ReceiveAmqpMessageAsync));
-            }
-        }
-
-        internal async Task<AmqpIotOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> DisposeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
 
-            ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
             Outcome disposeOutcome =
                 await _receivingAmqpLink.DisposeMessageAsync(
                     deliveryTag,
@@ -130,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new ArraySegment<byte>(lockTokenGuid.ToByteArray());
         }
 
-        internal void RegisterReceiveMessageListener(Action<Message> onDeviceMessageReceived)
+        internal void RegisterReceiveMessageListener(Func<IncomingMessage, ArraySegment<byte>, Task> onDeviceMessageReceived)
         {
             _onDeviceMessageReceived = onDeviceMessageReceived;
             _receivingAmqpLink.RegisterMessageListener(OnDeviceMessageReceived);
@@ -147,13 +110,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                Message message = null;
+                IncomingMessage message = null;
                 if (amqpMessage != null)
                 {
-                    message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
-                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                    message = AmqpIotMessageConverter.AmqpMessageToIncomingMessage(amqpMessage, _payloadConvention);
                 }
-                _onDeviceMessageReceived?.Invoke(message);
+                _onDeviceMessageReceived?.Invoke(message, amqpMessage.DeliveryTag);
             }
             finally
             {
@@ -166,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region EventHandling
 
-        internal void RegisterEventListener(Action<Message> onEventsReceived)
+        internal void RegisterEventListener(Func<IncomingMessage, ArraySegment<byte>, Task> onEventsReceived)
         {
             _onEventsReceived = onEventsReceived;
             _receivingAmqpLink.RegisterMessageListener(OnEventsReceived);
@@ -183,9 +145,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                Message message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
-                message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
-                _onEventsReceived?.Invoke(message);
+                IncomingMessage message = AmqpIotMessageConverter.AmqpMessageToIncomingMessage(amqpMessage, _payloadConvention);
+                _onEventsReceived?.Invoke(message, amqpMessage.DeliveryTag);
             }
             finally
             {

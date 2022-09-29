@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync()
         {
-            using var cts = _maxRunTime.HasValue
+            using CancellationTokenSource cts = _maxRunTime.HasValue
                 ? new CancellationTokenSource(_maxRunTime.Value)
                 : new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
@@ -37,12 +37,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
             Console.WriteLine($"{DateTime.Now}> Press Control+C at any time to quit the sample.");
 
+            await _deviceClient.OpenAsync(cts.Token);
+
             // Now subscribe to receive C2D messages through a callback (which isn't supported over HTTP).
-            await _deviceClient.SetMessageHandlerAsync(OnC2dMessageReceivedAsync);
+            await _deviceClient.SetMessageCallbackAsync(OnC2dMessageReceivedAsync);
             Console.WriteLine($"\n{DateTime.Now}> Subscribed to receive C2D messages over callback.");
 
             // Now wait to receive C2D messages through the callback.
-            // Since you are subscribed to receive messages through the callback, any call to the polling ReceiveAsync() API will now return "null".
             Console.WriteLine($"\n{DateTime.Now}> Device waiting for C2D messages from the hub...");
             Console.WriteLine($"{DateTime.Now}> Use the Azure Portal IoT Hub blade or Azure IoT Explorer to send a message to this device.");
 
@@ -56,10 +57,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // Now unsubscibe from receiving the callback.
-            await _deviceClient.SetMessageHandlerAsync(null);
+            await _deviceClient.SetMessageCallbackAsync(null);
         }
 
-        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(Message receivedMessage)
+        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(IncomingMessage receivedMessage)
         {
             Console.WriteLine($"{DateTime.Now}> C2D message callback - message received with Id={receivedMessage.MessageId}.");
             PrintMessage(receivedMessage);
@@ -68,20 +69,28 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.FromResult(MessageAcknowledgement.Complete);
         }
 
-        private static void PrintMessage(Message receivedMessage)
+        private static void PrintMessage(IncomingMessage receivedMessage)
         {
-            string messageData = Encoding.ASCII.GetString(receivedMessage.Payload);
-            var formattedMessage = new StringBuilder($"Received message: [{messageData}]\n");
+            bool messageDeserialized = receivedMessage.TryGetPayload(out string messageData);
 
-            // User set application properties can be retrieved from the Message.Properties dictionary.
-            foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
+            if (messageDeserialized)
             {
-                formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
-            }
-            // System properties can be accessed using their respective accessors, e.g. DeliveryCount.
-            formattedMessage.AppendLine($"\tDelivery count: {receivedMessage.DeliveryCount}");
+                var formattedMessage = new StringBuilder($"Received message: [{messageData}]\n");
 
-            Console.WriteLine($"{DateTime.Now}> {formattedMessage}");
+                // User set application properties can be retrieved from the Message.Properties dictionary.
+                foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
+                {
+                    formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
+                }
+                // System properties can be accessed using their respective accessors, e.g. DeliveryCount.
+                formattedMessage.AppendLine($"\tDelivery count: {receivedMessage.DeliveryCount}");
+
+                Console.WriteLine($"{DateTime.Now}> {formattedMessage}");
+            }
+            else
+            {
+                Console.WriteLine($"Could not deserialize the received message. Please check your serializer settings.");
+            }
         }
     }
 }

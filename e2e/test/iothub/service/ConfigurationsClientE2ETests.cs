@@ -22,7 +22,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _idPrefix = $"{nameof(ConfigurationsClientE2ETests)}_";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationOperations_Work()
         {
             // arrange
@@ -90,7 +91,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_SetETag_Works()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -118,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Func<Task> act = async () => await serviceClient.Configurations.SetAsync(configuration, true).ConfigureAwait(false);
                 var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
                 error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
                 error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
@@ -142,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
                 }
                 catch (IotHubServiceException ex)
-                    when (ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
+                    when (ex.ErrorCode is IotHubServiceErrorCode.DeviceNotFound)
                 {
                     // configuration was already deleted during the normal test flow
                 }
@@ -153,7 +155,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_DeleteETag_Works()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -182,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Func<Task> act = async () => await serviceClient.Configurations.DeleteAsync(configuration, true).ConfigureAwait(false);
                 var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
                 error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
                 error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
@@ -201,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
                 }
                 catch (IotHubServiceException ex)
-                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
+                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubServiceErrorCode.DeviceNotFound)
                 {
                     // configuration was already deleted during the normal test flow
                 }

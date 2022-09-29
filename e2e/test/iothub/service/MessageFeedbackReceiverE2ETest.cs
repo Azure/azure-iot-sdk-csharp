@@ -23,7 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessageFeedbackReceiver_Operation(IotHubTransportProtocol protocol)
@@ -65,12 +66,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 var c2dMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Func<Client.Message, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message) =>
+                Func<IncomingMessage, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message) =>
                 {
                     c2dMessageReceived.TrySetResult(true);
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 };
-                await deviceClient.SetMessageHandlerAsync(OnC2DMessageReceived).ConfigureAwait(false);
+                await deviceClient.SetMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
                 await Task
                     .WhenAny(

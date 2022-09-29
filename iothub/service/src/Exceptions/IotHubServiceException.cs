@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="IotHubErrorCode"/>, 
+        /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="IotHubServiceErrorCode"/>, 
         /// error message, a flag indicating if the error was transient, an optional tracking id and an optional reference
         /// to the inner exception that caused this exception.
         /// </summary>
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices
         public IotHubServiceException(
             string message,
             HttpStatusCode statusCode,
-            IotHubErrorCode errorCode,
+            IotHubServiceErrorCode errorCode,
             string trackingId = null,
             Exception innerException = null)
             : base(message, innerException)
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices
         /// The specific error code in the IoT hub service response, if available.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/rest/api/iothub/common-error-codes"/>.
-        public IotHubErrorCode ErrorCode { get; set; }
+        public IotHubServiceErrorCode ErrorCode { get; set; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.
@@ -84,18 +84,18 @@ namespace Microsoft.Azure.Devices
             info.AddValue(TrackingIdSerializationStoreName, TrackingId);
         }
 
-        private bool DetermineIfTransient(HttpStatusCode statusCode, IotHubErrorCode errorCode)
+        private bool DetermineIfTransient(HttpStatusCode statusCode, IotHubServiceErrorCode errorCode)
         {
             switch (errorCode)
             {
-                case IotHubErrorCode.IotHubQuotaExceeded:
-                case IotHubErrorCode.DeviceNotOnline:
-                case IotHubErrorCode.ThrottlingException:
-                case IotHubErrorCode.ServerError:
-                case IotHubErrorCode.ServiceUnavailable:
+                case IotHubServiceErrorCode.IotHubQuotaExceeded:
+                case IotHubServiceErrorCode.DeviceNotOnline:
+                case IotHubServiceErrorCode.ThrottlingException:
+                case IotHubServiceErrorCode.ServerError:
+                case IotHubServiceErrorCode.ServiceUnavailable:
                     return true;
 
-                case IotHubErrorCode.Unknown:
+                case IotHubServiceErrorCode.Unknown:
                     return statusCode == HttpStatusCode.RequestTimeout;
 
                 default:

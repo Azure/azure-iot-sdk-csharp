@@ -72,12 +72,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler.WaitForTransportClosedAsync();
         }
 
-        public virtual Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler.ReceiveMessageAsync(cancellationToken);
-        }
-
         public virtual Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -90,31 +84,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler.DisableReceiveMessageAsync(cancellationToken);
         }
 
-        public virtual Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.CompleteMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
-        }
-
-        public virtual Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.AbandonMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
-        }
-
-        public virtual Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.RejectMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
-        }
-
-        public virtual Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public virtual Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return NextHandler?.SendEventAsync(message, cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public virtual Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return NextHandler?.SendEventAsync(messages, cancellationToken) ?? Task.CompletedTask;

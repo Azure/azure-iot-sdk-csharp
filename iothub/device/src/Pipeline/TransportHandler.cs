@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task WaitForTransportClosedAsync()
         {
-            _transportShouldRetry = new TaskCompletionSource<bool>();
+            _transportShouldRetry = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             return _transportShouldRetry.Task;
         }
 

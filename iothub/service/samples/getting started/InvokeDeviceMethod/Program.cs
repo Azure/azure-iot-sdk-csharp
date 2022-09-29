@@ -7,9 +7,8 @@
 using System;
 using System.Threading.Tasks;
 using CommandLine;
-using Microsoft.Azure.Devices;
 
-namespace InvokeDeviceMethod
+namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
 {
     /// <summary>
     /// This sample illustrates the very basics of a service app invoking a method on a device.
@@ -30,30 +29,38 @@ namespace InvokeDeviceMethod
             Parameters.ValidateConnectionString(parameters.HubConnectionString);
 
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
-            using var serviceClient = ServiceClient.CreateFromConnectionString(parameters.HubConnectionString);
+            using var serviceClient = new IotHubServiceClient(parameters.HubConnectionString);
 
-            await InvokeMethodAsync(parameters.DeviceId);
+            await InvokeMethodAsync(serviceClient, parameters.DeviceId);
 
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
         }
 
         // Invoke the direct method on the device, passing the payload.
-        private static async Task InvokeMethodAsync(string deviceId)
+        private static async Task InvokeMethodAsync(IotHubServiceClient serviceClient, string deviceId)
         {
-            var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval")
+            var methodInvocation = new DirectMethodRequest
             {
+                MethodName = "SetTelemetryInterval",
                 ResponseTimeout = TimeSpan.FromSeconds(30),
+                Payload = "10",
             };
-            methodInvocation.SetPayloadJson("10");
 
             Console.WriteLine($"Invoking direct method for device: {deviceId}");
 
             // Invoke the direct method asynchronously and get the response from the simulated device.
-            CloudToDeviceMethodResult response = await s_serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
+            DirectMethodResponse response = await serviceClient.DirectMethods.InvokeAsync(deviceId, methodInvocation);
 
-            Console.WriteLine($"Response status: {response.Status}, payload:\n\t{response.GetPayloadAsJson()}");
-
+            // Only display payload to console if it prints something meaningful.
+            if (response.Payload is string)
+            {
+                Console.WriteLine($"Response status: {response.Status}, payload:\n\t{response.Payload}");
+            }
+            else
+            {
+                Console.WriteLine($"Response status: {response.Status}");
+            }
         }
     }
 }

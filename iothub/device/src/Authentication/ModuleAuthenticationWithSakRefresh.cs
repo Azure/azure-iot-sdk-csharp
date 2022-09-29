@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         ///<inheritdoc/>
         protected override Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
         {
-            var builder = new SharedAccessSignatureBuilder()
+            var builder = new SharedAccessSignatureBuilder
             {
                 Key = _sharedAccessKey,
                 TimeToLive = suggestedTimeToLive,

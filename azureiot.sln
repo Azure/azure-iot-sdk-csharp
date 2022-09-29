@@ -171,6 +171,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupCertificateVerificatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricKeySample", "provisioning\device\samples\How To\SymmetricKeySample\SymmetricKeySample.csproj", "{094C77B4-5921-439B-91CB-74555275C2B8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvokeDeviceMethod", "iothub\service\samples\getting started\InvokeDeviceMethod\InvokeDeviceMethod.csproj", "{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -356,6 +358,10 @@ Global
 		{094C77B4-5921-439B-91CB-74555275C2B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{094C77B4-5921-439B-91CB-74555275C2B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{094C77B4-5921-439B-91CB-74555275C2B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -429,6 +435,7 @@ Global
 		{ED719662-D4F8-4014-951F-418169AEB876} = {23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}
 		{4D529C9A-6644-4222-95C8-87EA17B8D37A} = {23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}
 		{094C77B4-5921-439B-91CB-74555275C2B8} = {8415821D-5A32-4CE7-8203-CF457229F2A9}
+		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

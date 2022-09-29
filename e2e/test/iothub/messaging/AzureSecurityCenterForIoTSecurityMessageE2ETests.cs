@@ -20,62 +20,70 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
             return TestSecurityMessageAsync(new IotHubClientAmqpSettings());
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_Amqp()
         {
             return TestSecurityMessageModuleAsync(new IotHubClientAmqpSettings());
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
         public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
             return TestSecurityMessageAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
             return TestSecurityMessageModuleAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
         {
             return TestSecurityMessageAsync(new IotHubClientMqttSettings());
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
         {
             return TestSecurityMessageModuleAsync(new IotHubClientMqttSettings());
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
             return TestSecurityMessageAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
             return TestSecurityMessageModuleAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        private Client.Message ComposeD2CSecurityTestMessage()
+        private OutgoingMessage ComposeD2CSecurityTestMessage()
         {
             string eventId = Guid.NewGuid().ToString();
             string p1Value = eventId;
             string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
+            var message = new OutgoingMessage(payload)
             {
                 Properties = { ["property1"] = p1Value }
             };
@@ -147,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Client.Message testMessage = ComposeD2CSecurityTestMessage();
+            OutgoingMessage testMessage = ComposeD2CSecurityTestMessage();
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
@@ -155,7 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             IotHubModuleClient moduleClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            Client.Message testMessage = ComposeD2CSecurityTestMessage();
+            OutgoingMessage testMessage = ComposeD2CSecurityTestMessage();
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 

@@ -34,29 +34,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region AmqpMessage <--> Message
 
-        public static Message AmqpMessageToMessage(AmqpMessage amqpMessage)
+        public static IncomingMessage AmqpMessageToIncomingMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
         {
             Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
             using var ms = new MemoryStream();
             amqpMessage.BodyStream.CopyTo(ms);
 
-            var message = new Message(ms.ToArray());
+            var message = new IncomingMessage(ms.ToArray())
+            {
+                PayloadConvention = payloadConvention,
+            };
+
             UpdateMessageHeaderAndProperties(amqpMessage, message);
             amqpMessage.Dispose();
 
             return message;
         }
 
-        public static AmqpMessage MessageToAmqpMessage(Message message)
+        public static AmqpMessage OutgoingMessageToAmqpMessage(OutgoingMessage message)
         {
             if (message == null)
             {
                 throw Fx.Exception.ArgumentNull(nameof(Message));
             }
 
-            AmqpMessage amqpMessage = message.HasPayload
-                ? AmqpMessage.Create(new MemoryStream(message.Payload), true)
+            AmqpMessage amqpMessage = message.Payload != null
+                ? AmqpMessage.Create(new MemoryStream(message.GetPayloadObjectBytes()), true)
                 : AmqpMessage.Create();
 
             UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);
@@ -67,10 +71,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the properties from the AMQP message to the Message instance.
         /// </summary>
-        public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, Message message)
+        public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, IncomingMessage message)
         {
             Fx.AssertAndThrow(amqpMessage.DeliveryTag != null, "AmqpMessage should always contain delivery tag.");
-            message.DeliveryTag = amqpMessage.DeliveryTag;
 
             SectionFlag sections = amqpMessage.Sections;
             if ((sections & SectionFlag.Properties) != 0)
@@ -103,11 +106,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
             {
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(LockTokenName, out string lockToken))
-                {
-                    message.LockToken = lockToken;
-                }
-
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(SequenceNumberName, out ulong sequenceNumber))
                 {
                     message.SequenceNumber = sequenceNumber;
@@ -126,16 +124,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(InputName, out string inputName))
                 {
                     message.InputName = inputName;
-                }
-
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.ConnectionDeviceId, out string connectionDeviceId))
-                {
-                    message.ConnectionDeviceId = connectionDeviceId;
-                }
-
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.ConnectionModuleId, out string connectionModuleId))
-                {
-                    message.ConnectionModuleId = connectionModuleId;
                 }
             }
 
@@ -174,14 +162,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the Message instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, Message data, bool copyUserProperties = true)
+        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, OutgoingMessage data, bool copyUserProperties = true)
         {
             amqpMessage.Properties.MessageId = data.MessageId;
-
-            if (data.To != null)
-            {
-                amqpMessage.Properties.To = data.To;
-            }
 
             if (!data.ExpiryTimeUtc.Equals(default))
             {

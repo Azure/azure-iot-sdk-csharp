@@ -24,7 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_Not_Exist_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -43,11 +44,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             //assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceNotFound);
             error.And.IsTransient.Should().BeFalse();
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_Bad_Credentials_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -67,18 +70,21 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
             await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientAmqpSettings(), TimeSpan.FromSeconds(20)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TokenRefreshTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TokenRefreshTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
@@ -87,7 +93,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientMqttSettings(), TimeSpan.FromSeconds(IoTHubServerTimeAllowanceSeconds + 60)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_TokenConnectionDoubleRelease_Ok()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -115,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             Logger.Trace($"{deviceId}: DeviceClient SendEventAsync.");
-            var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var testMessage = new OutgoingMessage("TestMessage");
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
             Logger.Trace($"{deviceId}: DeviceClient CloseAsync.");
@@ -124,7 +131,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // The easiest way to test that sas tokens expire with custom expiration time via the CreateFromConnectionString flow is
         // by initializing a DeviceClient instance over Mqtt (since sas token expiration over Mqtt is accompanied by a disconnect).
-        [LoggedTestMethod, Timeout(TokenRefreshTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TokenRefreshTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_CreateFromConnectionString_TokenIsRefreshed_Mqtt()
         {
@@ -140,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using IotHubDeviceClient deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, auth, options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
-            deviceClient.SetConnectionStatusChangeHandler((ConnectionStatusInfo connectionStatusInfo) =>
+            deviceClient.SetConnectionStatusChangeCallback((ConnectionStatusInfo connectionStatusInfo) =>
             {
                 ConnectionStatus status = connectionStatusInfo.Status;
                 ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
@@ -152,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             });
 
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+            var message = new OutgoingMessage("Hello");
 
             Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
             var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
@@ -196,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (transportSettings is IotHubClientMqttSettings
                 && transportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
-                deviceClient.SetConnectionStatusChangeHandler((ConnectionStatusInfo connectionStatusInfo) =>
+                deviceClient.SetConnectionStatusChangeCallback((ConnectionStatusInfo connectionStatusInfo) =>
                 {
                     ConnectionStatus status = connectionStatusInfo.Status;
                     ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
@@ -208,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 });
             }
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+            var message = new OutgoingMessage("Hello");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl.TotalSeconds * 10));
             try

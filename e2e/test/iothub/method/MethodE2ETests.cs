@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.ModuleNotFound);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.ModuleNotFound);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient
-                    .SetMethodHandlerAsync(
+                    .SetDirectMethodCallbackAsync(
                         (methodRequest) =>
                         {
                             methodRequest.MethodName.Should().Be(commandName);
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 // clean up
 
-                await deviceClient.SetMethodHandlerAsync(null).ConfigureAwait(false);
+                await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
             }
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotOnline);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotOnline);
             error.And.IsTransient.Should().BeTrue();
         }
 
@@ -338,10 +338,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
-                .SetMethodHandlerAsync(
+                .SetDirectMethodCallbackAsync(
                 (request) =>
                 {
                     // This test only verifies that unsubscripion works.
@@ -356,7 +356,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     })
                 .ConfigureAwait(false);
 
-            await deviceClient.SetMethodHandlerAsync(null).ConfigureAwait(false);
+            await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
 
             // Return the task that tells us we have received the callback.
             return methodCallReceived.Task;
@@ -364,10 +364,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         public static async Task<Task> SetDeviceReceiveMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
+            var methodCallReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
-                .SetMethodHandlerAsync(
+                .SetDirectMethodCallbackAsync(
                     (request) =>
                         {
                             logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
@@ -406,7 +406,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             var methodCallReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            await moduleClient.SetMethodHandlerAsync(
+            await moduleClient.SetDirectMethodCallbackAsync(
                 (request) =>
                 {
                     logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: ModuleClient method: {request.MethodName} {request.ResponseTimeout}.");

@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                                 cancellationToken)
                             .ConfigureAwait(false);
                     }
-                    catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.NetworkErrors)
+                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.NetworkErrors)
                     {
                         if (Logging.IsEnabled)
                         {

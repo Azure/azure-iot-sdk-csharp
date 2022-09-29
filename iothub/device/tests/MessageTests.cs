@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void SettingMessageAsSecurityMessageTest()
         {
-            var msg = new Message(Encoding.UTF8.GetBytes("security message test"));
+            var msg = new OutgoingMessage("security message test");
 
             msg.IsSecurityMessage.Should().BeFalse();
             msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId).Should().BeFalse();
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string propName2 = "test2";
             string propValue2 = "test_v_2";
             string originalMessageContent = "Original copy";
-            var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
+            var originalMessage = new OutgoingMessage(originalMessageContent)
             {
                 MessageId = messageId,
                 ContentEncoding = contentEncoding,
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             string clonedMessageContent = "Cloned version";
-            var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
+            var clonedMessage = originalMessage.CloneWithBody(clonedMessageContent);
 
             // assert
             clonedMessage.Properties.Count.Should().Be(2);
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             clonedMessage.MessageId.Should().Be(messageId, "Cloned message should have the original message's system properties.");
 
             clonedMessage.Payload.Should().NotBeEquivalentTo(originalMessage.Payload, "Cloned message was initialized with a different content body.");
-            Encoding.UTF8.GetString(clonedMessage.Payload).Should().Be(clonedMessageContent, $"Cloned message was initialized with \"{clonedMessageContent}\" as content body.");
+            clonedMessage.Payload.Should().BeEquivalentTo(clonedMessageContent, $"Cloned message was initialized with \"{clonedMessageContent}\" as content body.");
         }
 
         [TestMethod]
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string propValue1 = "test_v_1";
             string propName2 = "test2";
             string originalMessageContent = "Original copy";
-            var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
+            var originalMessage = new OutgoingMessage(originalMessageContent)
             {
                 ContentEncoding = contentEncoding,
                 ContentType = null,
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             string clonedMessageContent = "Cloned version";
-            var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
+            var clonedMessage = originalMessage.CloneWithBody(clonedMessageContent);
 
             // assert
             clonedMessage.Properties.Count.Should().Be(2);

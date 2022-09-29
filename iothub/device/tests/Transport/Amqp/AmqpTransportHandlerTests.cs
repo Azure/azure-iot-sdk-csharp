@@ -31,37 +31,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task AmqpTransportHandlerSendEventAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new OutgoingMessage(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task AmqpTransportHandlerSendEventAsyncMultipleMessagesTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<Message>(), token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransportHandlerReceiveAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveMessageAsync(token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransportHandlerCompleteAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteMessageAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransportHandlerAbandonAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().AbandonMessageAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransportHandlerRejectAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectMessageAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<OutgoingMessage>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]

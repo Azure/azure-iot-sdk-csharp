@@ -33,12 +33,14 @@ namespace X509DeviceCertWithChainSample
                     Environment.Exit(1);
                 });
 
-            var chainCerts = new X509Certificate2Collection();
-            chainCerts.Add(new X509Certificate2(parameters.RootCertPath));
-            chainCerts.Add(new X509Certificate2(parameters.Intermediate1CertPath));
-            chainCerts.Add(new X509Certificate2(parameters.Intermediate2CertPath));
+            var chainCerts = new X509Certificate2Collection
+            {
+                new X509Certificate2(parameters.RootCertPath),
+                new X509Certificate2(parameters.Intermediate1CertPath),
+                new X509Certificate2(parameters.Intermediate2CertPath)
+            };
             using var deviceCert = new X509Certificate2(parameters.DevicePfxPath, parameters.DevicePfxPassword);
-            using var auth = new DeviceAuthenticationWithX509Certificate(parameters.DeviceName, deviceCert, chainCerts);
+            var auth = new DeviceAuthenticationWithX509Certificate(parameters.DeviceName, deviceCert, chainCerts);
 
             var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
             using var deviceClient = new IotHubDeviceClient(

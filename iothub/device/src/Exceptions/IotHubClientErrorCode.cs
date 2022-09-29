@@ -4,9 +4,9 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The IoT Hub status code.
+    /// The IoT hub device/module client error code.
     /// </summary>
-    public enum IotHubStatusCode
+    public enum IotHubClientErrorCode
     {
         /// <summary>
         /// The request completed without exception.
@@ -75,6 +75,14 @@ namespace Microsoft.Azure.Devices.Client
         /// Retrying with exponential back-off could resolve this error. For information on the IoT hub quotas and throttling, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>.
         /// </remark>
         Throttled,
+
+        /// <summary>
+        /// The ETag in the request does not match the ETag of the existing resource.
+        /// </summary>
+        /// <remark>
+        /// The ETag is a mechanism for protecting against the race conditions of multiple clients updating the same resource and overwriting each other.
+        /// </remark>
+        PreconditionFailed,
 
         /// <summary>
         /// The attempt to send a message fails because the length of the message exceeds the maximum size allowed.

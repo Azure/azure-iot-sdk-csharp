@@ -30,7 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // the service makes it available for redelivery to other open receivers.
         private readonly AcknowledgementType _acknowledgementType = AcknowledgementType.Abandon;
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_Operation(IotHubTransportProtocol protocol)
@@ -57,7 +58,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_Operation_OpenCloseOpen(IotHubTransportProtocol protocol)
@@ -89,7 +91,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection(IotHubTransportProtocol protocol)

@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // -> Periodically send "temperature" over telemetry - on "Thermostat" components.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set - on "Thermostat" components.
 
-            _deviceClient.SetConnectionStatusChangeHandler(async (info) =>
+            _deviceClient.SetConnectionStatusChangeCallback(async (info) =>
             {
                 _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
             });
 
-            await _deviceClient.SetMethodHandlerAsync(OnDirectMethodAsync, cancellationToken);
+            await _deviceClient.SetDirectMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
 
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, cancellationToken);
@@ -384,7 +384,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 { workingSetName, workingSet },
             };
 
-            Message msg = PnpConvention.CreateMessage(telemetry);
+            OutgoingMessage msg = PnpConvention.CreateMessage(telemetry);
 
             await _deviceClient.SendEventAsync(msg, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
@@ -418,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string telemetryName = "temperature";
             double currentTemperature = _temperature[componentName];
-            Message msg = PnpConvention.CreateMessage(telemetryName, currentTemperature, componentName);
+            OutgoingMessage msg = PnpConvention.CreateMessage(telemetryName, currentTemperature, componentName);
 
             await _deviceClient.SendEventAsync(msg, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature} }} in °C.");

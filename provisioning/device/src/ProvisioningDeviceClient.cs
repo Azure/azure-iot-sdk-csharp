@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly string _idScope;
         private readonly AuthenticationProvider _authentication;
         private readonly ProvisioningClientOptions _options;
+        private readonly ProvisioningTransportHandler _provisioningTransportHandler;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -41,6 +42,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 options = new();
             }
 
+            if (options.TransportSettings is ProvisioningClientMqttSettings)
+            {
+                _provisioningTransportHandler = new ProvisioningTransportHandlerMqtt(options);
+            }
+            else if (options.TransportSettings is ProvisioningClientAmqpSettings)
+            {
+                _provisioningTransportHandler = new ProvisioningTransportHandlerAmqp(options);
+            }
+            else
+            {
+                _provisioningTransportHandler = new ProvisioningTransportHandlerHttp(options);
+            }
+
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _options = options;
@@ -49,11 +63,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             Logging.Associate(this, _authentication);
             Logging.Associate(this, _options);
         }
-
-        /// <summary>
-        /// Stores product information that will be appended to the user agent string that is sent to IoT hub.
-        /// </summary>
-        public string ProductInfo { get; set; }
 
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
@@ -80,12 +89,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
-            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData)
-            {
-                ProductInfo = ProductInfo,
-            };
+            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData);
 
-            return _options.ProvisioningTransportHandler.RegisterAsync(request, cancellationToken);
+            return _provisioningTransportHandler.RegisterAsync(request, cancellationToken);
         }
     }
 }

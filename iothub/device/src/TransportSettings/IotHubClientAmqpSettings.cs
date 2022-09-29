@@ -14,18 +14,12 @@ namespace Microsoft.Azure.Devices.Client
         private TimeSpan _operationTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// The default pre-fetch count.
-        /// </summary>
-        public const uint DefaultPrefetchCount = 50;
-
-        /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
         public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            DefaultReceiveTimeout = TimeSpan.FromMinutes(1);
         }
 
         /// <summary>
@@ -50,17 +44,6 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
-        /// The time to wait for any operation to complete. The default is 1 minute.
-        /// </summary>
-        public TimeSpan OperationTimeout
-        {
-            get => _operationTimeout;
-            set => _operationTimeout = value > TimeSpan.Zero
-                ? value
-                : throw new ArgumentOutOfRangeException(nameof(OperationTimeout), "Must be greather than zero.");
-        }
-
-        /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
@@ -69,12 +52,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The pre-fetch count
         /// </summary>
-        public uint PrefetchCount { get; set; } = DefaultPrefetchCount;
+        public uint PrefetchCount { get; set; } = 50;
 
         /// <summary>
         /// A callback for remote certificate validation.
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
         /// </summary>
+        /// <remarks>
+        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
+        /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>

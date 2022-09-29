@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
         }
 
-        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
         {
             try
             {
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
         {
             try
             {
@@ -132,30 +132,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, method, cancellationToken, nameof(SendMethodResponseAsync));
-            }
-        }
-
-        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(ReceiveMessageAsync));
-
-                return await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            return await base.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(ReceiveMessageAsync));
             }
         }
 
@@ -415,78 +391,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
-
-                await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
-            }
-        }
-
-        public override async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
-
-                await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
-            }
-        }
-
-        public override async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
-
-                await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                            await base.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
-            }
-        }
-
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
             // If this object has already been disposed, we will throw an exception indicating that.
@@ -661,7 +565,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // This is used to ensure that when NoRetry() policy is enabled, we should not be retrying.
-                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubClientException(true, IotHubStatusCode.NetworkErrors), out TimeSpan delay))
+                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubClientException(IotHubClientErrorCode.NetworkErrors), out TimeSpan delay))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
@@ -765,12 +669,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         status = ConnectionStatus.DisconnectedRetrying;
                     }
                 }
-                else if (hubException.StatusCode is IotHubStatusCode.Unauthorized)
+                else if (hubException.ErrorCode is IotHubClientErrorCode.Unauthorized)
                 {
                     reason = ConnectionStatusChangeReason.BadCredential;
                 }
-                else if (hubException.StatusCode is IotHubStatusCode.DeviceNotFound)
+                else if (hubException.ErrorCode is IotHubClientErrorCode.DeviceNotFound)
                 {
+                    // The change reason of DeviceDisabled represents that the device has been deleted or marked
+                    // as disabled in the IoT hub instance, which matches the error code of DeviceNotFound.
                     reason = ConnectionStatusChangeReason.DeviceDisabled;
                 }
             }

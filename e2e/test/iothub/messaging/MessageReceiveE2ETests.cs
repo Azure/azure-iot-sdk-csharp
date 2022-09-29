@@ -108,21 +108,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 logger.Trace($"Receiving messages for device {deviceId}.");
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
-                var c2dMessageReceived = new TaskCompletionSource<Client.Message>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Func<Client.Message, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message) =>
+                var c2dMessageReceived = new TaskCompletionSource<IncomingMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+                Func<IncomingMessage, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message) =>
                 {
                     c2dMessageReceived.TrySetResult(message);
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 };
-                await dc.SetMessageHandlerAsync(OnC2DMessageReceived).ConfigureAwait(false);
+                await dc.SetMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
-                Client.Message receivedMessage = await TaskCompletionSourceHelper.GetTaskCompletionSourceResultAsync(c2dMessageReceived, cts.Token).ConfigureAwait(false);
+                IncomingMessage receivedMessage = await TaskCompletionSourceHelper.GetTaskCompletionSourceResultAsync(c2dMessageReceived, cts.Token).ConfigureAwait(false);
 
                 receivedMessage.MessageId.Should().Be(message.MessageId, "Received message Id is not what was sent by service");
                 receivedMessage.UserId.Should().Be(message.UserId, "Received user Id is not what was sent by service");
                 receivedMessage.To.Should().Be(receivedMessageDestination, "Received message destination is not what was sent by service");
 
-                string messageData = Encoding.ASCII.GetString(receivedMessage.Payload);
+                bool messageDeserialized = receivedMessage.TryGetPayload(out string messageData);
+                messageDeserialized.Should().BeTrue();
+
                 logger.Trace($"{nameof(VerifyReceivedC2dMessageAsync)}: Received message: for {deviceId}: {messageData}");
                 if (Equals(payload, messageData))
                 {
@@ -247,7 +249,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var options = new IotHubClientOptions(transportSettings);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;
-            deviceClient.SetConnectionStatusChangeHandler(connectionStatusInfo =>
+            deviceClient.SetConnectionStatusChangeCallback(connectionStatusInfo =>
             {
                 if (connectionStatusInfo.Status == ConnectionStatus.Disconnected || connectionStatusInfo.Status == ConnectionStatus.DisconnectedRetrying)
                 {
@@ -264,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // This will make the client unsubscribe from the mqtt c2d topic/close the amqp c2d link. Neither event
             // should close the connection as a whole, though.
-            await deviceClient.SetMessageHandlerAsync(null).ConfigureAwait(false);
+            await deviceClient.SetMessageCallbackAsync(null).ConfigureAwait(false);
 
             await Task.Delay(1000).ConfigureAwait(false);
 

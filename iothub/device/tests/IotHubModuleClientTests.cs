@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -96,31 +97,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetMessageHandlerAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
+            await moduleClient.SetMessageCallbackAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_OnReceiveEventMessageCalled_NullMessageRequest()
-        {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            bool isMessageHandlerCalled = false;
-            await moduleClient
-                .SetMessageHandlerAsync(
-                    (message) =>
-                    {
-                        isMessageHandlerCalled = true;
-                        return Task.FromResult(MessageAcknowledgement.Complete);
-                    })
-                .ConfigureAwait(false);
-
-            await moduleClient.OnMessageReceivedAsync(null).ConfigureAwait(false);
-            Assert.IsFalse(isMessageHandlerCalled);
         }
 
         [TestMethod]
@@ -132,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             bool isDefaultCallbackCalled = false;
             await moduleClient
-                .SetMessageHandlerAsync(
+                .SetMessageCallbackAsync(
                     (message) =>
                     {
                         isDefaultCallbackCalled = true;
@@ -140,10 +120,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                     })
                 .ConfigureAwait(false);
 
-            var testMessage = new Message
+            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes("test message"))
             {
                 InputName = "endpoint1",
-                LockToken = "AnyLockToken",
             };
 
             await moduleClient.OnMessageReceivedAsync(testMessage).ConfigureAwait(false);

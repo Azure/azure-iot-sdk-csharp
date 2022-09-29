@@ -29,13 +29,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             Console.WriteLine($"Initializing the device provisioning client...");
 
-            using ProvisioningTransportHandler transport = _parameters.GetTransportHandler();
-            var options = new ProvisioningClientOptions(transport);
+            ProvisioningClientOptions clientOptions = _parameters.GetClientOptions();
             var provClient = new ProvisioningDeviceClient(
                 _parameters.GlobalDeviceEndpoint,
                 _parameters.IdScope,
                 security,
-                options);
+                clientOptions);
 
             Console.WriteLine($"Initialized for registration Id {security.GetRegistrationId()}.");
 
@@ -59,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
 
             Console.WriteLine("Sending a telemetry message...");
-            var message = new Devices.Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var message = new OutgoingMessage("TestMessage");
             await iotClient.SendEventAsync(message);
 
             await iotClient.CloseAsync();

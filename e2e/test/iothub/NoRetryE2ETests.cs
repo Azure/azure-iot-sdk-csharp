@@ -19,7 +19,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private static readonly string _devicePrefix = $"{nameof(NoRetryE2ETests)}_";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("FaultInjection")]
         public async Task FaultInjection_NoRetry_NoRecovery_OpenAsync()
         {
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient.SetRetryPolicy(new NoRetry());
 
             var connectionStatusChange = new Dictionary<ConnectionStatus, int>();
-            deviceClient.SetConnectionStatusChangeHandler((connectionStatusInfo) =>
+            deviceClient.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
             {
                 connectionStatusChange.TryGetValue(connectionStatusInfo.Status, out int count);
                 count++;
@@ -79,7 +80,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestCategory("E2E")]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task DuplicateDevice_NoRetry_NoPingpong_OpenAsync()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
@@ -94,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient1.SetRetryPolicy(new NoRetry());
 
             var connectionStatusChangeDevice1 = new Dictionary<ConnectionStatus, int>();
-            deviceClient1.SetConnectionStatusChangeHandler((connectionStatusInfo) =>
+            deviceClient1.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
             {
                 connectionStatusChangeDevice1.TryGetValue(connectionStatusInfo.Status, out int count);
                 count++;
@@ -102,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             });
 
             var connectionStatusChangeDevice2 = new Dictionary<ConnectionStatus, int>();
-            deviceClient2.SetConnectionStatusChangeHandler((connectionStatusInfo) =>
+            deviceClient2.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
             {
                 connectionStatusChangeDevice2.TryGetValue(connectionStatusInfo.Status, out int count);
                 count++;
@@ -114,14 +116,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             var response = new Client.DirectMethodResponse(200);
 
             await deviceClient1
-                .SetMethodHandlerAsync(
+                .SetDirectMethodCallbackAsync(
                     (methodRequest) => Task.FromResult(response))
                 .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 2 calling OpenAsync...");
             await deviceClient2.OpenAsync().ConfigureAwait(false);
             await deviceClient2
-                .SetMethodHandlerAsync(
+                .SetDirectMethodCallbackAsync(
                     (methodRequest) => Task.FromResult(response))
                 .ConfigureAwait(false);
 

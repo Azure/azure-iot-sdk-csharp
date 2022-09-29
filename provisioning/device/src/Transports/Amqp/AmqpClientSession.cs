@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             SendingLink = CreateLink();
             SendingLink.AmqpLinkSettings.SettleType = SettleMode.SettleOnDispose;
-            SendingLink.AmqpLinkSettings.Role = false;  // sending link
+            SendingLink.AmqpLinkSettings.Role = false; // sending link
             SendingLink.AmqpLinkSettings.Target = new Target
             {
                 Address = address
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             LinkCreated?.Invoke(this, new LinkCreatedEventArgs(args.Link));
         }
 
-        void OnSessionClosed(object o, EventArgs args)
+        private void OnSessionClosed(object o, EventArgs args)
         {
             _isSessionClosed = true;
         }

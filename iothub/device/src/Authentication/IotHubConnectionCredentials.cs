@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
 
             // We'll parse the connection string and use that to build an auth method
             IotHubConnectionString parsedConnectionString = IotHubConnectionStringParser.Parse(iotHubConnectionString);
-            AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethodFromConnectionString(parsedConnectionString);
+            AuthenticationMethod = GetAuthenticationMethodFromConnectionString(parsedConnectionString);
 
             PopulatePropertiesFromConnectionString(parsedConnectionString);
             SetAuthenticationModel();
@@ -378,10 +378,46 @@ namespace Microsoft.Azure.Devices.Client
                         if (Logging.IsEnabled)
                             Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
 
-                        throw new IotHubClientException($"Failed to provide certificates in the chain - {ex.Message}", IotHubStatusCode.Unauthorized, ex);
+                        throw new IotHubClientException($"Failed to provide certificates in the chain - {ex.Message}", IotHubClientErrorCode.Unauthorized, ex);
                     }
                 }
             }
+        }
+
+        private static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionString iotHubConnectionString)
+        {
+            if (iotHubConnectionString.SharedAccessKeyName != null)
+            {
+                return new DeviceAuthenticationWithSharedAccessPolicyKey(
+                    iotHubConnectionString.DeviceId,
+                    iotHubConnectionString.SharedAccessKeyName,
+                    iotHubConnectionString.SharedAccessKey);
+            }
+            else if (iotHubConnectionString.SharedAccessKey != null)
+            {
+                return iotHubConnectionString.ModuleId == null
+                    ? new DeviceAuthenticationWithRegistrySymmetricKey(
+                        iotHubConnectionString.DeviceId,
+                        iotHubConnectionString.SharedAccessKey)
+                    : new ModuleAuthenticationWithRegistrySymmetricKey(
+                        iotHubConnectionString.DeviceId,
+                        iotHubConnectionString.ModuleId,
+                        iotHubConnectionString.SharedAccessKey);
+            }
+            else if (iotHubConnectionString.SharedAccessSignature != null)
+            {
+                return iotHubConnectionString.ModuleId == null
+                    ? new DeviceAuthenticationWithToken(
+                        iotHubConnectionString.DeviceId,
+                        iotHubConnectionString.SharedAccessSignature)
+                    : new ModuleAuthenticationWithToken(
+                        iotHubConnectionString.DeviceId,
+                        iotHubConnectionString.ModuleId,
+                        iotHubConnectionString.SharedAccessSignature);
+            }
+
+            throw new ArgumentException($"Should specify either SharedAccessKey or SharedAccessSignature" +
+                $" if connection string is used for authenticating the client with IoT hub.");
         }
     }
 }

@@ -63,14 +63,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Telemetry handling
 
-        internal async Task<AmqpIotOutcome> SendMessageAsync(Message message, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendMessageAsync(OutgoingMessage message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(SendMessageAsync));
 
             // After this message is sent, we will return the outcome that has no references to the message
             // So it can safely be disposed.
-            using AmqpMessage amqpMessage = AmqpIotMessageConverter.MessageToAmqpMessage(message);
+            using AmqpMessage amqpMessage = AmqpIotMessageConverter.OutgoingMessageToAmqpMessage(message);
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(SendMessagesAsync));
@@ -89,9 +89,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             // List to hold messages in AMQP friendly format
             var messageList = new List<Data>(messages.Count());
 
-            foreach (Message message in messages)
+            foreach (OutgoingMessage message in messages)
             {
-                using AmqpMessage amqpMessage = AmqpIotMessageConverter.MessageToAmqpMessage(message);
+                using AmqpMessage amqpMessage = AmqpIotMessageConverter.OutgoingMessageToAmqpMessage(message);
                 var data = new Data
                 {
                     Value = AmqpIotMessageConverter.ReadStream(amqpMessage.ToStream()),

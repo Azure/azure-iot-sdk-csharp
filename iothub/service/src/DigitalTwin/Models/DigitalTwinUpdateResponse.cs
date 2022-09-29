@@ -13,9 +13,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="location">URI of the digital twin.</param>
-        internal DigitalTwinUpdateResponse(ETag eTag = default, string location = default)
+        protected internal DigitalTwinUpdateResponse(ETag eTag = default, string location = default)
         {
             ETag = eTag;
             Location = location;
