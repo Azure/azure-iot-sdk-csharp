@@ -1,7 +1,6 @@
 # Docker for WSL setup for local test
 
 ## Intro
-
 This script will setup docker images and run instances of these images to support E2E testing.
 
 See [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1) script for E2E test setup prerequisites.
