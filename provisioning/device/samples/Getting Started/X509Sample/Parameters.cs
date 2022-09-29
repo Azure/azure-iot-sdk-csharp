@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         public string CertificatePassword { get; set; }
 
         [Option(
+            'g',
             "GlobalDeviceEndpoint",
             Default = "global.azure-devices-provisioning.net",
             HelpText = "The global endpoint for devices to connect to.")]
