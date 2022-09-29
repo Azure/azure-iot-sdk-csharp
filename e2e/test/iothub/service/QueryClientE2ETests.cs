@@ -246,14 +246,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             try
             {
-                var scheduledTwinUpdate = new ScheduledTwinUpdate
-                {
-                    Twin = twinUpdate,
-                    QueryCondition = "DeviceId IN ['" + deviceId + "']",
-                    StartOnUtc = DateTimeOffset.UtcNow.AddMinutes(3),
-                };
-
-                await jobsClient.ScheduleTwinUpdateAsync(scheduledTwinUpdate);
+                await jobsClient.ScheduleTwinUpdateAsync(
+                    "DeviceId IN ['" + deviceId + "']",
+                    twinUpdate,
+                    DateTimeOffset.UtcNow.AddMinutes(3));
             }
             catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
             {

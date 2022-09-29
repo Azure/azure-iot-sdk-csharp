@@ -60,12 +60,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                var twinUpdate = new ScheduledTwinUpdate
-                {
-                    Twin = twin,
-                    QueryCondition = query,
-                    StartOnUtc = DateTimeOffset.UtcNow
-                };
                 var twinUpdateOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
@@ -73,7 +67,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 };
                 TwinScheduledJob scheduledJob = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
-                        twinUpdate,
+                        query,
+                        twin,
+                        DateTimeOffset.UtcNow,
                         twinUpdateOptions)
                     .ConfigureAwait(false);
             }
