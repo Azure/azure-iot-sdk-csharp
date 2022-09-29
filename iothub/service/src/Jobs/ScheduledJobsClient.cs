@@ -172,15 +172,15 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates a new job to run a device method on one or multiple devices.
         /// </summary>
-        /// <param name="scheduledDirectMethod">Required parameters for scheduled device method, i.e:
-        /// <paramref name="scheduledDirectMethod.CloudToDeviceMethod"/>, <paramref name="scheduledDirectMethod.QueryCondition"/>,
-        /// <paramref name="scheduledDirectMethod.StartTimeUtc"/>.</param>
+        /// <param name="queryCondition">Query condition to evaluate which devices the job applies to.</param>
+        /// <param name="directMethodRequest">Method call parameters.</param>
+        /// <param name="startOnUtc">When to start the job in UTC.</param>
         /// <param name="scheduledJobsOptions">Optional parameters for scheduled device method, i.e: <paramref name="scheduledJobsOptions.JobId"/>
         /// and <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/>.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>A job object.</returns>
-        /// <exception cref="ArgumentNullException">When the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledDirectMethod"/> or <paramref name="scheduledDirectMethod.queryCondition"/> or <paramref name="scheduledDirectMethod.cloudToDeviceMethod"/> or <paramref name="scheduledDirectMethod.startTimeUtc"/> or <paramref name="scheduledDirectMethod.maxExecutionTimeInSeconds"/> is null.</exception>
-        /// <exception cref="ArgumentException">If the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledDirectMethod.queryCondition"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="queryCondition"/> or <paramref name="startOnUtc"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="queryCondition"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
@@ -192,18 +192,19 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<ScheduledJob> ScheduleDirectMethodAsync(
-            ScheduledDirectMethod scheduledDirectMethod,
+            //ScheduledDirectMethod scheduledDirectMethod,
+            string queryCondition,
+            DirectMethodRequest directMethodRequest,
+            DateTime startOnUtc,
             ScheduledJobsOptions scheduledJobsOptions,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Scheduling direct method job: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
 
-            Argument.AssertNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
-
-            Argument.AssertNotNullOrWhiteSpace(scheduledDirectMethod.QueryCondition, $"{nameof(scheduledDirectMethod)}.{nameof(scheduledDirectMethod.QueryCondition)}");
-            Argument.AssertNotNull(scheduledDirectMethod.DirectMethodRequest, $"{nameof(scheduledDirectMethod)}.{nameof(scheduledDirectMethod.DirectMethodRequest)}");
-            Argument.AssertNotNull(scheduledDirectMethod.StartOnUtc, $"{nameof(scheduledDirectMethod)}.{nameof(scheduledDirectMethod.StartOnUtc)}");
+            Argument.AssertNotNullOrWhiteSpace(queryCondition, $"{nameof(queryCondition)}");
+            Argument.AssertNotNull(directMethodRequest, $"{nameof(directMethodRequest)}");
+            Argument.AssertNotNull(startOnUtc, $"{nameof(startOnUtc)}");
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -213,9 +214,9 @@ namespace Microsoft.Azure.Devices
                 {
                     JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions.JobId) ? Guid.NewGuid().ToString() : scheduledJobsOptions.JobId,
                     JobType = JobType.ScheduleDeviceMethod,
-                    DirectMethodRequest = scheduledDirectMethod.DirectMethodRequest,
-                    QueryCondition = scheduledDirectMethod.QueryCondition,
-                    StartOn = scheduledDirectMethod.StartOnUtc,
+                    DirectMethodRequest = directMethodRequest,
+                    QueryCondition = queryCondition,
+                    StartOn = startOnUtc,
                     MaxExecutionTime = scheduledJobsOptions.MaxExecutionTime,
                 };
 

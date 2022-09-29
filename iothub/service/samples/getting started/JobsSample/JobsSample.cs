@@ -45,13 +45,6 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
             {
                 Console.WriteLine($"Schedule twin job {jobId} for {DeviceId}...");
 
-                var scheduledTwinUpdate = new ScheduledTwinUpdate
-                {
-                    QueryCondition = query,
-                    Twin = twin,
-                    StartOnUtc = DateTime.UtcNow,
-                };
-
                 var jobOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
@@ -61,7 +54,9 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
 
                 ScheduledJob createJobResponse = await _jobClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
-                        scheduledTwinUpdate,
+                        query,
+                        twin,
+                        DateTime.UtcNow,
                         jobOptions);
 
                 Console.WriteLine("Schedule response");
