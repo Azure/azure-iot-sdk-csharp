@@ -135,8 +135,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     prop.Value.Should().Be(message.Properties[propertyKey], $"The value of \"property1\" did not match for device {deviceId}");
                     received = true;
                 }
-
-
             }
 
             sw.Stop();
