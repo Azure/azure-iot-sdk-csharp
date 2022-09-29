@@ -118,7 +118,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                         s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         s_deviceClient.SetConnectionStatusChangeCallback(ConnectionStatusChangeHandlerAsync);
-                        await s_deviceClient.SetMessageCallbackAsync(OnMessageReceivedAsync, cancellationToken);
                         _logger.LogDebug("Initialized the client instance.");
                     }
                 }
@@ -139,7 +138,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     cancellationToken: cancellationToken);
                 _logger.LogDebug($"The client instance has been opened.");
 
-                // You will need to subscribe to the client callbacks any time the client is initialized.
+                // You will need to resubscribe to any client callbacks any time the client is initialized.
+                await RetryOperationHelper.RetryTransientExceptionsAsync(
+                    operationName: "SubscribeTwinUpdates",
+                    asyncOperation: async () => await s_deviceClient.SetMessageCallbackAsync(OnMessageReceivedAsync, cancellationToken),
+                    shouldExecuteOperation: () => IsDeviceConnected,
+                    logger: _logger,
+                    exceptionsToBeIgnored: _exceptionsToBeIgnored,
+                    cancellationToken: cancellationToken);
+                _logger.LogDebug("The client has subscribed to cloud-to-device messages.");
+
                 await RetryOperationHelper.RetryTransientExceptionsAsync(
                     operationName: "SubscribeTwinUpdates",
                     asyncOperation: async () => await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(HandleTwinUpdateNotificationsAsync, cancellationToken),
