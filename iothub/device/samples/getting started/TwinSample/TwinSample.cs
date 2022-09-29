@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
