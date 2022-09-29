@@ -90,12 +90,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     TwinScheduledJob scheduledJob = await sc.ScheduledJobs
                         .ScheduleTwinUpdateAsync(
-                            new ScheduledTwinUpdate
-                            {
-                                QueryCondition = $"DeviceId IN ['{JobDeviceId}']",
-                                Twin = twin,
-                                StartOnUtc = DateTimeOffset.UtcNow,
-                            },
+                            $"DeviceId IN ['{JobDeviceId}']",
+                            twin,
+                            DateTimeOffset.UtcNow,
                             new ScheduledJobsOptions
                             {
                                 JobId = "JOBSAMPLE" + Guid.NewGuid().ToString(),
