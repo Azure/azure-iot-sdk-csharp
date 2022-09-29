@@ -192,10 +192,9 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<ScheduledJob> ScheduleDirectMethodAsync(
-            //ScheduledDirectMethod scheduledDirectMethod,
             string queryCondition,
             DirectMethodRequest directMethodRequest,
-            DateTime startOnUtc,
+            DateTimeOffset startOnUtc,
             ScheduledJobsOptions scheduledJobsOptions,
             CancellationToken cancellationToken = default)
         {
