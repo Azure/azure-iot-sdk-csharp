@@ -48,6 +48,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-	<PackageReference Include="Microsoft.TSS" Version="2.1.1" />  
+
+    <!--Commented out until we resolve plans for TPM support and library dependency-->
+    <!--<PackageReference Include="Microsoft.TSS" Version="2.1.1" />-->
   </ItemGroup>
 </Project>

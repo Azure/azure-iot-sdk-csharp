@@ -75,9 +75,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 switch (message.Authentication)
                 {
-                    case AuthenticationProviderTpm _:
-                        authStrategy = new HttpAuthStrategyTpm((AuthenticationProviderTpm)message.Authentication);
-                        break;
+                    // Commented out until we resolve plans for TPM support and library dependency
+                    //case AuthenticationProviderTpm _:
+                    //    authStrategy = new HttpAuthStrategyTpm((AuthenticationProviderTpm)message.Authentication);
+                    //    break;
 
                     case AuthenticationProviderX509 _:
                         authStrategy = new HttpAuthStrategyX509((AuthenticationProviderX509)message.Authentication);
@@ -92,7 +93,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                             Logging.Error(this, $"Invalid {nameof(AuthenticationProvider)} type.");
 
                         throw new NotSupportedException(
-                            $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderTpm)}, {nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
+                            $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
+                        // {nameof(AuthenticationProviderTpm)}, {n
                 }
 
                 Logging.Associate(authStrategy, this);

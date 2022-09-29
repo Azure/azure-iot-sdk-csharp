@@ -70,11 +70,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 AmqpAuthStrategy authStrategy;
 
-                if (message.Authentication is AuthenticationProviderTpm tpm)
-                {
-                    authStrategy = new AmqpAuthStrategyTpm(tpm);
-                }
-                else if (message.Authentication is AuthenticationProviderX509 x509)
+                // Commented out until we resolve plans for TPM support and library dependency
+                //if (message.Authentication is AuthenticationProviderTpm tpm)
+                //{
+                //    authStrategy = new AmqpAuthStrategyTpm(tpm);
+                //}
+                //else
+                if (message.Authentication is AuthenticationProviderX509 x509)
                 {
                     authStrategy = new AmqpAuthStrategyX509(x509);
                 }
@@ -85,8 +87,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 else
                 {
                     throw new NotSupportedException(
-                        $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderTpm)}, " +
+                        $"{nameof(message.Authentication)} must be of type " +
                         $"{nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
+                    // Commented out until we resolve plans for TPM support and library dependency
+                    // or {nameof(AuthenticationProviderTpm)}
                 }
 
                 if (Logging.IsEnabled)

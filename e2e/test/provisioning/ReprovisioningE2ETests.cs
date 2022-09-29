@@ -14,7 +14,6 @@ using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.Azure.Devices.E2ETests.Provisioning.ProvisioningE2ETests;
@@ -579,21 +578,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             switch (attestationType)
             {
-                case AttestationMechanismType.Tpm:
-                    IndividualEnrollment tpmEnrollment = await CreateIndividualEnrollmentAsync(
-                            provisioningServiceClient,
-                            registrationId,
-                            AttestationMechanismType.Tpm,
-                            null,
-                            reprovisionPolicy,
-                            allocationPolicy,
-                            customAllocationDefinition,
-                            iothubs,
-                            capabilities,
-                            Logger)
-                        .ConfigureAwait(false);
+                // Commented out until we resolve plans for TPM support and library dependency
+                //case AttestationMechanismType.Tpm:
+                //    IndividualEnrollment tpmEnrollment = await CreateIndividualEnrollmentAsync(
+                //            provisioningServiceClient,
+                //            registrationId,
+                //            AttestationMechanismType.Tpm,
+                //            null,
+                //            reprovisionPolicy,
+                //            allocationPolicy,
+                //            customAllocationDefinition,
+                //            iothubs,
+                //            capabilities,
+                //            Logger)
+                //        .ConfigureAwait(false);
 
-                    return new AuthenticationProviderTpmSimulator(tpmEnrollment.RegistrationId);
+                //    return new AuthenticationProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
                 case AttestationMechanismType.X509:
                     X509Certificate2 certificate = null;
@@ -725,11 +725,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             _verboseLog.WriteLine($"{nameof(CreateAuthenticationMethodFromAuthenticationProvider)}({deviceId})");
 
             Client.IAuthenticationMethod auth;
-            if (provisioningAuth is AuthenticationProviderTpm tpmAuth)
-            {
-                auth = new DeviceAuthenticationWithTpm(deviceId, tpmAuth);
-            }
-            else if (provisioningAuth is AuthenticationProviderX509 x509Auth)
+
+            // Commented out until we resolve plans for TPM support and library dependency
+            //if (provisioningAuth is AuthenticationProviderTpm tpmAuth)
+            //{
+            //    auth = new DeviceAuthenticationWithTpm(deviceId, tpmAuth);
+            //}
+            //else
+            if (provisioningAuth is AuthenticationProviderX509 x509Auth)
             {
                 X509Certificate2 cert = x509Auth.GetAuthenticationCertificate();
                 auth = new DeviceAuthenticationWithX509Certificate(deviceId, cert);

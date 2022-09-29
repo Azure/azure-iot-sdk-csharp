@@ -16,7 +16,6 @@ using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.Azure.Devices.E2ETests.Provisioning.ProvisioningServiceClientE2ETests;
@@ -61,31 +60,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_x509CertificatesFolder);
         }
 
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        public async Task DPS_Registration_Amqp_Tpm_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(),
-                    AttestationMechanismType.Tpm,
-                    EnrollmentType.Individual,
-                    false)
-                .ConfigureAwait(false);
-        }
+        // Commented out until we resolve plans for TPM support and library dependency
+        //[LoggedTestMethod]
+        //[Timeout(TestTimeoutMilliseconds)]
+        //[DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        //public async Task DPS_Registration_Amqp_Tpm_RegisterOk()
+        //{
+        //    await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+        //            new IotHubClientAmqpSettings(),
+        //            AttestationMechanismType.Tpm,
+        //            EnrollmentType.Individual,
+        //            false)
+        //        .ConfigureAwait(false);
+        //}
 
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        public async Task DPS_Registration_AmqpWs_Tpm_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    AttestationMechanismType.Tpm,
-                    EnrollmentType.Individual,
-                    false)
-                .ConfigureAwait(false);
-        }
+        //[LoggedTestMethod]
+        //[Timeout(TestTimeoutMilliseconds)]
+        //[DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        //public async Task DPS_Registration_AmqpWs_Tpm_RegisterOk()
+        //{
+        //    await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+        //            new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+        //            AttestationMechanismType.Tpm,
+        //            EnrollmentType.Individual,
+        //            false)
+        //        .ConfigureAwait(false);
+        //}
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -550,20 +550,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         #endregion CustomAllocationDefinition tests
 
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        public async Task DPS_Registration_Amqp_Tpm_InvalidRegistrationId_RegisterFail()
-        {
-            // act
-            Func<Task> act = async () => await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(new IotHubClientAmqpSettings()).ConfigureAwait(false);
 
-            // assert
-            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
-            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(404201);
-            error.And.IsTransient.Should().BeFalse();
-        }
+        // Commented out until we resolve plans for TPM support and library dependency
+        //[LoggedTestMethod]
+        //[Timeout(TestTimeoutMilliseconds)]
+        //[DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        //public async Task DPS_Registration_Amqp_Tpm_InvalidRegistrationId_RegisterFail()
+        //{
+        //    // act
+        //    Func<Task> act = async () => await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(new IotHubClientAmqpSettings()).ConfigureAwait(false);
+
+        //    // assert
+        //    var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+        //    error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        //    error.And.ErrorCode.Should().Be(404201);
+        //    error.And.IsTransient.Should().BeFalse();
+        //}
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -613,31 +615,33 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        public async Task DPS_Registration_Amqp_Tpm_InvalidIdScope_RegisterFail()
-        {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientAmqpSettings(),
-                    AttestationMechanismType.Tpm,
-                    null,
-                    "")
-                .ConfigureAwait(false);
-        }
 
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time as tpm only accepts one connection at a time
-        public async Task DPS_Registration_AmqpWs_Tpm_InvalidIdScope_Register_Fail()
-        {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    AttestationMechanismType.Tpm,
-                    null,
-                    "")
-                .ConfigureAwait(false);
-        }
+        // Commented out until we resolve plans for TPM support and library dependency
+        //[LoggedTestMethod]
+        //[Timeout(TestTimeoutMilliseconds)]
+        //[DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        //public async Task DPS_Registration_Amqp_Tpm_InvalidIdScope_RegisterFail()
+        //{
+        //    await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
+        //            new IotHubClientAmqpSettings(),
+        //            AttestationMechanismType.Tpm,
+        //            null,
+        //            "")
+        //        .ConfigureAwait(false);
+        //}
+
+        //[LoggedTestMethod]
+        //[Timeout(TestTimeoutMilliseconds)]
+        //[DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time as tpm only accepts one connection at a time
+        //public async Task DPS_Registration_AmqpWs_Tpm_InvalidIdScope_Register_Fail()
+        //{
+        //    await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
+        //            new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+        //            AttestationMechanismType.Tpm,
+        //            null,
+        //            "")
+        //        .ConfigureAwait(false);
+        //}
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -1026,41 +1030,43 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(IotHubClientTransportSettings transportSettings)
-        {
-            ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
-            using var auth = new AuthenticationProviderTpmSimulator("invalidregistrationid");
 
-            try
-            {
-                var provClient = new ProvisioningDeviceClient(
-                    s_globalDeviceEndpoint,
-                    TestConfiguration.Provisioning.IdScope,
-                    auth,
-                    clientOptions);
+        // Commented out until we resolve plans for TPM support and library dependency
+        //public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(IotHubClientTransportSettings transportSettings)
+        //{
+        //    ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
+        //    using var auth = new AuthenticationProviderTpmSimulator("invalidregistrationid");
 
-                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+        //    try
+        //    {
+        //        var provClient = new ProvisioningDeviceClient(
+        //            s_globalDeviceEndpoint,
+        //            TestConfiguration.Provisioning.IdScope,
+        //            auth,
+        //            clientOptions);
 
-                Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
+        //        using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-                DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+        //        Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
 
-                Logger.Trace($"{result.Status}");
+        //        DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
-                Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
-                Assert.IsNull(result.AssignedHub);
-                Assert.IsNull(result.DeviceId);
-                // Exception message must contain the errorCode value as below
-                Assert.AreEqual(404201, result.ErrorCode);
-            }
-            finally
-            {
-                if (auth is IDisposable disposableAuth)
-                {
-                    disposableAuth?.Dispose();
-                }
-            }
-        }
+        //        Logger.Trace($"{result.Status}");
+
+        //        Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
+        //        Assert.IsNull(result.AssignedHub);
+        //        Assert.IsNull(result.DeviceId);
+        //        // Exception message must contain the errorCode value as below
+        //        Assert.AreEqual(404201, result.ErrorCode);
+        //    }
+        //    finally
+        //    {
+        //        if (auth is IDisposable disposableAuth)
+        //        {
+        //            disposableAuth?.Dispose();
+        //        }
+        //    }
+        //}
 
         private async Task ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
             IotHubClientTransportSettings transportSettings,
@@ -1262,21 +1268,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             switch (attestationType)
             {
-                case AttestationMechanismType.Tpm:
-                    IndividualEnrollment tpmEnrollment = await CreateIndividualEnrollmentAsync(
-                            provisioningServiceClient,
-                            registrationId,
-                            AttestationMechanismType.Tpm,
-                            null,
-                            reprovisionPolicy,
-                            allocationPolicy,
-                            customAllocationDefinition,
-                            iothubs,
-                            capabilities,
-                            Logger)
-                        .ConfigureAwait(false);
+                // Commented out until we resolve plans for TPM support and library dependency
+                //case AttestationMechanismType.Tpm:
+                //    IndividualEnrollment tpmEnrollment = await CreateIndividualEnrollmentAsync(
+                //            provisioningServiceClient,
+                //            registrationId,
+                //            AttestationMechanismType.Tpm,
+                //            null,
+                //            reprovisionPolicy,
+                //            allocationPolicy,
+                //            customAllocationDefinition,
+                //            iothubs,
+                //            capabilities,
+                //            Logger)
+                //        .ConfigureAwait(false);
 
-                    return new AuthenticationProviderTpmSimulator(tpmEnrollment.RegistrationId);
+                //    return new AuthenticationProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
                 case AttestationMechanismType.X509:
                     X509Certificate2 certificate = null;
@@ -1407,11 +1414,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             _verboseLog.WriteLine($"{nameof(CreateAuthenticationMethodFromAuthProvider)}({deviceId})");
 
             Client.IAuthenticationMethod auth;
-            if (provisioningAuth is AuthenticationProviderTpm tpmAuth)
-            {
-                auth = new DeviceAuthenticationWithTpm(deviceId, tpmAuth);
-            }
-            else if (provisioningAuth is AuthenticationProviderX509 x509Auth)
+
+            // Commented out until we resolve plans for TPM support and library dependency
+            //if (provisioningAuth is AuthenticationProviderTpm tpmAuth)
+            //{
+            //    auth = new DeviceAuthenticationWithTpm(deviceId, tpmAuth);
+            //}
+            //else 
+            if (provisioningAuth is AuthenticationProviderX509 x509Auth)
             {
                 X509Certificate2 cert = x509Auth.GetAuthenticationCertificate();
                 auth = new DeviceAuthenticationWithX509Certificate(deviceId, cert);

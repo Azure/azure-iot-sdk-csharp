@@ -1,3 +1,5 @@
+<!--
+Commented out until we resolve plans for TPM support and library dependency
 # Provisioning Device Client Sample - TPM Attestation
 
 ## Overview
@@ -16,3 +18,4 @@ This is a quick tutorial with the steps to register a device in the Microsoft Az
 > To see a full list of parameters, run `dotnet run -?`.
 
 Continue by following the instructions presented by the sample.
+-->

@@ -366,10 +366,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 password = ProvisioningSasBuilder.BuildSasSignature(key1.GetPrimaryKey(), string.Concat(provisioningRequest.IdScope, '/', "registrations", '/', provisioningRequest.Authentication.GetRegistrationId()), TimeSpan.FromHours(1));
             }
-            else if (provisioningRequest.Authentication is AuthenticationProviderTpm)
-            {
-                throw new NotSupportedException("TPM authentication is not supported over MQTT TCP or MQTT web socket.");
-            }
+            //else if (provisioningRequest.Authentication is AuthenticationProviderTpm)
+            //{
+            //    throw new NotSupportedException("TPM authentication is not supported over MQTT TCP or MQTT web socket.");
+            //}
 
             var username = string.Format(
                     CultureInfo.InvariantCulture,
