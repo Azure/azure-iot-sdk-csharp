@@ -79,10 +79,21 @@ Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing appl
 
 ## Samples
 
-Most of our samples are available at [Azure IoT Samples for C#](https://github.com/Azure-Samples/azure-iot-samples-csharp).
+All of our samples are located in this repository. The samples live alongside the source for each client library.
 
-If you are looking for a good device sample to get started with, please see the [device reconnection sample](https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/DeviceReconnectionSample).
-It shows how to connect a device, handle disconnect events, cases to handle when making calls, and when to re-initialize the `IotHubDeviceClient`.
+- [IoT hub device](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples) samples
+- [IoT hub service](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples) samples
+- [Provisioning device](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples) samples
+- [Provisioning service](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/service/samples) samples
+
+Samples for each of these categories are further separated into three sub-categories (from simplest to complex):
+
+1. `Getting Started`
+2. `How To`
+3. `Solutions`
+
+If you are looking for a good device sample to get started with, please see the [device reconnection sample](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample).
+It shows how to connect a device, handle disconnect events, cases to handle when making calls, and when to re-initialize the `DeviceClient`.
 
 ## Contribute to the Azure IoT C# SDK
 

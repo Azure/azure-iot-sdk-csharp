@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
 
             // Configure the callback and start accepting method calls.
-            async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     reason,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDelay, // we want a quick one because we need time to recover
-                    InitAsync,
+                    InitOperationAsync,
                     TestOperationAsync,
                     CleanupAsync,
                     Logger)

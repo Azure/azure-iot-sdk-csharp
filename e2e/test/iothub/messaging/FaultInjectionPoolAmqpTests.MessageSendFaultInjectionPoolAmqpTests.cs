@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_IoTHubSak_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
+        public async Task Message_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
         {
             // act
             Func<Task> act = async () =>

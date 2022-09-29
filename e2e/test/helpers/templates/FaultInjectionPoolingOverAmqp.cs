@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
-            var transportSettings  = new IotHubClientAmqpSettings(TransportSettings.Protocol)
+            var transportSettings = new IotHubClientAmqpSettings(TransportSettings.Protocol)
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {

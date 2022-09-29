@@ -62,9 +62,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Devices.DeleteAsync(deviceName).ConfigureAwait(false);
         }
 
+        [Ignore]
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
             const string JobDeviceId = "JobsSample_Device";

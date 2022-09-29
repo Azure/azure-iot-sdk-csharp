@@ -35,6 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -60,6 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -85,6 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -110,6 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -121,6 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -132,6 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -143,6 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -154,6 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -165,6 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -176,6 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -187,6 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -198,6 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
