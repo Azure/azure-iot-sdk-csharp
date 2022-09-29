@@ -52,8 +52,6 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
             // Invoke the direct method asynchronously and get the response from the simulated device.
             DirectMethodResponse response = await serviceClient.DirectMethods.InvokeAsync(deviceId, methodInvocation);
 
-            Console.WriteLine($"Response status: {response.Status}, payload:\n\t{response.GetPayloadAsJson()}");
-
             // Only display payload to console if it prints something meaningful.
             if (response.Payload is string)
             {

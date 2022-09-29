@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps_InvalidCorrelationId()
         {

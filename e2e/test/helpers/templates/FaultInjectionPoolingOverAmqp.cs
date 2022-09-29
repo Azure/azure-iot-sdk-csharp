@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -31,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
-            var transportSettings  = new IotHubClientAmqpSettings(TransportSettings.Protocol)
+            var transportSettings = new IotHubClientAmqpSettings(TransportSettings.Protocol)
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {

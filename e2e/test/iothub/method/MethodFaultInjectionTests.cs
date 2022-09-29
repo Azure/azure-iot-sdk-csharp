@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
 
             // Configure the callback and start accepting method calls.
-            async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
