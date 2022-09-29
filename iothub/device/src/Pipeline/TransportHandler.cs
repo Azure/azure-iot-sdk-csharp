@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return _transportShouldRetry.Task;
         }
 
-        protected override void Dispose(bool disposing)
+        protected private override void Dispose(bool disposing)
         {
             try
             {

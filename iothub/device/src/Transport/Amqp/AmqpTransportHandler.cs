@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 OnDisconnected);
 
             // Create a timer to remove any expired messages.
-            _twinTimeoutTimer = new Timer(CheckTimeout);
+            _twinTimeoutTimer = new Timer(RemoveOldOperations);
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, _amqpUnit, nameof(_amqpUnit));
@@ -115,23 +115,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(OpenAsync));
-            }
-        }
-
-        private void CheckTimeout(object _)
-        {
-            if (!_twinResponseTimeouts.Any())
-            {
-                return;
-            }
-            var currentDateTime = DateTime.UtcNow;
-            foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
-            {
-                if (currentDateTime - entry.Value > s_twinResponseTimeout)
-                {
-                    _twinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<Twin> _);
-                    _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
-                }
             }
         }
 
@@ -392,9 +375,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var taskCompletionSource = new TaskCompletionSource<Twin>();
+                var taskCompletionSource = new TaskCompletionSource<Twin>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _twinResponseCompletions[correlationId] = taskCompletionSource;
-                _twinResponseTimeouts[correlationId] = DateTime.UtcNow;
+                _twinResponseTimeouts[correlationId] = DateTimeOffset.UtcNow;
 
                 await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, cancellationToken).ConfigureAwait(false);
 
@@ -448,20 +431,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         // This can happen if we received a message from service with correlation Id that was not set by SDK or does not exist in dictionary.
                         if (Logging.IsEnabled)
-                            Logging.Info("Could not remove correlation id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
+                            Logging.Info("Could not remove correlation Id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
                     }
                 }
             }
         }
 
-        protected override void Dispose(bool disposing)
+        private void RemoveOldOperations(object _)
+        {
+            _ = _twinResponseTimeouts
+                .Where(x => DateTimeOffset.UtcNow - x.Value > s_twinResponseTimeout)
+                .Select(x =>
+                    {
+                        _twinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<Twin> _);
+                        _twinResponseTimeouts.TryRemove(x.Key, out DateTimeOffset _);
+                        return true;
+                    });
+        }
+
+        protected private override void Dispose(bool disposing)
         {
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
-                }
 
                 lock (_lock)
                 {
@@ -483,9 +476,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
-                }
             }
         }
     }

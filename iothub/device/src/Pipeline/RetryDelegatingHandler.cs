@@ -689,7 +689,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     nameof(HandleConnectionStatusExceptions));
         }
 
-        protected override void Dispose(bool disposing)
+        protected private override void Dispose(bool disposing)
         {
             try
             {
