@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// as a <see cref="Query"/> iterator.
         ///
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <code>"SELECT * FROM enrollments"</code>.
+        /// <c>"SELECT * FROM enrollments"</c>.
         /// </remarks>
         /// <param name="query">The SQL query. It cannot be null.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// as a <see cref="Query"/> iterator.
         ///
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <code>"SELECT * FROM enrollments"</code>.
+        /// <c>"SELECT * FROM enrollments"</c>.
         ///
         /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
         /// number of items per iteration can be specified by the pageSize. It is optional, you can provide 0 for
@@ -430,7 +430,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// a <see cref="Query"/> iterator.
         ///
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <code>"SELECT * FROM enrollments"</code>.
+        /// <c>"SELECT * FROM enrollments"</c>.
         /// </remarks>
         /// <param name="query">The SQL query. It cannot be null.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -457,7 +457,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// a <see cref="Query"/> iterator.
         ///
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <code>"SELECT * FROM enrollments"</code>.
+        /// <c>"SELECT * FROM enrollments"</c>.
         ///
         /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
         /// number of items per iteration can be specified by the pageSize. It is optional, you can provide 0 for
@@ -588,7 +588,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Provisioning Service and return it as a <see cref="Query"/> iterator.
         ///
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <code>"SELECT * FROM enrollments"</code>.
+        /// <c>"SELECT * FROM enrollments"</c>.
         /// </remarks>
         /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be null.</param>
         /// <param name="enrollmentGroupId">The string that identifies the enrollmentGroup. It cannot be null or empty.</param>
@@ -621,7 +621,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Provisioning Service and return it as a <see cref="Query"/> iterator.
         ///
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <code>"SELECT * FROM enrollments"</code>.
+        /// <c>"SELECT * FROM enrollments"</c>.
         ///
         /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
         /// number of items per iteration can be specified by the pageSize. It is optional, you can provide 0 for

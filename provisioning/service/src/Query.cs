@@ -40,21 +40,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync()"/>. It must be any positive integer, and if it
     ///     contains 0, the Device Provisioning Service will ignore it and use a standard page size.
     ///
-    /// You can use this Object as a standard iterator, just using the <code>HasNext</code> and <code>NextAsync</code> in a
-    ///     <code>while</code> loop, up to the point where the <code>HasNext</code> contains false. But, keep
-    ///     in mind that the <see cref="QueryResult"/> can contain a empty list, even if the <code>HasNext</code> contained
-    ///     <code>true</code>. For example, image that you have 10 IndividualEnrollment in the Device Provisioning Service
-    ///     and you created new query with the <code>PageSize</code> equals 5. In the first iteration, <code>HasNext</code>
-    ///     will contains <code>true</code>, and the first <code>NextAsync</code> will return a <code>QueryResult</code> with
-    ///     5 items. After, your code will check the <code>HasNext</code>, which will contains true again. Now,
+    /// You can use this Object as a standard iterator, just using the <c>HasNext</c> and <c>NextAsync</c> in a
+    ///     <c>while</c> loop, up to the point where the <c>HasNext</c> contains false. But, keep
+    ///     in mind that the <see cref="QueryResult"/> can contain a empty list, even if the <c>HasNext</c> contained
+    ///     <c>true</c>. For example, image that you have 10 IndividualEnrollment in the Device Provisioning Service
+    ///     and you created new query with the <c>PageSize</c> equals 5. In the first iteration, <c>HasNext</c>
+    ///     will contains <c>true</c>, and the first <c>NextAsync</c> will return a <c>QueryResult</c> with
+    ///     5 items. After, your code will check the <c>HasNext</c>, which will contains true again. Now,
     ///     before you get the next page, somebody deletes all the IndividualEnrollment. What happened, when you call the
-    ///     <code>NextAsync</code>, it will return a valid <code>QueryResult</code>, but the <see cref="QueryResult.Items"/>
+    ///     <c>NextAsync</c>, it will return a valid <c>QueryResult</c>, but the <see cref="QueryResult.Items"/>
     ///     will contain an empty list.
     ///
-    /// Besides the <code>Items</code>, the <code>QueryResult</code> contains the <see cref="QueryResult.ContinuationToken"/>.
+    /// Besides the <c>Items</c>, the <c>QueryResult</c> contains the <see cref="QueryResult.ContinuationToken"/>.
     ///     You can also store a query context (QuerySpecification + ContinuationToken) and restart it in the future, from
     ///     the point where you stopped. Just recreating the query with the same <see cref="QuerySpecification"/> and calling
-    ///     the <see cref="NextAsync(string)"/> passing the stored <code>ContinuationToken</code>.
+    ///     the <see cref="NextAsync(string)"/> passing the stored <c>ContinuationToken</c>.
     /// </remarks>
     public class Query
     {
@@ -102,8 +102,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Contains true if the query is not finished in the Device Provisioning Service, and another
         /// iteration with <see cref="NextAsync()"/> may return more items. Call <see cref="NextAsync()"/> after
-        /// a true <code>HasNext</code> will result in a <see cref="QueryResult"/> that can or
-        /// cannot contains elements. But call <see cref="NextAsync()"/> after a false <code>HasNext</code>
+        /// a true <c>HasNext</c> will result in a <see cref="QueryResult"/> that can or
+        /// cannot contains elements. But call <see cref="NextAsync()"/> after a false <c>HasNext</c>
         /// will result in a exception.
         /// </remarks>
         public bool HasNext()

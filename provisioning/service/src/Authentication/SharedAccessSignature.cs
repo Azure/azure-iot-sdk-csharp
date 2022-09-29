@@ -45,6 +45,9 @@ namespace Microsoft.Azure.Devices
 
         internal static SharedAccessSignature Parse(string serviceName, string sharedAccessSignature)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(serviceName), "Service name cannot be null or white space.");
+            Debug.Assert(!string.IsNullOrWhiteSpace(sharedAccessSignature), "Shared access signature cannot be null or white space.");
+
             IDictionary<string, string> parsedFields = ExtractFieldValues(sharedAccessSignature);
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
