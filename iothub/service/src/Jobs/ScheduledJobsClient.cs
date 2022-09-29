@@ -240,12 +240,14 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates a new job to update twin tags and desired properties on one or multiple devices.
         /// </summary>
-        /// <param name="scheduledTwinUpdate">Required parameters for scheduled twin update, i.e: <paramref name="scheduledTwinUpdate.Twin"/>, <paramref name="scheduledTwinUpdate.QueryCondition"/>, <paramref name="scheduledTwinUpdate.StartTimeUtc"/>.</param>
+        /// <param name="queryCondition">Query condition to evaluate which devices to run the job on.</param>
+        /// <param name="twin">Twin object to use for the update.</param>
+        /// <param name="startOnUtc">When to start the job, in UTC.</param>
         /// <param name="scheduledJobsOptions">Optional parameters for scheduled twin update, i.e: <paramref name="scheduledJobsOptions.JobId"/> and <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/>.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>A job object.</returns>
-        /// <exception cref="ArgumentNullException">When the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledTwinUpdate"/> or <paramref name="scheduledTwinUpdate.QueryCondition"/> or <paramref name="scheduledTwinUpdate.Twin"/> or <paramref name="scheduledTwinUpdate.StartTimeUtc"/> or <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/> is null.</exception>
-        /// <exception cref="ArgumentException">If the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledTwinUpdate.QueryCondition"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="queryCondition"/> or <paramref name="twin"/> or <paramref name="startOnUtc"/> or <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="queryCondition"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
@@ -257,7 +259,9 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<TwinScheduledJob> ScheduleTwinUpdateAsync(
-            ScheduledTwinUpdate scheduledTwinUpdate,
+            string queryCondition,
+            Twin twin,
+            DateTimeOffset startOnUtc,
             ScheduledJobsOptions scheduledJobsOptions = default,
             CancellationToken cancellationToken = default)
         {
@@ -274,11 +278,9 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Scheduling twin update: {scheduledJobsOptions.JobId}", nameof(ScheduleDirectMethodAsync));
 
-            Argument.AssertNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
-
-            Argument.AssertNotNullOrWhiteSpace(scheduledTwinUpdate.QueryCondition, $"{nameof(scheduledTwinUpdate)}.{nameof(scheduledTwinUpdate.QueryCondition)}");
-            Argument.AssertNotNull(scheduledTwinUpdate.Twin, $"{nameof(scheduledTwinUpdate)}.{nameof(scheduledTwinUpdate.Twin)}");
-            Argument.AssertNotNull(scheduledTwinUpdate.StartOnUtc, $"{nameof(scheduledTwinUpdate)}.{nameof(scheduledTwinUpdate.StartOnUtc)}");
+            Argument.AssertNotNullOrWhiteSpace(queryCondition, $"{nameof(queryCondition)}");
+            Argument.AssertNotNull(twin, $"{nameof(twin)}");
+            Argument.AssertNotNull(startOnUtc, $"{nameof(startOnUtc)}");
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -288,9 +290,9 @@ namespace Microsoft.Azure.Devices
                 {
                     JobId = scheduledJobsOptions.JobId,
                     JobType = JobType.ScheduleUpdateTwin,
-                    UpdateTwin = scheduledTwinUpdate.Twin,
-                    QueryCondition = scheduledTwinUpdate.QueryCondition,
-                    StartOn = scheduledTwinUpdate.StartOnUtc,
+                    UpdateTwin = twin,
+                    QueryCondition = queryCondition,
+                    StartOn = startOnUtc,
                     MaxExecutionTime = scheduledJobsOptions?.MaxExecutionTime,
                 };
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
