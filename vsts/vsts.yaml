@@ -433,7 +433,7 @@ jobs:
         - task: CmdLine@2
           displayName: 'Install .NET Core 2.1'
           inputs:
-          script: 'choco install dotnetcore-2.1-sdk'
+            script: 'choco install dotnetcore-2.1-sdk'
 
       - ${{ if eq(variables['testNet472'], 'True') }}:
         - task: CmdLine@2
