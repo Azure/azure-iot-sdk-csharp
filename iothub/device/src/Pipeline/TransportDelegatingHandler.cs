@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _handlerLock.Release();
         }
 
-        protected override void Dispose(bool disposing)
+        protected private override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
             _handlerLock?.Dispose();

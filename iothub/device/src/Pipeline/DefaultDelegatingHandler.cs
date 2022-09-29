@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected private virtual void Dispose(bool disposing)
         {
             try
             {

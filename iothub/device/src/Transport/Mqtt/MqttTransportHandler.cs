@@ -731,7 +731,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        protected override void Dispose(bool disposing)
+        protected private override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
             _mqttClient?.Dispose();
