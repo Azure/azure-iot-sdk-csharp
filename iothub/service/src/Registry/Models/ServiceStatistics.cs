@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     public class ServiceStatistics
     {
         /// <summary>
-        /// This constructor is for deserialization and unit test mocking purposes.
+        /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     public class TwinScheduledJob : ScheduledJob
     {
         /// <summary>
-        /// Serialization constructor.
+        /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.
