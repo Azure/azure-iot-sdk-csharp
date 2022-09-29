@@ -60,6 +60,9 @@ dotnet_style_readonly_field = true:suggestion
 # Parameter preferences
 dotnet_code_quality_unused_parameters = all:suggestion
 
+#### IoT SDK copyright header
+file_header_template = Copyright (c) Microsoft. All rights reserved.\nLicensed under the MIT license. See LICENSE file in the project root for full license information.
+
 #### C# Coding Conventions ####
 
 # var preferences
