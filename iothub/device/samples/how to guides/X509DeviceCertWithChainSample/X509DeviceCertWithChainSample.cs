@@ -37,11 +37,7 @@ namespace X509DeviceCertWithChainSample
         private async Task SendTelemetry()
         {
             string telemetryPayload = "{{ \"temperature\": 0d }}";
-            var message = new Message(Encoding.UTF8.GetBytes(telemetryPayload))
-            {
-                ContentEncoding = "utf-8",
-                ContentType = "application/json",
-            };
+            var message = new OutgoingMessage(telemetryPayload);
 
             await _deviceClient.SendEventAsync(message);
         }

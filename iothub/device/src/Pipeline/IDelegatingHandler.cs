@@ -20,9 +20,9 @@ namespace Microsoft.Azure.Devices.Client
         bool IsUsable { get; }
 
         // Telemetry uplink.
-        Task SendEventAsync(Message message, CancellationToken cancellationToken);
+        Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken);
 
-        Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
+        Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken);
 
         Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
 

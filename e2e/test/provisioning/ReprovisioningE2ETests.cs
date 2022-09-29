@@ -537,7 +537,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var message = new OutgoingMessage("TestMessage");
             await iotClient.SendEventAsync(message).ConfigureAwait(false);
 
             if (transportProtocolSupportsTwinOperations)
@@ -901,7 +901,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
 
-            var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var testMessage = new OutgoingMessage("TestMessage");
             await iotClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
             // Twin can be configured to revert back to default twin when provisioned, or to keep twin

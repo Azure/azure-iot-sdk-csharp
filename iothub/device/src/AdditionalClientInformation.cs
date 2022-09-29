@@ -14,5 +14,7 @@ namespace Microsoft.Azure.Devices.Client
         internal ProductInfo ProductInfo { get; set; }
 
         internal string ModelId { get; set; }
+
+        internal PayloadConvention PayloadConvention { get; set; }
     }
 }

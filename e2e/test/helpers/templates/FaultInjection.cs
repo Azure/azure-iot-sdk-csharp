@@ -27,13 +27,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         public static readonly TimeSpan RecoveryTime = TimeSpan.FromMinutes(5);
 
-        public static Client.Message ComposeErrorInjectionProperties(
+        public static OutgoingMessage ComposeErrorInjectionProperties(
             string faultType,
             string reason,
             TimeSpan faultDelay,
             TimeSpan faultDuration)
         {
-            return new Client.Message(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()))
+            return new OutgoingMessage(Guid.NewGuid().ToString())
             {
                 Properties =
                 {
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             try
             {
                 using var cts = new CancellationTokenSource(LatencyTimeBuffer);
-                Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
+                OutgoingMessage faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
                     faultDelay,

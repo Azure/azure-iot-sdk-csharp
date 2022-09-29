@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
 
             Console.WriteLine("Sending a telemetry message...");
-            var message = new Devices.Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var message = new OutgoingMessage("TestMessage");
             await iotClient.SendEventAsync(message);
 
             await iotClient.CloseAsync();

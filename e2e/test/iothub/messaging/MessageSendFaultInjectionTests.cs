@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string _, out string _);
+                OutgoingMessage testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string _, out string _);
                 using var cts = new CancellationTokenSource(operationTimeout);
                 await deviceClient.SendEventAsync(testMessage, cts.Token).ConfigureAwait(false);
             };

@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly Func<DirectMethodRequest, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<Message, Task<MessageAcknowledgement>> _messageReceivedListener;
+        private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _messageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
@@ -111,6 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly string _moduleId;
         private readonly string _hostName;
         private readonly string _modelId;
+        private readonly PayloadConvention _payloadConvention;
         private readonly ProductInfo _productInfo;
         private readonly IotHubClientMqttSettings _mqttTransportSettings;
         private readonly IotHubConnectionCredentials _connectionCredentials;
@@ -178,9 +179,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             _modelId = context.ModelId;
             _productInfo = context.ProductInfo;
+            _payloadConvention = context.PayloadConvention;
 
             var mqttFactory = new MqttFactory(new MqttLogger());
-
             _mqttClient = mqttFactory.CreateMqttClient();
             _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
@@ -361,7 +362,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -373,7 +374,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                     .WithTopic(topicName)
-                    .WithPayload(message.Payload)
+                    .WithPayload(message.GetPayloadObjectBytes())
                     .WithQualityOfServiceLevel(_publishingQualityOfService)
                     .Build();
 
@@ -405,7 +406,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -901,7 +902,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
-            var receivedCloudToDeviceMessage = new Message(payload);
+            var receivedCloudToDeviceMessage = new IncomingMessage(payload)
+            {
+                PayloadConvention = _payloadConvention,
+            };
 
             PopulateMessagePropertiesFromMqttMessage(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
 
@@ -940,10 +944,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             receivedEventArgs.AutoAcknowledge = true;
 
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
-
-            var receivedDirectMethod = new Message(payload);
-
-            PopulateMessagePropertiesFromMqttMessage(receivedDirectMethod, receivedEventArgs.ApplicationMessage);
 
             string[] tokens = Regex.Split(receivedEventArgs.ApplicationMessage.Topic, "/", RegexOptions.Compiled);
 
@@ -1046,7 +1046,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             receivedEventArgs.AutoAcknowledge = true;
 
-            var iotHubMessage = new Message(receivedEventArgs.ApplicationMessage.Payload);
+            var iotHubMessage = new IncomingMessage(receivedEventArgs.ApplicationMessage.Payload)
+            {
+                PayloadConvention = _payloadConvention,
+            };
 
             // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
             // We try to get the endpoint from the topic, if the topic is in the above format.
@@ -1061,7 +1064,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await (_messageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
         }
 
-        public void PopulateMessagePropertiesFromMqttMessage(Message message, MqttApplicationMessage mqttMessage)
+        public void PopulateMessagePropertiesFromMqttMessage(IncomingMessage message, MqttApplicationMessage mqttMessage)
         {
             // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
             // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
@@ -1113,7 +1116,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return property.Value;
         }
 
-        internal static string PopulateMessagePropertiesFromMessage(string topicName, Message message)
+        internal static string PopulateMessagePropertiesFromMessage(string topicName, OutgoingMessage message)
         {
             var systemProperties = new Dictionary<string, string>(message.SystemProperties.Count);
             foreach (KeyValuePair<string, object> property in message.SystemProperties)

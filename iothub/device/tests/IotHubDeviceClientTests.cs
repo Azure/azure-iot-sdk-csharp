@@ -784,12 +784,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new Message();
-            var messageWithId = new Message
+            var messageWithoutId = new OutgoingMessage();
+            var messageWithId = new OutgoingMessage
             {
                 MessageId = messageId,
             };
@@ -813,12 +813,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new Message();
-            var messageWithId = new Message
+            var messageWithoutId = new OutgoingMessage();
+            var messageWithId = new OutgoingMessage
             {
                 MessageId = messageId,
             };
@@ -842,12 +842,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new Message();
-            var messageWithId = new Message
+            var messageWithoutId = new OutgoingMessage();
+            var messageWithId = new OutgoingMessage
             {
                 MessageId = messageId,
             };
@@ -867,17 +867,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new Message();
-            var messageWithId = new Message
+            var messageWithoutId = new OutgoingMessage();
+            var messageWithId = new OutgoingMessage
             {
                 MessageId = messageId,
             };
 
-            await deviceClient.SendEventBatchAsync(new List<Message> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendEventBatchAsync(new List<OutgoingMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -896,17 +896,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new Message();
-            var messageWithId = new Message
+            var messageWithoutId = new OutgoingMessage();
+            var messageWithId = new OutgoingMessage
             {
                 MessageId = messageId,
             };
 
-            await deviceClient.SendEventBatchAsync(new List<Message> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendEventBatchAsync(new List<OutgoingMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -925,17 +925,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new Message();
-            var messageWithId = new Message
+            var messageWithoutId = new OutgoingMessage();
+            var messageWithId = new OutgoingMessage
             {
                 MessageId = messageId,
             };
 
-            await deviceClient.SendEventBatchAsync(new List<Message> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendEventBatchAsync(new List<OutgoingMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
@@ -1078,7 +1078,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()))
+                .When(x => x.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
 
             ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
@@ -1092,7 +1092,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            Func<Task> act = async () => await deviceClient.SendEventAsync(new Message(), cts.Token);
+            Func<Task> act = async () => await deviceClient.SendEventAsync(new OutgoingMessage(), cts.Token);
 
             // assert
             act.Should().Throw<OperationCanceledException>();
@@ -1105,7 +1105,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             // act
-            Func<Task> act = async () => await deviceClient.SendEventAsync(new Message());
+            Func<Task> act = async () => await deviceClient.SendEventAsync(new OutgoingMessage());
 
             // assert
             act.Should().Throw<InvalidOperationException>();
@@ -1120,7 +1120,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act
             Func<Task> act = async () =>
             {
-                await deviceClient.SendEventAsync(new Message());
+                await deviceClient.SendEventAsync(new OutgoingMessage());
                 await deviceClient.OpenAsync();
             };
 
@@ -1138,7 +1138,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () =>
             {
                 await deviceClient.OpenAsync();
-                await deviceClient.SendEventAsync(new Message());
+                await deviceClient.SendEventAsync(new OutgoingMessage());
             };
 
             // should not throw

@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // Inject the fault into device 0
                 logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={faultDuration}");
                 faultInjectionDuration.Start();
-                Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, faultDelay, faultDuration);
+                OutgoingMessage faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, faultDelay, faultDuration);
                 await deviceClients.First().SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
 
                 logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
