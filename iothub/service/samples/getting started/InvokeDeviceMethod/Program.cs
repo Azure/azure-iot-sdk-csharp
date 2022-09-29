@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
             Parameters.ValidateConnectionString(parameters.HubConnectionString);
 
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
-            //using var serviceClient = ServiceClient.CreateFromConnectionString(parameters.HubConnectionString);
             using var serviceClient = new IotHubServiceClient(parameters.HubConnectionString);
 
             await InvokeMethodAsync(serviceClient, parameters.DeviceId);
