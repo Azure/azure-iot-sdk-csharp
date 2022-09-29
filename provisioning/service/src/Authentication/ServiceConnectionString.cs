@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices
 {
@@ -24,6 +25,7 @@ namespace Microsoft.Azure.Devices
 
         internal ServiceConnectionString(ServiceConnectionStringBuilder builder)
         {
+            Debug.Assert(builder != null, $"{nameof(builder)} cannot be null.");
             HostName = builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;

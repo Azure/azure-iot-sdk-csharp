@@ -17,6 +17,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     {
         private ProvisioningTransportHandler _innerHandler;
         private int _port;
+        private const int MinPortValue = 1;
+        private const int MaxPortValue = 65535;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.
@@ -44,7 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             get => _innerHandler;
             set
             {
-                _innerHandler = value ?? throw new InvalidOperationException(nameof(value));
+                _innerHandler = value ?? throw new InvalidOperationException($"{nameof(InnerHandler)} cannot be null.");
                 Logging.Associate(this, value);
             }
         }
@@ -58,9 +60,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             get => _port;
             set
             {
-                if (value < 1 || value > 65535)
+                if (value < MinPortValue || value > MaxPortValue)
                 {
-                    throw new InvalidOperationException(nameof(value));
+                    throw new InvalidOperationException($"Value for {nameof(Port)} cannot be less than {MinPortValue} or greater than {MaxPortValue}.");
                 }
 
                 Logging.Info(this, $"{nameof(Port)} set to {value}");

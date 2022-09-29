@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// On all cases, the <see cref="QuerySpecification"/> contains a SQL query that must follow the
     ///     Query Language for the Device Provisioning Service.
     ///
-    /// Optionally, an Integer with the <b>page size</b>, can determine the maximum number of the items in the
+    /// Optionally, an Integer with the page size, can determine the maximum number of the items in the
     ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync()"/>. It must be any positive integer, and if it
     ///     contains 0, the Device Provisioning Service will ignore it and use a standard page size.
     ///
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="continuationToken">the string with the previous continuationToken. It cannot be null or empty.</param>
         /// <returns>The <see cref="QueryResult"/> with the next page of items for the query.</returns>
-        /// <exception cref="IndexOutOfRangeException">if the query does no have more pages to return.</exception>
+        /// <exception cref="IndexOutOfRangeException">If the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync(string continuationToken)
         {
             if (string.IsNullOrWhiteSpace(continuationToken))
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Return the next page of result for the query.
         /// </summary>
         /// <returns>The <see cref="QueryResult"/> with the next page of items for the query.</returns>
-        /// <exception cref="IndexOutOfRangeException">if the query does no have more pages to return.</exception>
+        /// <exception cref="IndexOutOfRangeException">If the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync()
         {
             if (!_hasNext)

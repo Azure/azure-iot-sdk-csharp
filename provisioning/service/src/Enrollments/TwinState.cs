@@ -9,8 +9,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Representation of a single Twin initial state for the Device Provisioning Service.
     /// </summary>
     /// <remarks>
-    /// The TwinState can contain one <see cref="TwinCollection"/> of <b>Tags</b>, and one
-    /// <see cref="TwinCollection"/> of <b>properties.desired</b>.
+    /// The TwinState can contain one <see cref="TwinCollection"/> of Tags, and one
+    /// <see cref="TwinCollection"/> of properties.desired.
     ///
     /// Each entity in the collections can contain a associated <see cref="Metadata"/>.
     ///
@@ -72,8 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates an instance of TwinState.
         /// </summary>
         /// <remarks>
-        /// This constructor creates an instance of the TwinState with the provided <see cref="TwinCollection"/>
-        /// tags and desired properties.
+        /// This constructor creates an instance of the TwinState with the provided twin collection tags and desired properties.
         /// </remarks>
         /// <example>
         /// When serialized, this class will looks like the following example:
@@ -97,8 +96,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// }
         /// </code>
         /// </example>
-        /// <param name="tags">the <see cref="TwinCollection"/> with the initial tags state. It can be null.</param>
-        /// <param name="desiredProperties">the <see cref="TwinCollection"/> with the initial desired properties. It can be null.</param>
+        /// <param name="tags">The twin collection with the initial tags state. It can be null.</param>
+        /// <param name="desiredProperties">The twin collection with the initial desired properties. It can be null.</param>
         public TwinState(TwinCollection tags, TwinCollection desiredProperties)
         {
             Tags = tags;
@@ -120,13 +119,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Getter and setter the <see cref="TwinState"/> tags.
+        /// Getter and setter the for tags.
         /// </summary>
         [JsonProperty(PropertyName = "tags", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public TwinCollection Tags { get; set; }
 
         /// <summary>
-        /// Getter and setter the <see cref="TwinState"/> properties.
+        /// Getter and setter the desired properties.
         /// </summary>
         [JsonIgnore]
         public TwinCollection DesiredProperties

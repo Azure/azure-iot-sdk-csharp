@@ -24,23 +24,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// with both endorsement and storage root keys. Only the endorsement
         /// key is mandatory.
         /// </remarks>
-        /// <param name="endorsementKey">the string with the TPM endorsement key. It cannot be null or empty.</param>
-        /// <param name="storageRootKey">the string with the TPM storage root key. It can be null or empty.</param>
-        /// <exception cref="ArgumentNullException">If the provided endorsementKey is null.</exception>
-        /// <exception cref="ArgumentException">If the provided endorsementKey is empty or white space.</exception>
+        /// <param name="endorsementKey">The string with the TPM endorsement key. It cannot be null or empty.</param>
+        /// <param name="storageRootKey">The string with the TPM storage root key. It can be null or empty.</param>
+        /// <exception cref="ArgumentNullException">If the provided <paramref name="endorsementKey"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="endorsementKey"/> is empty or white space.</exception>
         [JsonConstructor]
         public TpmAttestation(string endorsementKey, string storageRootKey = null)
         {
-            try
-            {
-                Argument.AssertNotNullOrEmpty(endorsementKey, nameof(endorsementKey));
-                EndorsementKey = endorsementKey;
-                StorageRootKey = storageRootKey;
-            }
-            catch (ArgumentException e)
-            {
-                throw new DeviceProvisioningServiceException(e.Message, HttpStatusCode.BadRequest, e);
-            }
+            Argument.AssertNotNullOrEmpty(endorsementKey, nameof(endorsementKey));
+            EndorsementKey = endorsementKey;
+            StorageRootKey = storageRootKey;
         }
 
         /// <summary>

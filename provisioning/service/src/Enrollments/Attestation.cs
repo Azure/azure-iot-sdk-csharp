@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// This is the abstract class that unifies all possible types of attestation that Device Provisioning Service supports.
     /// </summary>
     /// <remarks>
-    /// For now, the provisioning service supports <see cref="TpmAttestation"/> or <see cref="X509Attestation"/>.
+    /// For now, the provisioning service supports <see cref="TpmAttestation"/>, <see cref="X509Attestation"/> and <see cref="SymmetricKeyAttestation"/>.
     /// </remarks>
     public abstract class Attestation
     {

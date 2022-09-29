@@ -80,8 +80,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description
         ///     of each individualEnrollment.</param>
         /// <returns>The string with the content of this class.</returns>
-        /// <exception cref="ArgumentNullException">if the individualEnrollments is null.</exception>
-        /// <exception cref="ArgumentException">if the individualEnrollments is invalid.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="individualEnrollments"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="individualEnrollments"/> is an empty collection.</exception>
         public static string ToJson(BulkOperationMode mode, IEnumerable<IndividualEnrollment> individualEnrollments)
         {
             if (!(individualEnrollments ?? throw new ArgumentNullException(nameof(individualEnrollments))).Any())

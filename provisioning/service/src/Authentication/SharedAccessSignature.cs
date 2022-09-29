@@ -16,16 +16,16 @@ namespace Microsoft.Azure.Devices
         private readonly string _encodedAudience;
         private readonly string _expiry;
 
-        private SharedAccessSignature(string shareAccessSignatureName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
+        private SharedAccessSignature(string serviceName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
         {
-            ExpiresOn = expiresOn;
+            Debug.Assert(serviceName != null, "Service name cannot be null.");
 
+            ExpiresOn = expiresOn;
             if (IsExpired())
             {
                 throw new UnauthorizedAccessException("The specified SAS token is expired");
             }
-
-            ShareAccessSignatureName = shareAccessSignatureName;
+            ServiceName = serviceName;
             Signature = signature;
             Audience = WebUtility.UrlDecode(encodedAudience);
             _encodedAudience = encodedAudience;
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices
             KeyName = keyName ?? string.Empty;
         }
 
-        public string ShareAccessSignatureName { get; private set; }
+        public string ServiceName { get; private set; }
 
         public DateTime ExpiresOn { get; private set; }
 
@@ -43,9 +43,9 @@ namespace Microsoft.Azure.Devices
 
         public string Signature { get; private set; }
 
-        internal static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
+        internal static SharedAccessSignature Parse(string serviceName, string sharedAccessSignature)
         {
-            IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
+            IDictionary<string, string> parsedFields = ExtractFieldValues(sharedAccessSignature);
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
             }
 
             return new SharedAccessSignature(
-                shareAccessSignatureName,
+                serviceName,
                 SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
                 expiry,
                 keyName,
@@ -74,14 +74,14 @@ namespace Microsoft.Azure.Devices
                 encodedAudience);
         }
 
-        internal static bool IsSharedAccessSignature(string rawSignature)
+        internal static bool IsSharedAccessSignature(string sharedAccessSignature)
         {
-            if (string.IsNullOrWhiteSpace(rawSignature))
+            if (string.IsNullOrWhiteSpace(sharedAccessSignature))
             {
                 return false;
             }
 
-            IDictionary<string, string> parsedFields = ExtractFieldValues(rawSignature);
+            IDictionary<string, string> parsedFields = ExtractFieldValues(sharedAccessSignature);
             bool isSharedAccessSignature = parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out _);
 
             return isSharedAccessSignature;
@@ -125,9 +125,15 @@ namespace Microsoft.Azure.Devices
             throw new UnauthorizedAccessException("The specified SAS token has an invalid signature. It does not match either the primary or secondary key.");
         }
 
-        internal void Authorize(string serviceHostName)
+        internal void Authorize(string hostName)
         {
-            SecurityHelper.ValidateServiceHostName(serviceHostName, ShareAccessSignatureName);
+            Debug.Assert(!string.IsNullOrWhiteSpace(hostName), "Host name cannot be null.");
+            Debug.Assert(!string.IsNullOrWhiteSpace(ServiceName), "Service name cannot be null.");
+
+            if (!hostName.StartsWith(ServiceName.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new FormatException("Missing service name value from host name.");
+            }
         }
 
         internal void Authorize(Uri targetAddress)
@@ -138,7 +144,7 @@ namespace Microsoft.Azure.Devices
 
             if (!target.StartsWith(Audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
             {
-                throw new UnauthorizedAccessException("Invalid target audience");
+                throw new UnauthorizedAccessException("Invalid target audience.");
             }
         }
 

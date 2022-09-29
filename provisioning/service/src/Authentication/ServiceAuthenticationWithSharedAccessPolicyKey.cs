@@ -34,6 +34,8 @@ namespace Microsoft.Azure.Devices
 
         public ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder)
         {
+            Debug.Assert(provisioningConnectionStringBuilder != null, $"{nameof(provisioningConnectionStringBuilder)} cannot be null. Validate parameters upstream.");
+
             provisioningConnectionStringBuilder.SharedAccessKey = Key;
             provisioningConnectionStringBuilder.SharedAccessKeyName = PolicyName;
             provisioningConnectionStringBuilder.SharedAccessSignature = null;
@@ -43,11 +45,15 @@ namespace Microsoft.Azure.Devices
 
         private void SetPolicyName(string policyName)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(policyName), $"{nameof(policyName)} cannot be null or white space.");
+
             _policyName = policyName;
         }
 
         private void SetKey(string key)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(key), $"{nameof(key)} cannot be null or white space.");
+
             _key = key;
         }
     }

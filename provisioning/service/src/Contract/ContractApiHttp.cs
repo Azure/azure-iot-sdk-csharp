@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="ifMatch">the optional string with the match condition, normally an eTag. It can be null.</param>
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
-        /// <exception cref="OperationCanceledException">if the cancellation was requested.</exception>
+        /// <exception cref="OperationCanceledException">If the cancellation was requested.</exception>
         /// <exception cref="DeviceProvisioningServiceException">If there is an error in the HTTP communication
         /// between client and service or the service answers the request with error status.</exception>
         public async Task<ContractApiResponse> RequestAsync(

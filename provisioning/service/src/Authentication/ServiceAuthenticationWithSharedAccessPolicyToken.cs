@@ -34,6 +34,8 @@ namespace Microsoft.Azure.Devices
 
         public ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder)
         {
+            Debug.Assert(provisioningConnectionStringBuilder != null, $"{nameof(provisioningConnectionStringBuilder)} cannot be null. Validate parameters upstream.");
+
             provisioningConnectionStringBuilder.SharedAccessKeyName = PolicyName;
             provisioningConnectionStringBuilder.SharedAccessSignature = Token;
             provisioningConnectionStringBuilder.SharedAccessKey = null;
@@ -43,11 +45,15 @@ namespace Microsoft.Azure.Devices
 
         private void SetPolicyName(string policyName)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(policyName), $"{nameof(policyName)} cannot be null or white space.");
+
             _policyName = policyName;
         }
 
         private void SetToken(string token)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(token), $"{nameof(token)} cannot be null or white space.");
+
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Token must be of type SharedAccessSignature");

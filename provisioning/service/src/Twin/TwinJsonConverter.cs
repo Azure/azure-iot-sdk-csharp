@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Converts a <see cref="Twin"/> to Json.
+    /// Converts a <see cref="Twin"/> to JSON.
     /// </summary>
     public sealed class TwinJsonConverter : JsonConverter
     {
@@ -43,9 +43,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Converts <see cref="Twin"/> to its equivalent Json representation.
         /// </summary>
-        /// <param name="writer">the Json writer.</param>
-        /// <param name="value">the <see cref="Twin"/> to convert.</param>
-        /// <param name="serializer">the Json serializer.</param>
+        /// <param name="writer">The JSON writer.</param>
+        /// <param name="value">The twin to convert.</param>
+        /// <param name="serializer">The JSON serializer.</param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)
@@ -190,10 +190,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Converts Json to its equivalent <see cref="Twin"/> representation.
         /// </summary>
-        /// <param name="reader">the Json reader.</param>
-        /// <param name="objectType">object type</param>
-        /// <param name="existingValue">exisiting value</param>
-        /// <param name="serializer">the Json serializer.</param>
+        /// <param name="reader">The JSON reader.</param>
+        /// <param name="objectType">Object type.</param>
+        /// <param name="existingValue">Exisiting value.</param>
+        /// <param name="serializer">The JSON serializer.</param>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader == null)
@@ -333,17 +333,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Converter Can Read flag
+        /// Can read flag.
         /// </summary>
         public override bool CanRead => true;
 
         /// <summary>
-        /// Value indicating whether this TwinJsonConverter can read JSON
+        /// Value indicating whether this TwinJsonConverter can read JSON.
         /// </summary>
         public override bool CanWrite => true;
 
         /// <summary>
-        /// Value indicating whether this TwinJsonConverter can write JSON
+        /// Value indicating whether this TwinJsonConverter can write JSON.
         /// </summary>
         public override bool CanConvert(Type objectType) => typeof(Twin).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
 
