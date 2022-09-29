@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -12,7 +10,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains the properties set by the service import/export job.
     /// </summary>
-    public abstract class IotHubJobResponse
+    public class IotHubJobResponse
     {
         private static readonly JobStatus[] s_finishedStates = new[]
         {
