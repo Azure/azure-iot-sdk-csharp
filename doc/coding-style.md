@@ -1,7 +1,7 @@
 # C# Coding Style
 
 The general rule we follow is "use Visual Studio defaults".
-To enforce this, we make use of an .editorconfig file, and [CodeMaid](https://marketplace.visualstudio.com/items?itemName=SteveCadwallader.CodeMaid) with some rules exported.
+To enforce this, we make use of an .editorconfig file, and [CodeMaid](https://marketplace.visualstudio.com/items?itemName=SteveCadwallader.CodeMaidVS2022) with some rules exported.
 
 ## Specific Rules
 
