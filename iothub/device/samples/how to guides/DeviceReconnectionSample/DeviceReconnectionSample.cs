@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     _logger.LogInformation($"Device sending message {++messageCount} to IoT hub.");
 
-                    Message message = PrepareMessage(messageCount);
+                    OutgoingMessage message = PrepareMessage(messageCount);
                     await RetryOperationHelper.RetryTransientExceptionsAsync(
                         operationName: $"SendD2CMessage_{messageCount}",
                         asyncOperation: async () => await s_deviceClient.SendEventAsync(message),
@@ -347,32 +347,36 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private Task<MessageAcknowledgement> OnMessageReceivedAsync(Message receivedMessage)
+        private Task<MessageAcknowledgement> OnMessageReceivedAsync(IncomingMessage receivedMessage)
         {
-            string messageData = Encoding.ASCII.GetString(receivedMessage.Payload);
-            var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
-
-            foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
+            bool messageDeserialized = receivedMessage.TryGetPayload(out string messageData);
+            if (messageDeserialized)
             {
-                formattedMessage.AppendLine($"\n\tProperty: key={prop.Key}, value={prop.Value}");
-            }
-            _logger.LogInformation(formattedMessage.ToString());
+                var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
 
-            _logger.LogInformation($"Completed message [{messageData}].");
-            return Task.FromResult(MessageAcknowledgement.Complete);
+                foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
+                {
+                    formattedMessage.AppendLine($"\n\tProperty: key={prop.Key}, value={prop.Value}");
+                }
+                _logger.LogInformation(formattedMessage.ToString());
+
+                _logger.LogInformation($"Completed message [{messageData}].");
+                return Task.FromResult(MessageAcknowledgement.Complete);
+            }
+
+            // A message was received that did not conform to the serialization specifications; ignore it.
+            return Task.FromResult(MessageAcknowledgement.Reject);
         }
 
-        private static Message PrepareMessage(int messageId)
+        private static OutgoingMessage PrepareMessage(int messageId)
         {
             int temperature = s_randomGenerator.Next(20, 35);
             int humidity = s_randomGenerator.Next(60, 80);
             string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
 
-            var eventMessage = new Message(Encoding.UTF8.GetBytes(messagePayload))
+            var eventMessage = new OutgoingMessage(messagePayload)
             {
                 MessageId = messageId.ToString(),
-                ContentEncoding = Encoding.UTF8.ToString(),
-                ContentType = "application/json",
             };
             eventMessage.Properties.Add("temperatureAlert", (temperature > TemperatureThreshold) ? "true" : "false");
 

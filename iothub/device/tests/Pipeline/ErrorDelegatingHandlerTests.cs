@@ -80,15 +80,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
-            await sut.SendEventAsync(new Message(new byte[0]), cancellationToken).ConfigureAwait(false);
+            await sut.SendEventAsync(new OutgoingMessage(new byte[0]), cancellationToken).ConfigureAwait(false);
 
             await innerHandler.Received(1).OpenAsync(cancellationToken).ConfigureAwait(false);
-            await innerHandler.Received(1).SendEventAsync(Arg.Any<Message>(), cancellationToken).ConfigureAwait(false);
+            await innerHandler.Received(1).SendEventAsync(Arg.Any<OutgoingMessage>(), cancellationToken).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private static async Task TestExceptionThrown(Type thrownExceptionType, Type expectedExceptionType)
         {
-            var message = new Message(new byte[0]);
+            var message = new OutgoingMessage(new byte[0]);
             var cancellationToken = new CancellationToken();
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(

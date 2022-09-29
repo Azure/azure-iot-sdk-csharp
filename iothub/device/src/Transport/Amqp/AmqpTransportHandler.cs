@@ -53,6 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 ProductInfo = context.ProductInfo,
                 ModelId = context.ModelId,
+                PayloadConvention = context.PayloadConvention,
             };
 
             _connectionCredentials = context.IotHubConnectionCredentials;
@@ -159,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
@@ -179,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));

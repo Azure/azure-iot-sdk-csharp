@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             Logger.Trace($"{deviceId}: DeviceClient SendEventAsync.");
-            var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var testMessage = new OutgoingMessage("TestMessage");
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
             Logger.Trace($"{deviceId}: DeviceClient CloseAsync.");
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             });
 
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+            var message = new OutgoingMessage("Hello");
 
             Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
             var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 });
             }
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+            var message = new OutgoingMessage("Hello");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl.TotalSeconds * 10));
             try

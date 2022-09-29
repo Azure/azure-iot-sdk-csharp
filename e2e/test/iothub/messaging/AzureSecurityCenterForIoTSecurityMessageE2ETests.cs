@@ -77,13 +77,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return TestSecurityMessageModuleAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        private Client.Message ComposeD2CSecurityTestMessage()
+        private OutgoingMessage ComposeD2CSecurityTestMessage()
         {
             string eventId = Guid.NewGuid().ToString();
             string p1Value = eventId;
             string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
 
-            var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
+            var message = new OutgoingMessage(payload)
             {
                 Properties = { ["property1"] = p1Value }
             };
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Client.Message testMessage = ComposeD2CSecurityTestMessage();
+            OutgoingMessage testMessage = ComposeD2CSecurityTestMessage();
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             IotHubModuleClient moduleClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            Client.Message testMessage = ComposeD2CSecurityTestMessage();
+            OutgoingMessage testMessage = ComposeD2CSecurityTestMessage();
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 

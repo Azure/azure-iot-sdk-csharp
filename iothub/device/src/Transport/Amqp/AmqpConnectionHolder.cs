@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             IotHubClientAmqpSettings amqpSettings,
             Func<DirectMethodRequest, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
-            Func<Message, Task<MessageAcknowledgement>> onMessageReceivedCallback,
+            Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {
             if (Logging.IsEnabled)

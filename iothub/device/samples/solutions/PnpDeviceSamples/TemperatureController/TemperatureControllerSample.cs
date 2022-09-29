@@ -384,7 +384,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 { workingSetName, workingSet },
             };
 
-            Message msg = PnpConvention.CreateMessage(telemetry);
+            OutgoingMessage msg = PnpConvention.CreateMessage(telemetry);
 
             await _deviceClient.SendEventAsync(msg, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
@@ -418,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string telemetryName = "temperature";
             double currentTemperature = _temperature[componentName];
-            Message msg = PnpConvention.CreateMessage(telemetryName, currentTemperature, componentName);
+            OutgoingMessage msg = PnpConvention.CreateMessage(telemetryName, currentTemperature, componentName);
 
             await _deviceClient.SendEventAsync(msg, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature} }} in °C.");

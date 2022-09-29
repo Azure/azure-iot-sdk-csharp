@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The convention to use with this message payload.
         /// </summary>
-        internal PayloadConvention PayloadConvention { get; set; }
+        internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
 
         /// <summary>
         /// The message payload, deserialized to the specified type.
@@ -185,7 +185,11 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 string payloadString = PayloadConvention.PayloadEncoder.ContentEncoding.GetString(_payload);
-                payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(payloadString);
+
+                payload = typeof(T) == typeof(string)
+                    ? (T)(object)payloadString
+                    : PayloadConvention.PayloadSerializer.DeserializeToType<T>(payloadString);
+
                 return true;
             }
             catch (Exception)

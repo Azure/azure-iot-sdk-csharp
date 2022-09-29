@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task AmqpTransportHandlerSendEventAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new OutgoingMessage(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task AmqpTransportHandlerSendEventAsyncMultipleMessagesTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<Message>(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<OutgoingMessage>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]

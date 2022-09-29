@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The convention to use with this message payload.
         /// </summary>
-        internal PayloadConvention PayloadConvention { get; set; }
+        internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
 
         /// <summary>
         /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="payload"/> on it.

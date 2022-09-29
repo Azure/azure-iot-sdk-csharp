@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        public async Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken = default)
+        public async Task SendEventAsync(string outputName, OutgoingMessage message, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The task containing the event</returns>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken = default)
+        public async Task SendEventBatchAsync(string outputName, IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
         {
             try
             {

@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
         private readonly SemaphoreSlim _receiveMessageSemaphore = new(1, 1);
 
-        private volatile Func<Message, Task<MessageAcknowledgement>> _receiveMessageCallback;
+        private volatile Func<IncomingMessage, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
         // Connection status change information
         private volatile Action<ConnectionStatusInfo> _connectionStatusChangeCallback;
@@ -62,8 +62,9 @@ namespace Microsoft.Azure.Devices.Client
             {
                 IotHubConnectionCredentials = IotHubConnectionCredentials,
                 ProductInfo = _clientOptions.UserAgentInfo,
-                IotHubClientTransportSettings = _clientOptions.TransportSettings,
                 ModelId = _clientOptions.ModelId,
+                PayloadConvention = _clientOptions.PayloadConvention,
+                IotHubClientTransportSettings = _clientOptions.TransportSettings,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
@@ -146,7 +147,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        public async Task SendEventAsync(Message message, CancellationToken cancellationToken = default)
+        public async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
@@ -155,6 +156,10 @@ namespace Microsoft.Azure.Devices.Client
             {
                 message.MessageId = Guid.NewGuid().ToString();
             }
+
+            message.PayloadConvention = _clientOptions.PayloadConvention;
+            message.ContentType = _clientOptions.PayloadConvention.PayloadSerializer.ContentType;
+            message.ContentEncoding = _clientOptions.PayloadConvention.PayloadEncoder.ContentEncoding.WebName;
 
             await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
         }
@@ -170,14 +175,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default)
+        public async Task SendEventBatchAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
+            foreach (OutgoingMessage message in messages)
             {
-                foreach (Message message in messages)
+                message.PayloadConvention = _clientOptions.PayloadConvention;
+                message.ContentType = _clientOptions.PayloadConvention.PayloadSerializer.ContentType;
+                message.ContentEncoding = _clientOptions.PayloadConvention.PayloadEncoder.ContentEncoding.WebName;
+
+                if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
                 {
                     message.MessageId ??= Guid.NewGuid().ToString();
                 }
@@ -199,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetMessageCallbackAsync(
-            Func<Message, Task<MessageAcknowledgement>> messageCallback,
+            Func<IncomingMessage, Task<MessageAcknowledgement>> messageCallback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -219,7 +228,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the callback is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _receiveMessageCallback = new Func<Message, Task<MessageAcknowledgement>>(messageCallback);
+                    _receiveMessageCallback = new Func<IncomingMessage, Task<MessageAcknowledgement>>(messageCallback);
                 }
                 else
                 {
@@ -558,7 +567,7 @@ namespace Microsoft.Azure.Devices.Client
             return !isFound ? default : (T)handler;
         }
 
-        internal async Task<MessageAcknowledgement> OnMessageReceivedAsync(Message message)
+        internal async Task<MessageAcknowledgement> OnMessageReceivedAsync(IncomingMessage message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(OnMessageReceivedAsync));
@@ -571,7 +580,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<Message, Task<MessageAcknowledgement>> callback = _receiveMessageCallback;
+                Func<IncomingMessage, Task<MessageAcknowledgement>> callback = _receiveMessageCallback;
 
                 if (callback != null)
                 {

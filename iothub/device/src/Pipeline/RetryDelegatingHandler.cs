@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
         }
 
-        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
         {
             try
             {
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
         {
             try
             {

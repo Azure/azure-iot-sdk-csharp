@@ -35,6 +35,8 @@ namespace Microsoft.Azure.Devices.Client
 
         public const string CreationTimeUtc = "iothub-creation-time-utc";
 
+        public const string CreationTimeBatchUtc = "iothub-app-iothub-creation-time-utc";
+
         public const string ContentEncoding = "iothub-content-encoding";
 
         public const string ContentType = "iothub-content-type";
