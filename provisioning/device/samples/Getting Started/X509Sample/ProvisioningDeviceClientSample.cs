@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             Console.WriteLine($"Device {result.DeviceId} registered to {result.AssignedHub}.");
 
             Console.WriteLine("Creating X509 authentication for IoT Hub...");
-            using var auth = new DeviceAuthenticationWithX509Certificate(
+            var auth = new DeviceAuthenticationWithX509Certificate(
                 result.DeviceId,
                 certificate);
 

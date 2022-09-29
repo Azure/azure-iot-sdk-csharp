@@ -13,14 +13,14 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Builds Shared Access Signature (SAS) tokens.
     /// </summary>
-    public class SharedAccessSignatureBuilder
+    internal class SharedAccessSignatureBuilder
     {
         private string _key;
 
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        public SharedAccessSignatureBuilder()
+        internal SharedAccessSignatureBuilder()
         {
             TimeToLive = TimeSpan.FromMinutes(60);
         }
@@ -28,12 +28,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The shared access policy name.
         /// </summary>
-        public string KeyName { get; set; }
+        internal string KeyName { get; set; }
 
         /// <summary>
         /// The shared access key value.
         /// </summary>
-        public string Key
+        internal string Key
         {
             get => _key;
 
@@ -47,18 +47,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The resource Id being accessed.
         /// </summary>
-        public string Target { get; set; }
+        internal string Target { get; set; }
 
         /// <summary>
         /// The time the token expires.
         /// </summary>
-        public TimeSpan TimeToLive { get; set; }
+        internal TimeSpan TimeToLive { get; set; }
 
         /// <summary>
         /// Build a SAS token.
         /// </summary>
         /// <returns>SAS token.</returns>
-        public string ToSignature()
+        internal string ToSignature()
         {
             return BuildSignature(KeyName, Key, Target, TimeToLive);
         }

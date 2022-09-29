@@ -7,17 +7,17 @@ namespace Microsoft.Azure.Devices
 {
     internal static class SharedAccessSignatureConstants
     {
-        public const int MaxKeyNameLength = 256;
-        public const int MaxKeyLength = 256;
-        public const string SharedAccessSignature = "SharedAccessSignature";
-        public const string AudienceFieldName = "sr";
-        public const string SignatureFieldName = "sig";
-        public const string KeyNameFieldName = "skn";
-        public const string ExpiryFieldName = "se";
-        public const string SignedResourceFullFieldName = SharedAccessSignature + " " + AudienceFieldName;
-        public const string KeyValueSeparator = "=";
-        public const string PairSeparator = "&";
-        public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        public static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
+        internal const int MaxKeyNameLength = 256;
+        internal const int MaxKeyLength = 256;
+        internal const string SharedAccessSignature = "SharedAccessSignature";
+        internal const string AudienceFieldName = "sr";
+        internal const string SignatureFieldName = "sig";
+        internal const string KeyNameFieldName = "skn";
+        internal const string ExpiryFieldName = "se";
+        internal const string SignedResourceFullFieldName = SharedAccessSignature + " " + AudienceFieldName;
+        internal const string KeyValueSeparator = "=";
+        internal const string PairSeparator = "&";
+        internal static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        internal static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
     }
 }

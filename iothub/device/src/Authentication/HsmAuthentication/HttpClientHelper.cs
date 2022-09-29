@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
@@ -14,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         private const string HttpsScheme = "https";
         private const string UnixScheme = "unix";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The caller of this method is in charge of disposing the HTTP client that is returned.")]
         public static HttpClient GetHttpClient(Uri providerUri)
@@ -27,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
-                return new HttpClient(new HttpUdsMessageHandler(providerUri));
+                return new HttpClient(new HttpUdsMessageHandler(providerUri), true);
             }
 
             throw new InvalidOperationException("ProviderUri scheme is not supported");

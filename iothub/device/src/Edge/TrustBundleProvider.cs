@@ -43,11 +43,11 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 {
                     case SwaggerException<ErrorResponse> errorResponseException:
                         throw new HttpHsmComunicationException(
-                            $"Error calling GetTrustBundleWithRetry: {errorResponseException.Result?.Message ?? string.Empty}", errorResponseException.StatusCode);
+                            $"Error calling GetTrustBundleWithRetry: {errorResponseException.Result?.Message ?? string.Empty}", errorResponseException.StatusCode, ex);
 
                     case SwaggerException swaggerException:
                         throw new HttpHsmComunicationException(
-                            $"Error calling GetTrustBundleWithRetry: {swaggerException.Response ?? string.Empty}", swaggerException.StatusCode);
+                            $"Error calling GetTrustBundleWithRetry: {swaggerException.Response ?? string.Empty}", swaggerException.StatusCode, ex);
 
                     default:
                         throw;

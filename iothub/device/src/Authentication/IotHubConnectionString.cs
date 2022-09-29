@@ -75,20 +75,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A properly formatted connection string.</returns>
         public override sealed string ToString()
         {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.HostNamePropertyName, IotHubHostName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.DeviceIdPropertyName, DeviceId);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.ModuleIdPropertyName, ModuleId);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyNamePropertyName, SharedAccessKeyName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyPropertyName, SharedAccessKey);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessSignaturePropertyName, SharedAccessSignature);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.GatewayHostNamePropertyName, GatewayHostName);
-            if (stringBuilder.Length > 0)
+            var sb = new StringBuilder();
+            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.HostNamePropertyName, IotHubHostName);
+            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.DeviceIdPropertyName, DeviceId);
+            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.ModuleIdPropertyName, ModuleId);
+            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyNamePropertyName, SharedAccessKeyName);
+            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyPropertyName, SharedAccessKey);
+            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessSignaturePropertyName, SharedAccessSignature);
+            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.GatewayHostNamePropertyName, GatewayHostName);
+            if (sb.Length > 0)
             {
-                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                sb.Remove(sb.Length - 1, 1);
             }
 
-            return stringBuilder.ToString();
+            return sb.ToString();
         }
     }
 }

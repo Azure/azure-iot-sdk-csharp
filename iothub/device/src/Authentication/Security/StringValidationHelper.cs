@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
         private const char Base64Padding = '=';
         private const string StringIsNotBase64 = "String '{0}' is not Base64";
 
-        private static readonly HashSet<char> s_base64Table = new HashSet<char>
+        private static readonly HashSet<char> s_base64Table = new()
         {
             'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',
             'P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d',
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
             '8','9','+','/'
         };
 
-        public static void EnsureBase64String(string value, string paramName)
+        internal static void EnsureBase64String(string value, string paramName)
         {
             if (!IsBase64StringValid(value))
             {
@@ -29,25 +29,12 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        public static bool IsBase64StringValid(string value)
+        internal static bool IsBase64StringValid(string value)
         {
             return value != null && IsBase64String(value);
         }
 
-        public static void EnsureNullOrBase64String(string value, string paramName)
-        {
-            if (!IsNullOrBase64String(value))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, StringIsNotBase64, value), paramName);
-            }
-        }
-
-        public static bool IsNullOrBase64String(string value)
-        {
-            return value == null || IsBase64String(value);
-        }
-
-        public static bool IsBase64String(string value)
+        internal static bool IsBase64String(string value)
         {
             value = value.Replace("\r", string.Empty)
                 .Replace("\n", string.Empty);

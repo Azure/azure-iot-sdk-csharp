@@ -5,14 +5,14 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal static class IotHubConnectionStringConstants
     {
-        public const char ValuePairDelimiter = ';';
-        public const char ValuePairSeparator = '=';
-        public const string HostNamePropertyName = "HostName";
-        public const string GatewayHostNamePropertyName = "GatewayHostName";
-        public const string DeviceIdPropertyName = "DeviceId";
-        public const string ModuleIdPropertyName = "ModuleId";
-        public const string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
-        public const string SharedAccessKeyPropertyName = "SharedAccessKey";
-        public const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
+        internal const char ValuePairDelimiter = ';';
+        internal const char ValuePairSeparator = '=';
+        internal const string HostNamePropertyName = "HostName";
+        internal const string GatewayHostNamePropertyName = "GatewayHostName";
+        internal const string DeviceIdPropertyName = "DeviceId";
+        internal const string ModuleIdPropertyName = "ModuleId";
+        internal const string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
+        internal const string SharedAccessKeyPropertyName = "SharedAccessKey";
+        internal const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
     }
 }

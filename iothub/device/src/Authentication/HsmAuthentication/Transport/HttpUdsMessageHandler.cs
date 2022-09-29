@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
     {
         private readonly Uri _providerUri;
 
-        public HttpUdsMessageHandler(Uri providerUri)
+        internal HttpUdsMessageHandler(Uri providerUri)
         {
             _providerUri = providerUri;
         }

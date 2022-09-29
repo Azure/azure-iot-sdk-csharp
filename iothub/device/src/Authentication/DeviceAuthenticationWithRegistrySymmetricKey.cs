@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
         public byte[] Key
         {
             get => _key;
-            set => SetKey(value);
+            set => _key = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -114,11 +114,6 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
 
             return iotHubConnectionCredentials;
-        }
-
-        private void SetKey(byte[] key)
-        {
-            _key = key ?? throw new ArgumentNullException(nameof(key));
         }
 
         private void SetKeyFromBase64String(string key)

@@ -4,20 +4,22 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
     /// <summary>
     /// The exception that is thrown when communication fails with HSM HTTP server.
     /// </summary>
     [Serializable]
-    public class HttpHsmComunicationException : Exception
+    internal class HttpHsmComunicationException : Exception
     {
         /// <summary>
         /// Creates an instance of this class with the supplied error message and status code.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="statusCode">Status code of the communication failure.</param>
-        public HttpHsmComunicationException(string message, int statusCode) : base($"{message}, StatusCode: {statusCode}")
+        /// <param name="innerException">The inner exception, if any.</param>
+        public HttpHsmComunicationException(string message, int statusCode, Exception innerException = default)
+            : base($"{message}, StatusCode: {statusCode}", innerException)
         {
             StatusCode = statusCode;
         }

@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
     internal static class SasTokenBuilder
     {
-        public static string BuildSasToken(string audience, string signature, string expiry)
+        internal static string BuildSasToken(string audience, string signature, string expiry)
         {
             // Example returned string:
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             return buffer.ToString();
         }
 
-        public static string BuildExpiresOn(DateTime startTime, TimeSpan timeToLive)
+        internal static string BuildExpiresOn(DateTime startTime, TimeSpan timeToLive)
         {
             DateTime expiresOn = startTime.Add(timeToLive);
             TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             return Convert.ToString(seconds, CultureInfo.InvariantCulture);
         }
 
-        public static string BuildAudience(string iotHub, string deviceId, string moduleId)
+        internal static string BuildAudience(string iotHub, string deviceId, string moduleId)
         {
             // DeviceId and ModuleId need to be double encoded.
             string audience = WebUtility.UrlEncode(

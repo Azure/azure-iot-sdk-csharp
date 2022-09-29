@@ -9,8 +9,6 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal delegate bool TryParse<in TInput, TOutput>(TInput input, bool ignoreCase, out TOutput output);
-
     internal static class CommonExtensionMethods
     {
         public static IDictionary<string, string> ToDictionary(this string valuePairString, char kvpDelimiter, char kvpSeparator)
@@ -42,17 +40,17 @@ namespace Microsoft.Azure.Devices.Client
             return map;
         }
 
-        public static void AppendKeyValuePairIfNotEmpty(this StringBuilder builder, string name, object value)
+        public static void AppendKeyValuePairIfNotEmpty(this StringBuilder sb, string name, object value)
         {
             const char valuePairDelimiter = ';';
             const char valuePairSeparator = '=';
 
             if (value != null)
             {
-                builder.Append(name);
-                builder.Append(valuePairSeparator);
-                builder.Append(value);
-                builder.Append(valuePairDelimiter);
+                sb.Append(name);
+                sb.Append(valuePairSeparator);
+                sb.Append(value);
+                sb.Append(valuePairDelimiter);
             }
         }
 
