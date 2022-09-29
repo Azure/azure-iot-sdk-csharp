@@ -11,9 +11,18 @@ namespace Microsoft.Azure.Devices
     public class ServiceStatistics
     {
         /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
+        protected internal ServiceStatistics()
+        { }
+
+        /// <summary>
         /// Number of devices connected to IoT hub.
         /// </summary>
         [JsonProperty(PropertyName = "connectedDeviceCount")]
-        public long ConnectedDeviceCount { get; set; }
+        public long ConnectedDeviceCount { get; protected internal set; }
     }
 }

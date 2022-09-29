@@ -14,7 +14,10 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        internal JobProperties()
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
+        protected internal JobProperties()
         { }
 
         /// <summary>
@@ -24,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// This value is set by this client depending on which job method is called.
         /// </remarks>
         [JsonProperty(PropertyName = "type", Required = Required.Always)]
-        protected internal JobType Type { get; internal set; }
+        public JobType Type { get; protected internal set; }
 
         /// <summary>
         /// URI to a blob container, used to output the status of the job and the results.
