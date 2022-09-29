@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices
 {
     internal sealed class IotHubConnectionStringParser
     {
-        internal static IotHubConnectionStringBuilder Parse(string iotHubConnectionString)
+        internal static IotHubConnectionString Parse(string iotHubConnectionString)
         {
             IDictionary<string, string> map = ToDictionary(iotHubConnectionString, IotHubConnectionStringConstants.ValuePairDelimiter, IotHubConnectionStringConstants.ValuePairSeparator);
 
@@ -17,22 +17,51 @@ namespace Microsoft.Azure.Devices
             string sharedAccessKeyName = GetConnectionStringOptionalValue(map, IotHubConnectionStringConstants.SharedAccessKeyNamePropertyName);
             string sharedAccessKey = GetConnectionStringOptionalValue(map, IotHubConnectionStringConstants.SharedAccessKeyPropertyName);
             string sharedAccessSignature = GetConnectionStringOptionalValue(map, IotHubConnectionStringConstants.SharedAccessSignaturePropertyName);
-            string gatewayHostName = GetConnectionStringOptionalValue(map, IotHubConnectionStringConstants.GatewayHostNamePropertyName);
 
-            var iothubConnectionStringBuilder = new IotHubConnectionStringBuilder(hostName, sharedAccessKeyName, sharedAccessKey, sharedAccessSignature, gatewayHostName);
-            iothubConnectionStringBuilder.Validate();
+            Validate(hostName, sharedAccessKeyName, sharedAccessKey, sharedAccessSignature);
 
-            return iothubConnectionStringBuilder;
+            return new IotHubConnectionString(hostName, sharedAccessKeyName, sharedAccessKey, sharedAccessSignature);
         }
 
-        /// <summary>
-        /// Takes a string representation of key/value pairs and produces a dictionary
-        /// </summary>
-        /// <param name="valuePairString">The string containing key/value pairs</param>
-        /// <param name="kvpDelimiter">The delimeter between key/value pairs</param>
-        /// <param name="kvpSeparator">The character separating each key and value</param>
-        /// <returns>A dictionary of the key/value pairs</returns>
-        internal static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
+        private static void Validate(string hostName, string sharedAccessKeyName, string sharedAccessKey, string sharedAccessSignature)
+        {
+            string iotHubName = GetIotHubName(hostName);
+            if (string.IsNullOrWhiteSpace(sharedAccessKeyName))
+            {
+                throw new ArgumentException("Should specify either SharedAccessKeyName.");
+            }
+
+            if (!(string.IsNullOrWhiteSpace(sharedAccessKey) ^ string.IsNullOrWhiteSpace(sharedAccessSignature)))
+            {
+                throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature.");
+            }
+
+            if (string.IsNullOrWhiteSpace(iotHubName))
+            {
+                throw new FormatException("Missing IoT hub name.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(sharedAccessKey))
+            {
+                Convert.FromBase64String(sharedAccessKey);
+            }
+
+            if (SharedAccessSignatureParser.IsSharedAccessSignature(sharedAccessSignature))
+            {
+                SharedAccessSignatureParser.Parse(iotHubName, sharedAccessSignature);
+            }
+        }
+
+        private static string GetIotHubName(string hostName)
+        {
+            int index = hostName.IndexOf(IotHubConnectionStringConstants.HostNameSeparator, StringComparison.OrdinalIgnoreCase);
+            string iotHubName = index >= 0
+                ? hostName.Substring(0, index)
+                : hostName;
+            return iotHubName;
+        }
+
+        private static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
         {
             if (string.IsNullOrWhiteSpace(valuePairString))
             {
@@ -53,7 +82,7 @@ namespace Microsoft.Azure.Devices
             return map;
         }
 
-        internal static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
+        private static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
         {
             if (!map.TryGetValue(propertyName, out string value))
             {
@@ -65,7 +94,7 @@ namespace Microsoft.Azure.Devices
             return value;
         }
 
-        internal static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
+        private static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
         {
             map.TryGetValue(propertyName, out string value);
             return value;

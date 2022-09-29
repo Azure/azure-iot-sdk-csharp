@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices
                 options = new IotHubServiceClientOptions();
             }
 
-            var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
+            var iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
             _credentialProvider = iotHubConnectionString;
             _hostName = iotHubConnectionString.HostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);

@@ -4,12 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
@@ -355,9 +354,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
-            var iotHubsToStartAt = new List<string> { TestConfiguration.Provisioning.FarAwayIotHubHostName };
-            var iotHubsToReprovisionTo = new List<string> { connectionString.HostName };
+            var iotHubsToStartAt = new List<string> { GetHostName(TestConfiguration.IotHub.ConnectionString) };
+            var iotHubsToReprovisionTo = new List<string> { };
             await ProvisioningDeviceClient_ReprovisioningFlow(
                     transportSettings,
                     attestationType,
@@ -383,9 +381,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             var iotHubsToStartAt = new List<string> { TestConfiguration.Provisioning.FarAwayIotHubHostName };
-            var iotHubsToReprovisionTo = new List<string> { connectionString.HostName };
+            var iotHubsToReprovisionTo = new List<string> { GetHostName(TestConfiguration.IotHub.ConnectionString) };
             await ProvisioningDeviceClient_ReprovisioningFlow(
                     transportSettings,
                     attestationType,
@@ -400,6 +397,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
+        private string GetHostName(string connectionString)
+        {
+            IEnumerable<string[]> parts = connectionString
+                .Split(IotHubConnectionStringConstants.ValuePairDelimiter)
+                .Select((part) => part.Split(new char[] { IotHubConnectionStringConstants.ValuePairSeparator }, 2));
+
+            if (parts.Any((part) => part.Length != 2))
+            {
+                throw new FormatException("Malformed Token");
+            }
+
+            IDictionary<string, string> map = parts.ToDictionary((kvp) => kvp[0], (kvp) => kvp[1], StringComparer.OrdinalIgnoreCase);
+
+            map.TryGetValue(IotHubConnectionStringConstants.HostNamePropertyName, out string value);
+            return value;
+        }
+
         /// <summary>
         /// The expected behavior is that, with ReprovisionPolicy set to never update hub, the a device is not reprovisioned, even when other settings would suggest it should
         /// </summary>
@@ -410,9 +424,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             var iotHubsToStartAt = new List<string>() { TestConfiguration.Provisioning.FarAwayIotHubHostName };
-            var iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
+            var iotHubsToReprovisionTo = new List<string>() { GetHostName(TestConfiguration.IotHub.ConnectionString) };
             await ProvisioningDeviceClient_ReprovisioningFlow(
                     transportSettings,
                     attestationType,

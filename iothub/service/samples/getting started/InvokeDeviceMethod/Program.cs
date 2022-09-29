@@ -25,9 +25,6 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
                 .WithParsed(parsedParams => parameters = parsedParams)
                 .WithNotParsed(errors => Environment.Exit(1));
 
-            // This sample accepts the service connection string as a parameter, if present.
-            Parameters.ValidateConnectionString(parameters.HubConnectionString);
-
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
             using var serviceClient = new IotHubServiceClient(parameters.HubConnectionString);
 
