@@ -15,18 +15,11 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="iotHubName">The IoT hub name.</param>
         /// <param name="rawToken">The string representation of the SAS token to parse.</param>
-        /// <returns>The <see cref="SharedAccessSignature"/> instance that represents the passed in raw token.</returns>
-        public static SharedAccessSignature Parse(string iotHubName, string rawToken)
+        /// <returns>The shared access signature instance that represents the passed in raw token.</returns>
+        internal static SharedAccessSignature Parse(string iotHubName, string rawToken)
         {
-            if (string.IsNullOrWhiteSpace(iotHubName))
-            {
-                throw new ArgumentNullException(nameof(iotHubName));
-            }
-
-            if (string.IsNullOrWhiteSpace(rawToken))
-            {
-                throw new ArgumentNullException(nameof(rawToken));
-            }
+            Argument.AssertNotNullOrWhiteSpace(iotHubName, nameof(iotHubName));
+            Argument.AssertNotNullOrWhiteSpace(rawToken, nameof(rawToken));
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
@@ -70,7 +63,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="rawSignature">The string representation of the SAS token to parse.</param>
         /// <returns>True if the passed in raw signature is a valid SAS token. False otherwise.</returns>
-        public static bool IsSharedAccessSignature(string rawSignature)
+        internal static bool IsSharedAccessSignature(string rawSignature)
         {
             if (string.IsNullOrWhiteSpace(rawSignature))
             {

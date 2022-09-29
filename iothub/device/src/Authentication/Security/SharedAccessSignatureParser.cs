@@ -14,15 +14,12 @@ namespace Microsoft.Azure.Devices.Client
         /// Parse the supplied shared access signature token
         /// </summary>
         /// <param name="rawToken">The shared access signature token</param>
-        /// <returns></returns>
+        /// <returns>The shared access signature instance that represents the passed in raw token.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="rawToken"/> is null, empty or whitespace.</exception>
         /// <exception cref="FormatException">Thrown if the supplied shared access signature doesn't contain the expected fields.</exception>
         internal static SharedAccessSignature Parse(string rawToken)
         {
-            if (rawToken.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentNullException(nameof(rawToken));
-            }
+            Argument.AssertNotNullOrWhiteSpace(rawToken, nameof(rawToken));
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 

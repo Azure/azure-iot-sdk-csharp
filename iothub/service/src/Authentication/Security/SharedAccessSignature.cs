@@ -39,32 +39,32 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The IoT hub name.
         /// </summary>
-        public string IotHubName { get; private set; }
+        internal string IotHubName { get; private set; }
 
         /// <summary>
         /// The date and time the SAS expires.
         /// </summary>
-        public DateTime ExpiresOn { get; private set; }
+        internal DateTime ExpiresOn { get; private set; }
 
         /// <summary>
         /// Name of the authorization rule.
         /// </summary>
-        public string KeyName { get; private set; }
+        internal string KeyName { get; private set; }
 
         /// <summary>
         /// The audience scope to which this signature applies.
         /// </summary>
-        public string Audience { get; private set; }
+        internal string Audience { get; private set; }
 
         /// <summary>
         /// The value of the shared access signature.
         /// </summary>
-        public string Signature { get; private set; }
+        internal string Signature { get; private set; }
 
         /// <summary>
         /// Indicates if the token has expired.
         /// </summary>
-        public bool IsExpired()
+        internal bool IsExpired()
         {
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The date and time of expiration.
         /// </summary>
-        public DateTime ExpiryTime()
+        internal DateTime ExpiryTime()
         {
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
         }

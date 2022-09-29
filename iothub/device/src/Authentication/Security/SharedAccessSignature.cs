@@ -21,15 +21,15 @@ namespace Microsoft.Azure.Devices.Client
             Audience = WebUtility.UrlDecode(encodedAudience);
         }
 
-        public DateTime ExpiresOn { get; }
+        internal DateTime ExpiresOn { get; }
 
-        public string KeyName { get; }
+        internal string KeyName { get; }
 
-        public string Audience { get; }
+        internal string Audience { get; }
 
-        public string Signature { get; }
+        internal string Signature { get; }
 
-        public bool IsExpired()
+        internal bool IsExpired()
         {
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
