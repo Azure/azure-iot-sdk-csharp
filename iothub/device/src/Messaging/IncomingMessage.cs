@@ -13,7 +13,14 @@ namespace Microsoft.Azure.Devices.Client
     {
         private readonly byte[] _payload;
 
-        internal IncomingMessage(byte[] payload)
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
+        /// <param name="payload">The payload to be set to the incoming message.</param>
+        protected internal IncomingMessage(byte[] payload)
         {
             _payload = payload;
         }
@@ -27,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         public string MessageId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId);
-            internal set => SystemProperties[MessageSystemPropertyNames.MessageId] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.MessageId] = value;
         }
 
         /// <summary>
@@ -36,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client
         public string CorrelationId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.CorrelationId);
-            internal set => SystemProperties[MessageSystemPropertyNames.CorrelationId] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.CorrelationId] = value;
         }
 
         /// <summary>
@@ -45,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
         public ulong SequenceNumber
         {
             get => GetSystemProperty<ulong>(MessageSystemPropertyNames.SequenceNumber);
-            internal set => SystemProperties[MessageSystemPropertyNames.SequenceNumber] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.SequenceNumber] = value;
         }
 
         /// <summary>
@@ -54,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
         public string To
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.To);
-            internal set => SystemProperties[MessageSystemPropertyNames.To] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.To] = value;
         }
 
         /// <summary>
@@ -63,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
         public string UserId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.UserId);
-            internal set => SystemProperties[MessageSystemPropertyNames.UserId] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.UserId] = value;
         }
 
         /// <summary>
@@ -72,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime CreationTimeUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
-            set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
         }
 
         /// <summary>
@@ -81,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime EnqueuedTimeUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
-            internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
         }
 
         /// <summary>
@@ -90,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime ExpiryTimeUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
-            internal set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
         }
 
         /// <summary>
@@ -99,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
         public uint DeliveryCount
         {
             get => GetSystemProperty<byte>(MessageSystemPropertyNames.DeliveryCount);
-            internal set => SystemProperties[MessageSystemPropertyNames.DeliveryCount] = (byte)value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.DeliveryCount] = (byte)value;
         }
 
         /// <summary>
@@ -117,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client
         public string Acknowledgement
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.Ack);
-            internal set => SystemProperties[MessageSystemPropertyNames.Ack] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.Ack] = value;
         }
 
         /// <summary>
@@ -126,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client
         public string MessageSchema
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageSchema);
-            internal set => SystemProperties[MessageSystemPropertyNames.MessageSchema] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.MessageSchema] = value;
         }
 
         /// <summary>
@@ -135,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ContentType
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
-            internal set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
         }
 
         /// <summary>
@@ -144,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ContentEncoding
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
-            internal set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
         }
 
         /// <summary>
@@ -153,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client
         public string InputName
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.InputName);
-            internal set => SystemProperties[MessageSystemPropertyNames.InputName] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.InputName] = value;
         }
 
         /// <summary>
@@ -164,12 +171,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the dictionary of system properties which are managed internally.
         /// </summary>
-        internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        protected internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The convention to use with this message payload.
         /// </summary>
-        internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
+        protected internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
 
         /// <summary>
         /// The message payload, deserialized to the specified type.

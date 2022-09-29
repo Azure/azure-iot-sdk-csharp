@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ContentType
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
-            internal set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ContentEncoding
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
-            internal set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime EnqueuedTimeUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
-            internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ConnectionDeviceId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionDeviceId);
-            internal set => SystemProperties[MessageSystemPropertyNames.ConnectionDeviceId] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.ConnectionDeviceId] = value;
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ConnectionModuleId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionModuleId);
-            internal set => SystemProperties[MessageSystemPropertyNames.ConnectionModuleId] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.ConnectionModuleId] = value;
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client
         public string InputName
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.InputName);
-            internal set => SystemProperties[MessageSystemPropertyNames.InputName] = value;
+            protected internal set => SystemProperties[MessageSystemPropertyNames.InputName] = value;
         }
 
         /// <summary>
@@ -176,12 +176,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the dictionary of system properties which are managed internally.
         /// </summary>
-        internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        protected internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The convention to use with this message payload.
         /// </summary>
-        internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
+        protected internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
 
         /// <summary>
         /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="payload"/> on it.
