@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         [NonSerialized]
         private const string TrackingIdValueSerializationStoreName = "IotHubClientException-TrackingId";
 
-        private static readonly HashSet<IotHubClientErrorCode> transientErrorCodes = new()
+        private static readonly HashSet<IotHubClientErrorCode> s_transientErrorCodes = new()
         {
             IotHubClientErrorCode.QuotaExceeded,
             IotHubClientErrorCode.ServerError,
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         // the hub service, so it is not always possible to obtain the HTTP status code and a specific error code.
         // With a best effort match, we map the error codes here to what the hub service exception has, and then match 
         // an appropriate HTTP status code for each of them via the dictionary below.
-        private static readonly Dictionary<IotHubClientErrorCode, HttpStatusCode> httpStatusCodes = new()
+        private static readonly Dictionary<IotHubClientErrorCode, HttpStatusCode> s_httpStatusCodes = new()
         {
             { IotHubClientErrorCode.Ok, HttpStatusCode.OK },
             { IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded, HttpStatusCode.Forbidden },
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client
             IsTransient = DetermineIfTransient(errorCode);
             TrackingId = trackingId;
             ErrorCode = errorCode;
-            StatusCode = httpStatusCodes.TryGetValue(errorCode, out HttpStatusCode value) 
+            StatusCode = s_httpStatusCodes.TryGetValue(errorCode, out HttpStatusCode value) 
                 ? value
                 : 0;
         }
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             IsTransient = DetermineIfTransient(errorCode);
             ErrorCode = errorCode;
-            StatusCode = httpStatusCodes.TryGetValue(errorCode, out HttpStatusCode value)
+            StatusCode = s_httpStatusCodes.TryGetValue(errorCode, out HttpStatusCode value)
                 ? value
                 : 0;
         }
@@ -180,12 +180,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient { get; private set; }
+        public bool IsTransient { get; }
 
         /// <summary>
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
-        public string TrackingId { get; set; }
+        public string TrackingId { get; internal set; }
 
         /// <summary>
         /// The HTTP status code.
@@ -193,12 +193,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This property is not actually obtained from the response but mapped from the property <see cref="ErrorCode"/> with the best effort match.
         /// </remarks>
-        public HttpStatusCode StatusCode { get; private set; }
+        public HttpStatusCode StatusCode { get; }
 
         /// <summary>
         /// The specific error code.
         /// </summary>
-        public IotHubClientErrorCode ErrorCode { get; internal set; }
+        public IotHubClientErrorCode ErrorCode { get; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private bool DetermineIfTransient(IotHubClientErrorCode errorCode)
         {
-            return transientErrorCodes.Contains(errorCode);
+            return s_transientErrorCodes.Contains(errorCode);
         }
     }
 }

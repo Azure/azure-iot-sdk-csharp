@@ -53,23 +53,23 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient { get; set; }
+        public bool IsTransient { get; }
 
         /// <summary>
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
-        public string TrackingId { get; set; }
+        public string TrackingId { get; internal set; }
 
         /// <summary>
         /// The status code returned back in the IoT hub service response.
         /// </summary>
-        public HttpStatusCode StatusCode { get; set; }
+        public HttpStatusCode StatusCode { get; }
 
         /// <summary>
         /// The specific error code in the IoT hub service response, if available.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/rest/api/iothub/common-error-codes"/>.
-        public IotHubServiceErrorCode ErrorCode { get; set; }
+        public IotHubServiceErrorCode ErrorCode { get; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.

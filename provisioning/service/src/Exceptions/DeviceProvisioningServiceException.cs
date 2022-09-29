@@ -100,22 +100,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// True if the error is transient.
         /// </summary>
-        public bool IsTransient { get; private set; }
+        public bool IsTransient { get; }
 
         /// <summary>
         /// Service reported tracking Id. Use this when reporting a service issue.
         /// </summary>
-        public string TrackingId { get; private set; }
+        public string TrackingId { get; }
 
         /// <summary>
         /// The 3-digit HTTP status code returned by Device Provisioning Service.
         /// </summary>
-        public HttpStatusCode StatusCode { get; private set; }
+        public HttpStatusCode StatusCode { get; }
 
         /// <summary>
         /// The specific 6-digit error code in the DPS response, if available.
         /// </summary>
-        public int ErrorCode { get; private set; }
+        public int ErrorCode { get; }
 
         /// <summary>
         /// The HTTP headers.
