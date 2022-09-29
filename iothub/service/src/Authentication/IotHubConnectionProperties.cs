@@ -13,10 +13,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     internal abstract class IotHubConnectionProperties : IAuthorizationHeaderProvider, ICbsTokenProvider
     {
-        private const string HostNameSeparator = ".";
-        private const string HttpsEndpointPrefix = "https";
-        private const string AmqpsScheme = "amqps";
-
         /// <summary>
         /// Constructor for mocking purposes only.
         /// </summary>
@@ -33,8 +29,8 @@ namespace Microsoft.Azure.Devices
 
             HostName = hostName;
             IotHubName = GetIotHubName(hostName);
-            AmqpEndpoint = new UriBuilder(AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
-            HttpsEndpoint = new UriBuilder(HttpsEndpointPrefix, HostName).Uri;
+            AmqpEndpoint = new UriBuilder(IotHubConnectionStringConstants.AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
+            HttpsEndpoint = new UriBuilder(IotHubConnectionStringConstants.HttpsEndpointPrefix, HostName).Uri;
         }
 
         public string IotHubName { get; protected set; }
@@ -68,7 +64,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException($"{nameof(hostName)} is null or empty.");
             }
 
-            int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
+            int index = hostName.IndexOf(IotHubConnectionStringConstants.HostNameSeparator, StringComparison.OrdinalIgnoreCase);
             string iotHubName = index >= 0
                 ? hostName.Substring(0, index)
                 : hostName;
