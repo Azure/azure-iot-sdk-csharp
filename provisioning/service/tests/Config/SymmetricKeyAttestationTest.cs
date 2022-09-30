@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Text;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -11,47 +13,47 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
     [TestCategory("Unit")]
     public class SymmetricKeyAttestationTest
     {
-        string validKeyValue = Convert.ToBase64String(Encoding.UTF8.GetBytes("000000000000000000"));
-        string validKeyValue2 = Convert.ToBase64String(Encoding.UTF8.GetBytes("111111111111111111"));
+        private readonly string _validKeyValue = Convert.ToBase64String(Encoding.UTF8.GetBytes("000000000000000000"));
+        private readonly string _validKeyValue2 = Convert.ToBase64String(Encoding.UTF8.GetBytes("111111111111111111"));
 
         [TestMethod]
-        public void constructorAllowsBase64EncodedKeys()
+        public void ConstructorAllowsBase64EncodedKeys()
         {
-            var symmetricKeyAttestation = new SymmetricKeyAttestation(validKeyValue, validKeyValue2);
+            var symmetricKeyAttestation = new SymmetricKeyAttestation(_validKeyValue, _validKeyValue2);
 
-            Assert.AreEqual(validKeyValue, symmetricKeyAttestation.PrimaryKey);
-            Assert.AreEqual(validKeyValue2, symmetricKeyAttestation.SecondaryKey);
+            symmetricKeyAttestation.PrimaryKey.Should().Be(_validKeyValue);
+            symmetricKeyAttestation.SecondaryKey.Should().Be(_validKeyValue2);
         }
 
         [TestMethod]
-        public void jsonSerializingWorks()
+        public void JsonSerializingWorks()
         {
             string expectedJson =
                 "{" +
-                "\"primaryKey\":\"" + validKeyValue + "\"," +
-                "\"secondaryKey\":\"" + validKeyValue2 + "\"" +
+                "\"primaryKey\":\"" + _validKeyValue + "\"," +
+                "\"secondaryKey\":\"" + _validKeyValue2 + "\"" +
                 "}";
 
-            var symmetricKeyAttestation = new SymmetricKeyAttestation(validKeyValue, validKeyValue2);
+            var symmetricKeyAttestation = new SymmetricKeyAttestation(_validKeyValue, _validKeyValue2);
 
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(symmetricKeyAttestation);
+            string json = JsonConvert.SerializeObject(symmetricKeyAttestation);
 
-            Assert.AreEqual(expectedJson, json);
+            json.Should().Be(expectedJson);
         }
 
         [TestMethod]
-        public void jsonParsingWorks()
+        public void JsonParsingWorks()
         {
             string expectedJson =
                 "{" +
-                "  \"primaryKey\":\"" + validKeyValue + "\"," +
-                "  \"secondaryKey\":\"" + validKeyValue2 + "\"" +
+                "  \"primaryKey\":\"" + _validKeyValue + "\"," +
+                "  \"secondaryKey\":\"" + _validKeyValue2 + "\"" +
                 "}";
 
-            SymmetricKeyAttestation symmetricKeyAttestation = Newtonsoft.Json.JsonConvert.DeserializeObject<SymmetricKeyAttestation>(expectedJson);
+            var symmetricKeyAttestation = JsonConvert.DeserializeObject<SymmetricKeyAttestation>(expectedJson);
 
-            Assert.AreEqual(validKeyValue, symmetricKeyAttestation.PrimaryKey);
-            Assert.AreEqual(validKeyValue2, symmetricKeyAttestation.SecondaryKey);
+            symmetricKeyAttestation.PrimaryKey.Should().Be(_validKeyValue);
+            symmetricKeyAttestation.SecondaryKey.Should().Be(_validKeyValue2);
         }
     }
 }
