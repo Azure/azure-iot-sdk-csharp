@@ -65,6 +65,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // -> Periodically send "temperature" over telemetry.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set.
 
+            await _deviceClient.OpenAsync(cancellationToken);
+
             _deviceClient.SetConnectionStatusChangeCallback(async (info) =>
             {
                 _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
@@ -219,8 +221,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, " +
                             $"startTime={report.startTime.LocalDateTime}, endTime={report.endTime.LocalDateTime}");
 
-                        byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report));
-                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = responsePayload });
+                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = report });
                     }
                 }
 

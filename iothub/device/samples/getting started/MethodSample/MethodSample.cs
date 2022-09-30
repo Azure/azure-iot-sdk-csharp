@@ -36,6 +36,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
 
+            await _deviceClient.OpenAsync(cts.Token);
+
             _deviceClient.SetConnectionStatusChangeCallback(ConnectionStatusChangeHandler);
 
             // Setup a callback dispatcher for the incoming methods.

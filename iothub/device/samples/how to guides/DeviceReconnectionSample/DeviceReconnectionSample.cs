@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -140,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 // You will need to resubscribe to any client callbacks any time the client is initialized.
                 await RetryOperationHelper.RetryTransientExceptionsAsync(
-                    operationName: "SubscribeTwinUpdates",
+                    operationName: "SubscribeToCouldToDeviceMessage",
                     asyncOperation: async () => await s_deviceClient.SetMessageCallbackAsync(OnMessageReceivedAsync, cancellationToken),
                     shouldExecuteOperation: () => IsDeviceConnected,
                     logger: _logger,
@@ -149,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug("The client has subscribed to cloud-to-device messages.");
 
                 await RetryOperationHelper.RetryTransientExceptionsAsync(
-                    operationName: "SubscribeTwinUpdates",
+                    operationName: "SubscribeToTwinUpdates",
                     asyncOperation: async () => await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(HandleTwinUpdateNotificationsAsync, cancellationToken),
                     shouldExecuteOperation: () => IsDeviceConnected,
                     logger: _logger,
