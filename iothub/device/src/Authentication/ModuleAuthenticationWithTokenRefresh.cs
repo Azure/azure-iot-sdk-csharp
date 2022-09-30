@@ -87,12 +87,12 @@ namespace Microsoft.Azure.Devices.Client
                   SetSasTokenRenewalBufferPercentage(timeBufferPercentage),
                   disposeWithClient)
         {
-            if (moduleId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(moduleId))
             {
                 throw new ArgumentNullException(nameof(moduleId));
             }
 
-            if (deviceId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));
             }

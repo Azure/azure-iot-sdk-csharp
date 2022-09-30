@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetDeviceId(string deviceId)
         {
-            if (deviceId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));
             }
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetModuleId(string moduleId)
         {
-            if (moduleId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(moduleId))
             {
                 throw new ArgumentNullException(nameof(moduleId));
             }
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetToken(string token)
         {
-            if (token.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(token))
             {
                 throw new ArgumentNullException(nameof(token));
             }

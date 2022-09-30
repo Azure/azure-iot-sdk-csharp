@@ -341,14 +341,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(_productInfo.ToString())}";
 
-                if (!_mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+                if (!string.IsNullOrWhiteSpace(_mqttTransportSettings.AuthenticationChain))
                 {
                     usernameString += $"&{AuthChainParam}={Uri.EscapeDataString(_mqttTransportSettings.AuthenticationChain)}";
                 }
 
                 // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
                 // the SDK will enable plug and play features by appending the model Id to the MQTT CONNECT packet (in the username).
-                if (!(_options?.ModelId).IsNullOrWhiteSpace())
+                if (!string.IsNullOrWhiteSpace(_options?.ModelId))
                 {
                     usernameString += $"&{ModelIdParam}={Uri.EscapeDataString(_options.ModelId)}";
                 }

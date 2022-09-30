@@ -47,9 +47,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private static string CreateAudience(IotHubConnectionString connectionString)
         {
-            if (connectionString.SharedAccessKeyName.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(connectionString.SharedAccessKeyName))
             {
-                return connectionString.ModuleId.IsNullOrWhiteSpace()
+                return string.IsNullOrWhiteSpace(connectionString.ModuleId)
                     ? $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}"
                     : $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}/modules/{WebUtility.UrlEncode(connectionString.ModuleId)}";
             }

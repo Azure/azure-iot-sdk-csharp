@@ -167,11 +167,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             }
         }
 
-        public static bool IsNullOrWhiteSpace(this string value)
-        {
-            return string.IsNullOrWhiteSpace(value);
-        }
-
         public static int NthIndexOf(this string str, char value, int startIndex, int n)
         {
             if (str == null)

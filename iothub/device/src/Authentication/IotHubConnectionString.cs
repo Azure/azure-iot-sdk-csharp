@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (!string.IsNullOrEmpty(SharedAccessKey))
             {
-                if (ModuleId.IsNullOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(ModuleId))
                 {
                     // Since the SDK creates the instance of disposable DeviceAuthenticationWithSakRefresh, the SDK needs to
                     // dispose it once the client is disposed.
