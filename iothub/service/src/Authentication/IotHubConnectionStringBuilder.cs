@@ -190,12 +190,12 @@ namespace Microsoft.Azure.Devices
 
         internal void Validate()
         {
-            if (SharedAccessKeyName.IsNullOrWhiteSpace() && DeviceId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(SharedAccessKeyName) && string.IsNullOrWhiteSpace(DeviceId))
             {
                 throw new ArgumentException("Should specify either SharedAccessKeyName or DeviceId");
             }
 
-            if (!(SharedAccessKey.IsNullOrWhiteSpace() ^ SharedAccessSignature.IsNullOrWhiteSpace()))
+            if (!string.IsNullOrWhiteSpace(SharedAccessKey) ^ string.IsNullOrWhiteSpace(SharedAccessSignature))
             {
                 throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature");
             }
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices
                 throw new FormatException("Missing IoT hub name");
             }
 
-            if (!SharedAccessKey.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(SharedAccessKey))
             {
                 Convert.FromBase64String(SharedAccessKey);
             }
@@ -216,15 +216,15 @@ namespace Microsoft.Azure.Devices
             }
 
             ValidateFormat(HostName, HostNamePropertyName, s_hostNameRegex);
-            if (!SharedAccessKeyName.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(SharedAccessKeyName))
             {
                 ValidateFormatIfSpecified(SharedAccessKeyName, SharedAccessKeyNamePropertyName, s_sharedAccessKeyNameRegex);
             }
-            if (!DeviceId.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(DeviceId))
             {
                 ValidateFormatIfSpecified(DeviceId, DeviceIdPropertyName, s_idRegex);
             }
-            if (!ModuleId.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(ModuleId))
             {
                 ValidateFormatIfSpecified(ModuleId, ModuleIdPropertyName, s_idRegex);
             }

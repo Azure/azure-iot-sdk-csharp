@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetDeviceId(string deviceId)
         {
-            if (deviceId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));
             }

@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
         public static IotHubConnectionStringBuilder Create(string iotHubConnectionString)
         {
-            if (iotHubConnectionString.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(iotHubConnectionString))
             {
                 throw new ArgumentNullException(nameof(iotHubConnectionString));
             }
@@ -253,12 +253,12 @@ namespace Microsoft.Azure.Devices.Client
 
         private void Validate()
         {
-            if (DeviceId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(DeviceId))
             {
                 throw new ArgumentException("DeviceId must be specified in connection string");
             }
 
-            if (!(SharedAccessKey.IsNullOrWhiteSpace() ^ SharedAccessSignature.IsNullOrWhiteSpace()))
+            if (!string.IsNullOrWhiteSpace(SharedAccessKey) ^ string.IsNullOrWhiteSpace(SharedAccessSignature))
             {
                 if (!(UsingX509Cert || AuthenticationMethod is AuthenticationWithTokenRefresh))
                 {
@@ -268,19 +268,19 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if ((UsingX509Cert || Certificate != null) &&
-                (!SharedAccessKey.IsNullOrWhiteSpace()
-                    || !SharedAccessSignature.IsNullOrWhiteSpace()))
+                (!string.IsNullOrWhiteSpace(SharedAccessKey)
+                    || !string.IsNullOrWhiteSpace(SharedAccessSignature)))
             {
                 throw new ArgumentException(
                     "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used");
             }
 
-            if (IotHubName.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(IotHubName))
             {
                 throw new FormatException("Missing IoT hub name");
             }
 
-            if (!SharedAccessKey.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(SharedAccessKey))
             {
                 Convert.FromBase64String(SharedAccessKey);
             }
@@ -313,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetHostName(string hostname)
         {
-            if (hostname.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(hostname))
             {
                 throw new ArgumentNullException(nameof(hostname));
             }
@@ -332,7 +332,7 @@ namespace Microsoft.Azure.Devices.Client
             // For transparent gateway scenarios, we can simplify the input credentials to only specify the gateway device hostname,
             // instead of having to specify both the IoT hub hostname and the gateway device hostname.
             // In this case, the hostname will be of the format "myGatewayDevice", and will not have ".azure-devices.net" suffix.
-            if (IotHubName.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(IotHubName))
             {
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Connecting to a gateway device with hostname=[{HostName}]");
