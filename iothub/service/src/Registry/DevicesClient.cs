@@ -567,7 +567,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                return await CreateJobAsync<ImportJobProperties>(jobParameters, cancellationToken).ConfigureAwait(false);
+                return await CreateJobAsync<IotHubJobResponse>(jobParameters, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -611,7 +611,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                return await CreateJobAsync<ExportJobProperties>(jobParameters, cancellationToken).ConfigureAwait(false);
+                return await CreateJobAsync<IotHubJobResponse>(jobParameters, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

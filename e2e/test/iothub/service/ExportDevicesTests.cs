@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // act
 
-                ExportJobProperties exportJobProperties = await CreateAndWaitForJobAsync(
+                IotHubJobResponse exportJobProperties = await CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         isUserAssignedMsi,
                         devicesFileName,
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        private async Task<ExportJobProperties> CreateAndWaitForJobAsync(
+        private async Task<IotHubJobResponse> CreateAndWaitForJobAsync(
             StorageAuthenticationType storageAuthenticationType,
             bool isUserAssignedMsi,
             string devicesFileName,
@@ -171,11 +171,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var sw = Stopwatch.StartNew();
 
+            IotHubJobResponse jobResponse = null;
+
             while (!exportJobProperties.IsFinished)
             {
                 try
                 {
-                    exportJobProperties = (ExportJobProperties)await serviceClient.Devices.ExportAsync(exportJobProperties).ConfigureAwait(false);
+                    jobResponse = await serviceClient.Devices.ExportAsync(exportJobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(exportJobProperties.FailureReason))
                     {
                         Logger.Trace($"Job failed due to {exportJobProperties.FailureReason}");
@@ -196,14 +198,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             sw.Restart();
 
-            while (!exportJobProperties.IsFinished)
+            while (!jobResponse.IsFinished)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                exportJobProperties = (ExportJobProperties)await serviceClient.Devices.GetJobAsync(exportJobProperties.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {exportJobProperties.JobId} is {exportJobProperties.Status} after {sw.Elapsed}.");
+                jobResponse = await serviceClient.Devices.GetJobAsync(jobResponse.JobId).ConfigureAwait(false);
+                Logger.Trace($"Job {jobResponse.JobId} is {jobResponse.Status} after {sw.Elapsed}.");
             }
 
-            return exportJobProperties;
+            return jobResponse;
         }
 
         private async Task ValidateDevicesAsync(
