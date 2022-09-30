@@ -95,32 +95,35 @@ namespace Microsoft.Azure.Devices.Amqp
 
                 AmqpSettings amqpSettings = CreateAmqpSettings();
 
-                TransportSettings transportSettings = null; //either WebSocket or TCP
+                AmqpTransportInitiator amqpTransportInitiator;
                 if (_useWebSocketOnly)
                 {
-                    transportSettings = new WebSocketTransportSettings()
+                    var websocketTransportSettings = new WebSocketTransportSettings()
                     {
                         Uri = new Uri(_credential.HostName),
                         Proxy = _options.Proxy,
                     };
+
+                    amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, websocketTransportSettings);
                 }
                 else
                 {
-                    transportSettings = new TcpTransportSettings
+                    var transportSettings = new TcpTransportSettings
                     {
                         Host = _credential.HostName,
                         Port = _credential.AmqpEndpoint.Port,
                     };
+
+                    var tlsTranpsortSettings = new TlsTransportSettings(transportSettings)
+                    {
+                        TargetHost = _credential.HostName,
+                        Certificate = null,
+                        CertificateValidationCallback = OnRemoteCertificateValidation
+                    };
+
+                    amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTranpsortSettings);
                 }
 
-                var tlsTransportSettings = new TlsTransportSettings(transportSettings)
-                {
-                    TargetHost = _credential.HostName,
-                    Certificate = null,
-                    CertificateValidationCallback = OnRemoteCertificateValidation
-                };
-
-                var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
                 try
                 {
                     _transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
