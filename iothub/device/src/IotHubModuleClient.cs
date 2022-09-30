@@ -278,7 +278,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 return new DirectMethodResponse(result.Status)
                 {
-                    Payload = result.Payload
+                    Payload = result.Payload,
+                    PayloadConvention = _clientOptions.PayloadConvention,
                 };
             }
             finally
