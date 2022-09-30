@@ -227,6 +227,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 deviceClient.Dispose();
                 await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
+
+                if (!FaultShouldDisconnect(faultType))
+                {
+                    faultInjectionDuration.Stop();
+
+                    TimeSpan timeToFinishFaultInjection = faultDuration.Subtract(faultInjectionDuration.Elapsed);
+                    if (timeToFinishFaultInjection > TimeSpan.Zero)
+                    {
+                        logger.Trace($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
+                        await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
+                    }
+                }
             }
         }
 

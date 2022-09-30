@@ -348,7 +348,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(
+                delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             var retryPolicy = new TestRetryPolicy();
@@ -356,7 +357,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             int innerHandlerCallCounter = 0;
 
-            innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t =>
+            innerHandlerMock.OpenAsync(CancellationToken.None).Returns(t =>
                {
                    innerHandlerCallCounter++;
                    throw new IotHubCommunicationException();

@@ -49,11 +49,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
-            var httpTransportSettings = new HttpTransportSettings();
-            httpTransportSettings.Proxy = new WebProxy(s_proxyServerAddress);
+            var httpTransportSettings = new HttpTransportSettings
+            {
+                Proxy = new WebProxy(s_proxyServerAddress)
+            };
 
             await JobClient_ScheduleAndRunTwinJob(httpTransportSettings).ConfigureAwait(false);
         }
@@ -61,53 +64,55 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using (var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
-            using (var serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, TransportType.Amqp, transportSettings))
-            {
-                (Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
-                await serviceClient.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, TransportType.Amqp, transportSettings);
+            (Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
 
-                await deviceClient.CloseAsync().ConfigureAwait(false);
-                await serviceClient.CloseAsync().ConfigureAwait(false);
+            using (testMessage)
+            {
+                await serviceClient.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
             }
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task RegistryManager_AddDevice(HttpTransportSettings httpTransportSettings)
         {
             string deviceName = DevicePrefix + Guid.NewGuid();
 
-            using (var registryManager = RegistryManager.CreateFromConnectionString(s_connectionString, httpTransportSettings))
-            {
-                await registryManager.AddDeviceAsync(new Device(deviceName)).ConfigureAwait(false);
-                await registryManager.RemoveDeviceAsync(deviceName).ConfigureAwait(false);
-            }
+            using var registryManager = RegistryManager.CreateFromConnectionString(s_connectionString, httpTransportSettings);
+            await registryManager.AddDeviceAsync(new Device(deviceName)).ConfigureAwait(false);
+            await registryManager.RemoveDeviceAsync(deviceName).ConfigureAwait(false);
         }
 
         private async Task JobClient_ScheduleAndRunTwinJob(HttpTransportSettings httpTransportSettings)
         {
-            var twin = new Twin(JobDeviceId);
-            twin.Tags = new TwinCollection();
+            var twin = new Twin(JobDeviceId)
+            {
+                Tags = new TwinCollection()
+            };
             twin.Tags[JobTestTagName] = JobDeviceId;
 
-            using (var jobClient = JobClient.CreateFromConnectionString(s_connectionString, httpTransportSettings))
+            using var jobClient = JobClient.CreateFromConnectionString(s_connectionString, httpTransportSettings);
+            int tryCount = 0;
+            while (true)
             {
-                int tryCount = 0;
-                while (true)
+                try
                 {
-                    try
-                    {
-                        string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
-                        string query = $"DeviceId IN ['{JobDeviceId}']";
-                        JobResponse createJobResponse = await jobClient.ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
-                        break;
-                    }
-                    // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                    catch (ThrottlingException) when (++tryCount < MaxIterationWait)
-                    {
-                        Logger.Trace($"ThrottlingException... waiting.");
-                        await Task.Delay(_waitDuration).ConfigureAwait(false);
-                        continue;
-                    }
+                    string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
+                    string query = $"DeviceId IN ['{JobDeviceId}']";
+                    JobResponse createJobResponse = await jobClient
+                        .ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds)
+                        .ConfigureAwait(false);
+                    break;
+                }
+                // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
+                catch (ThrottlingException) when (++tryCount < MaxIterationWait)
+                {
+                    Logger.Trace($"ThrottlingException... waiting.");
+                    await Task.Delay(_waitDuration).ConfigureAwait(false);
+                    continue;
                 }
             }
         }
