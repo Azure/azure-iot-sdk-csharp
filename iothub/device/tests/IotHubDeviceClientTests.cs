@@ -365,7 +365,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var DirectMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(payload),
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -435,7 +435,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var DirectMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = bytes,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(bytes)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 

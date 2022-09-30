@@ -111,22 +111,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             payload = default;
 
-            // If the type to cast payload to is byte[] then return the payload as-is.
-            if (Payload is T payloadRef)
-            {
-                payload = payloadRef;
-                return true;
-            }
-
             try
             {
-                // If the type to cast payload to is string then return the payload string.
-                // Else, deserialize it into the specified type
-
-                payload = typeof(T) == typeof(string)
-                    ? (T)(object)GetPayloadAsJsonString()
-                    : PayloadConvention.PayloadSerializer.DeserializeToType<T>(GetPayloadAsJsonString());
-
+                payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(GetPayloadAsJsonString());
                 return true;
             }
             catch (Exception)
