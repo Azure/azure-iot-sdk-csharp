@@ -98,12 +98,14 @@ namespace Microsoft.Azure.Devices.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, _cbsLink, cancellationToken, nameof(SendCbsTokenAsync));
 
-            string audience = _credential.AmqpEndpoint.AbsoluteUri;
-            string resource = _credential.AmqpEndpoint.AbsoluteUri;
+            Uri amqpEndpoint = new UriBuilder(AmqpConstants.SchemeAmqps, _credential.HostName, AmqpConstants.DefaultSecurePort).Uri;
+
+            string audience = amqpEndpoint.AbsoluteUri;
+            string resource = amqpEndpoint.AbsoluteUri;
             DateTime expiresAtUtc = await _cbsLink
                 .SendTokenAsync(
                     _credential,
-                    _credential.AmqpEndpoint,
+                    amqpEndpoint,
                     audience,
                     resource,
                     _credential.AmqpAudience.ToArray(),
