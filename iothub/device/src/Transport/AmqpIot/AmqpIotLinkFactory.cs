@@ -9,17 +9,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal class AmqpIotLinkFactory : ILinkFactory
     {
-        private static readonly AmqpIotLinkFactory s_instance = new AmqpIotLinkFactory();
+        private static readonly Lazy<AmqpIotLinkFactory> s_instance = new(() => new AmqpIotLinkFactory());
 
-        private AmqpIotLinkFactory()
-        {
-            // Important: must not throw as it's used within the static ctor.
-        }
-
-        public static AmqpIotLinkFactory GetInstance()
-        {
-            return s_instance;
-        }
+        internal static AmqpIotLinkFactory Instance => s_instance.Value;
 
         public IAsyncResult BeginOpenLink(AmqpLink link, TimeSpan timeout, AsyncCallback callback, object state)
         {
@@ -34,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             return settings.IsReceiver()
                 ? new ReceivingAmqpLink(session, settings)
-                : (AmqpLink)new SendingAmqpLink(session, settings);
+                : new SendingAmqpLink(session, settings);
         }
 
         public void EndOpenLink(IAsyncResult result)

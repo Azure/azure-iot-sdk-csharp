@@ -15,7 +15,7 @@ using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class AmqpClientConnection : IDisposable
+    internal sealed class AmqpClientConnection : IDisposable
     {
         private readonly AmqpSettings _amqpSettings;
         private readonly Uri _uri;
@@ -23,7 +23,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly SemaphoreSlim _connectionSemaphore = new(1, 1);
         private readonly ProvisioningClientAmqpSettings _clientSettings;
 
-        private bool _isDisposed;
         private TaskCompletionSource<TransportBase> _tcs;
         private TransportBase _transport;
         private ProtocolHeader _sentHeader;
@@ -57,11 +56,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            // We don't know if the transport object is instantiated as a disposable or not
+            // We check and dispose if it is.
+            if (_transport is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
 
-        public async Task OpenAsync(
+        internal async Task OpenAsync(
             bool useWebSocket,
             X509Certificate2 clientCert,
             IWebProxy proxy,
@@ -323,26 +326,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 args.Transport = null;
                 _tcs.TrySetException(args.Exception);
             }
-        }
-
-        protected private virtual void Dispose(bool disposing)
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                // We don't know if the transport object is instantiated as a disposable or not
-                // We check and dispose if it is.
-                if (_transport is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-            }
-
-            _isDisposed = true;
         }
     }
 }

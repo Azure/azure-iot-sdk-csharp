@@ -19,8 +19,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             AmqpSessionSettings = new AmqpSessionSettings();
         }
 
-        private bool _isSessionClosed;
-
         internal AmqpSession AmqpSession { get; private set; }
 
         public AmqpSessionSettings AmqpSessionSettings { get; private set; }
@@ -29,18 +27,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public AmqpClientLink ReceivingLink { get; private set; }
 
-        public bool IsSessionClosed => _isSessionClosed;
+        public bool IsSessionClosed { get; private set; }
 
         public async Task OpenAsync(CancellationToken cancellationToken)
         {
             // Create the Session
             var amqpTestLinkFactory = new AmqpLinkFactory();
-            amqpTestLinkFactory.LinkCreated += OnLinkCreated;
             AmqpSession = new AmqpSession(_amqpConnection.AmqpConnection, AmqpSessionSettings, amqpTestLinkFactory);
             _amqpConnection.AmqpConnection.AddSession(AmqpSession, new ushort?());
             AmqpSession.Closed += OnSessionClosed;
             await AmqpSession.OpenAsync(cancellationToken).ConfigureAwait(false);
-            _isSessionClosed = false;
+            IsSessionClosed = false;
         }
 
         public AmqpClientLink CreateSendingLink(Address address)
@@ -74,16 +71,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return new AmqpClientLink(this);
         }
 
-        public event EventHandler<LinkCreatedEventArgs> LinkCreated;
-
-        protected virtual void OnLinkCreated(object sender, LinkCreatedEventArgs args)
-        {
-            LinkCreated?.Invoke(this, new LinkCreatedEventArgs(args.Link));
-        }
-
         private void OnSessionClosed(object o, EventArgs args)
         {
-            _isSessionClosed = true;
+            IsSessionClosed = true;
         }
     }
 }
