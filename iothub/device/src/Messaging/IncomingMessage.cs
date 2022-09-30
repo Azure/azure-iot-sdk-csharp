@@ -193,6 +193,10 @@ namespace Microsoft.Azure.Devices.Client
             {
                 string payloadString = PayloadConvention.PayloadEncoder.ContentEncoding.GetString(_payload);
 
+                // IncomingMessage payload isn't required to always be a json payload.
+                // If the type to cast payload to is string then return the payload string.
+                // Else, deserialize it into the specified type.
+
                 payload = typeof(T) == typeof(string)
                     ? (T)(object)payloadString
                     : PayloadConvention.PayloadSerializer.DeserializeToType<T>(payloadString);

@@ -12,8 +12,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class DirectMethodRequest
     {
-        private object _payload;
-
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
@@ -28,31 +26,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         [JsonProperty("methodName", Required = Required.Always)]
         public string MethodName { get; set; }
-
-        /// <summary>
-        /// Get the payload object. May be null or empty.
-        /// </summary>
-        [JsonIgnore]
-        public object Payload
-        {
-            get => _payload;
-
-            set
-            {
-                _payload = value;
-                if (value != null)
-                {
-                    PayloadAsJsonString = JsonConvert.SerializeObject(value);
-                    JsonPayload = new JRaw(PayloadAsJsonString);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get the serialized JSON payload. May be null or empty.
-        /// </summary>
-        [JsonIgnore]
-        public string PayloadAsJsonString { get; internal set; }
 
         /// <summary>
         /// The amount of time given to the service to connect to the device.
@@ -89,13 +62,18 @@ namespace Microsoft.Azure.Devices.Client
         /// The JSON payload in JRaw type.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        internal JRaw JsonPayload { get; set; }
+        protected internal JRaw JsonPayload { get; set; }
+
+        /// <summary>
+        /// The direct method payload.
+        /// </summary>
+        protected internal byte[] Payload { get; set; }
 
         /// <summary>
         /// Method timeout, in seconds.
         /// </summary>
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
+        protected internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
             ? (int)ResponseTimeout.Value.TotalSeconds
             : null;
 
@@ -103,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Connection timeout, in seconds.
         /// </summary>
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
+        protected internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
             ? (int)ConnectionTimeout.Value.TotalSeconds
             : null;
 
@@ -115,7 +93,12 @@ namespace Microsoft.Azure.Devices.Client
         /// property over AMQP.
         /// </remarks>
         [JsonIgnore]
-        internal string RequestId { get; set; }
+        protected internal string RequestId { get; set; }
+
+        /// <summary>
+        /// The convention to use with the direct method payload.
+        /// </summary>
+        protected internal PayloadConvention PayloadConvention { get; set; }
 
         /// <summary>
         /// The direct method request payload, deserialized to the specified type.
@@ -127,16 +110,10 @@ namespace Microsoft.Azure.Devices.Client
         public bool TryGetPayload<T>(out T payload)
         {
             payload = default;
-            string jsonPayload = PayloadAsJsonString;
 
             try
             {
-                if (jsonPayload == null)
-                {
-                    return false;
-                }
-
-                payload = JsonConvert.DeserializeObject<T>(jsonPayload);
+                payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(GetPayloadAsJsonString());
                 return true;
             }
             catch (Exception)
@@ -146,6 +123,16 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// The command payload as a JSON string.
+        /// </summary>
+        public string GetPayloadAsJsonString()
+        {
+            return Payload.Length == 0
+                ? null
+                : PayloadConvention.PayloadEncoder.ContentEncoding.GetString(Payload);
         }
     }
 }

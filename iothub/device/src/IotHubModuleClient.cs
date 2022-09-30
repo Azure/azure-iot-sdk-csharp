@@ -267,6 +267,7 @@ namespace Microsoft.Azure.Devices.Client
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
                 var methodInvokeRequest = new DirectMethodRequest
                 {
+                    PayloadConvention = _clientOptions.PayloadConvention,
                     MethodName = methodRequest.MethodName,
                     Payload = methodRequest.Payload,
                     ResponseTimeout = methodRequest.ResponseTimeout,
@@ -277,7 +278,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 return new DirectMethodResponse(result.Status)
                 {
-                    Payload = result.Payload
+                    Payload = result.Payload,
+                    PayloadConvention = _clientOptions.PayloadConvention,
                 };
             }
             finally

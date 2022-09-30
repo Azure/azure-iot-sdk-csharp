@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             AmqpMessage amqpMessage = directMethodResponse.Payload == null
                 ? AmqpMessage.Create()
-                : AmqpMessage.Create(new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(directMethodResponse.Payload))), true);
+                : AmqpMessage.Create(new MemoryStream(directMethodResponse.GetPayloadAsBytes()), true);
 
             PopulateAmqpMessageFromMethodResponse(amqpMessage, directMethodResponse);
             return amqpMessage;
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
-        public static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
+        public static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
         {
             if (amqpMessage == null)
             {
@@ -275,13 +275,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             using var ms = new MemoryStream();
             amqpMessage.BodyStream.CopyTo(ms);
             amqpMessage.Dispose();
-            var directMethodRequest = new DirectMethodRequest()
+            var directMethodRequest = new DirectMethodRequest
             {
+                PayloadConvention = payloadConvention,
                 MethodName = methodName,
-                Payload = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()))
+                Payload = ms.ToArray(),
+                RequestId = methodRequestId
             };
-
-            directMethodRequest.RequestId = methodRequestId;
             return directMethodRequest;
         }
 
