@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 {
                     _transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                 }
-                catch (Exception e) when (!(e is AuthenticationException))
+                catch (Exception ex) when (ex is not AuthenticationException)
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(this, e, nameof(OpenAsync));
