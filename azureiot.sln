@@ -164,6 +164,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmReadWrite", "iothub\devi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvokeDeviceMethod", "iothub\service\samples\getting started\InvokeDeviceMethod\InvokeDeviceMethod.csproj", "{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "iothub\device\samples\Getting Started\ReadD2cMessages\ReadD2cMessages.csproj", "{D559DB75-04DA-4DF4-B193-639E9CE2E604}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\Getting Started\SimulatedDevice\SimulatedDevice.csproj", "{02DDB149-6BEB-4D10-AFC4-E83DB2E0FF4C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDeviceWithCommand", "iothub\device\samples\Getting Started\SimulatedDeviceWithCommand\SimulatedDeviceWithCommand.csproj", "{DECB4A8C-1B42-43E0-98A3-365F63CF9C2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -349,6 +355,18 @@ Global
 		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D559DB75-04DA-4DF4-B193-639E9CE2E604}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D559DB75-04DA-4DF4-B193-639E9CE2E604}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D559DB75-04DA-4DF4-B193-639E9CE2E604}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D559DB75-04DA-4DF4-B193-639E9CE2E604}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02DDB149-6BEB-4D10-AFC4-E83DB2E0FF4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02DDB149-6BEB-4D10-AFC4-E83DB2E0FF4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02DDB149-6BEB-4D10-AFC4-E83DB2E0FF4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02DDB149-6BEB-4D10-AFC4-E83DB2E0FF4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DECB4A8C-1B42-43E0-98A3-365F63CF9C2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DECB4A8C-1B42-43E0-98A3-365F63CF9C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DECB4A8C-1B42-43E0-98A3-365F63CF9C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DECB4A8C-1B42-43E0-98A3-365F63CF9C2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -422,6 +440,9 @@ Global
 		{84818D22-861A-47EA-8005-61426DFB89FB} = {60C4870C-3D21-4F32-ADDD-CDA729C40183}
 		{89D6AEA2-D2C3-4ED8-A4F0-D2C9BD75DCE0} = {60C4870C-3D21-4F32-ADDD-CDA729C40183}
 		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
+		{D559DB75-04DA-4DF4-B193-639E9CE2E604} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
+		{02DDB149-6BEB-4D10-AFC4-E83DB2E0FF4C} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
+		{DECB4A8C-1B42-43E0-98A3-365F63CF9C2A} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
