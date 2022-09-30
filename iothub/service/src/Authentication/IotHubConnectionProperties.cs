@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Amqp;
 
 namespace Microsoft.Azure.Devices
 {
@@ -29,8 +30,8 @@ namespace Microsoft.Azure.Devices
 
             HostName = hostName;
             IotHubName = GetIotHubName(hostName);
-            AmqpEndpoint = new UriBuilder(IotHubConnectionStringConstants.AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
-            HttpsEndpoint = new UriBuilder(IotHubConnectionStringConstants.HttpsEndpointPrefix, HostName).Uri;
+            AmqpEndpoint = new UriBuilder(AmqpsConstants.AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
+            HttpsEndpoint = new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, HostName).Uri;
         }
 
         public string IotHubName { get; protected set; }

@@ -13,8 +13,5 @@ namespace Microsoft.Azure.Devices
         internal const string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
         internal const string SharedAccessKeyPropertyName = "SharedAccessKey";
         internal const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
-        internal const string GatewayHostNamePropertyName = "GatewayHostName";
-        internal const string HttpsEndpointPrefix = "https";
-        internal const string AmqpsScheme = "amqps";
     }
 }

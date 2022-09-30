@@ -28,21 +28,22 @@ namespace Microsoft.Azure.Devices
             string iotHubName = GetIotHubName(hostName);
             if (string.IsNullOrWhiteSpace(sharedAccessKeyName))
             {
-                throw new ArgumentException("Should specify either SharedAccessKeyName.");
+                throw new FormatException("Should specify SharedAccessKeyName.");
             }
 
             if (!(string.IsNullOrWhiteSpace(sharedAccessKey) ^ string.IsNullOrWhiteSpace(sharedAccessSignature)))
             {
-                throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature.");
+                throw new FormatException("Should specify either SharedAccessKey or SharedAccessSignature.");
             }
 
             if (string.IsNullOrWhiteSpace(iotHubName))
             {
-                throw new FormatException("Missing IoT hub name.");
+                throw new FormatException("Missing IoT Hub name.");
             }
 
             if (!string.IsNullOrWhiteSpace(sharedAccessKey))
             {
+                // The conversion is to validate the provided value.
                 Convert.FromBase64String(sharedAccessKey);
             }
 
@@ -65,7 +66,7 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(valuePairString))
             {
-                throw new ArgumentException("Malformed token");
+                throw new ArgumentException("Malformed token.");
             }
 
             IEnumerable<string[]> parts = valuePairString
@@ -74,7 +75,7 @@ namespace Microsoft.Azure.Devices
 
             if (parts.Any((part) => part.Length != 2))
             {
-                throw new FormatException("Malformed Token");
+                throw new FormatException("Malformed token.");
             }
 
             IDictionary<string, string> map = parts.ToDictionary((kvp) => kvp[0], (kvp) => kvp[1], StringComparer.OrdinalIgnoreCase);
@@ -86,9 +87,8 @@ namespace Microsoft.Azure.Devices
         {
             if (!map.TryGetValue(propertyName, out string value))
             {
-                throw new ArgumentException(
-                    $"The connection string is missing the property: {propertyName}",
-                    nameof(map));
+                throw new FormatException(
+                    $"The connection string is missing the property: {propertyName}.");
             }
 
             return value;

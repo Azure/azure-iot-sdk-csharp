@@ -769,7 +769,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            var iothubs = new List<string>() { GetHostName(TestConfiguration.IotHub.ConnectionString) };
+            var iothubs = new List<string>() { HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString) };
             await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(
                     transportSettings,
                     attestationType,
@@ -911,7 +911,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            string closeHostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
+            string closeHostName = HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString);
 
             var iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
             string expectedDestinationHub = "";
@@ -1426,23 +1426,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
 
             return auth;
-        }
-
-        private string GetHostName(string connectionString)
-        {
-            IEnumerable<string[]> parts = connectionString
-                .Split(IotHubConnectionStringConstants.ValuePairDelimiter)
-                .Select((part) => part.Split(new char[] { IotHubConnectionStringConstants.ValuePairSeparator }, 2));
-
-            if (parts.Any((part) => part.Length != 2))
-            {
-                throw new FormatException("Malformed Token");
-            }
-
-            IDictionary<string, string> map = parts.ToDictionary((kvp) => kvp[0], (kvp) => kvp[1], StringComparer.OrdinalIgnoreCase);
-
-            map.TryGetValue(IotHubConnectionStringConstants.HostNamePropertyName, out string value);
-            return value;
         }
 
         /// <summary>
