@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 if (_useWebSocketOnly)
                 {
                     var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.SecurePort}{AmqpsConstants.UriSuffix}");
-                    var websocketTransportSettings = new WebSocketTransportSettings()
+                    var websocketTransportSettings = new WebSocketTransportSettings
                     {
                         Uri = websocketUri,
                         Proxy = _options.Proxy,
