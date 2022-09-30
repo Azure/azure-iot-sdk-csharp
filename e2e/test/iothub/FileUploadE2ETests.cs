@@ -156,7 +156,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     // assert
                     var error = await act.Should().ThrowAsync<IotHubClientException>();
-                    error.And.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
                     error.And.ErrorCode.Should().Be(IotHubClientErrorCode.ServerError);
                     error.And.IsTransient.Should().BeTrue();
                 }

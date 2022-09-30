@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
         }
 
-        private bool DetermineIfTransient(HttpStatusCode statusCode)
+        private static bool DetermineIfTransient(HttpStatusCode statusCode)
         {
             return statusCode >= HttpStatusCode.InternalServerError
                 || statusCode == HttpStatusCode.RequestTimeout

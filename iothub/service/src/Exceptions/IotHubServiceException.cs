@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
-        public string TrackingId { get; internal set; }
+        public string TrackingId { get; protected internal set; }
 
         /// <summary>
         /// The status code returned back in the IoT hub service response.
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices
             info.AddValue(TrackingIdSerializationStoreName, TrackingId);
         }
 
-        private bool DetermineIfTransient(HttpStatusCode statusCode, IotHubServiceErrorCode errorCode)
+        private static bool DetermineIfTransient(HttpStatusCode statusCode, IotHubServiceErrorCode errorCode)
         {
             switch (errorCode)
             {

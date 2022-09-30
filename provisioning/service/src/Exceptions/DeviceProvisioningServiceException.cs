@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         public IDictionary<string, string> Fields { get; private set; } = new Dictionary<string, string>();
 
-        private bool DetermineIfTransient(HttpStatusCode statusCode)
+        private static bool DetermineIfTransient(HttpStatusCode statusCode)
         {
             return statusCode >= HttpStatusCode.InternalServerError || statusCode == HttpStatusCode.RequestTimeout || (int)statusCode == 429;
         }

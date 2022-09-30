@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Net;
 using System.Runtime.Serialization;
 
@@ -29,28 +28,6 @@ namespace Microsoft.Azure.Devices.Client
             IotHubClientErrorCode.Throttled,
             IotHubClientErrorCode.Timeout,
             IotHubClientErrorCode.NetworkErrors,
-        };
-
-        // In some cases, we don't create and throw an instance of IotHubClientException based on the response from
-        // the hub service, so it is not always possible to obtain the HTTP status code and a specific error code.
-        // With a best effort match, we map the error codes here to what the hub service exception has, and then match 
-        // an appropriate HTTP status code for each of them via the dictionary below.
-        private static readonly Dictionary<IotHubClientErrorCode, HttpStatusCode> s_httpStatusCodes = new()
-        {
-            { IotHubClientErrorCode.Ok, HttpStatusCode.OK },
-            { IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded, HttpStatusCode.Forbidden },
-            { IotHubClientErrorCode.QuotaExceeded, HttpStatusCode.Forbidden },
-            { IotHubClientErrorCode.DeviceMessageLockLost, HttpStatusCode.PreconditionFailed },
-            { IotHubClientErrorCode.DeviceNotFound, HttpStatusCode.NotFound },
-            { IotHubClientErrorCode.NetworkErrors, HttpStatusCode.RequestTimeout },
-            { IotHubClientErrorCode.Suspended, HttpStatusCode.BadRequest },
-            { IotHubClientErrorCode.Timeout, HttpStatusCode.RequestTimeout },
-            { IotHubClientErrorCode.Throttled, (HttpStatusCode)429 },
-            { IotHubClientErrorCode.PreconditionFailed, HttpStatusCode.PreconditionFailed },
-            { IotHubClientErrorCode.MessageTooLarge, HttpStatusCode.RequestEntityTooLarge },
-            { IotHubClientErrorCode.ServerBusy, HttpStatusCode.ServiceUnavailable },
-            { IotHubClientErrorCode.ServerError, HttpStatusCode.InternalServerError },
-            { IotHubClientErrorCode.Unauthorized, HttpStatusCode.Unauthorized },
         };
 
         /// <summary>
@@ -148,9 +125,6 @@ namespace Microsoft.Azure.Devices.Client
             IsTransient = DetermineIfTransient(errorCode);
             TrackingId = trackingId;
             ErrorCode = errorCode;
-            StatusCode = s_httpStatusCodes.TryGetValue(errorCode, out HttpStatusCode value) 
-                ? value
-                : 0;
         }
 
         /// <summary>
@@ -172,9 +146,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             IsTransient = DetermineIfTransient(errorCode);
             ErrorCode = errorCode;
-            StatusCode = s_httpStatusCodes.TryGetValue(errorCode, out HttpStatusCode value)
-                ? value
-                : 0;
         }
 
         /// <summary>
@@ -185,15 +156,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
-        public string TrackingId { get; internal set; }
-
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        /// <remarks>
-        /// This property is not actually obtained from the response but mapped from the property <see cref="ErrorCode"/> with the best effort match.
-        /// </remarks>
-        public HttpStatusCode StatusCode { get; }
+        public string TrackingId { get; protected internal set; }
 
         /// <summary>
         /// The specific error code.
@@ -213,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client
             info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
         }
 
-        private bool DetermineIfTransient(IotHubClientErrorCode errorCode)
+        private static bool DetermineIfTransient(IotHubClientErrorCode errorCode)
         {
             return s_transientErrorCodes.Contains(errorCode);
         }
