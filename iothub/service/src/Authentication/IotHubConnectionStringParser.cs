@@ -20,18 +20,14 @@ namespace Microsoft.Azure.Devices
             string sharedAccessKey = GetConnectionStringOptionalValue(map, IotHubConnectionStringConstants.SharedAccessKeyPropertyName);
             string sharedAccessSignature = GetConnectionStringOptionalValue(map, IotHubConnectionStringConstants.SharedAccessSignaturePropertyName);
 
-            Validate(hostName, sharedAccessKeyName, sharedAccessKey, sharedAccessSignature);
+            Validate(hostName, sharedAccessKey, sharedAccessSignature);
 
             return new IotHubConnectionString(hostName, sharedAccessKeyName, sharedAccessKey, sharedAccessSignature);
         }
 
-        private static void Validate(string hostName, string sharedAccessKeyName, string sharedAccessKey, string sharedAccessSignature)
+        private static void Validate(string hostName, string sharedAccessKey, string sharedAccessSignature)
         {
             string iotHubName = GetIotHubName(hostName);
-            if (string.IsNullOrWhiteSpace(sharedAccessKeyName))
-            {
-                throw new FormatException("Should specify SharedAccessKeyName.");
-            }
 
             if (!(string.IsNullOrWhiteSpace(sharedAccessKey) ^ string.IsNullOrWhiteSpace(sharedAccessSignature)))
             {
