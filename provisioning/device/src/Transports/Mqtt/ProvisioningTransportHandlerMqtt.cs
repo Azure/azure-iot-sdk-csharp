@@ -39,10 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private TaskCompletionSource<RegistrationOperationStatus> _startProvisioningRequestStatusSource;
         private TaskCompletionSource<RegistrationOperationStatus> _checkRegistrationOperationStatusSource;
-        private CancellationTokenSource _connectionLostCancellationToken;
         private int _packetId;
-        private bool _isOpening;
-        private bool _isClosing;
         private Exception _connectionLossCause;
 
         private readonly ProvisioningClientOptions _options;
@@ -83,21 +80,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _isClosing = false;
-            _isOpening = true;
             _connectionLossCause = null;
             using IMqttClient mqttClient = s_mqttFactory.CreateMqttClient();
             MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest);
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
+            using var connectionLostCancellationToken = new CancellationTokenSource();
+
             // Link the user-supplied cancellation token with a cancellation token that is cancelled
             // when the connection is lost so that all operations stop when either the user
             // cancels the token or when the connection is lost.
-            _connectionLostCancellationToken = new CancellationTokenSource();
             using CancellationTokenSource linkedCancellationToken =
                 CancellationTokenSource.CreateLinkedTokenSource(
                     cancellationToken,
-                    _connectionLostCancellationToken.Token);
+                    connectionLostCancellationToken.Token);
+
+            Task HandleDisconnectionAsync(MqttClientDisconnectedEventArgs disconnectedEventArgs)
+            {
+                _connectionLossCause = disconnectedEventArgs.Exception;
+
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"MQTT connection was lost '{_connectionLossCause}'.");
+
+                // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
+                connectionLostCancellationToken.Cancel();
+                return Task.CompletedTask;
+            }
 
             // Additional context to be included in the error message thrown if the connection is lost to explain
             // when the connection was lost. Mostly for e2e test debugging, but users may find this helpful as well.
@@ -110,7 +118,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"MQTT connect responded with status code '{connectResult.ResultCode}'");
                     mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
-                    _isOpening = false;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -132,7 +139,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 try
                 {
                     currentStatus = "closing MQTT connection";
-                    _isClosing = true;
                     mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
                     await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken);
                 }
@@ -149,7 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 return registrationResult;
             }
-            catch (OperationCanceledException) when (_connectionLostCancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (connectionLostCancellationToken.IsCancellationRequested)
             {
                 // _connectionLostCancellationToken is cancelled when the connection is lost. This acts as
                 // a signal to stop waiting on any service response and to throw the below exception up to the user
@@ -179,7 +185,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync; // safe to -= this value more than once
                 mqttClient.DisconnectedAsync -= HandleDisconnectionAsync; // safe to -= this value more than once
-                _connectionLostCancellationToken?.Dispose();
             }
         }
 
@@ -427,22 +432,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 operation.RetryAfter = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(topic, s_defaultOperationPollingInterval);
 
                 _checkRegistrationOperationStatusSource.TrySetResult(operation);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private Task HandleDisconnectionAsync(MqttClientDisconnectedEventArgs disconnectedEventArgs)
-        {
-            _connectionLossCause = disconnectedEventArgs.Exception;
-
-            if (Logging.IsEnabled)
-                Logging.Error(this, $"MQTT connection was lost '{_connectionLossCause}'.");
-
-            // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
-            if (disconnectedEventArgs.ClientWasConnected && !_isClosing && !_isOpening)
-            {
-                _connectionLostCancellationToken.Cancel();
             }
 
             return Task.CompletedTask;
