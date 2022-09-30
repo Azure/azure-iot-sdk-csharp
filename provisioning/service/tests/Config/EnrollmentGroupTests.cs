@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private DateTime SampleLastUpdatedDateTimeUTC = new DateTime(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
+
         private const string SamplePublicKeyCertificateString =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
@@ -33,8 +34,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "/yAQNj2Vji9RthQ33HG/QdL12b1ABU5UXgIhAPJujG/c/S+7vcREWI7bQcCb31JI\n" +
             "BDhWZbt4eyCvXZtZ\n" +
             "-----END CERTIFICATE-----\n";
+
         private X509Attestation SampleX509RootAttestation = X509Attestation.CreateFromRootCertificates(SamplePublicKeyCertificateString);
         private X509Attestation SampleX509ClientAttestation = X509Attestation.CreateFromClientCertificates(SamplePublicKeyCertificateString);
+
         private const string SampleEndorsementKey =
             "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
             "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjY" +
@@ -42,7 +45,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI" +
             "6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy" +
             "1SSDQMQ==";
+
         private TpmAttestation SampleTpmAttestation = new TpmAttestation(SampleEndorsementKey);
+
         private string SampleEnrollmentGroupJson =
             "{\n" +
             "   \"enrollmentGroupId\":\"" + SampleEnrollmentGroupId + "\",\n" +
@@ -78,6 +83,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "}";
 
         /* SRS_ENROLLMENT_GROUP_21_001: [The constructor shall store the provided parameters.] */
+
         [TestMethod]
         public void EnrollmentGroupConstructorSucceed()
         {
@@ -90,13 +96,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_ENROLLMENT_GROUP_21_002: [The constructor shall throws ArgumentException if one of the provided parameters is null.] */
+
         [TestMethod]
         public void EnrollmentGroupConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
             TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, null));
-            TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, SampleTpmAttestation));
-            TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, SampleX509ClientAttestation));
+            TestAssert.Throws<InvalidOperationException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, SampleTpmAttestation));
+            TestAssert.Throws<InvalidOperationException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, SampleX509ClientAttestation));
         }
 
         [TestMethod]
@@ -126,6 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_ENROLLMENT_GROUP_21_004: [The constructor shall store all parameters in the JSON.] */
+
         [TestMethod]
         public void EnrollmentGroupConstructorJSONSucceed()
         {
