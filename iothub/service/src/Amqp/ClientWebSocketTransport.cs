@@ -124,6 +124,11 @@ namespace Microsoft.Azure.Devices
             return true;
         }
 
+        protected override void AbortInternal()
+        {
+            Dispose();
+        }
+
         private async Task CloseImplAsync(TimeSpan timeout)
         {
             try
@@ -152,11 +157,6 @@ namespace Microsoft.Azure.Devices
             {
                 // ignore this error
             }
-        }
-
-        protected override void AbortInternal()
-        {
-            Dispose();
         }
 
         private async Task WriteImplAsync(TransportAsyncCallbackArgs args)
@@ -334,14 +334,14 @@ namespace Microsoft.Azure.Devices
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<object>(state);
+            var tcs = new TaskCompletionSource<object>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 _ =>
                 {
