@@ -98,10 +98,12 @@ namespace Microsoft.Azure.Devices.Amqp
                 AmqpTransportInitiator amqpTransportInitiator;
                 if (_useWebSocketOnly)
                 {
+                    var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.SecurePort}{AmqpsConstants.UriSuffix}");
                     var websocketTransportSettings = new WebSocketTransportSettings()
                     {
-                        Uri = new Uri(_credential.HostName),
+                        Uri = websocketUri,
                         Proxy = _options.Proxy,
+                        SubProtocol = AmqpsConstants.Amqpwsb10,
                     };
 
                     amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, websocketTransportSettings);
