@@ -112,7 +112,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             try
             {
-                Device actual = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
+                Device actual = null;
+                do
+                {
+                    // allow some time for the device registry to update the cache
+                    await Task.Delay(50).ConfigureAwait(false);
+                    actual = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
+                } while (actual == null);
+
                 actual.Should().NotBeNull($"Got null in GET on device {deviceId} to check IotEdge property.");
                 actual.Capabilities.IotEdge.Should().BeTrue();
             }
