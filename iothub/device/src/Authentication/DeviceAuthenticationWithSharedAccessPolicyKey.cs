@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetDeviceId(string deviceId)
         {
-            if (deviceId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));
             }
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetKey(string key)
         {
-            if (key.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetPolicyName(string policyName)
         {
-            if (policyName.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(policyName))
             {
                 throw new ArgumentNullException(nameof(policyName));
             }

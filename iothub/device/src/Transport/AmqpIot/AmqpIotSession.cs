@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 amqpLinkSettings.AddProperty(AmqpIotConstants.ChannelCorrelationId, correlationId);
             }
 
-            if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(deviceIdentity.AmqpTransportSettings.AuthenticationChain))
             {
                 amqpLinkSettings.AddProperty(AmqpIotConstants.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
             }

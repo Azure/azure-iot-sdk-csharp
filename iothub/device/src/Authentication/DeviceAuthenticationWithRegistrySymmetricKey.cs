@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetKeyFromBase64String(string key)
         {
-            if (key.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetDeviceId(string deviceId)
         {
-            if (deviceId.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));
             }
