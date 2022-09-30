@@ -127,10 +127,12 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
             Argument.AssertNotNull(message, nameof(message));
 
+            ValidateModuleTransportHandler("SendEventAsync for a named output");
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                ValidateModuleTransportHandler("SendEventAsync for a named output");
-
                 message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
 
                 await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
