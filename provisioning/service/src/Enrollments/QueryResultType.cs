@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Unknown result type.
         /// </summary>
         /// <remarks>
-        /// the provisioning service cannot parse the information in the body. 
-        /// You shall cast the Objects in the items using <c>string</c> and 
+        /// the provisioning service cannot parse the information in the body.
+        /// You shall cast the objects in the items using string and
         /// parser it depending on the query the you sent.
         /// </remarks>
         Unknown,
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <remarks>
         /// The query result in a list of individualEnrollment. You shall cast the
-        /// Objects in the items using <see cref="IndividualEnrollment"/>.
+        /// objects in the items using <see cref="IndividualEnrollment"/>.
         /// </remarks>
         Enrollment,
 
@@ -35,8 +35,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Enrollment group result type.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of enrollmentGroup. You shall cast 
-        /// the Objects in the items using <see cref="Service.EnrollmentGroup"/>.
+        /// The query result in a list of enrollmentGroup. You shall cast
+        /// the objects in the items using <see cref="Service.EnrollmentGroup"/>.
         /// </remarks>
         EnrollmentGroup,
 
@@ -44,8 +44,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Device registration result type.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of device registration. You shall cast 
-        /// the Objects in the items using <see cref="DeviceRegistrationState"/>.
+        /// The query result in a list of device registration. You shall cast
+        /// the objects in the items using <see cref="DeviceRegistrationState"/>.
         /// </remarks>
         DeviceRegistration,
     }

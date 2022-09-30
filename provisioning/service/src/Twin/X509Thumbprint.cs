@@ -6,18 +6,18 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// X509 client certificate thumbprints of the device
+    /// X509 client certificate thumbprints of the device.
     /// </summary>
     public sealed class X509Thumbprint
     {
         /// <summary>
-        /// X509 client certificate primary thumbprint
+        /// X509 client certificate primary thumbprint.
         /// </summary>
         [JsonProperty(PropertyName = "primaryThumbprint")]
         public string PrimaryThumbprint { get; set; }
 
         /// <summary>
-        /// X509 client certificate secondary thumbprint
+        /// X509 client certificate secondary thumbprint.
         /// </summary>
         [JsonProperty(PropertyName = "secondaryThumbprint")]
         public string SecondaryThumbprint { get; set; }

@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// To create or update an Enrollment on the provisioning service you should fill this object and call the
     /// public API <see cref="ProvisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment, CancellationToken)"/>.
     ///
-    /// The minimum information required by the provisioning service is the <c>RegistrationId</c> and the
-    /// <c>Attestation</c>.
+    /// The minimum information required by the provisioning service is the RegistrationId and the
+    /// Attestation.
     ///
     /// A new device can be provisioned by three attestation mechanisms, Trust Platform Module (see <see cref=
     /// "TpmAttestation"/>), X509 (see <see cref="X509Attestation"/>) or Symmetric Key (see <see cref="SymmetricKeyAttestation"/>). The definition of each one you
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// When serialized, an individualEnrollment will look like the following example:
-    /// <c>
+    /// <code>
     /// {
     ///     "registrationId":"validRegistrationId",
     ///     "deviceId":"ContosoDevice-123",
@@ -48,10 +48,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     "iotHubHostName":"ContosoIoTHub.azure-devices.net",
     ///     "provisioningStatus":"enabled"
     /// }
-    /// </c>
+    /// </code>
     ///
     /// The following JSON is a sample of the individualEnrollment response, received from the provisioning service.
-    /// <c>
+    /// <code>
     /// {
     ///     "registrationId":"validRegistrationId",
     ///     "deviceId":"ContosoDevice-123",
@@ -67,12 +67,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     "lastUpdatedDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
     ///     "etag": "\"00000000-0000-0000-0000-00000000000\""
     /// }
-    /// </c>
+    /// </code>
     /// </example>
     public class IndividualEnrollment : IETagHolder
     {
         /// <summary>
-        /// Creates a new instance of <c>IndividualEnrollment</c>.
+        /// Creates a new instance of IndividualEnrollment.
         /// </summary>
         /// <remarks>
         /// This constructor creates an instance of the IndividualEnrollment object with the minimum set of
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <example>
         /// When serialized, an IndividualEnrollment will look like the following example:
-        /// <c>
+        /// <code>
         /// {
         ///    "registrationId":"validRegistrationId",
         ///    "attestation":{
@@ -94,20 +94,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///        }
         ///    }
         /// }
-        /// </c>
+        /// </code>
         /// </example>
-        /// <param name="registrationId">the <c>string</c> that uniquely identify this enrollment in the provisioning
-        ///     service. It cannot be <c>null</c> or empty.</param>
-        /// <param name="attestation">the <see cref="Attestation"/> object with the attestation mechanism. It cannot be <c>null</c>.</param>
-        /// <exception cref="ArgumentNullException">if one of the provided parameters is not correct</exception>
+        /// <param name="registrationId">The string that uniquely identify this enrollment in the provisioning
+        ///     service. It cannot be null or empty.</param>
+        /// <param name="attestation">The <see cref="Attestation"/> object with the attestation mechanism. It cannot be null.</param>
+        /// <exception cref="ArgumentNullException">If one of the provided <paramref name="registrationId"/> or <paramref name="attestation"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
         public IndividualEnrollment(string registrationId, Attestation attestation)
         {
-            RegistrationId = registrationId ?? throw new ArgumentNullException(nameof(registrationId));
-            Attestation = attestation ?? throw new ArgumentNullException(nameof(attestation));
+            Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
+            Argument.AssertNotNull(attestation, nameof(attestation));
+            RegistrationId = registrationId;
+            Attestation = attestation;
         }
 
         /// <summary>
-        /// Creates a new instance of <c>IndividualEnrollment</c> using information in a JSON.
+        /// Creates a new instance of IndividualEnrollment using information in a JSON.
         /// </summary>
         /// <remarks>
         /// This constructor creates an instance of the enrollment filling the class with the information
@@ -115,7 +118,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <example>
         /// The following JSON is a sample of the IndividualEnrollment response, received from the provisioning service.
-        /// <c>
+        /// <code>
         /// {
         ///    "registrationId":"validRegistrationId",
         ///    "deviceId":"ContosoDevice-123",
@@ -131,18 +134,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///    "lastUpdatedDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
         ///    "etag": "\"00000000-0000-0000-0000-00000000000\""
         /// }
-        /// </c>
+        /// </code>
         /// </example>
-        /// <param name="registrationId">the <c>string</c> with a unique id for the individualEnrollment. It cannot be <c>null</c> or empty.</param>
-        /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM`, `X509` or `SymmetricKey`.</param>
-        /// <param name="deviceId">the <c>string</c> with the device name. This is optional and can be <c>null</c> or empty.</param>
-        /// <param name="iotHubHostName">the <c>string</c> with the target IoTHub name. This is optional and can be <c>null</c> or empty.</param>
-        /// <param name="initialTwinState">the <see cref="TwinState"/> with the initial Twin condition. This is optional and can be <c>null</c>.</param>
-        /// <param name="provisioningStatus">the <see cref="ProvisioningStatus"/> that determine the initial status of the device. This is optional and can be <c>null</c>.</param>
-        /// <param name="createdDateTimeUtc">the <c>DateTime</c> with the date and time that the enrollment was created. This is optional and can be <c>null</c>.</param>
-        /// <param name="lastUpdatedDateTimeUtc">the <c>DateTime</c> with the date and time that the enrollment was updated. This is optional and can be <c>null</c>.</param>
-        /// <param name="eTag">the <c>string</c> with the eTag that identify the correct instance of the enrollment in the service. It cannot be <c>null</c> or empty.</param>
-        /// <param name="capabilities">the <see cref="DeviceCapabilities"/> that identifies the device capabilities. This is optional and can be <c>null</c>.</param>
+        /// <param name="registrationId">The string with a unique id for the individualEnrollment. It cannot be null or empty.</param>
+        /// <param name="attestation">The <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM`, `X509` or `SymmetricKey`.</param>
+        /// <param name="deviceId">The string with the device name. This is optional and can be null or empty.</param>
+        /// <param name="iotHubHostName">The string with the target IoTHub name. This is optional and can be null or empty.</param>
+        /// <param name="initialTwinState">The <see cref="TwinState"/> with the initial Twin condition. This is optional and can be null.</param>
+        /// <param name="provisioningStatus">The <see cref="ProvisioningStatus"/> that determine the initial status of the device. This is optional and can be null.</param>
+        /// <param name="createdDateTimeUtc">The DateTime with the date and time that the enrollment was created. This is optional and can be null.</param>
+        /// <param name="lastUpdatedDateTimeUtc">The DateTime with the date and time that the enrollment was updated. This is optional and can be null.</param>
+        /// <param name="eTag">The string with the eTag that identify the correct instance of the enrollment in the service. It cannot be null or empty.</param>
+        /// <param name="capabilities">The <see cref="DeviceCapabilities"/> that identifies the device capabilities. This is optional and can be null.</param>
         /// <exception cref="DeviceProvisioningServiceException">If the received JSON is invalid.</exception>
         [JsonConstructor]
         internal IndividualEnrollment(
@@ -187,7 +190,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
-        /// <exception cref="ArgumentException">if the provided string does not fit the registration Id requirements</exception>
+        /// <exception cref="InvalidOperationException">If the provided string does not fit the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId { get; internal set; }
 
@@ -210,8 +213,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private AttestationMechanism _attestation;
 
         /// <summary>
-        /// Attestation
+        /// Attestation.
         /// </summary>
+        /// <exception cref="InvalidOperationException">If the provided attestation is null.</exception>
         [JsonIgnore]
         public Attestation Attestation
         {
@@ -221,10 +225,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 if (value is X509Attestation attestation)
                 {
-                    if ((attestation ?? throw new ArgumentNullException(nameof(value))).ClientCertificates == null
+                    if ((attestation ?? throw new InvalidOperationException(nameof(value))).ClientCertificates == null
                         && attestation.CAReferences == null)
                     {
-                        throw new ArgumentNullException(nameof(value), "Value does not contain client certificate or CA reference.");
+                        throw new InvalidOperationException($"Value for {nameof(attestation)} does not contain client certificate or CA reference.");
                     }
                 }
 
@@ -233,7 +237,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Desired IotHub to assign the device to
+        /// Desired IoT hub to assign the device to.
         /// </summary>
         [JsonProperty(PropertyName = "iotHubHostName", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string IotHubHostName { get; set; }
@@ -264,7 +268,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public DateTime? LastUpdatedDateTimeUtc { get; internal set; }
 
         /// <summary>
-        /// Enrollment's ETag
+        /// Enrollment's ETag.
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; set; }
@@ -294,7 +298,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public AllocationPolicy? AllocationPolicy { get; set; }
 
         /// <summary>
-        /// The list of names of IoT hubs the device in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
+        /// The list of names of IoT hubs the device in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs.
         /// </summary>
         [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public IList<string> IotHubs { get; set; } = new List<string>();
@@ -302,7 +306,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
-        /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
+        /// <returns>The string with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);

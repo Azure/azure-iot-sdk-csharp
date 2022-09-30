@@ -14,11 +14,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The provisioning service supports Trusted Platform Module, or TPM, as the device attestation mechanism.
     /// User must provide the Endorsement Key, and can, optionally, provide the Storage Root Key.
     /// </remarks>
-    ///
     public sealed class TpmAttestation : Attestation
     {
-        private string _endorsementKey;
-
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
@@ -27,39 +24,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// with both endorsement and storage root keys. Only the endorsement
         /// key is mandatory.
         /// </remarks>
-        /// <param name="endorsementKey">the <c>string</c> with the TPM endorsement key. It cannot be <c>null</c> or empty.</param>
-        /// <param name="storageRootKey">the <c>string</c> with the TPM storage root key. It can be <c>null</c> or empty.</param>
-        /// <exception cref="ArgumentException">if the endorsementKey is <c>null</c> or empty.</exception>
+        /// <param name="endorsementKey">The string with the TPM endorsement key. It cannot be null or empty.</param>
+        /// <param name="storageRootKey">The string with the TPM storage root key. It can be null or empty.</param>
+        /// <exception cref="ArgumentNullException">If the provided <paramref name="endorsementKey"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="endorsementKey"/> is empty or white space.</exception>
         [JsonConstructor]
         public TpmAttestation(string endorsementKey, string storageRootKey = null)
         {
-            try
-            {
-                EndorsementKey = endorsementKey;
-                StorageRootKey = storageRootKey;
-            }
-            catch (ArgumentException e)
-            {
-                throw new DeviceProvisioningServiceException(e.Message, HttpStatusCode.BadRequest, e);
-            }
+            Argument.AssertNotNullOrEmpty(endorsementKey, nameof(endorsementKey));
+            EndorsementKey = endorsementKey;
+            StorageRootKey = storageRootKey;
         }
 
         /// <summary>
         /// Gets the endorsement key used for attestation.
         /// </summary>
         [JsonProperty(PropertyName = "endorsementKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string EndorsementKey
-        {
-            get => _endorsementKey;
-            private set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _endorsementKey = value;
-            }
-        }
+        public string EndorsementKey { get; private set; }
 
         /// <summary>
         /// Gets the storage key used for attestation.

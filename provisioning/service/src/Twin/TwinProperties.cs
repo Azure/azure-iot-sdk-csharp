@@ -11,16 +11,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class TwinProperties
     {
         /// <summary>
-        /// Gets and sets the <see cref="Twin"/> desired properties.
+        /// Gets and sets the twin desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public TwinCollection Desired { get; set; } = new();
 
         /// <summary>
-        /// Gets and sets the <see cref="Twin"/> reported properties.
+        /// Gets and sets the twin reported properties.
         /// </summary>
         [JsonProperty(PropertyName = "reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public TwinCollection Reported { get; set; } = new();
     }
 }
-

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///
     /// The following JSON is an example of the result of this serializer.
     /// </remarks>
-    /// <c>
+    /// <code>
     /// {
     ///    "mode":"update",
     ///    "enrollments":
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///        }
     ///    ]
     /// }
-    /// </c>
+    /// </code>
     internal static class BulkEnrollmentOperation
     {
         private sealed class BulkOperation
@@ -72,16 +72,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Serializer
         /// </summary>
         /// <remarks>
-        /// Creates a <c>string</c>, whose content represents the mode and the collection of
+        /// Creates a string, whose content represents the mode and the collection of
         ///     individualEnrollments in a JSON format.
         /// </remarks>
         /// <param name="mode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the
         ///     individualEnrollments.</param>
         /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description
         ///     of each individualEnrollment.</param>
-        /// <returns>The <c>string</c> with the content of this class.</returns>
-        /// <exception cref="ArgumentNullException">if the individualEnrollments is null.</exception>
-        /// <exception cref="ArgumentException">if the individualEnrollments is invalid.</exception>
+        /// <returns>The string with the content of this class.</returns>
+        /// <exception cref="ArgumentNullException">If the <paramref name="individualEnrollments"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="individualEnrollments"/> is an empty collection.</exception>
         public static string ToJson(BulkOperationMode mode, IEnumerable<IndividualEnrollment> individualEnrollments)
         {
             if (!(individualEnrollments ?? throw new ArgumentNullException(nameof(individualEnrollments))).Any())

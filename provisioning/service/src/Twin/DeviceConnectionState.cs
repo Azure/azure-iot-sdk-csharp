@@ -11,12 +11,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public enum DeviceConnectionState
     {
         /// <summary>
-        /// Represents a device in the Disconnected state.
+        /// Represents a device in the disconnected state.
         /// </summary>
         Disconnected = 0,
 
         /// <summary>
-        /// Represents a device in the Connected state.
+        /// Represents a device in the connected state.
         /// </summary>
         Connected = 1
     }

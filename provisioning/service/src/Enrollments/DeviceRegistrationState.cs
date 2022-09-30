@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class DeviceRegistrationState
     {
         /// <summary>
-        /// Creates a new instance of <see cref="DeviceRegistrationState"/>
+        /// Creates a new instance of the class.
         /// </summary>
         /// <param name="registrationId">Registration Id</param>
         public DeviceRegistrationState(string registrationId)
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public string ErrorMessage { get; internal set; }
 
         /// <summary>
-        /// Registration status ETag
+        /// Registration status ETag.
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; internal set; }
