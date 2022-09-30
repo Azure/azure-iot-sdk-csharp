@@ -206,7 +206,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be((HttpStatusCode)429);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Throttled);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -229,7 +228,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be((HttpStatusCode)429);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Throttled);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -251,7 +249,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.Forbidden);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded);
             error.And.IsTransient.Should().BeFalse();
         }
@@ -273,7 +270,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.Forbidden);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded);
             error.And.IsTransient.Should().BeFalse();
         }
@@ -294,7 +290,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
@@ -315,7 +310,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
         }
