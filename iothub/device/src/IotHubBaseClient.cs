@@ -463,6 +463,7 @@ namespace Microsoft.Azure.Devices.Client
                 directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.MethodNotImplemented)
                 {
                     RequestId = directMethodRequest.RequestId,
+                    PayloadConvention = _clientOptions.PayloadConvention,
                 };
             }
             else
@@ -474,6 +475,7 @@ namespace Microsoft.Azure.Devices.Client
                         .ConfigureAwait(false);
 
                     directMethodResponse.RequestId = directMethodRequest.RequestId;
+                    directMethodResponse.PayloadConvention = _clientOptions.PayloadConvention;
                 }
                 catch (Exception ex)
                 {
@@ -483,6 +485,7 @@ namespace Microsoft.Azure.Devices.Client
                     directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.UserCodeException)
                     {
                         RequestId = directMethodRequest.RequestId,
+                        PayloadConvention = _clientOptions.PayloadConvention,
                     };
                 }
             }

@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new IotHubClientException() { ErrorCode = IotHubClientErrorCode.DeviceNotFound });
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new IotHubClientException(IotHubClientErrorCode.DeviceNotFound));
 
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
             Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
@@ -344,7 +344,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act and assert
             var exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
-            exception.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
             exception.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(2);
             retryPolicy.Counter.Should().Be(2);
@@ -353,7 +352,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             sut.SetRetryPolicy(noretry);
 
             exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
-            exception.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
             exception.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
@@ -367,7 +365,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 Counter++;
                 lastException.Should().BeOfType(typeof(IotHubClientException));
-                ((IotHubClientException)lastException).StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
                 ((IotHubClientException)lastException).ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
 
                 retryInterval = TimeSpan.MinValue;

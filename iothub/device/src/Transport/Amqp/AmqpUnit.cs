@@ -899,19 +899,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnMethodReceived(DirectMethodRequest DirectMethodRequest)
+        private void OnMethodReceived(DirectMethodRequest directMethodRequest)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, DirectMethodRequest, nameof(OnMethodReceived));
+                Logging.Enter(this, directMethodRequest, nameof(OnMethodReceived));
 
             try
             {
-                _onMethodCallback?.Invoke(DirectMethodRequest);
+                _onMethodCallback?.Invoke(directMethodRequest);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, DirectMethodRequest, nameof(OnMethodReceived));
+                    Logging.Exit(this, directMethodRequest, nameof(OnMethodReceived));
             }
         }
 

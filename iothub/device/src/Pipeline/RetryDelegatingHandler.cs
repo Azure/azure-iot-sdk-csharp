@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _handlerSemaphore = new(1, 1);
         private bool _openCalled;
         private bool _opened;
         private bool _methodsEnabled;
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _deviceReceiveMessageEnabled;
 
         private Task _transportClosedTask;
-        private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _handleDisconnectCts = new();
 
         private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
 
@@ -719,9 +719,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
-                }
             }
         }
     }

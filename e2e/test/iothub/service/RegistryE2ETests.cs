@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DevicesClient_AddDevices2Async_Works()
+        public async Task DevicesClient_AddDevicesAsync_Works()
         {
             // arrange
 
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DevicesClient_UpdateDevices2Async_Works()
+        public async Task DevicesClient_UpdateDevicesAsync_Works()
         {
             // arrange
 
@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task RegistryManager_UpdateTwins2Async_Works()
+        public async Task RegistryManager_UpdateTwinsAsync_Works()
         {
             // arrange
 
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DevicesClient_RemoveDevices2Async_Works()
+        public async Task DevicesClient_RemoveDevicesAsync_Works()
         {
             // arrange
 
@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 error1.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
                 error1.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
 
-                Func<Task> act2 = async () => await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
+                Func<Task> act2 = async () => await serviceClient.Devices.GetAsync(device2.Id).ConfigureAwait(false);
 
                 var error2 = await act2.Should().ThrowAsync<IotHubServiceException>("Expected the request to fail with a \"not found\" error");
                 error2.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
