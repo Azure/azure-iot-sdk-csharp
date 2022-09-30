@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         protected AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new();
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, DateTimeOffset> _twinResponseTimeouts = new();
 
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
@@ -95,6 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
+
             lock (_lock)
             {
                 if (_disposed)

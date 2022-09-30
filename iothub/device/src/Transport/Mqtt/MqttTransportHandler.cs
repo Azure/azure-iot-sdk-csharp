@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private bool _isSubscribedToTwinResponses;
 
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
-        private Timer _twinTimeoutTimer;
+        private readonly Timer _twinTimeoutTimer;
 
         private static TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(60);
 
@@ -118,42 +118,42 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private static readonly Dictionary<string, string> s_toSystemPropertiesMap = new()
         {
-            {IotHubWirePropertyNames.AbsoluteExpiryTime, MessageSystemPropertyNames.ExpiryTimeUtc},
-            {IotHubWirePropertyNames.CorrelationId, MessageSystemPropertyNames.CorrelationId},
-            {IotHubWirePropertyNames.MessageId, MessageSystemPropertyNames.MessageId},
-            {IotHubWirePropertyNames.To, MessageSystemPropertyNames.To},
-            {IotHubWirePropertyNames.UserId, MessageSystemPropertyNames.UserId},
-            {IotHubWirePropertyNames.MessageSchema, MessageSystemPropertyNames.MessageSchema},
-            {IotHubWirePropertyNames.CreationTimeUtc, MessageSystemPropertyNames.CreationTimeUtc},
-            {IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType},
-            {IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding},
-            {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
-            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
-            {IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId },
-            {IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId },
-            {IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId},
-            {IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext},
-            {IotHubWirePropertyNames.InterfaceId, MessageSystemPropertyNames.InterfaceId}
+            { IotHubWirePropertyNames.AbsoluteExpiryTime, MessageSystemPropertyNames.ExpiryTimeUtc },
+            { IotHubWirePropertyNames.CorrelationId, MessageSystemPropertyNames.CorrelationId },
+            { IotHubWirePropertyNames.MessageId, MessageSystemPropertyNames.MessageId },
+            { IotHubWirePropertyNames.To, MessageSystemPropertyNames.To },
+            { IotHubWirePropertyNames.UserId, MessageSystemPropertyNames.UserId },
+            { IotHubWirePropertyNames.MessageSchema, MessageSystemPropertyNames.MessageSchema },
+            { IotHubWirePropertyNames.CreationTimeUtc, MessageSystemPropertyNames.CreationTimeUtc },
+            { IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType },
+            { IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding },
+            { MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation },
+            { MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack },
+            { IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId  },
+            { IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId  },
+            { IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId },
+            { IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext },
+            { IotHubWirePropertyNames.InterfaceId, MessageSystemPropertyNames.InterfaceId },
         };
 
         private static readonly Dictionary<string, string> s_fromSystemPropertiesMap = new()
         {
-            {MessageSystemPropertyNames.ExpiryTimeUtc, IotHubWirePropertyNames.AbsoluteExpiryTime},
-            {MessageSystemPropertyNames.CorrelationId, IotHubWirePropertyNames.CorrelationId},
-            {MessageSystemPropertyNames.MessageId, IotHubWirePropertyNames.MessageId},
-            {MessageSystemPropertyNames.To, IotHubWirePropertyNames.To},
-            {MessageSystemPropertyNames.UserId, IotHubWirePropertyNames.UserId},
-            {MessageSystemPropertyNames.MessageSchema, IotHubWirePropertyNames.MessageSchema},
-            {MessageSystemPropertyNames.CreationTimeUtc, IotHubWirePropertyNames.CreationTimeUtc},
-            {MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType},
-            {MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding},
-            {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
-            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
-            {MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
-            {MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey},
-            {MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey},
-            {MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId},
-            {MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName }
+            { MessageSystemPropertyNames.ExpiryTimeUtc, IotHubWirePropertyNames.AbsoluteExpiryTime },
+            { MessageSystemPropertyNames.CorrelationId, IotHubWirePropertyNames.CorrelationId },
+            { MessageSystemPropertyNames.MessageId, IotHubWirePropertyNames.MessageId },
+            { MessageSystemPropertyNames.To, IotHubWirePropertyNames.To },
+            { MessageSystemPropertyNames.UserId, IotHubWirePropertyNames.UserId },
+            { MessageSystemPropertyNames.MessageSchema, IotHubWirePropertyNames.MessageSchema },
+            { MessageSystemPropertyNames.CreationTimeUtc, IotHubWirePropertyNames.CreationTimeUtc },
+            { MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType },
+            { MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding },
+            { MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation },
+            { MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack },
+            { MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName  },
+            { MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey },
+            { MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey },
+            { MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId },
+            { MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName },
         };
 
         internal IMqttClient _mqttClient;
@@ -263,19 +263,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
 
             // Create a timer to remove any expired messages.
-            _twinTimeoutTimer = new Timer(CheckTimeout);
+            _twinTimeoutTimer = new Timer(RemoveOldOperations);
         }
-
-        private bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
-        {
-            return _mqttTransportSettings.RemoteCertificateValidationCallback.Invoke(
-                _mqttClient,
-                args.Certificate,
-                args.Chain,
-                args.SslPolicyErrors);
-        }
-
-        #region Client operations
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
@@ -659,7 +648,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // responds, this layer can correlate the request.
                 var taskCompletionSource = new TaskCompletionSource<PatchTwinResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _reportedPropertyUpdateResponseCompletions[requestId] = taskCompletionSource;
-                _twinResponseTimeouts[requestId] = DateTime.UtcNow;
+                _twinResponseTimeouts[requestId] = DateTimeOffset.UtcNow;
 
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
@@ -712,32 +701,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private void CheckTimeout(object _)
-        {
-            if (!_twinResponseTimeouts.Any())
-            {
-                return;
-            }
-
-            var currentDateTime = DateTime.UtcNow;
-            foreach (KeyValuePair<string, DateTimeOffset> entry in _twinResponseTimeouts)
-            {
-                if (currentDateTime - entry.Value > s_twinResponseTimeout)
-                {
-                    _getTwinResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<GetTwinResponse> _);
-                    _reportedPropertyUpdateResponseCompletions.TryRemove(entry.Key, out TaskCompletionSource<PatchTwinResponse> _);
-                    _twinResponseTimeouts.TryRemove(entry.Key, out DateTimeOffset _);
-                }
-            }
-        }
-
-        protected private override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            _mqttClient?.Dispose();
-            _twinTimeoutTimer?.Dispose();
-        }
-
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
             OnTransportClosedGracefully();
@@ -760,7 +723,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        #endregion Client operations
+        protected private override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            _mqttClient?.Dispose();
+            _twinTimeoutTimer?.Dispose();
+        }
+
+        private bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
+        {
+            return _mqttTransportSettings.RemoteCertificateValidationCallback.Invoke(
+                _mqttClient,
+                args.Certificate,
+                args.Chain,
+                args.SslPolicyErrors);
+        }
 
         private async Task SubscribeAsync(string topic, CancellationToken cancellationToken)
         {
@@ -1064,7 +1041,54 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await (_messageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
         }
 
-        public void PopulateMessagePropertiesFromMqttMessage(IncomingMessage message, MqttApplicationMessage mqttMessage)
+        private bool ParseResponseTopic(string topicName, out string rid, out int status, out long version)
+        {
+            rid = "";
+            status = 500;
+            version = 0;
+
+            // The topic here looks like
+            // "$iothub/twin/res/204/?$rid=efc34c73-79ce-4054-9985-0cdf40a3c794&$version=2"
+            // The regex matching splits it up into
+            // "$iothub/twin" "res/204" "$rid=efc34c73-79ce-4054-9985-0cdf40a3c794&$version=2"
+            // Then the third group is parsed for key value pairs such as "$version=2"
+            Match match = _twinResponseTopicRegex.Match(topicName);
+            if (match.Success)
+            {
+                // match.Groups[1] evaluates to the key-value pair that looks like "res/204"
+                status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
+
+                // match.Groups[1] evaluates to the query string key-value pair parameters
+                NameValueCollection queryStringKeyValuePairs = HttpUtility.ParseQueryString(match.Groups[2].Value);
+                rid = queryStringKeyValuePairs.Get(RequestIdTopicKey);
+
+                if (status == 204)
+                {
+                    // This query string key-value pair is only expected in a successful patch twin response message.
+                    // Get twin requests will contain the twin version in the payload instead.
+                    version = int.Parse(queryStringKeyValuePairs.Get(VersionTopicKey));
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private void RemoveOldOperations(object _)
+        {
+            _ = _twinResponseTimeouts
+                .Where(x => DateTimeOffset.UtcNow - x.Value > s_twinResponseTimeout)
+                .Select(x =>
+                    {
+                        _getTwinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<GetTwinResponse> _);
+                        _reportedPropertyUpdateResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<PatchTwinResponse> _);
+                        _twinResponseTimeouts.TryRemove(x.Key, out DateTimeOffset _);
+                        return true;
+                    });
+        }
+
+        private static void PopulateMessagePropertiesFromMqttMessage(IncomingMessage message, MqttApplicationMessage mqttMessage)
         {
             // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
             // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
@@ -1142,40 +1166,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             return msg;
-        }
-
-        private bool ParseResponseTopic(string topicName, out string rid, out int status, out long version)
-        {
-            rid = "";
-            status = 500;
-            version = 0;
-
-            // The topic here looks like
-            // "$iothub/twin/res/204/?$rid=efc34c73-79ce-4054-9985-0cdf40a3c794&$version=2"
-            // The regex matching splits it up into
-            // "$iothub/twin" "res/204" "$rid=efc34c73-79ce-4054-9985-0cdf40a3c794&$version=2"
-            // Then the third group is parsed for key value pairs such as "$version=2"
-            Match match = _twinResponseTopicRegex.Match(topicName);
-            if (match.Success)
-            {
-                // match.Groups[1] evaluates to the key-value pair that looks like "res/204"
-                status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
-
-                // match.Groups[1] evaluates to the query string key-value pair parameters
-                NameValueCollection queryStringKeyValuePairs = HttpUtility.ParseQueryString(match.Groups[2].Value);
-                rid = queryStringKeyValuePairs.Get(RequestIdTopicKey);
-
-                if (status == 204)
-                {
-                    // This query string key-value pair is only expected in a successful patch twin response message.
-                    // Get twin requests will contain the twin version in the payload instead.
-                    version = int.Parse(queryStringKeyValuePairs.Get(VersionTopicKey));
-                }
-
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>

@@ -29,13 +29,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         // MQTTNet has an enum to represent log level and our logging library has a separate enum. They have the
         // same values, though
-        internal static EventLevel ToEventLevel(MqttNetLogLevel mqttNetLevel) => mqttNetLevel switch
-        {
-            MqttNetLogLevel.Error => EventLevel.Error,
-            MqttNetLogLevel.Warning => EventLevel.Warning,
-            MqttNetLogLevel.Info => EventLevel.Informational,
-            MqttNetLogLevel.Verbose => EventLevel.Verbose,
-            _ => throw new ArgumentOutOfRangeException(nameof(mqttNetLevel), $"Unexpected level value: {mqttNetLevel}"),
-        };
+        internal static EventLevel ToEventLevel(MqttNetLogLevel mqttNetLevel) =>
+            mqttNetLevel switch
+            {
+                MqttNetLogLevel.Error => EventLevel.Error,
+                MqttNetLogLevel.Warning => EventLevel.Warning,
+                MqttNetLogLevel.Info => EventLevel.Informational,
+                MqttNetLogLevel.Verbose => EventLevel.Verbose,
+                _ => throw new ArgumentOutOfRangeException(nameof(mqttNetLevel), $"Unexpected level value: {mqttNetLevel}"),
+            };
     }
 }

@@ -109,14 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private TwinState(TwinCollection tags, TwinProperties properties)
         {
             Tags = tags;
-            if (properties == null)
-            {
-                DesiredProperties = null;
-            }
-            else
-            {
-                DesiredProperties = properties.Desired;
-            }
+            DesiredProperties = properties?.Desired;
         }
 
         /// <summary>
@@ -133,21 +126,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             get => _properties?.Desired;
 
-            set
-            {
-                if (value == null)
-                {
-                    _properties = null;
-                }
-                else
-                {
-                    _properties = new TwinProperties
+            set => _properties = value == null
+                ? null
+                : new TwinProperties
                     {
                         Desired = value,
                         Reported = null,
                     };
-                }
-            }
         }
 
         /// <summary>

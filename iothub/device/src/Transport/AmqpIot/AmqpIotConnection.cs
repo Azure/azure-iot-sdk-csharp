@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                var amqpSession = new AmqpSession(_amqpConnection, amqpSessionSettings, AmqpIotLinkFactory.GetInstance());
+                var amqpSession = new AmqpSession(_amqpConnection, amqpSessionSettings, AmqpIotLinkFactory.Instance);
                 _amqpConnection.AddSession(amqpSession, new ushort?());
                 await amqpSession.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return new AmqpIotSession(amqpSession);
