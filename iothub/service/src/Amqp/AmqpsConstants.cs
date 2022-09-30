@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Amqp
         public const string UriSuffix = "/$iothub/websocket";
         public const string SecurePort = "443";
         public const string Version = "13";
-        public const string AmqpsScheme = "amqps";
 
         public static readonly AmqpSymbol TimeoutName = AmqpConstants.Vendor + ":timeout";
         public static readonly AmqpSymbol StackTraceName = AmqpConstants.Vendor + ":stack-trace";

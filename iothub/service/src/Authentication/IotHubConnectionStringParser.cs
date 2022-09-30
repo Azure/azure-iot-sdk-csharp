@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.Azure.Devices
@@ -11,6 +12,7 @@ namespace Microsoft.Azure.Devices
     {
         internal static IotHubConnectionString Parse(string iotHubConnectionString)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(iotHubConnectionString), "IoT Hub connection string is required.");
             IDictionary<string, string> map = ToDictionary(iotHubConnectionString, IotHubConnectionStringConstants.ValuePairDelimiter, IotHubConnectionStringConstants.ValuePairSeparator);
 
             string hostName = GetConnectionStringValue(map, IotHubConnectionStringConstants.HostNamePropertyName);
@@ -64,10 +66,7 @@ namespace Microsoft.Azure.Devices
 
         private static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
         {
-            if (string.IsNullOrWhiteSpace(valuePairString))
-            {
-                throw new ArgumentException("Malformed token.");
-            }
+            Debug.Assert(!string.IsNullOrWhiteSpace(valuePairString), $"{nameof(valuePairString)} cannot be null or white space.");
 
             IEnumerable<string[]> parts = valuePairString
                 .Split(kvpDelimiter)

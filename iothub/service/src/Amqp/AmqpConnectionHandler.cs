@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 {
                     MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
                     ContainerId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
-                    HostName = _credential.AmqpEndpoint.Host,
+                    HostName = _credential.HostName,
                     IdleTimeOut = Convert.ToUInt32(_options.AmqpConnectionKeepAlive.TotalMilliseconds)
                 };
 
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.Amqp
             var tcpTransportSettings = new TcpTransportSettings
             {
                 Host = _credential.HostName,
-                Port = _credential.AmqpEndpoint.Port,
+                Port = AmqpConstants.DefaultSecurePort
             };
 
             var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
