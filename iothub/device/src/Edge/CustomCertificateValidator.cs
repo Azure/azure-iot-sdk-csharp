@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -18,20 +17,23 @@ namespace Microsoft.Azure.Devices.Client
 
         private CustomCertificateValidator(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
         {
+            Debug.Assert(certs.Any(), $"No certs were sent to {nameof(CustomCertificateValidator)}");
+
             _certs = certs;
             _transportSettings = transportSettings;
         }
 
-        public static CustomCertificateValidator Create(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
+        internal static CustomCertificateValidator Create(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
         {
             var instance = new CustomCertificateValidator(certs, transportSettings);
             instance.SetupCertificateValidation();
             return instance;
         }
 
-        public Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> GetCustomCertificateValidation()
+        Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> ICertificateValidator.GetCustomCertificateValidation()
         {
-            Debug.WriteLine("CustomCertificateValidator.GetCustomCertificateValidation()");
+            if (Logging.IsEnabled)
+                Logging.Info(this, "CustomCertificateValidator.GetCustomCertificateValidation()", nameof(ICertificateValidator.GetCustomCertificateValidation));
 
             return (sender, cert, chain, sslPolicyErrors) =>
                 ValidateCertificate(_certs.First(), cert, chain, sslPolicyErrors);
@@ -39,38 +41,29 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetupCertificateValidation()
         {
-            Debug.WriteLine("CustomCertificateValidator.SetupCertificateValidation()");
+            if (Logging.IsEnabled)
+                Logging.Info(this, "CustomCertificateValidator.SetupCertificateValidation()", nameof(SetupCertificateValidation));
 
             if (_transportSettings is IotHubClientAmqpSettings amqpTransportSettings)
             {
-                if (amqpTransportSettings.RemoteCertificateValidationCallback == null)
-                {
-                    amqpTransportSettings.RemoteCertificateValidationCallback =
-                        (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
-                }
+                amqpTransportSettings.RemoteCertificateValidationCallback ??=
+                    (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
             }
             else if (_transportSettings is IotHubClientMqttSettings mqttTransportSettings)
             {
-                if (mqttTransportSettings.RemoteCertificateValidationCallback == null)
-                {
-                    mqttTransportSettings.RemoteCertificateValidationCallback =
-                        (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
-                }
+                mqttTransportSettings.RemoteCertificateValidationCallback ??=
+                    (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
             }
-
-            // TODO: Tim/Abhipsa, what does this mean?
-
-            // InvokeMethodAsync is over HTTP even when transportSettings set a different protocol
-            // So set the callback in HttpClientHandler for InvokeMethodAsync
         }
 
-        private static bool ValidateCertificate(X509Certificate2 trustedCertificate, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        private bool ValidateCertificate(X509Certificate2 trustedCertificate, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             // Terminate on errors other than those caused by a chain failure
             SslPolicyErrors terminatingErrors = sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors;
             if (terminatingErrors != SslPolicyErrors.None)
             {
-                Debug.WriteLine("Discovered SSL session errors: {0}", terminatingErrors);
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Discovered SSL session errors: {terminatingErrors}", nameof(ValidateCertificate));
                 return false;
             }
 
@@ -80,15 +73,17 @@ namespace Microsoft.Azure.Devices.Client
             using var cert = new X509Certificate2(certificate);
             if (!chain.Build(cert))
             {
-                Debug.WriteLine("Unable to build the chain using the expected root certificate.");
+                if (Logging.IsEnabled)
+                    Logging.Error(this, "Unable to build the chain using the expected root certificate.", nameof(ValidateCertificate));
                 return false;
             }
 
             // Pin the trusted root of the chain to the expected root certificate
             X509Certificate2 actualRoot = chain.ChainElements[chain.ChainElements.Count - 1].Certificate;
-            if (!trustedCertificate.Equals(actualRoot))
+            if (trustedCertificate != actualRoot)
             {
-                Debug.WriteLine("The certificate chain was not signed by the trusted root certificate.");
+                if (Logging.IsEnabled)
+                    Logging.Error(this, "The certificate chain was not signed by the trusted root certificate.", nameof(ValidateCertificate));
                 return false;
             }
 

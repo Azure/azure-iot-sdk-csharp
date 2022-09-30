@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
             return instance;
         }
 
-        public Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> GetCustomCertificateValidation()
+        Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> ICertificateValidator.GetCustomCertificateValidation()
         {
             return null;
         }

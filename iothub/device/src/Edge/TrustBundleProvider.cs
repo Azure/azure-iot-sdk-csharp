@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
@@ -37,21 +38,16 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 IList<X509Certificate2> certs = ParseCertificates(response.Certificate);
                 return certs;
             }
-            catch (Exception ex)
+            catch (SwaggerException<ErrorResponse> ex)
             {
-                switch (ex)
-                {
-                    case SwaggerException<ErrorResponse> errorResponseException:
-                        throw new HttpHsmComunicationException(
-                            $"Error calling GetTrustBundleWithRetry: {errorResponseException.Result?.Message ?? string.Empty}", errorResponseException.StatusCode, ex);
+                throw new HttpHsmComunicationException(
+                    $"Error calling GetTrustBundleWithRetry: {ex.Result?.Message ?? string.Empty}", ex.StatusCode, ex);
+            }
+            catch (SwaggerException ex)
+            {
+                throw new HttpHsmComunicationException(
+                    $"Error calling GetTrustBundleWithRetry: {ex.Response ?? string.Empty}", ex.StatusCode, ex);
 
-                    case SwaggerException swaggerException:
-                        throw new HttpHsmComunicationException(
-                            $"Error calling GetTrustBundleWithRetry: {swaggerException.Response ?? string.Empty}", swaggerException.StatusCode, ex);
-
-                    default:
-                        throw;
-                }
             }
         }
 
@@ -74,13 +70,13 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
             // Extract each certificate's string. The final string from the split will either be empty
             // or a non-certificate entry, so it is dropped.
-            string delimiter = "-----END CERTIFICATE-----";
+            const string delimiter = "-----END CERTIFICATE-----";
             string[] rawCerts = pemCerts.Split(new[] { delimiter }, StringSplitOptions.None);
 
             return rawCerts
                .Take(rawCerts.Length - 1) // Drop the invalid entry
                .Select(c => $"{c}{delimiter}") // Re-add the certificate end-marker which was removed by split
-               .Select(c => System.Text.Encoding.UTF8.GetBytes(c))
+               .Select(c => Encoding.UTF8.GetBytes(c))
                .Select(c => new X509Certificate2(c))
                .ToList();
         }
