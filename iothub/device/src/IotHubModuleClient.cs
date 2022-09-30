@@ -267,6 +267,7 @@ namespace Microsoft.Azure.Devices.Client
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
                 var methodInvokeRequest = new DirectMethodRequest
                 {
+                    PayloadConvention = _clientOptions.PayloadConvention,
                     MethodName = methodRequest.MethodName,
                     Payload = methodRequest.Payload,
                     ResponseTimeout = methodRequest.ResponseTimeout,

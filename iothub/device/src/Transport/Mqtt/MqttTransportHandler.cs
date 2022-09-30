@@ -443,7 +443,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             string topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
-            byte[] serializedPayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodResponse.Payload));
+            byte[] serializedPayload = methodResponse.GetPayloadAsBytes();
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(serializedPayload)
@@ -953,9 +953,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             var methodRequest = new DirectMethodRequest
             {
+                PayloadConvention = _payloadConvention,
                 MethodName = methodName,
                 RequestId = requestId,
-                Payload = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(payload))
+                Payload = payload,
             };
 
             // We are intentionally not awaiting _methodListener callback. The direct method response

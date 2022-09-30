@@ -11,7 +11,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class DirectMethodResponse
     {
-
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
@@ -44,5 +43,25 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         [JsonIgnore]
         internal string RequestId { get; set; }
+
+        /// <summary>
+        /// The convention to use with the direct method payload.
+        /// </summary>
+        [JsonIgnore]
+        protected internal PayloadConvention PayloadConvention { get; set; }
+
+        internal string GetPayloadAsString()
+        {
+            return Payload == null
+                ? null
+                : PayloadConvention.PayloadSerializer.SerializeToString(Payload);
+        }
+
+        internal byte[] GetPayloadAsBytes()
+        {
+            return Payload == null
+                ? null
+                : PayloadConvention.PayloadEncoder.ContentEncoding.GetBytes(GetPayloadAsString());
+        }
     }
 }

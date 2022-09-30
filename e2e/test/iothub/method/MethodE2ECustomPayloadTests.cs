@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         try
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
-                            request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_booleanRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_booleanRequest)} but was {request.PayloadAsJsonString}");
+                            request.GetPayloadAsJsonString().Should().Be(JsonConvert.SerializeObject(_booleanRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_booleanRequest)} but was {request.GetPayloadAsJsonString()}");
                             _booleanRequest.Should().BeTrue();
 
                             methodCallReceived.TrySetResult(true);
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         try
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
-                            request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_customTypeRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_customTypeRequest)} but was {request.PayloadAsJsonString}");
+                            request.GetPayloadAsJsonString().Should().Be(JsonConvert.SerializeObject(_customTypeRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_customTypeRequest)} but was {request.GetPayloadAsJsonString()}");
                             request.TryGetPayload(out CustomType customType).Should().BeTrue();
                             customType.Should().BeEquivalentTo(_customTypeRequest, $"The expected respose payload should be {_customTypeRequest} but was {customType}");
 
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         try
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
-                            request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_listRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_listRequest)} but was {request.PayloadAsJsonString}");
+                            request.GetPayloadAsJsonString().Should().Be(JsonConvert.SerializeObject(_listRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_listRequest)} but was {request.GetPayloadAsJsonString()}");
                             request.TryGetPayload(out List<double> listRequest).Should().BeTrue();
                             listRequest.Should().BeEquivalentTo(_listRequest, $"The expected respose payload should be {_listRequest} but was {listRequest}");
 
@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         try
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
-                            request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_dictRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_dictRequest)} but was {request.PayloadAsJsonString}");
+                            request.GetPayloadAsJsonString().Should().Be(JsonConvert.SerializeObject(_dictRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_dictRequest)} but was {request.GetPayloadAsJsonString()}");
                             request.TryGetPayload(out Dictionary<string, object> dictRequest).Should().BeTrue();
                             dictRequest.Should().BeEquivalentTo(_dictRequest, $"The expected respose payload should be {_dictRequest} but was {dictRequest}");
 
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         try
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
-                            request.PayloadAsJsonString.Should().Be(JsonConvert.SerializeObject(_arrayRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_arrayRequest)} but was {request.PayloadAsJsonString}");
+                            request.GetPayloadAsJsonString().Should().Be(JsonConvert.SerializeObject(_arrayRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_arrayRequest)} but was {request.GetPayloadAsJsonString()}");
                             request.TryGetPayload(out byte[] byteRequest).Should().BeTrue();
                             byteRequest.Should().BeEquivalentTo(_arrayRequest, $"The expected respose payload should be {_arrayRequest} but was {byteRequest}");
 
