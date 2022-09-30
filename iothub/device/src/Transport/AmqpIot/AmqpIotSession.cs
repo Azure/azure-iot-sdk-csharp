@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
             amqpLinkSettings.AddProperty(AmqpIotConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
 
-            if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(deviceIdentity.AmqpTransportSettings.AuthenticationChain))
             {
                 amqpLinkSettings.AddProperty(AmqpIotConstants.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
             }
