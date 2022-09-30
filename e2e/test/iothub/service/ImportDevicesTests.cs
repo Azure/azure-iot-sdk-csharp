@@ -201,13 +201,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var sw = Stopwatch.StartNew();
 
-            IotHubJobResponse jobResponse = null;
-
             while (!importJobProperties.IsFinished)
             {
                 try
                 {
-                    jobResponse = await serviceClient.Devices.ImportAsync(importJobProperties).ConfigureAwait(false);
+                    importJobProperties = await serviceClient.Devices.ImportAsync(importJobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(importJobProperties.FailureReason))
                     {
                         Logger.Trace($"Job failed due to {importJobProperties.FailureReason}");
@@ -227,13 +225,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Logger.Trace($"Job started after {sw.Elapsed}.");
 
             sw.Restart();
-
+            IotHubJobResponse jobResponse;
             // Wait for job to complete
-            while (!jobResponse.IsFinished)
+            while (true)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
-                jobResponse = await serviceClient.Devices.GetJobAsync(jobResponse.JobId).ConfigureAwait(false);
+                jobResponse = await serviceClient.Devices.GetJobAsync(importJobProperties.JobId).ConfigureAwait(false);
                 Logger.Trace($"Job {jobResponse.JobId} is {jobResponse.Status} after {sw.Elapsed}.");
+                if (jobResponse.IsFinished)
+                {
+                    break;
+                }
             }
 
             return jobResponse;

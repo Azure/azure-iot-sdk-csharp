@@ -556,7 +556,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<IotHubJobResponse> ImportAsync(ImportJobProperties jobParameters, CancellationToken cancellationToken = default)
+        public virtual async Task<ImportJobProperties> ImportAsync(ImportJobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Running import job", nameof(ImportAsync));
@@ -567,7 +567,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                return await CreateJobAsync<IotHubJobResponse>(jobParameters, cancellationToken).ConfigureAwait(false);
+                return await CreateJobAsync<ImportJobProperties>(jobParameters, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -600,7 +600,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<IotHubJobResponse> ExportAsync(ExportJobProperties jobParameters, CancellationToken cancellationToken = default)
+        public virtual async Task<ExportJobProperties> ExportAsync(ExportJobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Running export job", nameof(ExportAsync));
@@ -611,7 +611,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                return await CreateJobAsync<IotHubJobResponse>(jobParameters, cancellationToken).ConfigureAwait(false);
+                return await CreateJobAsync<ExportJobProperties>(jobParameters, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

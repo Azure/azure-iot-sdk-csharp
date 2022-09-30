@@ -171,13 +171,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var sw = Stopwatch.StartNew();
 
-            IotHubJobResponse jobResponse = null;
-
             while (!exportJobProperties.IsFinished)
             {
                 try
                 {
-                    jobResponse = await serviceClient.Devices.ExportAsync(exportJobProperties).ConfigureAwait(false);
+                    exportJobProperties = await serviceClient.Devices.ExportAsync(exportJobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(exportJobProperties.FailureReason))
                     {
                         Logger.Trace($"Job failed due to {exportJobProperties.FailureReason}");
@@ -197,12 +195,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Logger.Trace($"Job started after {sw.Elapsed}.");
 
             sw.Restart();
+            IotHubJobResponse jobResponse;
 
-            while (!jobResponse.IsFinished)
+            while (true)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                jobResponse = await serviceClient.Devices.GetJobAsync(jobResponse.JobId).ConfigureAwait(false);
+                jobResponse = await serviceClient.Devices.GetJobAsync(exportJobProperties.JobId).ConfigureAwait(false);
                 Logger.Trace($"Job {jobResponse.JobId} is {jobResponse.Status} after {sw.Elapsed}.");
+                if (jobResponse.IsFinished)
+                {
+                    break;
+                }
             }
 
             return jobResponse;

@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Samples
                         StorageAuthenticationType = StorageAuthenticationType.KeyBased,
                     };
 
-                    IotHubJobResponse importDevicesToBeDeletedJob = null;
+                    ImportJobProperties importDevicesToBeDeletedJob = null;
 
                     Stopwatch jobTimer = Stopwatch.StartNew();
                     do
@@ -93,11 +93,11 @@ namespace Microsoft.Azure.Devices.Samples
                     } while (jobTimer.Elapsed < s_maxJobDuration);
 
                     // Wait until job is finished.
+                    IotHubJobResponse jobToBeDeleted = null;
                     jobTimer.Restart();
-                    while (importDevicesToBeDeletedJob != null
-                        && jobTimer.Elapsed < s_maxJobDuration)
+                    while (jobTimer.Elapsed < s_maxJobDuration)
                     {
-                        importDevicesToBeDeletedJob = await _hubClient.Devices.GetJobAsync(importDevicesToBeDeletedJob.JobId);
+                        jobToBeDeleted = await _hubClient.Devices.GetJobAsync(importDevicesToBeDeletedJob.JobId);
                         if (importDevicesToBeDeletedJob.IsFinished)
                         {
                             // Job has finished executing.
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Samples
                         await Task.Delay(s_waitDuration);
                     }
 
-                    if (importDevicesToBeDeletedJob?.Status != JobStatus.Completed)
+                    if (jobToBeDeleted?.Status != JobStatus.Completed)
                     {
                         throw new Exception("Importing devices job failed; exiting.");
                     }
@@ -202,4 +202,3 @@ namespace Microsoft.Azure.Devices.Samples
         }
     }
 }
-

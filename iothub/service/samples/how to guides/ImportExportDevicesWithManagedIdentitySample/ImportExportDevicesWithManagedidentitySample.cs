@@ -8,10 +8,10 @@ using Microsoft.Azure.Devices;
 namespace ImportExportDevicesWithManagedIdentitySample
 {
     /// <summary>
-    /// A sample to illustrate how to perform import and export jobs using managed identity 
+    /// A sample to illustrate how to perform import and export jobs using managed identity
     /// to access the storage account. This sample will copy all the devices in the source hub
     /// to the destination hub.
-    /// For this sample to succeed, the managed identity should be configured to access the 
+    /// For this sample to succeed, the managed identity should be configured to access the
     /// storage account used for import and export.
     /// For more information on configuration, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-managed-identity"/>.
     /// For more information on managed identities, see <see href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview"/>
@@ -112,12 +112,12 @@ namespace ImportExportDevicesWithManagedIdentitySample
                 },
             };
 
-            IotHubJobResponse jobResult = await client.Devices.ImportAsync(jobProperties);
+            ImportJobProperties importJobResult = await client.Devices.ImportAsync(jobProperties);
 
             // Poll every 5 seconds to see if the job has finished executing.
             while (true)
             {
-                jobResult = await client.Devices.GetJobAsync(jobResult.JobId);
+                IotHubJobResponse jobResult = await client.Devices.GetJobAsync(importJobResult.JobId);
                 if (jobResult.Status == JobStatus.Completed)
                 {
                     break;
