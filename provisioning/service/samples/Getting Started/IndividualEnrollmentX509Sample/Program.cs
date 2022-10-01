@@ -31,21 +31,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     Environment.Exit(1);
                 });
 
-            if (string.IsNullOrWhiteSpace(parameters.ProvisioningConnectionString))
-            {
-                Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(result, null, null));
-                Environment.Exit(1);
-            }
-            if (string.IsNullOrWhiteSpace(parameters.ProvisioningConnectionString))
-            {
-                Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(result, null, null));
-                Environment.Exit(1);
-            }
+            // This sample accepts the provisioning connection string as a parameter, if present.
+            Parameters.ValidateProvisioningConnectionString(parameters.ProvisioningConnectionString);
 
             var certificate = new X509Certificate2(parameters.CertificatePath);
 
             using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
-            var sample = new IndividualEnrollmentX509Sample(provisioningServiceClient, certificate);
+            var sample = new IndividualEnrollmentX509Sample(provisioningServiceClient, certificate, parameters.DeviceId, parameters.RegistrationId);
             await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");

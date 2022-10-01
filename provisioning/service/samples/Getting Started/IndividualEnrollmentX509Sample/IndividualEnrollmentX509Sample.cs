@@ -9,21 +9,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class IndividualEnrollmentX509Sample
     {
-        private const string RegistrationId = "myvalid-registratioid-csharp";
+        private string _registrationId;
         private readonly ProvisioningServiceClient _provisioningServiceClient;
         private readonly X509Certificate2 _issuerCertificate;
 
         // Optional parameters
-        private const string OptionalDeviceId = "myCSharpDevice";
+        private string _deviceId;
 
         private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
         private readonly DeviceCapabilities _optionalEdgeCapabilityEnabled = new() { IotEdge = true };
         private readonly DeviceCapabilities _optionalEdgeCapabilityDisabled = new() { IotEdge = false };
 
-        public IndividualEnrollmentX509Sample(ProvisioningServiceClient provisioningServiceClient, X509Certificate2 issuerCertificate)
+        public IndividualEnrollmentX509Sample(ProvisioningServiceClient provisioningServiceClient, X509Certificate2 issuerCertificate, string deviceId, string registrationId)
         {
             _provisioningServiceClient = provisioningServiceClient;
             _issuerCertificate = issuerCertificate;
+            _deviceId = deviceId;
+            _registrationId = registrationId;
         }
 
         public async Task RunSampleAsync()
@@ -40,7 +42,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery("SELECT * FROM enrollments");
             while (query.HasNext())
             {
-                Console.WriteLine("\nQuerying the next enrollments...");
                 QueryResult queryResult = await query.NextAsync();
                 Console.WriteLine(queryResult);
             }
@@ -51,10 +52,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Console.WriteLine("\nCreating a new individualEnrollment...");
             X509Attestation _x509 = X509Attestation.CreateFromClientCertificates(_issuerCertificate);
             var individualEnrollment = new IndividualEnrollment(
-                RegistrationId, _x509)
+                _registrationId, _x509)
             {
                 //The following parameters are optional:
-                DeviceId = OptionalDeviceId,
+                DeviceId = _deviceId,
                 ProvisioningStatus = OptionalProvisioningStatus,
                 Capabilities = _optionalEdgeCapabilityEnabled,
                 InitialTwinState = new TwinState(
@@ -78,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nGetting the individualEnrollment information...");
             IndividualEnrollment getResult =
-                await _provisioningServiceClient.GetIndividualEnrollmentAsync(RegistrationId);
+                await _provisioningServiceClient.GetIndividualEnrollmentAsync(_registrationId);
             Console.WriteLine(getResult);
 
             return getResult;
@@ -98,7 +99,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task DeleteIndividualEnrollmentAsync()
         {
             Console.WriteLine("\nDeleting the individualEnrollment...");
-            await _provisioningServiceClient.DeleteIndividualEnrollmentAsync(RegistrationId);
+            await _provisioningServiceClient.DeleteIndividualEnrollmentAsync(_registrationId);
         }
     }
 }
