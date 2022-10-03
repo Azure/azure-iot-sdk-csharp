@@ -101,14 +101,5 @@ namespace Microsoft.Azure.Devices
         /// </para>
         /// </remarks>
         public TimeSpan AmqpConnectionKeepAlive { get; set; } = TimeSpan.FromMinutes(2);
-
-        /// <summary>
-        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
-        /// </summary>
-        /// <remarks>
-        /// Only used for AMQP. Can only be used for <see cref="MessagesClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
-        /// </remarks>
-        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
-        public TimeSpan? AmqpWebSocketKeepAlive { get; set; }
     }
 }

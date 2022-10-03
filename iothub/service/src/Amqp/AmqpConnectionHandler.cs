@@ -95,26 +95,47 @@ namespace Microsoft.Azure.Devices.Amqp
 
                 AmqpSettings amqpSettings = CreateAmqpSettings();
 
+                AmqpTransportInitiator amqpTransportInitiator;
                 if (_useWebSocketOnly)
                 {
-                    // Try only AMQP transport over WebSocket
-                    _transport = await CreateClientWebSocketTransportAsync(cancellationToken).ConfigureAwait(false);
+                    var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.WebsocketPort}{AmqpsConstants.UriSuffix}");
+                    var websocketTransportSettings = new WebSocketTransportSettings
+                    {
+                        Uri = websocketUri,
+                        Proxy = _options.Proxy,
+                        SubProtocol = AmqpsConstants.Amqpwsb10,
+                    };
+
+                    amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, websocketTransportSettings);
                 }
                 else
                 {
-                    TlsTransportSettings tlsTransportSettings = CreateTlsTransportSettings();
-                    var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
-                    try
+                    var tcpTransportSettings = new TcpTransportSettings
                     {
-                        _transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (Exception e) when (!(e is AuthenticationException))
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(this, e, nameof(OpenAsync));
+                        Host = _credential.HostName,
+                        Port = AmqpsConstants.TcpPort,
+                    };
 
-                        throw;
-                    }
+                    var tlsTranpsortSettings = new TlsTransportSettings(tcpTransportSettings)
+                    {
+                        TargetHost = _credential.HostName,
+                        Certificate = null,
+                        CertificateValidationCallback = OnRemoteCertificateValidation
+                    };
+
+                    amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTranpsortSettings);
+                }
+
+                try
+                {
+                    _transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not AuthenticationException)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, ex, nameof(OpenAsync));
+
+                    throw;
                 }
 
                 if (Logging.IsEnabled)
@@ -170,14 +191,6 @@ namespace Microsoft.Azure.Devices.Amqp
                 if (_connection != null)
                 {
                     await _connection.CloseAsync(cancellationToken).ConfigureAwait(false);
-                }
-
-                if (_transport is ClientWebSocketTransport webSocketTransport)
-                {
-                    // This is the one disposable object in the entire AMQP stack. It is safe to dispose this
-                    // in the close operation since a new websocket transport is created upon each newly
-                    // opened AMQP connection.
-                    webSocketTransport.Dispose();
                 }
             }
             finally
@@ -239,27 +252,6 @@ namespace Microsoft.Azure.Devices.Amqp
             return amqpSettings;
         }
 
-        private TlsTransportSettings CreateTlsTransportSettings()
-        {
-            var tcpTransportSettings = new TcpTransportSettings
-            {
-                Host = _credential.HostName,
-                Port = AmqpConstants.DefaultSecurePort
-            };
-
-            var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
-            {
-                TargetHost = _credential.HostName,
-                Certificate = null,
-                CertificateValidationCallback = OnRemoteCertificateValidation
-            };
-
-            if (Logging.IsEnabled)
-                Logging.Info($"host={tcpTransportSettings.Host}, port={tcpTransportSettings.Port}", nameof(CreateTlsTransportSettings));
-
-            return tlsTransportSettings;
-        }
-
         private static bool OnRemoteCertificateValidation(
             object sender,
             X509Certificate certificate,
@@ -267,76 +259,6 @@ namespace Microsoft.Azure.Devices.Amqp
             SslPolicyErrors sslPolicyErrors)
         {
             return sslPolicyErrors == SslPolicyErrors.None;
-        }
-
-        private async Task<ClientWebSocketTransport> CreateClientWebSocketTransportAsync(CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));
-
-            try
-            {
-                var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.SecurePort}{AmqpsConstants.UriSuffix}");
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
-
-                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, cancellationToken).ConfigureAwait(false);
-                return new ClientWebSocketTransport(websocket, null, null);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));
-            }
-        }
-
-        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, websocketUri, cancellationToken, nameof(CreateClientWebSocketAsync));
-
-            try
-            {
-                var websocket = new ClientWebSocket();
-
-                // Set SubProtocol to AMQPWSB10
-                websocket.Options.AddSubProtocol(AmqpsConstants.Amqpwsb10);
-
-                if (_options.AmqpWebSocketKeepAlive.HasValue)
-                {
-                    websocket.Options.KeepAliveInterval = _options.AmqpWebSocketKeepAlive.Value;
-                }
-
-                // Check if we're configured to use a proxy server
-                IWebProxy webProxy = _options.Proxy;
-
-                try
-                {
-                    if (webProxy != null)
-                    {
-                        // Configure proxy server
-                        websocket.Options.Proxy = webProxy;
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, "Setting ClientWebSocket.Options.Proxy", nameof(CreateClientWebSocketAsync));
-                    }
-                }
-                catch (PlatformNotSupportedException)
-                {
-                    // .NET Core 2.0 doesn't support proxy. Ignore this setting.
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, "PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy", nameof(CreateClientWebSocketAsync));
-                }
-
-                await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
-
-                return websocket;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, websocketUri, cancellationToken, nameof(CreateClientWebSocketAsync));
-            }
         }
 
         /// <inheritdoc/>
