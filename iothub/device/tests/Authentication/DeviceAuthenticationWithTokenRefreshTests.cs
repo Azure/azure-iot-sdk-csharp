@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void DeviceAuthenticationWithTokenRefresh_Ctor_WrongArguments_Fail()
         {
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(null));
-            TestAssert.Throws<ArgumentNullException>(() => new TestImplementation("   "));
+            TestAssert.Throws<ArgumentException>(() => new TestImplementation("   "));
             TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(-1), 10));
             TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(60), -1));
             TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(60), 101));
