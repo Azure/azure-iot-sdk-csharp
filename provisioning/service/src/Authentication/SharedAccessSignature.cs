@@ -9,7 +9,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal sealed class SharedAccessSignature
     {
