@@ -14,7 +14,8 @@ namespace Microsoft.Azure.Devices.Amqp
         public const string Amqpwsb10 = "AMQPWSB10";
         public const string Scheme = "wss://";
         public const string UriSuffix = "/$iothub/websocket";
-        public const string SecurePort = "443";
+        public const string WebsocketPort = "443";
+        public const int TcpPort = 5671;
         public const string Version = "13";
 
         public static readonly AmqpSymbol TimeoutName = AmqpConstants.Vendor + ":timeout";

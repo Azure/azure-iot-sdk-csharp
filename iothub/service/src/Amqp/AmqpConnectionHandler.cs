@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 AmqpTransportInitiator amqpTransportInitiator;
                 if (_useWebSocketOnly)
                 {
-                    var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.SecurePort}{AmqpsConstants.UriSuffix}");
+                    var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.WebsocketPort}{AmqpsConstants.UriSuffix}");
                     var websocketTransportSettings = new WebSocketTransportSettings
                     {
                         Uri = websocketUri,
@@ -110,13 +110,13 @@ namespace Microsoft.Azure.Devices.Amqp
                 }
                 else
                 {
-                    var transportSettings = new TcpTransportSettings
+                    var tcpTransportSettings = new TcpTransportSettings
                     {
                         Host = _credential.HostName,
-                        Port = _credential.AmqpEndpoint.Port,
+                        Port = AmqpsConstants.TcpPort,
                     };
 
-                    var tlsTranpsortSettings = new TlsTransportSettings(transportSettings)
+                    var tlsTranpsortSettings = new TlsTransportSettings(tcpTransportSettings)
                     {
                         TargetHost = _credential.HostName,
                         Certificate = null,
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 catch (Exception ex) when (ex is not AuthenticationException)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(this, e, nameof(OpenAsync));
+                        Logging.Error(this, ex, nameof(OpenAsync));
 
                     throw;
                 }
