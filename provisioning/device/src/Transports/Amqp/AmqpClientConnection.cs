@@ -17,8 +17,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal sealed class AmqpClientConnection : IDisposable
     {
+        private const string Amqpwsb10 = "AMQPWSB10";
+        private const string UriSuffix = "/$iothub/websocket";
+        private const string Scheme = "wss://";
+        private const string Version = "13";
+        private const int WebSocketPort = 443;
+        private const int TcpPort = 5671;
+        private const int BufferSize = 8 * 1024;
+
         private readonly AmqpSettings _amqpSettings;
-        private readonly Uri _uri;
+        private readonly string _host;
         private readonly Action _onConnectionClosed;
         private readonly SemaphoreSlim _connectionSemaphore = new(1, 1);
         private readonly ProvisioningClientAmqpSettings _clientSettings;
@@ -28,12 +36,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private ProtocolHeader _sentHeader;
 
         internal AmqpClientConnection(
-            Uri uri,
+            string host,
             AmqpSettings amqpSettings,
             Action onConnectionClosed,
             ProvisioningClientAmqpSettings clientSettings)
         {
-            _uri = uri;
+            _host = host;
             _amqpSettings = amqpSettings;
             _onConnectionClosed = onConnectionClosed;
             _clientSettings = clientSettings;
@@ -41,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             AmqpConnectionSettings = new AmqpConnectionSettings
             {
                 ContainerId = Guid.NewGuid().ToString(),
-                HostName = _uri.Host,
+                HostName = _host,
                 IdleTimeOut = Convert.ToUInt32(_clientSettings.IdleTimeout.TotalMilliseconds),
             };
         }
@@ -78,14 +86,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             try
             {
-                string hostName = _uri.Host;
+                string hostName = _host;
 
                 var tcpSettings = new TcpTransportSettings
                 {
                     Host = hostName,
-                    Port = _uri.Port != -1
-                    ? _uri.Port
-                    : AmqpConstants.DefaultSecurePort,
+                    Port = TcpPort
                 };
 
                 TransportSettings = new TlsTransportSettings(tcpSettings)
@@ -190,9 +196,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             var webSocketUriBuilder = new UriBuilder
             {
-                Scheme = AmqpWebSocketConstants.Scheme,
-                Host = _uri.Host,
-                Port = _uri.Port
+                Scheme = Scheme,
+                Host = _host,
+                Port = WebSocketPort
             };
             ClientWebSocket websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, proxy, cancellationToken).ConfigureAwait(false);
             return new ClientWebSocketTransport(
@@ -205,13 +211,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
-            websocket.Options.AddSubProtocol(AmqpWebSocketConstants.SubProtocols.Amqpwsb10);
-            if (_clientSettings.WebSocketKeepAlive.HasValue)
-            {
-                websocket.Options.KeepAliveInterval = _clientSettings.WebSocketKeepAlive.Value;
-            }
+            websocket.Options.AddSubProtocol(Amqpwsb10);
 
-            websocket.Options.SetBuffer(AmqpWebSocketConstants.BufferSize, AmqpWebSocketConstants.BufferSize);
+            websocket.Options.SetBuffer(BufferSize, BufferSize);
 
             //Check if we're configured to use a proxy server
             try

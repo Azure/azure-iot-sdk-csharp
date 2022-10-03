@@ -51,14 +51,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </para>
         /// </remarks>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
-
-        /// <summary>
-        /// A callback for remote certificate validation.
-        /// </summary>
-        /// <remarks>
-        /// If incorrectly implemented, your device may fail to connect to Device Provisioning Service
-        /// and/or be open to security vulnerabilities.
-        /// </remarks>
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
     }
 }

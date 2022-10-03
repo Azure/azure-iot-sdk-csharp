@@ -35,20 +35,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </para>
         /// </remarks>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
-
-        /// <summary>
-        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
-        /// </summary>
-        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
-        public TimeSpan? WebSocketKeepAlive { get; set; }
-
-        /// <summary>
-        /// A callback for remote certificate validation.
-        /// </summary>
-        /// <remarks>
-        /// If incorrectly implemented, your device may fail to connect to Device Provisioning Service
-        /// and/or be open to security vulnerabilities.
-        /// </remarks>
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
     }
 }

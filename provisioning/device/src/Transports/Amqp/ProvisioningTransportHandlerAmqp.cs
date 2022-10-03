@@ -95,18 +95,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 cancellationToken.ThrowIfCancellationRequested();
 
                 bool useWebSocket = _settings.Protocol == ProvisioningClientTransportProtocol.WebSocket;
-                var builder = new UriBuilder
-                {
-                    Scheme = useWebSocket ? AmqpWebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
-                    Host = message.GlobalDeviceEndpoint,
-                    Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort,
-                };
 
                 string registrationId = message.Authentication.GetRegistrationId();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
                 using AmqpClientConnection connection = authStrategy.CreateConnection(
-                    builder.Uri,
+                    message.GlobalDeviceEndpoint,
                     message.IdScope,
                     () =>
                     {
