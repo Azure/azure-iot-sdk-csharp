@@ -104,6 +104,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
                     SslProtocols = _settings.SslProtocols,
+                    ServerCertificateCustomValidationCallback = (httpRequest, certificate, chain, policyErrors) =>
+                    {
+                        return _settings.RemoteCertificateValidationCallback.Invoke(httpRequest, certificate, chain, policyErrors);
+                    },
                 };
 
                 if (_settings.Proxy != null)
