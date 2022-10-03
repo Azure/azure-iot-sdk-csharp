@@ -87,14 +87,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A disposable client instance.</returns>
         public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
         {
-            // Make sure client options is initialized.
-            if (options == default)
-            {
-                options = new();
-            }
+            IotHubClientOptions clientOptions = options != null
+                ? new ()
+                {
+                    FileUploadTransportSettings = options.FileUploadTransportSettings,
+                    PayloadConvention = options.PayloadConvention,
+                    GatewayHostName = options.GatewayHostName,
+                    ModelId = options.ModelId,
+                    SdkAssignsMessageId = options.SdkAssignsMessageId,
+                    AdditionalUserAgentInfo = options.AdditionalUserAgentInfo,
+                }
+                : new ();
 
             IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
-            ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), options);
+            ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), clientOptions);
 
             return new IotHubModuleClient(iotHubConnectionCredentials, options, certificateValidator);
         }

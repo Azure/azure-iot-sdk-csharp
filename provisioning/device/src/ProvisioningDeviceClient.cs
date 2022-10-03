@@ -37,27 +37,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 CertificateInstaller.EnsureChainIsInstalled(x509Auth.GetAuthenticationCertificateChain());
             }
 
-            if (options == default)
-            {
-                options = new();
-            }
+            _options = options != default
+                ? new (options.TransportSettings)
+                {
+                    AdditionalUserAgentInfo = options.AdditionalUserAgentInfo,
+                }
+                : new ();
 
-            if (options.TransportSettings is ProvisioningClientMqttSettings)
+            if (_options.TransportSettings is ProvisioningClientMqttSettings)
             {
-                _provisioningTransportHandler = new ProvisioningTransportHandlerMqtt(options);
+                _provisioningTransportHandler = new ProvisioningTransportHandlerMqtt(_options);
             }
-            else if (options.TransportSettings is ProvisioningClientAmqpSettings)
+            else if (_options.TransportSettings is ProvisioningClientAmqpSettings)
             {
-                _provisioningTransportHandler = new ProvisioningTransportHandlerAmqp(options);
+                _provisioningTransportHandler = new ProvisioningTransportHandlerAmqp(_options);
             }
             else
             {
-                _provisioningTransportHandler = new ProvisioningTransportHandlerHttp(options);
+                _provisioningTransportHandler = new ProvisioningTransportHandlerHttp(_options);
             }
 
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
-            _options = options;
             _authentication = authenticationProvider;
 
             Logging.Associate(this, _authentication);

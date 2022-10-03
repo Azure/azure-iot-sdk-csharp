@@ -47,11 +47,18 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
 
-            // Make sure client options is initialized.
-            if (iotHubClientOptions == default)
-            {
-                iotHubClientOptions = new();
-            }
+            
+            _clientOptions = iotHubClientOptions != null
+                ? new (iotHubClientOptions.TransportSettings)
+                {
+                    FileUploadTransportSettings = iotHubClientOptions.FileUploadTransportSettings,
+                    PayloadConvention = iotHubClientOptions.PayloadConvention,
+                    GatewayHostName = iotHubClientOptions.GatewayHostName,
+                    ModelId = iotHubClientOptions.ModelId,
+                    SdkAssignsMessageId = iotHubClientOptions.SdkAssignsMessageId,
+                    AdditionalUserAgentInfo = iotHubClientOptions.AdditionalUserAgentInfo,
+                }
+                : new ();
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;
             _clientOptions = iotHubClientOptions;
@@ -480,7 +487,6 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-
                 if (Logging.IsEnabled)
                     Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
             }
