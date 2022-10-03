@@ -77,7 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 case IotHubClientTransportProtocol.Tcp:
                     amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
-                    transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                     break;
 
                 case IotHubClientTransportProtocol.WebSocket:
@@ -90,12 +89,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     };
 
                     amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, websocketTransportSettings);
-                    transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                     break;
 
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
+            transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(InitializeAsync));
