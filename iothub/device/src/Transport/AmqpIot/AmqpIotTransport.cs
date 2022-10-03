@@ -3,9 +3,7 @@
 
 using System;
 using System.Linq;
-using System.Net;
 using System.Net.Security;
-using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,6 +58,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 _tlsTransportSettings.Certificate = _connectionCredentials.Certificate;
             }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
         }
 
         internal async Task<TransportBase> InitializeAsync(CancellationToken cancellationToken)
@@ -126,11 +129,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private static bool CausedByRevocationCheckError(X509Chain chain)
         {
             return chain.ChainStatus.All(status => status.Status == X509ChainStatusFlags.RevocationStatusUnknown);
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
         }
     }
 }
