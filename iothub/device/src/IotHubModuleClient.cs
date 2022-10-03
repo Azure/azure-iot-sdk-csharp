@@ -121,16 +121,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public async Task SendEventAsync(string outputName, OutgoingMessage message, CancellationToken cancellationToken = default)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, outputName, message, nameof(SendEventAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
+            Argument.AssertNotNull(message, nameof(message));
+
+            ValidateModuleTransportHandler("SendEventAsync for a named output");
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, outputName, message, nameof(SendEventAsync));
-
-                ValidateModuleTransportHandler("SendEventAsync for a named output");
-
-                Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
-                Argument.AssertNotNull(message, nameof(message));
-
                 message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
 
                 await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
@@ -157,18 +159,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SendEventBatchAsync(string outputName, IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, outputName, messages, nameof(SendEventBatchAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
+
+            var messagesList = messages?.ToList();
+            Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
+
+            ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, outputName, messages, nameof(SendEventBatchAsync));
-
-                ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
-
-                Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
-
-                var messagesList = messages?.ToList();
-                Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
-
                 messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
 
                 await InnerHandler.SendEventAsync(messagesList, cancellationToken).ConfigureAwait(false);
