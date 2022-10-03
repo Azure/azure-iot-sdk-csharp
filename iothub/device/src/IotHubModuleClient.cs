@@ -167,10 +167,10 @@ namespace Microsoft.Azure.Devices.Client
             var messagesList = messages?.ToList();
             Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
 
+            ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
+
             try
             {
-                ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
-
                 messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
 
                 await InnerHandler.SendEventAsync(messagesList, cancellationToken).ConfigureAwait(false);

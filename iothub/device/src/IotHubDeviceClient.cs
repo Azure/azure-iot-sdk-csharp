@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload" />.
         /// <param name="notification">The notification details, including if the file upload succeeded.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="notification"/> is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
         {
