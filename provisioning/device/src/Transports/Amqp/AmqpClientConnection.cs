@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Net.Security;
-using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +16,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal sealed class AmqpClientConnection : IDisposable
     {
+        private const string Amqpwsb10 = "AMQPWSB10";
+        private const string UriSuffix = "/$iothub/websocket";
+        private const string Scheme = "wss";
+        private const string Version = "13";
+        private const int WebSocketPort = 443;
+        private const int TcpPort = 5671;
+
         private readonly AmqpSettings _amqpSettings;
         private readonly Uri _uri;
         private readonly Action _onConnectionClosed;
@@ -96,47 +102,38 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     Protocols = _clientSettings.SslProtocols,
                 };
 
-                if (!useWebSocket)
+                AmqpTransportInitiator amqpTransportInitiator;
+                if (useWebSocket)
                 {
-                    var tcpInitiator = new AmqpTransportInitiator(_amqpSettings, TransportSettings);
-                    _transport = await tcpInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                    var websocketUri = new Uri($"{Scheme}{_uri.Host}:{WebSocketPort}{UriSuffix}");
+                    var websocketTransportSettings = new WebSocketTransportSettings
+                    {
+                        Uri = websocketUri,
+                        Proxy = _clientSettings.Proxy,
+                        SubProtocol = Amqpwsb10,
+                    };
+
+                    amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, websocketTransportSettings);
                 }
                 else
                 {
-                    _transport = await CreateClientWebSocketTransportAsync(proxy, cancellationToken).ConfigureAwait(false);
-                    SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
-                    if (provider != null)
+                    var transportSettings = new TcpTransportSettings
                     {
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Using SaslTransport");
+                        Host = _uri.Host,
+                        Port = TcpPort,
+                    };
 
-                        _sentHeader = new ProtocolHeader(provider.ProtocolId, provider.DefaultVersion);
-                        using var buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
-                        _sentHeader.Encode(buffer);
+                    var tlsTranpsortSettings = new TlsTransportSettings(transportSettings)
+                    {
+                        TargetHost = _uri.Host,
+                        Certificate = null,
+                        CertificateValidationCallback = _clientSettings.RemoteCertificateValidationCallback
+                    };
 
-                        _tcs = new TaskCompletionSource<TransportBase>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-                        var args = new TransportAsyncCallbackArgs();
-                        args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
-                        args.CompletedCallback = OnWriteHeaderComplete;
-                        args.Transport = _transport;
-                        bool operationPending = _transport.WriteAsync(args);
-
-                        if (Logging.IsEnabled)
-                            Logging.Info(
-                                this,
-                                $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: " +
-                                $"Sent Protocol Header: {_sentHeader} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
-
-                        if (!operationPending)
-                        {
-                            args.CompletedCallback(args);
-                        }
-
-                        _transport = await _tcs.Task.ConfigureAwait(false);
-                        await _transport.OpenAsync(cancellationToken).ConfigureAwait(false);
-                    }
+                    amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, tlsTranpsortSettings);
                 }
+
+                _transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
                 AmqpConnection = new AmqpConnection(_transport, _amqpSettings, AmqpConnectionSettings);
                 AmqpConnection.Closed += OnConnectionClosed;
@@ -193,61 +190,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Logging.Error(this, $"AMQP connection was lost.");
 
             _onConnectionClosed.Invoke();
-        }
-
-        private async Task<TransportBase> CreateClientWebSocketTransportAsync(IWebProxy proxy, CancellationToken cancellationToken)
-        {
-            var webSocketUriBuilder = new UriBuilder
-            {
-                Scheme = AmqpWebSocketConstants.Scheme,
-                Host = _uri.Host,
-                Port = _uri.Port
-            };
-            ClientWebSocket websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, proxy, cancellationToken).ConfigureAwait(false);
-            return new ClientWebSocketTransport(
-                websocket,
-                null,
-                null);
-        }
-
-        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, IWebProxy webProxy, CancellationToken cancellationToken)
-        {
-            var websocket = new ClientWebSocket();
-            // Set SubProtocol to AMQPWSB10
-            websocket.Options.AddSubProtocol(AmqpWebSocketConstants.SubProtocols.Amqpwsb10);
-            if (_clientSettings.WebSocketKeepAlive.HasValue)
-            {
-                websocket.Options.KeepAliveInterval = _clientSettings.WebSocketKeepAlive.Value;
-            }
-
-            websocket.Options.SetBuffer(AmqpWebSocketConstants.BufferSize, AmqpWebSocketConstants.BufferSize);
-
-            //Check if we're configured to use a proxy server
-            try
-            {
-                if (webProxy != null)
-                {
-                    // Configure proxy server
-                    websocket.Options.Proxy = webProxy;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
-                }
-            }
-            catch (PlatformNotSupportedException)
-            {
-                // .NET Core 2.0 doesn't support WebProxy configuration - ignore this setting.
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
-            }
-
-            if (TransportSettings.Certificate != null)
-            {
-                websocket.Options.ClientCertificates.Add(TransportSettings.Certificate);
-            }
-
-            await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
-
-            return websocket;
         }
 
         private void OnWriteHeaderComplete(TransportAsyncCallbackArgs args)

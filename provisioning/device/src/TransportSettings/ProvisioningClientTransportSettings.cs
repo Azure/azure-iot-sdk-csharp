@@ -4,7 +4,9 @@
 using System;
 using System.ComponentModel;
 using System.Net;
+using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -57,6 +59,29 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Defaults to "None", which means let the OS decide the proper TLS version (SChannel in Windows / OpenSSL in Linux).
         /// </remarks>
         public SslProtocols SslProtocols { get; set; } = SslProtocols.None;
+
+        /// <summary>
+        /// A callback for remote certificate validation.
+        /// </summary>
+        /// <remarks>
+        /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
+        /// <para>
+        /// This feature is only applicable for HTTP connections and for AMQP TCP connections. AMQP web socket communication
+        /// does not support this feature.
+        /// </para>
+        /// </remarks>
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
+
+        // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
+        // during the handshake.
+        private static bool DefaultRemoteCertificateValidation(
+            object sender,
+            X509Certificate certificate,
+            X509Chain chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            return sslPolicyErrors == SslPolicyErrors.None;
+        }
 
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
