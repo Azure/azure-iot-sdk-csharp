@@ -9,12 +9,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class IndividualEnrollmentX509Sample
     {
-        private string _registrationId;
+        private readonly string _registrationId;
         private readonly ProvisioningServiceClient _provisioningServiceClient;
         private readonly X509Certificate2 _issuerCertificate;
 
         // Optional parameters
-        private string _deviceId;
+        private readonly string _deviceId;
 
         private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
         private readonly DeviceCapabilities _optionalEdgeCapabilityEnabled = new() { IotEdge = true };
@@ -43,7 +43,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             while (query.HasNext())
             {
                 QueryResult queryResult = await query.NextAsync();
-                Console.WriteLine(queryResult);
             }
         }
 
@@ -67,12 +66,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                         ["Color"] = "White",
                     })
             };
-            Console.WriteLine(individualEnrollment);
 
             Console.WriteLine("\nAdding new individual enrollment");
             IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
             Console.WriteLine("\nIndividual Enrollment created with success.");
-            Console.WriteLine(individualEnrollmentResult);
         }
 
         public async Task<IndividualEnrollment> GetIndividualEnrollmentInfoAsync()
@@ -80,7 +77,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Console.WriteLine("\nGetting the individualEnrollment information...");
             IndividualEnrollment getResult =
                 await _provisioningServiceClient.GetIndividualEnrollmentAsync(_registrationId);
-            Console.WriteLine(getResult);
 
             return getResult;
         }
@@ -93,7 +89,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
             IndividualEnrollment individualEnrollmentResult =
                 await _provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
-            Console.WriteLine(individualEnrollmentResult);
         }
 
         public async Task DeleteIndividualEnrollmentAsync()
