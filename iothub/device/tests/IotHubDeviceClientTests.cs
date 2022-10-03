@@ -354,15 +354,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             string response = null;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                responseReceivedAsExpected = payload.TryGetPayload(out response);
-                return Task.FromResult(directMethodResponseWithPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        responseReceivedAsExpected = payload.TryGetPayload(out response);
+                        return Task.FromResult(directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
 
             string payload = "test";
-            var DirectMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
@@ -370,7 +373,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -389,15 +392,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             bool response = false;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                responseReceivedAsExpected = payload.TryGetPayload(out response);
-                return Task.FromResult(directMethodResponseWithPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        responseReceivedAsExpected = payload.TryGetPayload(out response);
+                        return Task.FromResult(directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
 
             bool boolean = true;
-            var DirectMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(boolean)),
@@ -405,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -424,15 +430,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             byte[] response = null;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                responseReceivedAsExpected = payload.TryGetPayload(out response);
-                return Task.FromResult(directMethodResponseWithPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        responseReceivedAsExpected = payload.TryGetPayload(out response);
+                        return Task.FromResult(directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
 
             byte[] bytes = new byte[] { 1, 2, 3 };
-            var DirectMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(bytes)),
@@ -440,7 +449,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -459,15 +468,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             List<double> response = null;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                responseReceivedAsExpected = payload.TryGetPayload(out response);
-                return Task.FromResult(directMethodResponseWithPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        responseReceivedAsExpected = payload.TryGetPayload(out response);
+                        return Task.FromResult(directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
 
             List<double> list = new List<double>() { 1.0, 2.0, 3.0 };
-            var DirectMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(list)),
@@ -475,7 +487,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -494,15 +506,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             Dictionary<string, object> response = null;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                responseReceivedAsExpected = payload.TryGetPayload(out response);
-                return Task.FromResult(directMethodResponseWithPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        responseReceivedAsExpected = payload.TryGetPayload(out response);
+                        return Task.FromResult(directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
 
-            Dictionary<string, object> map = new Dictionary<string, object>() { { "key1", "val1" }, { "key2", 2 } };
-            var DirectMethodRequest = new DirectMethodRequest
+            var map = new Dictionary<string, object>() { { "key1", "val1" }, { "key2", 2 } };
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(map)),
@@ -510,7 +525,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -527,14 +542,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(directMethodResponseWithNoPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        return Task.FromResult(directMethodResponseWithNoPayload);
+                    })
+                .ConfigureAwait(false);
 
-            CustomDirectMethodPayload payload = new CustomDirectMethodPayload { Grade = "good" };
-            var DirectMethodRequest = new DirectMethodRequest
+            var payload = new CustomDirectMethodPayload { Grade = "good" };
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
@@ -542,7 +560,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -559,7 +577,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
 
             CustomDirectMethodPayload payload = new CustomDirectMethodPayload { Grade = "good" };
-            var DirectMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
@@ -567,7 +585,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -597,7 +615,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodName = "TestMethodName";
             CustomDirectMethodPayload methodBody = new CustomDirectMethodPayload { Grade = "good" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
-            var DirectMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
@@ -605,7 +623,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -627,7 +645,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             CustomDirectMethodPayload methodBody2 = new CustomDirectMethodPayload { Grade = "bad" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback2).ConfigureAwait(false);
-            DirectMethodRequest = new DirectMethodRequest
+            directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody2)),
@@ -635,7 +653,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -717,7 +735,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionOpenedInvokeHandlerForStatusChange()
+        public void IotHubDeviceClient_OnConnectionOpenedInvokeHandlerForStatusChange()
         {
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
@@ -738,7 +756,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionOpenedWithNullHandler()
+        public void IotHubDeviceClient_OnConnectionOpenedWithNullHandler()
         {
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
@@ -758,7 +776,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionOpenedNotInvokeHandlerWithoutStatusChange()
+        public void IotHubDeviceClient_OnConnectionOpenedNotInvokeHandlerWithoutStatusChange()
         {
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
@@ -785,7 +803,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
+        public void IotHubDeviceClient_OnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
         {
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
