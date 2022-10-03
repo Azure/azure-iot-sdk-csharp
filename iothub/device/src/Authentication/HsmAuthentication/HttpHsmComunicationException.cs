@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         /// <param name="message">The message that describes the error.</param>
         /// <param name="statusCode">Status code of the communication failure.</param>
         /// <param name="innerException">The inner exception, if any.</param>
-        protected HttpHsmComunicationException(string message, int statusCode, Exception innerException = default)
+        public HttpHsmComunicationException(string message, int statusCode, Exception innerException = default)
             : base($"{message}, StatusCode: {statusCode}", innerException)
         {
             StatusCode = statusCode;
