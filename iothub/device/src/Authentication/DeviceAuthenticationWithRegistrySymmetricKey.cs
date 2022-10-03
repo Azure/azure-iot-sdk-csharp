@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
         public byte[] Key
         {
             get => _key;
-            set => _key = value ?? throw new ArgumentNullException(nameof(value));
+            set => _key = value ?? throw new InvalidOperationException("Shared access key cannot be null.");
         }
 
         /// <summary>
