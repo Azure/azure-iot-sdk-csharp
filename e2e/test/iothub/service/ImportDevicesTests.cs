@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // act
 
-                ImportJobProperties importJobResponse = await CreateAndWaitForJobAsync(
+                IotHubJobResponse importJobResponse = await CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         devicesFileName,
                         configsFileName,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             foundBlob.Should().BeTrue($"Failed to find {fileName} in storage container - required for test.");
         }
 
-        private async Task<ImportJobProperties> CreateAndWaitForJobAsync(
+        private async Task<IotHubJobResponse> CreateAndWaitForJobAsync(
             StorageAuthenticationType storageAuthenticationType,
             string devicesFileName,
             string configsFileName,
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 try
                 {
-                    importJobProperties = (ImportJobProperties)await serviceClient.Devices.ImportAsync(importJobProperties).ConfigureAwait(false);
+                    importJobProperties = await serviceClient.Devices.ImportAsync(importJobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(importJobProperties.FailureReason))
                     {
                         Logger.Trace($"Job failed due to {importJobProperties.FailureReason}");
@@ -225,16 +225,20 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Logger.Trace($"Job started after {sw.Elapsed}.");
 
             sw.Restart();
-
+            IotHubJobResponse jobResponse;
             // Wait for job to complete
-            while (!importJobProperties.IsFinished)
+            while (true)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
-                importJobProperties = (ImportJobProperties)await serviceClient.Devices.GetJobAsync(importJobProperties.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {importJobProperties.JobId} is {importJobProperties.Status} after {sw.Elapsed}.");
+                jobResponse = await serviceClient.Devices.GetJobAsync(importJobProperties.JobId).ConfigureAwait(false);
+                Logger.Trace($"Job {jobResponse.JobId} is {jobResponse.Status} after {sw.Elapsed}.");
+                if (jobResponse.IsFinished)
+                {
+                    break;
+                }
             }
 
-            return importJobProperties;
+            return jobResponse;
         }
     }
 }

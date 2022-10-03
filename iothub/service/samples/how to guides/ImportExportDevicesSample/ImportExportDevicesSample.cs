@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.Samples
         // The container used to hold the blob containing the list of import/export files.
         // This is a sample-wide variable. If this project doesn't find this container, it will create it.
         private BlobContainerClient _blobContainerClient;
+
         private Uri _containerUri;
 
         public ImportExportDevicesSample(
@@ -234,7 +235,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     InputBlobName = _generateDevicesBlobName,
                 };
-                IotHubJobResponse jobResponse = await devicesClient.ImportAsync(importGeneratedDevicesJob);
+                ImportJobProperties jobResponse = await devicesClient.ImportAsync(importGeneratedDevicesJob);
                 await WaitForJobAsync(devicesClient, jobResponse);
             }
             catch (Exception ex)
@@ -313,7 +314,7 @@ namespace Microsoft.Azure.Devices.Samples
                     IncludeConfigurations = includeConfigurations,
                     ConfigurationsBlobName = configsBlobName,
                 };
-                IotHubJobResponse jobResponse = await devicesClient.ExportAsync(exportJob);
+                ExportJobProperties jobResponse = await devicesClient.ExportAsync(exportJob);
                 await WaitForJobAsync(devicesClient, jobResponse);
             }
             catch (Exception ex)
@@ -411,8 +412,8 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 InputBlobName = _hubDevicesCleanupBlobName,
             };
-            IotHubJobResponse jobResponse = await hubClient.Devices.ImportAsync(importJob);
-            await WaitForJobAsync(hubClient.Devices, jobResponse);
+            ImportJobProperties ImportJobResponse = await hubClient.Devices.ImportAsync(importJob);
+            await WaitForJobAsync(hubClient.Devices, ImportJobResponse);
 
             // Step 4: delete configurations
             if (includeConfigurations)
@@ -549,23 +550,22 @@ namespace Microsoft.Azure.Devices.Samples
             return Convert.ToBase64String(keyBytes);
         }
 
-        private static async Task WaitForJobAsync(DevicesClient devicesClient, IotHubJobResponse job)
+        private static async Task WaitForJobAsync(DevicesClient devicesClient, JobProperties job)
         {
             // Wait until job is finished
             while (true)
             {
-                job = await devicesClient.GetJobAsync(job.JobId);
+                IotHubJobResponse jobResponse = await devicesClient.GetJobAsync(job.JobId);
                 if (job.IsFinished)
                 {
                     // Job has finished executing
+                    Console.WriteLine($"Job finished with status of {jobResponse.Status}.");
                     break;
                 }
-                Console.WriteLine($"\tJob status is {job.Status}...");
+                Console.WriteLine($"\tJob status is {jobResponse.Status}...");
 
                 await Task.Delay(TimeSpan.FromSeconds(5));
             }
-
-            Console.WriteLine($"Job finished with status of {job.Status}.");
         }
     }
 }
