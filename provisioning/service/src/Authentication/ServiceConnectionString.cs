@@ -2,9 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// This object handles the connection string for the Azure IoT Services.
@@ -23,15 +22,19 @@ namespace Microsoft.Azure.Devices
     {
         private static readonly TimeSpan s_defaultTokenTimeToLive = TimeSpan.FromHours(1);
 
-        internal ServiceConnectionString(ServiceConnectionStringBuilder builder)
+        internal ServiceConnectionString(
+            string hostName,
+            string sharedAccessKeyName,
+            string sharedAccessKey,
+            string sharedAccessSignature,
+            string serviceName)
         {
-            Debug.Assert(builder != null, $"{nameof(builder)} cannot be null.");
-            HostName = builder.HostName;
-            SharedAccessKeyName = builder.SharedAccessKeyName;
-            SharedAccessKey = builder.SharedAccessKey;
-            SharedAccessSignature = builder.SharedAccessSignature;
-            ServiceName = builder.ServiceName;
-            HttpsEndpoint = new UriBuilder("https", builder.HostName).Uri;
+            HostName = hostName;
+            SharedAccessKeyName = sharedAccessKeyName;
+            SharedAccessKey = sharedAccessKey;
+            SharedAccessSignature = sharedAccessSignature;
+            ServiceName = serviceName;
+            HttpsEndpoint = new UriBuilder("https", hostName).Uri;
         }
 
         public string ServiceName { get; private set; }
@@ -59,12 +62,6 @@ namespace Microsoft.Azure.Devices
         public string GetAuthorizationHeader()
         {
             return GetPassword();
-        }
-
-        internal static ServiceConnectionString Parse(string connectionString)
-        {
-            var builder = ServiceConnectionStringBuilder.Create(connectionString);
-            return new ServiceConnectionString(builder);
         }
 
         private string BuildToken(out TimeSpan ttl)

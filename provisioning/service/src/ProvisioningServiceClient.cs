@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
-            _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
+            _provisioningConnectionString = ServiceConnectionStringParser.Parse(connectionString);
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,

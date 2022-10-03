@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal static class SharedAccessSignatureConstants
     {
