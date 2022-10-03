@@ -17,9 +17,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
+        private volatile bool _isOpen;
         private SemaphoreSlim _handlerSemaphore = new(1, 1);
-        private bool _openCalled;
-        private bool _opened;
+        private bool _wasOpenCalled;
         private bool _methodsEnabled;
         private bool _twinEnabled;
         private bool _deviceReceiveMessageEnabled;
@@ -65,16 +65,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -89,16 +89,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -113,16 +113,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task SendMethodResponseAsync(DirectMethodResponse method, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             await base.SendMethodResponseAsync(method, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -137,16 +137,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
@@ -173,16 +173,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
@@ -209,16 +209,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -243,16 +243,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -277,16 +277,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -311,16 +311,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
-
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -345,16 +345,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
-
                 return await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             return await base.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -369,16 +369,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
-
                 return await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
+                            VerifyIsOpen();
                             return await base.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -396,12 +396,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // If this object has already been disposed, we will throw an exception indicating that.
             // This is the entry point for interacting with the client and this safety check should be done here.
             // The current behavior does not support open->close->open
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
             }
 
-            if (Volatile.Read(ref _opened))
+            if (_isOpen)
             {
                 return;
             }
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (!_opened)
+                if (!_isOpen)
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Opening connection", nameof(OpenAsync));
@@ -426,10 +426,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw;
                     }
 
-                    if (!_disposed)
+                    if (!_isDisposed)
                     {
-                        _opened = true;
-                        _openCalled = true;
+                        _isOpen = true;
+                        _wasOpenCalled = true;
 
                         // Send the request for transport close notification.
                         _transportClosedTask = HandleDisconnectAsync();
@@ -451,13 +451,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(CloseAsync));
+
             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(CloseAsync));
-
-                if (!_openCalled)
+                if (!_wasOpenCalled)
                 {
                     // Already closed so gracefully exit, instead of throw.
                     return;
@@ -476,21 +477,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private async Task EnsureOpenedAsync(CancellationToken cancellationToken)
+        private void VerifyIsOpen()
         {
-            try
+            if (!_isOpen)
             {
-                await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-                if (!_opened)
-                {
-                    throw new InvalidOperationException(_openCalled
+                throw new InvalidOperationException(
+                    _wasOpenCalled
                         ? $"The transport has disconnected; call '{nameof(OpenAsync)}' to reconnect."
                         : $"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
-                }
-            }
-            finally
-            {
-                _handlerSemaphore?.Release();
             }
         }
 
@@ -502,11 +496,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .RunWithRetryAsync(
                     async () =>
                     {
+                        if (Logging.IsEnabled)
+                            Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+
                         try
                         {
-                            if (Logging.IsEnabled)
-                                Logging.Enter(this, cancellationToken, nameof(OpenAsync));
-
                             // Will throw on error.
                             await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -532,7 +526,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             var connectionStatusInfo = new ConnectionStatusInfo();
 
-            if (_disposed)
+            if (_isDisposed)
             {
                 if (Logging.IsEnabled)
                     Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
@@ -560,7 +554,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
             await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
-            _opened = false;
+            _isOpen = false;
 
             try
             {
@@ -621,7 +615,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Send the request for transport close notification.
                     _transportClosedTask = HandleDisconnectAsync();
 
-                    _opened = true;
+                    _isOpen = true;
                     connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                     _onConnectionStatusChanged(connectionStatusInfo);
 
@@ -691,14 +685,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected private override void Dispose(bool disposing)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+
             try
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
-                }
-
-                if (!_disposed)
+                if (!_isDisposed)
                 {
                     base.Dispose(disposing);
                     if (disposing)
@@ -719,7 +711,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
             }
         }
     }

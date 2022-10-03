@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
     public abstract class PayloadEncoder
     {
         /// <summary>
-        /// The <see cref="Encoding"/> used for the payload.
+        /// The encoding used for the payload.
         /// </summary>
         public abstract Encoding ContentEncoding { get; }
 

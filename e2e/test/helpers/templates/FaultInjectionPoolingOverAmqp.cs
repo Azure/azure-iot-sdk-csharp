@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
                     MaxPoolSize = unchecked((uint)poolSize),
-                    Pooling = true,
+                    UsePooling = true,
                 },
                 Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
             };

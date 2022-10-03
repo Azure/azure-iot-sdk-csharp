@@ -27,13 +27,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     iotHubClientMqttSettings);
             }
 
-            if (transportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
-            {
-                return new HttpTransportHandler(
-                    context,
-                    iotHubClientHttpSettings);
-            }
-
             throw new InvalidOperationException($"Unsupported transport setting {context.IotHubClientTransportSettings.GetType()}");
         }
     }

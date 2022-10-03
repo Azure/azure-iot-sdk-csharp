@@ -128,9 +128,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             { IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType },
             { IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding },
             { MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation },
-            { MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack },
-            { IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId  },
-            { IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId  },
+            { IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId },
+            { IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId },
             { IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId },
             { IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext },
             { IotHubWirePropertyNames.InterfaceId, MessageSystemPropertyNames.InterfaceId },
@@ -148,8 +147,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             { MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType },
             { MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding },
             { MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation },
-            { MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack },
-            { MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName  },
+            { MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
             { MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey },
             { MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey },
             { MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId },
@@ -240,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithKeepAlivePeriod(_mqttTransportSettings.IdleTimeout)
                 .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
 
-            if (_mqttTransportSettings.HasWill && _mqttTransportSettings.WillMessage != null)
+            if (_mqttTransportSettings.WillMessage != null)
             {
                 _mqttClientOptionsBuilder
                     .WithWillTopic(_deviceToCloudMessagesTopic)

@@ -116,10 +116,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ConnectionPoolSettings_PoolingOff()
         {
             // act
-            var connectionPoolSettings = new AmqpConnectionPoolSettings { Pooling = false };
+            var connectionPoolSettings = new AmqpConnectionPoolSettings { UsePooling = false };
 
             // assert
-            connectionPoolSettings.Pooling.Should().BeFalse();
+            connectionPoolSettings.UsePooling.Should().BeFalse();
         }
 
         [TestMethod]

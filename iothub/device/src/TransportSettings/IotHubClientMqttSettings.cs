@@ -73,20 +73,11 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan? WebSocketKeepAlive { get; set; }
 
         /// <summary>
-        /// Indicates whether the transport has a will message.
+        /// The configured will message that is sent to the telemetry channel on an ungraceful disconnect.
         /// </summary>
         /// <remarks>
         /// Setting a will message is a way for clients to notify other subscribed clients about ungraceful disconnects in an appropriate way.
         /// In response to the ungraceful disconnect, the service will send the last-will message to the configured telemetry channel.
-        /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT hub routing.
-        /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
-        /// </remarks>
-        public bool HasWill { get; set; } // false by default
-
-        /// <summary>
-        /// The configured will message that is sent to the telemetry channel on an ungraceful disconnect.
-        /// </summary>
-        /// <remarks>
         /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT hub routing.
         /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
         /// </remarks>

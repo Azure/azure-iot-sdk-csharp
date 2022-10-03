@@ -4,8 +4,11 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The policy for which a particular message will be sent. Note that IoT hub does not support QoS 2.
+    /// The policy for which a particular message will be sent over MQTT.
     /// </summary>
+    /// <remarks>
+    /// Note that IoT hub does not support QoS 2.
+    /// </remarks>
     public enum QualityOfService
     {
         /// <summary>
