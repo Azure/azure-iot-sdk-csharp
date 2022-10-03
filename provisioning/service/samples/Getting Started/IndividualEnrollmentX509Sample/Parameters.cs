@@ -11,7 +11,7 @@ namespace IndividualEnrollmentX509Sample
             'p',
             "CertificatePath",
             Required = true,
-            HelpText = "The path to a .cer or .pem file for a X509 certificate.")]
+            HelpText = "The path to a .cer or .pem file for an X509 certificate.")]
         public string CertificatePath { get; set; }
 
         [Option(
