@@ -168,20 +168,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var fileUploadTime = Stopwatch.StartNew();
 
-            var fileUploadSasUriRequest = new FileUploadSasUriRequest
-            {
-                BlobName = fileName
-            };
+            var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
             FileUploadSasUriResponse sasUri = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
             Uri uploadUri = sasUri.GetBlobUri();
 
             var blob = new CloudBlockBlob(uploadUri);
             await blob.UploadFromStreamAsync(fileStreamSource).ConfigureAwait(false);
 
-            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification
+            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
             {
-                CorrelationId = sasUri.CorrelationId,
-                IsSuccess = true,
                 StatusCode = 200,
                 StatusDescription = "Success"
             };

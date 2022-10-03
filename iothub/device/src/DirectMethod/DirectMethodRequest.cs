@@ -10,15 +10,20 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Parameters to execute a direct method on a device or module.
     /// </summary>
+    /// <remarks>
+    /// A direct method request can only be made by the service or a module.
+    /// </remarks>
     public class DirectMethodRequest
     {
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
+        /// <remarks>
+        /// A direct method request can only be made by the service or a module;
+        /// a device client app will not need to instantiate this class.
+        /// </remarks>
         public DirectMethodRequest()
         {
-            // This constructor is public because it can be used by
-            // users invoking InvokeMethodAsync on an IotHubModuleClient.
         }
 
         /// <summary>
@@ -59,6 +64,16 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan? ResponseTimeout { get; set; }
 
         /// <summary>
+        /// The request Id for the transport layer.
+        /// </summary>
+        /// <remarks>
+        /// This value is not part of the JSON payload. It is received as topic string parameter over MQTT and as a
+        /// property over AMQP, and would likely only be interesting to a device app for diagnostics.
+        /// </remarks>
+        [JsonIgnore]
+        public string RequestId { get; protected internal set; }
+
+        /// <summary>
         /// The JSON payload in JRaw type.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
@@ -70,10 +85,16 @@ namespace Microsoft.Azure.Devices.Client
         protected internal byte[] Payload { get; set; }
 
         /// <summary>
+        /// The convention to use with the direct method payload.
+        /// </summary>
+        [JsonIgnore]
+        protected internal PayloadConvention PayloadConvention { get; set; }
+
+        /// <summary>
         /// Method timeout, in seconds.
         /// </summary>
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        protected internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
             ? (int)ResponseTimeout.Value.TotalSeconds
             : null;
 
@@ -81,24 +102,9 @@ namespace Microsoft.Azure.Devices.Client
         /// Connection timeout, in seconds.
         /// </summary>
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        protected internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
             ? (int)ConnectionTimeout.Value.TotalSeconds
             : null;
-
-        /// <summary>
-        /// The request Id for the transport layer.
-        /// </summary>
-        /// <remarks>
-        /// This value is not part of the Json payload. It is received as topic string parameter over MQTT and as a
-        /// property over AMQP.
-        /// </remarks>
-        [JsonIgnore]
-        protected internal string RequestId { get; set; }
-
-        /// <summary>
-        /// The convention to use with the direct method payload.
-        /// </summary>
-        protected internal PayloadConvention PayloadConvention { get; set; }
 
         /// <summary>
         /// The direct method request payload, deserialized to the specified type.

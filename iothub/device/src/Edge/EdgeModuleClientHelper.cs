@@ -44,15 +44,21 @@ namespace Microsoft.Azure.Devices.Client
                 return new IotHubConnectionCredentials(connectionString);
             }
 
-            string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
-            string deviceId = GetValueFromEnvironment(envVariables, DeviceIdVariableName) ?? throw new InvalidOperationException($"Environment variable {DeviceIdVariableName} is required.");
-            string moduleId = GetValueFromEnvironment(envVariables, ModuleIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleIdVariableName} is required.");
-            string hostName = GetValueFromEnvironment(envVariables, IotHubHostNameVariableName) ?? throw new InvalidOperationException($"Environment variable {IotHubHostNameVariableName} is required.");
-            string authScheme = GetValueFromEnvironment(envVariables, AuthSchemeVariableName) ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
-            string generationId = GetValueFromEnvironment(envVariables, ModuleGenerationIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleGenerationIdVariableName} is required.");
+            string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName)
+                ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
+            string deviceId = GetValueFromEnvironment(envVariables, DeviceIdVariableName)
+                ?? throw new InvalidOperationException($"Environment variable {DeviceIdVariableName} is required.");
+            string moduleId = GetValueFromEnvironment(envVariables, ModuleIdVariableName)
+                ?? throw new InvalidOperationException($"Environment variable {ModuleIdVariableName} is required.");
+            string hostName = GetValueFromEnvironment(envVariables, IotHubHostNameVariableName)
+                ?? throw new InvalidOperationException($"Environment variable {IotHubHostNameVariableName} is required.");
+            string authScheme = GetValueFromEnvironment(envVariables, AuthSchemeVariableName)
+                ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
+            string generationId = GetValueFromEnvironment(envVariables, ModuleGenerationIdVariableName)
+                ?? throw new InvalidOperationException($"Environment variable {ModuleGenerationIdVariableName} is required.");
             string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
 
-            if (!string.Equals(authScheme, SasTokenAuthScheme, StringComparison.OrdinalIgnoreCase))
+            if (!StringComparer.OrdinalIgnoreCase.Equals(authScheme, SasTokenAuthScheme))
             {
                 throw new InvalidOperationException($"Unsupported authentication scheme. Supported scheme is {SasTokenAuthScheme}.");
             }
@@ -121,14 +127,12 @@ namespace Microsoft.Azure.Devices.Client
                 if (IsOSPlatform(OSPlatform.Windows))
                 {
                     Debug.WriteLine("EdgeModuleClientFactory GetCertificateValidator on Windows");
-                    var certValidator = CustomCertificateValidator.Create(certs, options.TransportSettings);
-                    return certValidator;
+                    return CustomCertificateValidator.Create(certs, options.TransportSettings);
                 }
                 else
                 {
                     Debug.WriteLine("EdgeModuleClientFactory GetCertificateValidator on Linux");
-                    var certValidator = InstalledCertificateValidator.Create(certs);
-                    return certValidator;
+                    return InstalledCertificateValidator.Create(certs);
                 }
             }
 

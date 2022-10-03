@@ -9,6 +9,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal interface ICertificateValidator
     {
-        Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> GetCustomCertificateValidation();
+        internal Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> GetCustomCertificateValidation();
     }
 }

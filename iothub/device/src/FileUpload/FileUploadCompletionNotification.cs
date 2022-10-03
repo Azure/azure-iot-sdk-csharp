@@ -11,29 +11,46 @@ namespace Microsoft.Azure.Devices.Client.Transport
     public class FileUploadCompletionNotification
     {
         /// <summary>
-        /// The correlation id that maps this completion notification to the file upload.
-        /// The value should equal the <see cref="FileUploadSasUriResponse.CorrelationId">correlation id </see>
-        /// returned from IoT hub when first getting the SAS Uri for this file upload 
+        /// Used to tell the service that the client is done uploading a file with the specified correlation Id.
         /// </summary>
-        [JsonProperty(PropertyName = "correlationId")]
-        public string CorrelationId { get; set; }
+        /// <param name="correlationId">The correlation Id of the SAS URI.</param>
+        /// <param name="isSuccess">Whether the file upload was successful or not.</param>
+        public FileUploadCompletionNotification(string correlationId, bool isSuccess)
+        {
+            CorrelationId = correlationId;
+            IsSuccess = isSuccess;
+        }
 
         /// <summary>
-        /// Whether the file upload was successful or not. This field is mandatory.
+        /// The correlation id that maps this completion notification to the file upload.
+        /// The value should equal the <see cref="FileUploadSasUriResponse.CorrelationId"/>
+        /// returned from IoT hub when first getting the SAS URI for this file upload.
+        /// </summary>
+        [JsonProperty(PropertyName = "correlationId")]
+        public string CorrelationId { get; }
+
+        /// <summary>
+        /// Whether the file upload was successful or not.
         /// </summary>
         [JsonProperty(PropertyName = "isSuccess")]
-        public bool IsSuccess { get; set; }
+        public bool IsSuccess { get; }
 
         /// <summary>
         /// The status code for the file upload. This is user defined and will be presented to the service client listening
-        /// for file upload notifications. This field is optional.
+        /// for file upload notifications.
         /// </summary>
+        /// <remarks>
+        /// This property is optional.
+        /// </remarks>
         [JsonProperty(PropertyName = "statusCode")]
         public int StatusCode { get; set; }
 
         /// <summary>
         /// A brief description of the file upload status. This is user defined and will be presented to the service client listening
-        /// for file upload notifications. This field is optional.
+        /// for file upload notifications.
+        /// <remarks>
+        /// This property is optional.
+        /// </remarks>
         /// </summary>
         [JsonProperty(PropertyName = "statusDescription")]
         public string StatusDescription { get; set; }

@@ -121,10 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, clientOptions);
             }
 
-            var fileUploadSasUriRequest = new FileUploadSasUriRequest()
-            {
-                BlobName = filename
-            };
+            var fileUploadSasUriRequest = new FileUploadSasUriRequest(filename);
 
             using (deviceClient)
             {
@@ -136,21 +133,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 if (isCorrelationIdValid)
                 {
-                    var notification = new FileUploadCompletionNotification
-                    {
-                        CorrelationId = fileUploadSasUriResponse.CorrelationId,
-                        IsSuccess = uploadTask.IsCompleted
-                    };
+                    var notification = new FileUploadCompletionNotification(fileUploadSasUriResponse.CorrelationId, uploadTask.IsCompleted);
 
                     await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
                 }
                 else
                 {
-                    var notification = new FileUploadCompletionNotification
-                    {
-                        CorrelationId = "invalid-correlation-id",
-                        IsSuccess = uploadTask.IsCompleted
-                    };
+                    var notification = new FileUploadCompletionNotification("invalid-correlation-id", uploadTask.IsCompleted);
 
                     // act
                     Func<Task> act = async () => await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
@@ -200,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (deviceClient)
             {
                 FileUploadSasUriResponse sasUriResponse = await deviceClient
-                    .GetFileUploadSasUriAsync(new FileUploadSasUriRequest { BlobName = blobName })
+                    .GetFileUploadSasUriAsync(new FileUploadSasUriRequest(blobName))
                     .ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }

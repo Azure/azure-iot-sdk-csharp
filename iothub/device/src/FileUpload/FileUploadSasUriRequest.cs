@@ -6,14 +6,23 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     /// <summary>
-    /// The request parameters when getting a file upload sas uri from IoT hub.
+    /// The request parameters when getting a file upload SAS URI from IoT hub.
     /// </summary>
     public class FileUploadSasUriRequest
     {
         /// <summary>
-        /// The name of the file for which a SAS URI will be generated. This field is mandatory.
+        /// The request parameters when getting a file upload SAS URI from IoT hub.
+        /// </summary>
+        /// <param name="blobName">The name of the file for which a SAS URI will be generated.</param>
+        public FileUploadSasUriRequest(string blobName)
+        {
+            BlobName = blobName;
+        }
+
+        /// <summary>
+        /// The name of the file for which a SAS URI will be generated.
         /// </summary>
         [JsonProperty(PropertyName = "blobName")]
-        public string BlobName { get; set; }
+        public string BlobName { get; }
     }
 }

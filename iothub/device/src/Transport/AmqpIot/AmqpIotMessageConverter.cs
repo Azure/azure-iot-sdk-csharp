@@ -54,10 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         public static AmqpMessage OutgoingMessageToAmqpMessage(OutgoingMessage message)
         {
-            if (message == null)
-            {
-                throw Fx.Exception.ArgumentNull(nameof(Message));
-            }
+            Argument.AssertNotNull(message, nameof(message));
 
             AmqpMessage amqpMessage = message.Payload != null
                 ? AmqpMessage.Create(new MemoryStream(message.GetPayloadObjectBytes()), true)
@@ -255,10 +252,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// </summary>
         public static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
         {
-            if (amqpMessage == null)
-            {
-                throw Fx.Exception.ArgumentNull(nameof(AmqpMessage));
-            }
+            Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
             string methodRequestId = string.Empty;
             string methodName = string.Empty;
@@ -368,8 +362,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(new SerializationException(
-                            string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
+                        throw new SerializationException(
+                            string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, amqpObject.GetType().FullName));
                     }
                     else if (amqpObject is AmqpMap map)
                     {
@@ -449,9 +443,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(
-                            new SerializationException(
-                                string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
+                        throw new SerializationException(
+                            string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, netObject.GetType().FullName));
                     }
                     else if (netObject is byte[] netObjectBytes)
                     {

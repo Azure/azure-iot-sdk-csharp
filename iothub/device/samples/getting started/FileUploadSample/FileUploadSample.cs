@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
-using Microsoft.Azure.Devices.Client.Transport;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -31,10 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var fileUploadTime = Stopwatch.StartNew();
 
-            var fileUploadSasUriRequest = new FileUploadSasUriRequest
-            {
-                BlobName = fileName
-            };
+            var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
 
             // Note: GetFileUploadSasUriAsync and CompleteFileUploadAsync will use HTTPS as protocol regardless of the DeviceClient protocol selection.
             Console.WriteLine("Getting SAS URI from IoT Hub to use when uploading the file...");
@@ -61,14 +58,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 Console.WriteLine($"Failed to upload file to Azure Storage using the Azure Storage SDK due to {ex}");
 
-                var failedFileUploadCompletionNotification = new FileUploadCompletionNotification
+                var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false)
                 {
-                    // Mandatory. Must be the same value as the correlation id returned in the sas uri response
-                    CorrelationId = sasUri.CorrelationId,
-
-                    // Mandatory. Will be present when service client receives this file upload notification
-                    IsSuccess = false,
-
                     // Optional, user-defined status code. Will be present when service client receives this file upload notification
                     StatusCode = 500,
 
@@ -89,14 +80,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Console.WriteLine("Successfully uploaded the file to Azure Storage");
 
-            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification
+            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
             {
-                // Mandatory. Must be the same value as the correlation id returned in the sas uri response
-                CorrelationId = sasUri.CorrelationId,
-
-                // Mandatory. Will be present when service client receives this file upload notification
-                IsSuccess = true,
-
                 // Optional, user defined status code. Will be present when service client receives this file upload notification
                 StatusCode = 200,
 

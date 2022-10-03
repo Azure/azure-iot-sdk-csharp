@@ -451,49 +451,39 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, directMethodRequest?.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
 
-            if (directMethodRequest == null)
+            if (directMethodRequest == null
+                || _deviceDefaultMethodCallback == null)
             {
+                if (Logging.IsEnabled)
+                    Logging.Error(
+                        this,
+                        $"Direct method {directMethodRequest?.RequestId} has request is null '{directMethodRequest == null}' and callback is null '{_deviceDefaultMethodCallback != null}'",
+                        nameof(OnMethodCalledAsync));
                 return;
             }
 
-            DirectMethodResponse directMethodResponse = null;
-
-            if (_deviceDefaultMethodCallback == null)
+            try
             {
-                directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.MethodNotImplemented)
-                {
-                    RequestId = directMethodRequest.RequestId,
-                    PayloadConvention = _clientOptions.PayloadConvention,
-                };
+                DirectMethodResponse directMethodResponse = await _deviceDefaultMethodCallback
+                    .Invoke(directMethodRequest)
+                    .ConfigureAwait(false);
+
+                directMethodResponse.RequestId = directMethodRequest.RequestId;
+                directMethodResponse.PayloadConvention = _clientOptions.PayloadConvention;
+
+                await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
             }
-            else
+            catch (Exception ex)
             {
-                try
-                {
-                    directMethodResponse = await _deviceDefaultMethodCallback
-                        .Invoke(directMethodRequest)
-                        .ConfigureAwait(false);
-
-                    directMethodResponse.RequestId = directMethodRequest.RequestId;
-                    directMethodResponse.PayloadConvention = _clientOptions.PayloadConvention;
-                }
-                catch (Exception ex)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, ex, nameof(OnMethodCalledAsync));
-
-                    directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.UserCodeException)
-                    {
-                        RequestId = directMethodRequest.RequestId,
-                        PayloadConvention = _clientOptions.PayloadConvention,
-                    };
-                }
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"User code threw exception for request Id {directMethodRequest.RequestId}: {ex}", nameof(OnMethodCalledAsync));
             }
+            finally
+            {
 
-            await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
+            }
         }
 
         internal void OnDesiredStatePatchReceived(TwinCollection patch)

@@ -171,15 +171,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        internal void Close()
-        {
-            AmqpConnection connection = AmqpConnection;
-            if (connection != null)
-            {
-                connection.Close();
-            }
-        }
-
         internal AmqpClientSession CreateSession()
         {
             AmqpSession = new AmqpClientSession(this);
