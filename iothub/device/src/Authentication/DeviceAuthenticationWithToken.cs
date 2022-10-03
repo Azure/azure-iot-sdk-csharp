@@ -47,6 +47,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="iotHubConnectionCredentials"/> is null.</exception>
         public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));

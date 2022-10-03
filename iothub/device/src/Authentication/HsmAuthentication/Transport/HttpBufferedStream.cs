@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
         private const char LF = '\n';
         private readonly Stream _innerStream;
 
-        public HttpBufferedStream(Stream stream)
+        internal HttpBufferedStream(Stream stream)
         {
             _innerStream = new BufferedStream(stream);
         }
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             return _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
-        public async Task<string> ReadLineAsync(CancellationToken cancellationToken)
+        internal async Task<string> ReadLineAsync(CancellationToken cancellationToken)
         {
             int position = 0;
             byte[] buffer = new byte[1];

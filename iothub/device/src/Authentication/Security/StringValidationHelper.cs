@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!IsBase64StringValid(value))
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, StringIsNotBase64, value, paramName));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, StringIsNotBase64, value, paramName));
             }
         }
 
