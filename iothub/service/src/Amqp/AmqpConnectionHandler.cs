@@ -3,9 +3,7 @@
 
 using System;
 using System.Globalization;
-using System.Net;
 using System.Net.Security;
-using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -120,7 +118,7 @@ namespace Microsoft.Azure.Devices.Amqp
                     {
                         TargetHost = _credential.HostName,
                         Certificate = null,
-                        CertificateValidationCallback = OnRemoteCertificateValidation
+                        CertificateValidationCallback = _options.RemoteCertificateValidationCallback,
                     };
 
                     amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTranpsortSettings);
@@ -250,15 +248,6 @@ namespace Microsoft.Azure.Devices.Amqp
                 Logging.Info(s_amqpVersion_1_0_0, nameof(CreateAmqpSettings));
 
             return amqpSettings;
-        }
-
-        private static bool OnRemoteCertificateValidation(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            return sslPolicyErrors == SslPolicyErrors.None;
         }
 
         /// <inheritdoc/>
