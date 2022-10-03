@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string sharedAccessSignature = GetConnectionStringOptionalValue(map, ServiceConnectionStringConstants.SharedAccessSignaturePropertyName);
             string serviceName = GetServiceName(hostName);
 
-            Validate(hostName, sharedAccessKeyName, sharedAccessKey, sharedAccessSignature, serviceName);
+            Validate(sharedAccessKeyName, sharedAccessKey, sharedAccessSignature, serviceName);
 
             return new ServiceConnectionString(hostName, sharedAccessKeyName, sharedAccessKey, sharedAccessSignature, serviceName);
         }
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (!map.TryGetValue(propertyName, out string value))
             {
-                throw new InvalidOperationException(
+                throw new FormatException(
                     $"The connection string is missing the property: {propertyName}.");
             }
 
@@ -66,20 +66,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return value;
         }
 
-        private static void Validate(string hostName, string sharedAccessKeyName, string sharedAccessKey, string sharedAccessSignature, string serviceName)
+        private static void Validate(string sharedAccessKeyName, string sharedAccessKey, string sharedAccessSignature, string serviceName)
         {
             if (string.IsNullOrWhiteSpace(sharedAccessKeyName))
             {
-                throw new InvalidOperationException("Should specify SharedAccessKeyName.");
+                throw new FormatException("Should specify SharedAccessKeyName.");
             }
 
             if (!(string.IsNullOrWhiteSpace(sharedAccessKey) ^ string.IsNullOrWhiteSpace(sharedAccessSignature)))
             {
-                throw new InvalidOperationException("Should specify either SharedAccessKey or SharedAccessSignature.");
+                throw new FormatException("Should specify either SharedAccessKey or SharedAccessSignature.");
             }
 
             if (!string.IsNullOrWhiteSpace(sharedAccessKey))
             {
+                // Validate the provided value.
                 Convert.FromBase64String(sharedAccessKey);
             }
 
