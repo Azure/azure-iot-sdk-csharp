@@ -66,8 +66,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <remarks>
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// <para>
-        /// This feature is only applicable for HTTP connections and for AMQP TCP connections. AMQP web socket communication
-        /// does not support this feature.
+        /// This feature is only applicable for HTTP, MQTT over TCP, MQTT over web socket, AMQP
+        /// over TCP. AMQP web socket communication does not support this feature.
         /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
