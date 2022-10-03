@@ -44,12 +44,6 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
-        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
-        /// </summary>
-        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
-        public TimeSpan? WebSocketKeepAlive { get; set; }
-
-        /// <summary>
         /// The pre-fetch count
         /// </summary>
         public uint PrefetchCount { get; set; } = 50;
