@@ -451,15 +451,12 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, directMethodRequest?.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
 
-            Debug.Assert(directMethodRequest != null, $"SDK bug where null direct method request is processed.");
-            Debug.Assert(_deviceDefaultMethodCallback != null, $"SDK bug where user callback is null but direct method request is still received.");
-
             if (directMethodRequest == null
                 || _deviceDefaultMethodCallback == null)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(
-                        this, 
+                        this,
                         $"Direct method {directMethodRequest?.RequestId} has request is null '{directMethodRequest == null}' and callback is null '{_deviceDefaultMethodCallback != null}'",
                         nameof(OnMethodCalledAsync));
                 return;

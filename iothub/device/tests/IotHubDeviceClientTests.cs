@@ -570,7 +570,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Is<DirectMethodResponse>(resp => resp.Status == 501), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -666,9 +666,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             string methodName = "TestMethodName";
-            CustomDirectMethodPayload methodBody = new CustomDirectMethodPayload { Grade = "good" };
+            var methodBody = new CustomDirectMethodPayload { Grade = "good" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
-            var DirectMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
@@ -676,7 +676,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -688,7 +688,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             methodCallbackCalled = false;
             await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
-            DirectMethodRequest = new DirectMethodRequest
+            directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
@@ -696,7 +696,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
