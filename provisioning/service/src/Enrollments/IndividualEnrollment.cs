@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// Representation of a single Device Provisioning Service enrollment and their accessors with a JSON serializer
-    ///     and deserializer.
+    /// and deserializer.
     /// </summary>
     /// <remarks>
     /// This object is used to send and receive individualEnrollment information to and from the provisioning service.
@@ -25,50 +25,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The minimum information required by the provisioning service is the RegistrationId and the
     /// Attestation.
     ///
-    /// A new device can be provisioned by three attestation mechanisms, Trust Platform Module (see <see cref=
-    /// "TpmAttestation"/>), X509 (see <see cref="X509Attestation"/>) or Symmetric Key (see <see cref="SymmetricKeyAttestation"/>). The definition of each one you
+    /// A new device can be provisioned by three attestation mechanisms, Trust Platform Module (see X509
+    /// (see <see cref="X509Attestation"/>) or Symmetric Key (see <see cref="SymmetricKeyAttestation"/>).
+    /// The definition of each one you
     /// should use depending on the physical authentication hardware that the device contains.
     ///
     /// The content of this class will be serialized in a JSON format and sent as a body of the rest API to the
     /// provisioning service. Or the content of this class can be filled by a JSON, received from the provisioning
     /// service, as result of a individualEnrollment operation like create, update, or query.
     /// </remarks>
-    /// <example>
-    /// When serialized, an individualEnrollment will look like the following example:
-    /// <code>
-    /// {
-    ///     "registrationId":"validRegistrationId",
-    ///     "deviceId":"ContosoDevice-123",
-    ///     "attestation":{
-    ///         "type":"tpm",
-    ///         "tpm":{
-    ///                "endorsementKey":"validEndorsementKey"
-    ///         }
-    ///     },
-    ///     "iotHubHostName":"ContosoIoTHub.azure-devices.net",
-    ///     "provisioningStatus":"enabled"
-    /// }
-    /// </code>
-    ///
-    /// The following JSON is a sample of the individualEnrollment response, received from the provisioning service.
-    /// <code>
-    /// {
-    ///     "registrationId":"validRegistrationId",
-    ///     "deviceId":"ContosoDevice-123",
-    ///     "attestation":{
-    ///         "type":"tpm",
-    ///         "tpm":{
-    ///             "endorsementKey":"validEndorsementKey"
-    ///         }
-    ///     },
-    ///     "iotHubHostName":"ContosoIoTHub.azure-devices.net",
-    ///     "provisioningStatus":"enabled"
-    ///     "createdDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
-    ///     "lastUpdatedDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
-    ///     "etag": "\"00000000-0000-0000-0000-00000000000\""
-    /// }
-    /// </code>
-    /// </example>
     public class IndividualEnrollment : IETagHolder
     {
         /// <summary>
@@ -78,26 +43,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This constructor creates an instance of the IndividualEnrollment object with the minimum set of
         /// information required by the provisioning service. A valid individualEnrollment must contain the
         /// registrationId, which uniquely identify this enrollment, and the attestation mechanism, which can
-        /// be TPM, X509, or Symmetric key.
+        /// be X509, or Symmetric key.
         ///
         /// Other parameters can be added by calling the setters on this object.
         /// </remarks>
-        /// <example>
-        /// When serialized, an IndividualEnrollment will look like the following example:
-        /// <code>
-        /// {
-        ///    "registrationId":"validRegistrationId",
-        ///    "attestation":{
-        ///        "type":"tpm",
-        ///        "tpm":{
-        ///            "endorsementKey":"validEndorsementKey"
-        ///        }
-        ///    }
-        /// }
-        /// </code>
-        /// </example>
         /// <param name="registrationId">The string that uniquely identify this enrollment in the provisioning
-        ///     service. It cannot be null or empty.</param>
+        /// service. It cannot be null or empty.</param>
         /// <param name="attestation">The <see cref="Attestation"/> object with the attestation mechanism. It cannot be null.</param>
         /// <exception cref="ArgumentNullException">If one of the provided <paramref name="registrationId"/> or <paramref name="attestation"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
@@ -116,28 +67,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This constructor creates an instance of the enrollment filling the class with the information
         /// provided in the JSON. It is used by the SDK to parse enrollment responses from the provisioning service.
         /// </remarks>
-        /// <example>
-        /// The following JSON is a sample of the IndividualEnrollment response, received from the provisioning service.
-        /// <code>
-        /// {
-        ///    "registrationId":"validRegistrationId",
-        ///    "deviceId":"ContosoDevice-123",
-        ///    "attestation":{
-        ///        "type":"tpm",
-        ///        "tpm":{
-        ///            "endorsementKey":"validEndorsementKey"
-        ///        }
-        ///    },
-        ///    "iotHubHostName":"ContosoIoTHub.azure-devices.net",
-        ///    "provisioningStatus":"enabled"
-        ///    "createdDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
-        ///    "lastUpdatedDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
-        ///    "etag": "\"00000000-0000-0000-0000-00000000000\""
-        /// }
-        /// </code>
-        /// </example>
         /// <param name="registrationId">The string with a unique id for the individualEnrollment. It cannot be null or empty.</param>
-        /// <param name="attestation">The <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM`, `X509` or `SymmetricKey`.</param>
+        /// <param name="attestation">The <see cref="AttestationMechanism"/> for the enrollment. It shall be `X509` or `SymmetricKey`.</param>
         /// <param name="deviceId">The string with the device name. This is optional and can be null or empty.</param>
         /// <param name="iotHubHostName">The string with the target IoTHub name. This is optional and can be null or empty.</param>
         /// <param name="initialTwinState">The <see cref="TwinState"/> with the initial Twin condition. This is optional and can be null.</param>

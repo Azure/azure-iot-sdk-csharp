@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 Logging.Associate(authStrategy, this);
 
-                using var httpClientHandler = new HttpClientHandler()
+                using var httpClientHandler = new HttpClientHandler
                 {
                     // Cannot specify a specific protocol here, as desired due to an error:
                     //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         this,
                         registrationId,
                         message.IdScope,
-                        deviceRegistration.Tpm == null ? "X509" : "TPM",
+                        "X509",
                         operation.OperationId,
                         operation.RetryAfter,
                         operation.Status);

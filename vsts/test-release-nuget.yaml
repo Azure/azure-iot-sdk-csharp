@@ -74,18 +74,6 @@ jobs:
           OverWrite: true
 
       - task: Docker@1
-        displayName: "Start TPM Simulator"
-        inputs:
-          containerregistrytype: "Container Registry"
-          command: "Run an image"
-          imageName: aziotbld/testtpm
-          containerName: "testtpm-instance"
-          ports: |
-            127.0.0.1:2321:2321
-            127.0.0.1:2322:2322
-          restartPolicy: unlessStopped
-
-      - task: Docker@1
         displayName: 'Start Test Proxy'
         inputs:
           containerregistrytype: 'Container Registry'
@@ -238,9 +226,6 @@ jobs:
           choco install -y squid
             
         displayName: 'Install Squid'
-
-      - powershell: ./vsts/start_tpm_windows.ps1
-        displayName: "Start TPM Simulator"
 
       - powershell: ./vsts/releaseTest.ps1
         displayName: Test release nugets

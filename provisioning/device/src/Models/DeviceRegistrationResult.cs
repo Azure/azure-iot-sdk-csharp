@@ -93,12 +93,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public JRaw Payload { get; internal set; }
 
         /// <summary>
-        /// The registration result for TPM authentication.
-        /// </summary>
-        [JsonProperty(PropertyName = "tpm")]
-        public TpmRegistrationResult Tpm { get; internal set; }
-
-        /// <summary>
         /// The registration result for X.509 certificate authentication.
         /// </summary>
         [JsonProperty(PropertyName = "x509")]

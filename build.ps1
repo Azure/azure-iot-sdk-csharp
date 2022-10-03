@@ -269,7 +269,7 @@ try
         BuildProject . "Azure IoT C# SDK Solution"
 
         # Samples
-        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
+        # TODO: BuildProject <path> "<desc>"
 
         $env:AZURE_IOT_LOCALPACKAGES = $packageTempPath
     }
@@ -328,7 +328,6 @@ try
         BuildPackage authentication\src "Device Authentication Providers"
         BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
         BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
-        BuildPackage security\tpm\src "SecurityProvider for TPM"
         BuildPackage provisioning\device\src "Provisioning Device Client SDK"
         BuildPackage provisioning\service\src "Provisioning Service Client SDK"
     }

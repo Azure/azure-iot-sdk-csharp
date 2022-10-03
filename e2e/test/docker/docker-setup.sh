@@ -58,8 +58,6 @@ echo "Setup docker network"
 echo "===================="
 docker images
 docker ps -a
-docker stop invalid-gde invalid-dps invalid-hub e2etest-tpm e2etest-pxy
-docker rm invalid-gde invalid-dps invalid-hub e2etest-tpm e2etest-pxy
 docker network rm testnet
 docker network create -d ipvlan --subnet=$CVTEST_TST_NET -o ipvlan_mode=l2 -o parent=eth0 testnet
 docker network ls
@@ -72,7 +70,6 @@ echo $AZURE_ACR_TOKEN | docker login aziotacr.azurecr.io --username 00000000-000
 docker run -h invalidcertgde1.westus.cloudapp.azure.com --name invalid-gde --expose=443 --expose=5671 --expose=8883 --network=testnet --ip=$CVTEST_GDE_IP -v $(pwd)/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxygde.cfg
 docker run -h invalidcertdps1.westus.cloudapp.azure.com --name invalid-dps --expose=443 --expose=5671 --expose=8883 --network=testnet --ip=$CVTEST_DPS_IP -v $(pwd)/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxydps.cfg
 docker run -h invalidcertiothub1.westus.cloudapp.azure.com --name invalid-hub --expose=443 --expose=5671 --expose=8883 --network=testnet --ip=$CVTEST_HUB_IP -v $(pwd)/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxyhub.cfg
-docker run --name e2etest-tpm -p 127.0.0.1:2321:2321 -p 127.0.0.1:2322:2322 -d aziotacr.azurecr.io/aziotbld/testtpm
 docker run --name e2etest-pxy -p 127.0.0.1:8888:8888 -d aziotacr.azurecr.io/aziotbld/testproxy
 
 echo "================="

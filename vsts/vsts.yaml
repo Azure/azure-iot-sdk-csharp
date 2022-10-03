@@ -258,20 +258,6 @@ jobs:
             ping -c 2 invalidcertiothub1.westus.cloudapp.azure.com
 
       - task: Docker@1
-        displayName: "Start TPM Simulator"
-        inputs:
-          containerregistrytype: "Container Registry"
-          command: "Run an image"
-          azureContainerRegistry: aziotacr.azurecr.io
-          imageName: aziotacr.azurecr.io/aziotbld/testtpm
-          containerName: "testtpm-instance"
-          ports: |
-            127.0.0.1:2321:2321
-            127.0.0.1:2322:2322
-
-          restartPolicy: unlessStopped
-
-      - task: Docker@1
         displayName: "Start Test Proxy"
         inputs:
           containerregistrytype: "Container Registry"
@@ -447,9 +433,6 @@ jobs:
           choco install -y squid
 
         displayName: "Install Squid"
-
-      - powershell: ./vsts/start_tpm_windows.ps1
-        displayName: "Start TPM Simulator"
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build

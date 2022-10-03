@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentNullException(nameof(attestation));
             }
 
-             if (attestation is X509Attestation x509Attestation)
+            if (attestation is X509Attestation x509Attestation)
             {
                 X509 = x509Attestation;
             }
@@ -45,11 +45,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         [JsonConstructor]
-        private AttestationMechanism(AttestationMechanismType type, TpmAttestation tpm, X509Attestation x509, SymmetricKeyAttestation symmetricKey)
+        private AttestationMechanism(AttestationMechanismType type, X509Attestation x509, SymmetricKeyAttestation symmetricKey)
         {
             switch (type)
             {
-
                 case AttestationMechanismType.X509:
                     if (x509 == null)
                     {
@@ -111,8 +110,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         /// <summary>
         /// Get the attestation of this object. The returned attestation may be of type
-        /// <see cref="SymmetricKeyAttestation"/>, <see cref="X509Attestation"/>, or <see cref="TpmAttestation"/>.
-        /// By casting the returned Attestation to the appropriate attestation type, you can access the x509/symmetric key/tpm
+        /// <see cref="SymmetricKeyAttestation"/> or <see cref="X509Attestation"/>.
+        /// By casting the returned Attestation to the appropriate attestation type, you can access the x509/symmetric key
         /// specific attestation fields. Use <see cref="Type"/> to cast this field to the appropriate attestation type.
         /// </summary>
         /// <returns>The attestation of this object.</returns>

@@ -241,7 +241,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     throw new ArgumentException($"The attestation mechanism for enrollment with group Id {enrollmentGroup.EnrollmentGroupId} could not retrieved, exiting test.");
                 }
 
-                // Note that tpm is not a supported attestation type for group enrollments
                 if (attestationType == AttestationMechanismType.SymmetricKey)
                 {
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.SymmetricKey);
