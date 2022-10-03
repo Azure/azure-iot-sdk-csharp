@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices
 {
@@ -11,31 +11,21 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     /// <remarks>
     /// The connection string contains a set of information that uniquely identify an IoT Service.
-    /// 
+    ///
     /// A valid connection string shall be in the following format:
-    /// <c>
+    /// <code>
     /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
-    /// </c>
-    /// 
+    /// </code>
+    ///
     /// This object parse and store the connection string. It is responsible to provide the authorization token too.
     /// </remarks>
     internal sealed class ServiceConnectionString : IAuthorizationHeaderProvider
     {
         private static readonly TimeSpan s_defaultTokenTimeToLive = TimeSpan.FromHours(1);
-        private const char UserSeparator = '@';
 
-        /// <summary>
-        /// CONSTRUCOR
-        /// </summary>
-        /// <param name="builder">the <see cref="ServiceConnectionStringBuilder"/> with the connection string content.</param>
-        /// <exception cref="ArgumentNullException">if the provided builder is null.</exception>
-        public ServiceConnectionString(ServiceConnectionStringBuilder builder)
+        internal ServiceConnectionString(ServiceConnectionStringBuilder builder)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
+            Debug.Assert(builder != null, $"{nameof(builder)} cannot be null.");
             HostName = builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
@@ -71,7 +61,7 @@ namespace Microsoft.Azure.Devices
             return GetPassword();
         }
 
-        public static ServiceConnectionString Parse(string connectionString)
+        internal static ServiceConnectionString Parse(string connectionString)
         {
             var builder = ServiceConnectionStringBuilder.Create(connectionString);
             return new ServiceConnectionString(builder);

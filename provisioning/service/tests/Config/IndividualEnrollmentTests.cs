@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
         private DeviceCapabilities SampleEdgeCapabilityTrue = new DeviceCapabilities { IotEdge = true };
         private DeviceCapabilities SampleEdgeCapabilityFalse = new DeviceCapabilities { IotEdge = false };
+
         private const string SampleEndorsementKey =
             "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
             "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjY" +
@@ -31,7 +32,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI" +
             "6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy" +
             "1SSDQMQ==";
+
         private TpmAttestation SampleTpmAttestation = new TpmAttestation(SampleEndorsementKey);
+
         private const string SamplePublicKeyCertificateString =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
@@ -44,10 +47,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "/yAQNj2Vji9RthQ33HG/QdL12b1ABU5UXgIhAPJujG/c/S+7vcREWI7bQcCb31JI\n" +
             "BDhWZbt4eyCvXZtZ\n" +
             "-----END CERTIFICATE-----\n";
+
         private const string SampleCAReference = "valid/ca/reference";
         private X509Attestation SampleX509RootAttestation = X509Attestation.CreateFromRootCertificates(SamplePublicKeyCertificateString);
         private X509Attestation SampleX509ClientAttestation = X509Attestation.CreateFromClientCertificates(SamplePublicKeyCertificateString);
         private X509Attestation SampleX509CAReferenceAttestation = X509Attestation.CreateFromCAReferences(SampleCAReference);
+
         private static string SampleIndividualEnrollmentJsonBody =
             "   \"registrationId\":\"" + SampleRegistrationId + "\",\n" +
             "   \"attestation\":{\n" +
@@ -83,7 +88,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         private string SampleIndividualEnrollmentJsonWithoutCapabilities =
             "{\n" +
-                SampleIndividualEnrollmentJsonBody + 
+                SampleIndividualEnrollmentJsonBody +
             "}\n";
 
         private string SampleIndividualEnrollmentJsonWithCapabilitiesTrue =
@@ -103,6 +108,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "}\n";
 
         /* SRS_DEVICE_ENROLLMENT_21_001: [The constructor shall store the provided parameters.] */
+
         [TestMethod]
         public void IndividualEnrollmentConstructorSucceedOnTPM()
         {
@@ -137,16 +143,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_DEVICE_ENROLLMENT_21_002: [The constructor shall throws ArgumentException if one of the provided parameters is null.] */
+
         [TestMethod]
         public void IndividualEnrollmentConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
-            TestAssert.Throws<ArgumentException>(() => new IndividualEnrollment(SampleRegistrationId, null));
-            TestAssert.Throws<ArgumentException>(() => new IndividualEnrollment(SampleRegistrationId, SampleX509RootAttestation));
+            TestAssert.Throws<ArgumentNullException>(() => new IndividualEnrollment(SampleRegistrationId, null));
+            TestAssert.Throws<InvalidOperationException>(() => new IndividualEnrollment(SampleRegistrationId, SampleX509RootAttestation));
         }
 
-        /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws DeviceProvisioningServiceException if one of the 
+        /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws DeviceProvisioningServiceException if one of the
                                                 provided parameters in JSON is not valid.] */
+
         [TestMethod]
         public void IndividualEnrollmentConstructorJSONThrowsOnNonRegistrationID()
         {
@@ -187,9 +195,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // act - assert
             Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-            var error = act.Should().Throw<DeviceProvisioningServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error.And.IsTransient.Should().BeFalse();
+            var error = act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -259,12 +265,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // act - assert
             Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-            var error = act.Should().Throw<DeviceProvisioningServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error.And.IsTransient.Should().BeFalse();
+            var error = act.Should().Throw<InvalidOperationException>();
         }
 
         /* SRS_INDIVIDUAL_ENROLLMENT_21_004: [The constructor shall store all parameters in the JSON.] */
+
         [TestMethod]
         public void IndividualEnrollmentConstructorWithoutCapabilitiesJSONSucceed()
         {

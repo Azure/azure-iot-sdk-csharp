@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -33,11 +34,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IndividualEnrollment individualEnrollment,
             CancellationToken cancellationToken)
         {
-            if (individualEnrollment == null)
-            {
-                throw new ArgumentNullException(nameof(individualEnrollment));
-            }
-
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Put,
@@ -57,16 +53,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IEnumerable<IndividualEnrollment> individualEnrollments,
             CancellationToken cancellationToken)
         {
-            if (individualEnrollments == null)
-            {
-                throw new ArgumentNullException(nameof(individualEnrollments));
-            }
-
-            if (!individualEnrollments.Any())
-            {
-                throw new ArgumentException($"{nameof(individualEnrollments)} cannot be empty.");
-            }
-
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Post,
@@ -103,11 +89,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IndividualEnrollment individualEnrollment,
             CancellationToken cancellationToken)
         {
-            if (individualEnrollment == null)
-            {
-                throw new ArgumentNullException(nameof(individualEnrollment));
-            }
-
             await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
@@ -143,13 +124,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             int pageSize = 0)
         {
-            Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-
-            if (pageSize < 0)
-            {
-                throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
-            }
-
             return new Query(provisioningConnectionString, ServiceName, query, contractApiHttp, pageSize, cancellationToken);
         }
 

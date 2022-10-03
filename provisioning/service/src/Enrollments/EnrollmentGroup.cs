@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// When serialized, an EnrollmentGroup will look like the following example:
-    /// <c>
+    /// <code>
     /// {
     ///    "enrollmentGroupId":"validEnrollmentGroupId",
     ///    "attestation":{
@@ -48,10 +48,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///    "iotHubHostName":"ContosoIoTHub.azure-devices.net",
     ///    "provisioningStatus":"enabled"
     /// }
-    /// </c>
+    /// </code>
     ///
     /// The following JSON is a sample of the EnrollmentGroup response, received from the provisioning service.
-    /// <c>
+    /// <code>
     /// {
     ///    "enrollmentGroupId":"validEnrollmentGroupId",
     ///    "attestation":{
@@ -78,12 +78,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///    "lastUpdatedDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
     ///    "etag": "\"00000000-0000-0000-0000-00000000000\""
     /// }
-    /// </c>
+    /// </code>
     /// </example>
     public class EnrollmentGroup : IETagHolder
     {
         /// <summary>
-        /// Creates a new instance of <c>EnrollmentGroup</c>.
+        /// Creates a new instance of EnrollmentGroup.
         /// </summary>
         /// <remarks>
         /// This constructor creates an instance of the EnrollmentGroup object with the minimum set of
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <example>
         /// When serialized, an EnrollmentGroup will look like the following example:
-        /// <c>
+        /// <code>
         /// {
         ///     "enrollmentGroupId":"validEnrollmentGroupId",
         ///     "attestation":{
@@ -107,20 +107,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///         }
         ///     }
         /// }
-        /// </c>
+        /// </code>
         /// </example>
-        /// <param name="enrollmentGroupId">the <c>string</c> that uniquely identify this enrollmentGroup in the provisioning
-        ///     service. It cannot be <c>null</c> or empty.</param>
-        /// <param name="attestation">the <see cref="Attestation"/> object with the attestation mechanism. It cannot be <c>null</c>.</param>
-        /// <exception cref="ArgumentNullException">if one of the provided parameters is not correct</exception>
+        /// <param name="enrollmentGroupId">The string that uniquely identify this enrollmentGroup in the provisioning
+        ///     service. It cannot be null or empty.</param>
+        /// <param name="attestation">The <see cref="Attestation"/> object with the attestation mechanism. It cannot be null.</param>
+        /// <exception cref="ArgumentNullException">If one of the provided <paramref name="enrollmentGroupId"/> or <paramref name="attestation"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>
         public EnrollmentGroup(string enrollmentGroupId, Attestation attestation)
         {
-            EnrollmentGroupId = enrollmentGroupId ?? throw new ArgumentNullException(nameof(enrollmentGroupId));
-            Attestation = attestation ?? throw new ArgumentNullException(nameof(attestation));
+            Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
+            Argument.AssertNotNull(attestation, nameof(attestation));
+            EnrollmentGroupId = enrollmentGroupId;
+            Attestation = attestation;
         }
 
         /// <summary>
-        /// Creates a new instance of <c>EnrollmentGroup</c> using information in a JSON.
+        /// Creates a new instance of EnrollmentGroup using information in a JSON.
         /// </summary>
         /// <remarks>
         /// This constructor creates an instance of the enrollmentGroup filling the class with the information
@@ -128,7 +131,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <example>
         /// The following JSON is a sample of the EnrollmentGroup response, received from the provisioning service.
-        /// <c>
+        /// <code>
         /// {
         ///    "enrollmentGroupId":"validEnrollmentGroupId",
         ///    "attestation":{
@@ -155,16 +158,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///    "lastUpdatedDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
         ///    "etag": "\"00000000-0000-0000-0000-00000000000\""
         /// }
-        /// </c>
+        /// </code>
         /// </example>
-        /// <param name="enrollmentGroupId">the <c>string</c> with a unique id for the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
-        /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `X509` or `SymmetricKey`.</param>
-        /// <param name="iotHubHostName">the <c>string</c> with the target IoTHub name. This is optional and can be <c>null</c> or empty.</param>
-        /// <param name="initialTwinState">the <see cref="TwinState"/> with the initial Twin condition. This is optional and can be <c>null</c>.</param>
-        /// <param name="provisioningStatus">the <see cref="ProvisioningStatus"/> that determine the initial status of the device. This is optional and can be <c>null</c>.</param>
-        /// <param name="createdDateTimeUtc">the <c>DateTime</c> with the date and time that the enrollment was created. This is optional and can be <c>null</c>.</param>
-        /// <param name="lastUpdatedDateTimeUtc">the <c>DateTime</c> with the date and time that the enrollment was updated. This is optional and can be <c>null</c>.</param>
-        /// <param name="eTag">the <c>string</c> with the eTag that identify the correct instance of the enrollment in the service. It cannot be <c>null</c> or empty.</param>
+        /// <param name="enrollmentGroupId">The string with a unique id for the enrollmentGroup. It cannot be null or empty.</param>
+        /// <param name="attestation">The <see cref="AttestationMechanism"/> for the enrollment. It shall be `X509` or `SymmetricKey`.</param>
+        /// <param name="iotHubHostName">The string with the target IoT hub name. This is optional and can be null or empty.</param>
+        /// <param name="initialTwinState">The <see cref="TwinState"/> with the initial Twin condition. This is optional and can be null.</param>
+        /// <param name="provisioningStatus">The <see cref="ProvisioningStatus"/> that determine the initial status of the device. This is optional and can be null.</param>
+        /// <param name="createdDateTimeUtc">The DateTime with the date and time that the enrollment was created. This is optional and can be null.</param>
+        /// <param name="lastUpdatedDateTimeUtc">The DateTime with the date and time that the enrollment was updated. This is optional and can be null.</param>
+        /// <param name="eTag">The string with the eTag that identify the correct instance of the enrollment in the service. It cannot be null or empty.</param>
         /// <param name="capabilities">The capabilities of the device (ie: is it an edge device?)</param>
         /// <exception cref="DeviceProvisioningServiceException">If the received JSON is invalid.</exception>
         [JsonConstructor]
@@ -208,7 +211,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// A valid enrollmentGroup Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
-        /// <exception cref="ArgumentException">if the provided string does not fit the enrollmentGroup Id requirements</exception>
+        /// <exception cref="InvalidOperationException">If the provided string does not fit the enrollmentGroup Id requirements</exception>
         [JsonProperty(PropertyName = "enrollmentGroupId")]
         public string EnrollmentGroupId { get; internal set; }
 
@@ -219,7 +222,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public DeviceRegistrationState RegistrationState { get; internal set; }
 
         /// <summary>
-        /// Attestation Mechanism
+        /// Attestation Mechanism.
         /// </summary>
         [JsonProperty(PropertyName = "attestation")]
         private AttestationMechanism _attestation;
@@ -227,7 +230,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
-        /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
+        /// <returns>The string with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
             string jsonPrettyPrint = JsonConvert.SerializeObject(this, Formatting.Indented);
@@ -237,6 +240,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Getter and setter for Attestation.
         /// </summary>
+        /// <exception cref="InvalidOperationException">If the provided attestation is null.</exception>
         [JsonIgnore]
         public Attestation Attestation
         {
@@ -245,18 +249,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException(nameof(value));
+                    throw new InvalidOperationException($"Value for {nameof(Attestation)} cannot be null.");
                 }
                 else if (value is not X509Attestation && value is not SymmetricKeyAttestation)
                 {
-                    throw new ArgumentException("Attestation for enrollmentGroup shall be X509 or symmetric key");
+                    throw new InvalidOperationException("Attestation for enrollmentGroup shall be X509 or symmetric key.");
                 }
 
                 if (value is X509Attestation attestation)
                 {
                     if (attestation.RootCertificates == null && attestation.CAReferences == null)
                     {
-                        throw new ArgumentException("Attestation mechanism does not contain a valid certificate");
+                        throw new InvalidOperationException("Attestation mechanism does not contain a valid certificate,");
                     }
                 }
 
@@ -265,7 +269,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Desired IotHub to assign the device to
+        /// Desired IoT hub to assign the device to.
         /// </summary>
         [JsonProperty(PropertyName = "iotHubHostName", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string IotHubHostName { get; set; }
@@ -296,13 +300,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public DateTime? LastUpdatedDateTimeUtc { get; internal set; }
 
         /// <summary>
-        /// Enrollment's ETag
+        /// Enrollment's ETag.
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; set; }
 
         /// <summary>
-        /// Capabilities of the device
+        /// Capabilities of the device.
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DeviceCapabilities Capabilities { get; set; }

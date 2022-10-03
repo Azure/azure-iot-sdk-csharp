@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
@@ -22,46 +23,16 @@ namespace Microsoft.Azure.Devices
         private static readonly string s_sharedAccessSignaturePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessSignature)).Body).Member.Name; // todo: replace with nameof();
 
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        private static readonly Regex s_hostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
-        private static readonly Regex s_sharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
-        private static readonly Regex s_sharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
-        private static readonly Regex s_sharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_hostNameRegex = new(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessKeyNameRegex = new(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessKeyRegex = new(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessSignatureRegex = new(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
 
         private string _hostName;
         private IAuthenticationMethod _authenticationMethod;
 
         private ServiceConnectionStringBuilder()
         {
-        }
-
-        /// <summary>
-        /// Factory for new Connection String object.
-        /// </summary>
-        /// <remarks>
-        /// The connection string contains a set of information that uniquely identify an IoT Service.
-        ///
-        /// A valid connection string shall be in the following format:
-        /// <c>
-        /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
-        /// </c>
-        ///
-        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
-        /// </remarks>
-        /// <param name="serviceConnectionString">the <c>string</c> with the connection string information.</param>
-        /// <returns>A <c>ServiceConnectionStringBuilder</c> object with the parsed connection string.</returns>
-        public static ServiceConnectionStringBuilder Create(string serviceConnectionString)
-        {
-            if (string.IsNullOrWhiteSpace(serviceConnectionString))
-            {
-                throw new ArgumentNullException(nameof(serviceConnectionString));
-            }
-
-            var serviceConnectionStringBuilder = new ServiceConnectionStringBuilder();
-            serviceConnectionStringBuilder.Parse(serviceConnectionString);
-            serviceConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory
-                .GetAuthenticationMethod(serviceConnectionStringBuilder);
-
-            return serviceConnectionStringBuilder;
         }
 
         public string HostName
@@ -84,6 +55,31 @@ namespace Microsoft.Azure.Devices
 
         public string ServiceName { get; private set; }
 
+        /// <summary>
+        /// Factory for new connection string object.
+        /// </summary>
+        /// <remarks>
+        /// The connection string contains a set of information that uniquely identify an IoT Service.
+        ///
+        /// A valid connection string shall be in the following format:
+        /// <code>
+        /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
+        /// </code>
+        ///
+        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
+        /// </remarks>
+        /// <param name="serviceConnectionString">the string with the connection string information.</param>
+        /// <returns>A ServiceConnectionStringBuilder object with the parsed connection string.</returns>
+        internal static ServiceConnectionStringBuilder Create(string serviceConnectionString)
+        {
+            var serviceConnectionStringBuilder = new ServiceConnectionStringBuilder();
+            serviceConnectionStringBuilder.Parse(serviceConnectionString);
+            serviceConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory
+                .GetAuthenticationMethod(serviceConnectionStringBuilder);
+
+            return serviceConnectionStringBuilder;
+        }
+
         private void Parse(string serviceConnectionString)
         {
             IDictionary<string, string> map = ToDictionary(serviceConnectionString, ValuePairDelimiter, ValuePairSeparator);
@@ -100,17 +96,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(SharedAccessKeyName))
             {
-                throw new ArgumentException("Should specify SharedAccessKeyName");
+                throw new InvalidOperationException("Should specify SharedAccessKeyName.");
             }
 
             if (!(string.IsNullOrWhiteSpace(SharedAccessKey) ^ string.IsNullOrWhiteSpace(SharedAccessSignature)))
             {
-                throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature");
-            }
-
-            if (string.IsNullOrWhiteSpace(ServiceName))
-            {
-                throw new FormatException("Missing service name");
+                throw new InvalidOperationException("Should specify either SharedAccessKey or SharedAccessSignature.");
             }
 
             if (!string.IsNullOrWhiteSpace(SharedAccessKey))
@@ -131,11 +122,6 @@ namespace Microsoft.Azure.Devices
 
         private void SetHostName(string hostname)
         {
-            if (string.IsNullOrWhiteSpace(hostname))
-            {
-                throw new ArgumentNullException(nameof(hostname));
-            }
-
             ValidateFormat(hostname, s_hostNamePropertyName, s_hostNameRegex);
             _hostName = hostname;
             SetServiceName();
@@ -147,17 +133,12 @@ namespace Microsoft.Azure.Devices
 
             if (string.IsNullOrWhiteSpace(ServiceName))
             {
-                throw new FormatException("Missing service name");
+                throw new FormatException("Missing service name value from host name.");
             }
         }
 
         private void SetAuthenticationMethod(IAuthenticationMethod authMethod)
         {
-            if (authMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authMethod));
-            }
-
             authMethod.Populate(this);
             _authenticationMethod = authMethod;
             Validate();
@@ -167,9 +148,8 @@ namespace Microsoft.Azure.Devices
         {
             if (!regex.IsMatch(value))
             {
-                throw new ArgumentException(
-                    $"The connection string has an invalid value for property: {propertyName}",
-                    nameof(value));
+                throw new InvalidOperationException(
+                    $"The connection string has an invalid value for property {propertyName}: {value}.");
             }
         }
 
@@ -185,9 +165,8 @@ namespace Microsoft.Azure.Devices
         {
             if (!map.TryGetValue(propertyName, out string value))
             {
-                throw new ArgumentException(
-                    $"The connection string is missing the property: {propertyName}",
-                    nameof(map));
+                throw new InvalidOperationException(
+                    $"The connection string is missing the property: {propertyName}.");
             }
 
             return value;
@@ -206,12 +185,9 @@ namespace Microsoft.Azure.Devices
             return serviceName;
         }
 
-        public static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
+        private static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
         {
-            if (string.IsNullOrWhiteSpace(valuePairString))
-            {
-                throw new ArgumentException("Malformed Token");
-            }
+            Debug.Assert(!string.IsNullOrWhiteSpace(valuePairString), $"{nameof(valuePairString)} cannot be null or white space.");
 
             IEnumerable<string[]> parts = valuePairString
                 .Split(kvpDelimiter)
@@ -219,7 +195,7 @@ namespace Microsoft.Azure.Devices
 
             if (parts.Any((part) => part.Length != 2))
             {
-                throw new FormatException("Malformed Token");
+                throw new FormatException("Malformed Token.");
             }
 
             IDictionary<string, string> map = parts.ToDictionary((kvp) => kvp[0], (kvp) => kvp[1], StringComparer.OrdinalIgnoreCase);

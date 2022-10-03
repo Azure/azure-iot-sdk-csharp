@@ -37,7 +37,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private readonly ProvisioningClientOptions _options;
         private readonly ProvisioningClientAmqpSettings _settings;
-        private CancellationTokenSource _connectionLostCancellationToken;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
@@ -65,6 +64,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             Argument.AssertNotNull(message, nameof(message));
 
+            using var connectionLostCancellationToken = new CancellationTokenSource();
+
             try
             {
                 AmqpAuthStrategy authStrategy;
@@ -91,6 +92,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Associate(authStrategy, this);
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 bool useWebSocket = _settings.Protocol == ProvisioningClientTransportProtocol.WebSocket;
                 var builder = new UriBuilder
                 {
@@ -105,22 +108,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 using AmqpClientConnection connection = authStrategy.CreateConnection(
                     builder.Uri,
                     message.IdScope,
-                    OnConnectionClosed,
+                    () =>
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, $"AMQP connection was lost.");
+
+                        connectionLostCancellationToken.Cancel();
+                    },
                     _settings);
 
-                _connectionLostCancellationToken = new CancellationTokenSource();
-
                 await authStrategy.OpenConnectionAsync(connection, useWebSocket, _settings.Proxy, _settings.RemoteCertificateValidationCallback, cancellationToken).ConfigureAwait(false);
-                cancellationToken.ThrowIfCancellationRequested();
 
                 // Link the user-supplied cancellation token with a cancellation token that is cancelled
                 // when the connection is lost so that all operations stop when either the user
                 // cancels the token or when the connection is lost.
-                _connectionLostCancellationToken = new CancellationTokenSource();
                 using CancellationTokenSource linkedCancellationToken =
                     CancellationTokenSource.CreateLinkedTokenSource(
                         cancellationToken,
-                        _connectionLostCancellationToken.Token);
+                        connectionLostCancellationToken.Token);
 
                 await CreateLinksAsync(
                         connection,
@@ -184,7 +189,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 return operation.RegistrationState;
             }
-            catch (OperationCanceledException) when (_connectionLostCancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (connectionLostCancellationToken.IsCancellationRequested)
             {
                 // _connectionLostCancellationToken is cancelled when the connection is lost. This acts as
                 // a signal to stop waiting on any service response and to throw the below exception up to the user
@@ -207,8 +212,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             finally
             {
-                _connectionLostCancellationToken.Dispose();
-
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
             }
@@ -357,14 +360,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         false);
                 }
             }
-        }
-
-        private void OnConnectionClosed()
-        {
-            if (Logging.IsEnabled)
-                Logging.Error(this, $"AMQP connection was lost.");
-
-            _connectionLostCancellationToken.Cancel();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <remarks>
     /// It is the result of any query for the provisioning service. This class will parse the result and
     ///     return it in a best format possible. For the known formats in <see cref="QueryResultType"/>, you can
-    ///     just cast the items. In case of <b>unknown</b> type, the items will contain a list of <c>string</c>
+    ///     just cast the items. In case of unknown type, the items will contain a list of string
     ///     and you shall parse it by your own.
     ///
     /// The provisioning service query result is composed by 2 system properties and a body. This class exposes
@@ -23,22 +23,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The system properties are:
     /// <list type="bullet">
     ///     <item>
-    ///     <description><b>type:</b>
+    ///     <description>type:
     ///         Identify the type of the content in the body. You can use it to cast the objects
     ///         in the items list. See <see cref="QueryResultType"/> for the possible types and classes
     ///         to cast.</description>
     ///     </item>
     ///     <item>
-    ///     <description><b>continuationToken:</b>
+    ///     <description>continuationToken:
     ///         Contains the token the uniquely identify the next page of information. The
     ///         service will return the next page of this query when you send a new query with
     ///         this token.</description>
     ///     </item>
     /// </list>
     ///
-    /// And the body is a JSON list of the specific <b>type</b>. For instance, if the system
+    /// And the body is a JSON list of the specific type. For instance, if the system
     ///     property type is IndividualEnrollment, the body will look like:
-    /// <c>
+    /// <code>
     /// [
     ///     {
     ///         "registrationId":"validRegistrationId-1",
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///         "provisioningStatus":"enabled"
     ///     }
     /// ]
-    /// </c>
+    /// </code>
     /// </remarks>
     public class QueryResult
     {
@@ -87,13 +87,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
-        /// <param name="typeString">The <c>string</c> with type of the content in the body.
-        /// It cannot be <c>null</c>.</param>
-        /// <param name="bodyString">The <c>string</c> with the body in a JSON list format.
-        /// It cannot be <c>null</c>, or empty, if the type is different than `unknown`.</param>
-        /// <param name="continuationToken">The <c>string</c> with the continuation token.
-        /// It can be <c>null</c>.</param>
-        /// <exception cref="ArgumentException">If one of the provided parameters is invalid.</exception>
+        /// <param name="typeString">The string with type of the content in the body.
+        /// It cannot be null.</param>
+        /// <param name="bodyString">The string with the body in a JSON list format.
+        /// It cannot be null, or empty, if the type is different than `unknown`.</param>
+        /// <param name="continuationToken">The string with the continuation token.
+        /// It can be null.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="bodyString"/> is null.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="bodyString"/> is empty or white space.</exception>
+        ///
         internal QueryResult(string typeString, string bodyString, string continuationToken)
         {
             Type = (QueryResultType)Enum.Parse(typeof(QueryResultType), typeString, true);
@@ -163,7 +165,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
-        /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
+        /// <returns>The string with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,12 +14,7 @@ namespace Microsoft.Azure.Devices
         private string _policyName;
         private string _key;
 
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="policyName">Name of the shared access policy to use.</param>
-        /// <param name="key">Key associated with the shared access policy.</param>
-        public ServiceAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
+        internal ServiceAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
         {
             SetPolicyName(policyName);
             SetKey(key);
@@ -38,10 +34,7 @@ namespace Microsoft.Azure.Devices
 
         public ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder)
         {
-            if (provisioningConnectionStringBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(provisioningConnectionStringBuilder));
-            }
+            Debug.Assert(provisioningConnectionStringBuilder != null, $"{nameof(provisioningConnectionStringBuilder)} cannot be null. Validate parameters upstream.");
 
             provisioningConnectionStringBuilder.SharedAccessKey = Key;
             provisioningConnectionStringBuilder.SharedAccessKeyName = PolicyName;
@@ -52,20 +45,14 @@ namespace Microsoft.Azure.Devices
 
         private void SetPolicyName(string policyName)
         {
-            if (string.IsNullOrWhiteSpace(policyName))
-            {
-                throw new ArgumentNullException(nameof(policyName));
-            }
+            Debug.Assert(!string.IsNullOrWhiteSpace(policyName), $"{nameof(policyName)} cannot be null or white space.");
 
             _policyName = policyName;
         }
 
         private void SetKey(string key)
         {
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            Debug.Assert(!string.IsNullOrWhiteSpace(key), $"{nameof(key)} cannot be null or white space.");
 
             _key = key;
         }

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -11,61 +11,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     {
         public IAsyncResult BeginOpenLink(AmqpLink link, TimeSpan timeout, AsyncCallback callback, object state)
         {
-            return TaskHelpers.ToAsyncResult(OpenLinkAsync(link, timeout), callback, state);
+            Debug.Fail($"{nameof(AmqpLinkFactory)} open link should not be used.");
+            throw new NotImplementedException();
         }
 
         public AmqpLink CreateLink(AmqpSession session, AmqpLinkSettings settings)
         {
-            AmqpLink link;
-            if (settings.IsReceiver())
-            {
-                link = new ReceivingAmqpLink(session, settings);
-            }
-            else
-            {
-                link = new SendingAmqpLink(session, settings);
-            }
-            OnLinkCreated(link);
-            return link;
+            if (Logging.IsEnabled)
+                Logging.Info(this, session, nameof(CreateLink));
+
+            return settings.IsReceiver()
+                ? new ReceivingAmqpLink(session, settings)
+                : new SendingAmqpLink(session, settings);
         }
 
         public void EndOpenLink(IAsyncResult result)
         {
-            if (result is not Task task)
-            {
-                throw new ArgumentException($"Given {nameof(result)} is not subclass of Task.");
-            }
-
-            try
-            {
-                task.GetAwaiter().GetResult();
-            }
-            catch (AggregateException ae)
-            {
-                throw ae.GetBaseException();
-            }
-        }
-
-        public event EventHandler<LinkCreatedEventArgs> LinkCreated;
-
-        protected virtual void OnLinkCreated(AmqpLink o)
-        {
-            LinkCreated?.Invoke(o, new LinkCreatedEventArgs(o));
-        }
-
-        public static Task<bool> OpenLinkAsync(AmqpLink link, TimeSpan timeout)
-        {
-            if (link == null)
-            {
-                throw new ArgumentNullException(nameof(link));
-            }
-
-            if (timeout.TotalMilliseconds > 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(timeout));
-            }
-
-            return Task.FromResult(true);
+            Debug.Fail($"{nameof(AmqpLinkFactory)} end link should not be used.");
+            throw new NotImplementedException();
         }
     }
 }

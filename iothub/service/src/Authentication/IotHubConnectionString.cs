@@ -14,17 +14,12 @@ namespace Microsoft.Azure.Devices
     {
         private static readonly TimeSpan s_tokenTimeToLive = TimeSpan.FromHours(1);
 
-        public IotHubConnectionString(IotHubConnectionStringBuilder builder) : base(builder?.HostName)
+        public IotHubConnectionString(string audience, string sharedAccessKeyName, string sharedAccessKey, string sharedAccessSignature) : base(audience)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            Audience = builder.HostName;
-            SharedAccessKeyName = builder.SharedAccessKeyName;
-            SharedAccessKey = builder.SharedAccessKey;
-            SharedAccessSignature = builder.SharedAccessSignature;
+            Audience = audience;
+            SharedAccessKeyName = sharedAccessKeyName;
+            SharedAccessKey = sharedAccessKey;
+            SharedAccessSignature = sharedAccessSignature;
         }
 
         public string Audience { get; private set; }
@@ -60,12 +55,6 @@ namespace Microsoft.Azure.Devices
             }
 
             return Task.FromResult(token);
-        }
-
-        public static IotHubConnectionString Parse(string connectionString)
-        {
-            var builder = IotHubConnectionStringBuilder.Create(connectionString);
-            return new IotHubConnectionString(builder);
         }
 
         private string BuildToken(out TimeSpan ttl)

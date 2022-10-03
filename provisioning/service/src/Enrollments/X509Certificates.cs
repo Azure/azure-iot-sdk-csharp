@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// The following JSON is an example of the result of this class.
-    /// <c>
+    /// <code>
     ///  {
     ///      "primary": {
     ///          "certificate": "-----BEGIN CERTIFICATE-----\n" +
@@ -50,13 +50,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///                         "-----END CERTIFICATE-----\n";
     ///      }
     ///  }
-    /// </c>
+    /// </code>
     ///
     /// After send an X509 certificate with success, the provisioning service will return the <see cref="X509CertificateInfo"/>
     /// for both primary and secondary certificate. User can get these info from this class, and once again, only
     /// the primary info is mandatory. The following JSON is an example what info the provisioning service will
     /// return for X509.
-    /// <c>
+    /// <code>
     ///  {
     ///      "primary": {
     ///          "info": {
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///           }
     ///      }
     ///  }
-    /// </c>
+    /// </code>
     /// </example>
     [SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Public API cannot change name.")]
     public class X509Certificates

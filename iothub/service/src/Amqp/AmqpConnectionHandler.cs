@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 {
                     MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
                     ContainerId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
-                    HostName = _credential.AmqpEndpoint.Host,
+                    HostName = _credential.HostName,
                     IdleTimeOut = Convert.ToUInt32(_options.AmqpConnectionKeepAlive.TotalMilliseconds)
                 };
 

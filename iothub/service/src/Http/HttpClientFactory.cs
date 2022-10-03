@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     internal class HttpClientFactory
     {
-        private const string HttpsEndpointPrefix = "https";
+        internal const string HttpsEndpointPrefix = "https";
 
         // These default values are consistent with Azure.Core default values:
         // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L28

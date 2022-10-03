@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     ///  The following JSON is an example of the result from a bulk operation.
-    /// <c>
+    /// <code>
     /// {
     ///     "isSuccessful":true,
     ///     "errors": [
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///         }
     ///     ]
     /// }
-    /// </c>
+    /// </code>
     /// </example>
     public class BulkEnrollmentOperationResult
     {
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
-        /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
+        /// <returns>The string with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);

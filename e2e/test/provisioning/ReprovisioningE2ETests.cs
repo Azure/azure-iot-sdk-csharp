@@ -4,12 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
@@ -355,9 +354,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
-            var iotHubsToStartAt = new List<string> { TestConfiguration.Provisioning.FarAwayIotHubHostName };
-            var iotHubsToReprovisionTo = new List<string> { connectionString.HostName };
+            var iotHubsToStartAt = new List<string> { HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString) };
+            var iotHubsToReprovisionTo = new List<string> { };
             await ProvisioningDeviceClient_ReprovisioningFlow(
                     transportSettings,
                     attestationType,
@@ -383,9 +381,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             var iotHubsToStartAt = new List<string> { TestConfiguration.Provisioning.FarAwayIotHubHostName };
-            var iotHubsToReprovisionTo = new List<string> { connectionString.HostName };
+            var iotHubsToReprovisionTo = new List<string> { HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString) };
             await ProvisioningDeviceClient_ReprovisioningFlow(
                     transportSettings,
                     attestationType,
@@ -410,9 +407,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string customServerProxy = null)
         {
-            var connectionString = IotHubConnectionStringBuilder.Create(TestConfiguration.IotHub.ConnectionString);
             var iotHubsToStartAt = new List<string>() { TestConfiguration.Provisioning.FarAwayIotHubHostName };
-            var iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
+            var iotHubsToReprovisionTo = new List<string>() { HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString) };
             await ProvisioningDeviceClient_ReprovisioningFlow(
                     transportSettings,
                     attestationType,

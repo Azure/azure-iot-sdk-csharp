@@ -55,11 +55,13 @@ namespace Microsoft.Azure.Devices
                 options = new IotHubServiceClientOptions();
             }
 
-            var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
+            IotHubConnectionString iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
             _credentialProvider = iotHubConnectionString;
             _hostName = iotHubConnectionString.HostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(
+                new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
+                ApiVersion);
             InitializeSubclients(options);
         }
 
@@ -91,7 +93,9 @@ namespace Microsoft.Azure.Devices
             _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(
+                new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
+                ApiVersion);
 
             InitializeSubclients(options);
         }
@@ -123,7 +127,9 @@ namespace Microsoft.Azure.Devices
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(
+                new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
+                ApiVersion);
 
             InitializeSubclients(options);
         }

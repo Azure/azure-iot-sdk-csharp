@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// This info contains a set of parameters, The following JSON is an example of the X509 certificate info.
-    /// <c>
+    /// <code>
     /// {
     ///     "subjectName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",
     ///     "sha1Thumbprint": "0000000000000000000000000000000000",
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     "serialNumber": "000000000000000000",
     ///     "version": 3
     /// }
-    /// </c>
+    /// </code>
     /// </example>
     public class X509CertificateInfo
     {

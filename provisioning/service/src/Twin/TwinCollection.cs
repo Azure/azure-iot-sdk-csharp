@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Represents a collection of properties for <see cref="Twin"/>
+    /// Represents a collection of properties for <see cref="Twin"/>.
     /// </summary>
     [SuppressMessage(
         "Microsoft.Design",
@@ -27,8 +27,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private readonly JObject _metadata;
 
         /// <summary>
-        /// Creates instance of <see cref="TwinCollection"/>.
-        /// Shouldn't use this constructor since _metadata is null and calling GetLastUpdated can result in NullReferenceException
+        /// Creates an instance of this class.
+        /// Shouldn't use this constructor since _metadata is null and calling GetLastUpdated can result in NullReferenceException.
         /// </summary>
         public TwinCollection()
             : this((JObject)null)
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using a JSON fragment as the body.
+        /// Creates an instance of this class using a JSON fragment as the body.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         public TwinCollection(string twinJson)
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
+        /// Creates an instance of this class using the given JSON fragments for the body and metadata.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using a JSON fragment as the body.
+        /// Creates an instance of this class using a JSON fragment as the body.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         internal TwinCollection(JObject twinJson)
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
+        /// Creates an instance of this class using the given JSON fragments for the body and metadata.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Gets the version of the <see cref="TwinCollection"/>
+        /// Gets the version of the twin collection.
         /// </summary>
         public long Version
         {
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Gets the count of properties in the Collection.
+        /// Gets the count of properties in the collection.
         /// </summary>
         public int Count
         {
@@ -121,10 +121,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         internal JObject JObject { get; private set; }
 
         /// <summary>
-        /// Property Indexer
+        /// Property Indexer.
         /// </summary>
-        /// <param name="propertyName">Name of the property to get</param>
-        /// <returns>Value for the given property name</returns>
+        /// <param name="propertyName">Name of the property to get.</param>
+        /// <returns>Value for the given property name.</returns>
         public dynamic this[string propertyName]
         {
             get
@@ -162,18 +162,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the Metadata for this property.
         /// </summary>
-        /// <returns>Metadata instance representing the metadata for this property</returns>
+        /// <returns>Metadata instance representing the metadata for this property.</returns>
         public Metadata GetMetadata()
         {
             return new Metadata(GetLastUpdated(), GetLastUpdatedVersion());
         }
 
         /// <summary>
-        /// Gets the LastUpdated time for this property
+        /// Gets the LastUpdated time for this property.
         /// </summary>
-        /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
-        /// <exception cref="System.NullReferenceException">Thrown when the TwinCollection metadata is null.
-        /// An example would be when the TwinCollection class is created with the default constructor</exception>
+        /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
+        /// <exception cref="NullReferenceException">Thrown when the TwinCollection metadata is null.
+        /// An example would be when the twin collection class is created with the default constructor.</exception>
         public DateTime GetLastUpdated()
         {
             return (DateTime)_metadata[LastUpdatedName];
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the LastUpdatedVersion for this property.
         /// </summary>
-        /// <returns>LastUpdatdVersion if present, null otherwise</returns>
+        /// <returns>LastUpdatdVersion if present, null otherwise.</returns>
         public long? GetLastUpdatedVersion()
         {
             return (long?)_metadata?[LastUpdatedVersionName];
@@ -201,8 +201,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Determines whether the specified property is present.
         /// </summary>
-        /// <param name="propertyName">The property to locate</param>
-        /// <returns>true if the specified property is present; otherwise, false</returns>
+        /// <param name="propertyName">The property to locate.</param>
+        /// <returns>true if the specified property is present; otherwise, false.</returns>
         public bool Contains(string propertyName)
         {
             return JObject.TryGetValue(propertyName, out _);
@@ -232,12 +232,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <see cref="TwinCollection"/>, a <see cref="TwinCollectionArray"/> or a <see cref="TwinCollectionValue"/>.
         /// </returns>
         /// <remarks>
-        /// If this method is used with a <see cref="TwinCollection"/> returned from a <c>DeviceClient</c> it will always return a
+        /// If this method is used with a <see cref="TwinCollection"/> returned from a DeviceClient it will always return a
         /// <see cref="JToken"/>. However, if you are using this method with a <see cref="TwinCollection"/> returned from a
-        /// <c>RegistryManager</c> client, it will return the corresponding type depending on what is stored in the properties collection.
-        /// 
+        /// RegistryManager client, it will return the corresponding type depending on what is stored in the properties collection.
+        ///
         /// For example a <see cref="List{T}"/> would return a <see cref="TwinCollectionArray"/>, with the metadata intact, when used with
-        /// a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client. If you need this method to always return a
+        /// a <see cref="TwinCollection"/> returned from a `IotHubServiceClient`.`TwinsClient`. If you need this method to always return a
         /// <see cref="JToken"/> please see the <see cref="ClearAllMetadata"/> method for more information.
         /// </remarks>
         private bool TryGetMemberInternal(string propertyName, out object result)

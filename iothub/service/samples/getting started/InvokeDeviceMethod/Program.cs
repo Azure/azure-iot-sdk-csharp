@@ -5,6 +5,7 @@
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CommandLine;
 
@@ -25,8 +26,10 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
                 .WithParsed(parsedParams => parameters = parsedParams)
                 .WithNotParsed(errors => Environment.Exit(1));
 
-            // This sample accepts the service connection string as a parameter, if present.
-            Parameters.ValidateConnectionString(parameters.HubConnectionString);
+            Debug.Assert(!string.IsNullOrWhiteSpace(parameters.HubConnectionString),
+                    "An IoT hub connection string needs to be specified, " +
+                    "please set the environment variable \"IOTHUB_DEVICE_CONNECTION_STRING\" " +
+                    "or pass in \"-c | --DeviceConnectionString\" through command line.");
 
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
             using var serviceClient = new IotHubServiceClient(parameters.HubConnectionString);

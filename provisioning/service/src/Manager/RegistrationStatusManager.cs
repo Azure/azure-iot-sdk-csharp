@@ -41,11 +41,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             DeviceRegistrationState deviceRegistrationState,
             CancellationToken cancellationToken)
         {
-            if (deviceRegistrationState == null)
-            {
-                throw new ArgumentNullException(nameof(deviceRegistrationState));
-            }
-
             await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
@@ -84,13 +79,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string enrollmentGroupId,
             int pageSize = 0)
         {
-            Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-
-            if (pageSize < 0)
-            {
-                throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
-            }
-
             return new Query(
                 provisioningConnectionString,
                 GetGetDeviceRegistrationStatus(enrollmentGroupId),
