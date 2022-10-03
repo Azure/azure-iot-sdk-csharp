@@ -26,13 +26,13 @@ namespace Microsoft.Azure.Devices.Client
             // sig
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
-                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.SignatureFieldName}");
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.SignatureFieldName}.");
             }
 
             // se
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out string expiry))
             {
-                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.ExpiryFieldName}");
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.ExpiryFieldName}.");
             }
 
             // skn (optional)
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
             // sr
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out string encodedAudience))
             {
-                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.AudienceFieldName}");
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.AudienceFieldName}.");
             }
 
             return new SharedAccessSignature(
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
             if (lines.Length != 2
                 || !StringComparer.Ordinal.Equals(SharedAccessSignatureConstants.SharedAccessSignature, lines[0].Trim()))
             {
-                throw new FormatException("Malformed signature");
+                throw new FormatException("Malformed signature.");
             }
 
             IDictionary<string, string> parsedFields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
                     string[] fieldParts = field.Split(SharedAccessSignatureConstants.KeyValueSeparator);
                     if (fieldParts.Length < 2)
                     {
-                        throw new FormatException("Malformed signature");
+                        throw new FormatException("Malformed signature.");
                     }
 
                     if (StringComparer.OrdinalIgnoreCase.Equals(SharedAccessSignatureConstants.AudienceFieldName, fieldParts[0]))

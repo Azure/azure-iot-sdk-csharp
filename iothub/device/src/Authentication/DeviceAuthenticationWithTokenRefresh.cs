@@ -29,10 +29,7 @@ namespace Microsoft.Azure.Devices.Client
             : base(suggestedTimeToLive,
                   timeBufferPercentage)
         {
-            if (deviceId.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
 
             DeviceId = deviceId;
         }

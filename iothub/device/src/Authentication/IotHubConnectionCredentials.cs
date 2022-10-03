@@ -313,23 +313,32 @@ namespace Microsoft.Azure.Devices.Client
         private void Validate()
         {
             // IoT Hub host name
-            Argument.AssertNotNullOrWhiteSpace(IotHubHostName, nameof(IotHubHostName));
+            if (string.IsNullOrWhiteSpace(IotHubHostName))
+            {
+                throw new FormatException("Missing IoT Hub host name.");
+            }
 
             // Host name
-            Argument.AssertNotNullOrWhiteSpace(HostName, nameof(HostName));
+            if (string.IsNullOrWhiteSpace(HostName))
+            {
+                throw new FormatException("Missing host name.");
+            }
 
             // Device Id
-            Argument.AssertNotNullOrWhiteSpace(DeviceId, nameof(DeviceId));
+            if (string.IsNullOrWhiteSpace(DeviceId))
+            {
+                throw new FormatException("Device Id cannot be null or white space.");
+            }
 
             // Shared access key
-            if (!SharedAccessKey.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(SharedAccessKey))
             {
                 // Check that the shared access key supplied is a base64 string
                 Convert.FromBase64String(SharedAccessKey);
             }
 
             // Shared access signature
-            if (!SharedAccessSignature.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(SharedAccessSignature))
             {
                 // Parse the supplied shared access signature string
                 // and throw exception if the string is not in the expected format.
@@ -344,7 +353,7 @@ namespace Microsoft.Azure.Devices.Client
                 && SharedAccessSignature.IsNullOrWhiteSpace()
                 && AuthenticationMethod is not AuthenticationWithTokenRefresh)
             {
-                throw new ArgumentException(
+                throw new FormatException(
                         "Should specify either SharedAccessKey, SharedAccessSignature or X.509 certificate for authenticating the client with IoT hub.");
             }
 
@@ -353,7 +362,7 @@ namespace Microsoft.Azure.Devices.Client
                 && (!SharedAccessKey.IsNullOrWhiteSpace()
                     || !SharedAccessSignature.IsNullOrWhiteSpace()))
             {
-                throw new ArgumentException(
+                throw new FormatException(
                     "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used for authenticating the client with IoT hub.");
             }
 
@@ -363,7 +372,7 @@ namespace Microsoft.Azure.Devices.Client
                 // Prep for certificate auth.
                 if (Certificate == null)
                 {
-                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(AuthenticationMethod));
+                    throw new FormatException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
                 if (ChainCertificates != null)
@@ -416,7 +425,7 @@ namespace Microsoft.Azure.Devices.Client
                         iotHubConnectionString.SharedAccessSignature);
             }
 
-            throw new ArgumentException($"Should specify either SharedAccessKey or SharedAccessSignature" +
+            throw new FormatException($"Should specify either SharedAccessKey or SharedAccessSignature" +
                 $" if connection string is used for authenticating the client with IoT hub.");
         }
     }

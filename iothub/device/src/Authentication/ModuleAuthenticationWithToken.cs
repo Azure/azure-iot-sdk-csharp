@@ -61,10 +61,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
         public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionCredentials == null)
-            {
-                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
-            }
+            Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.ModuleId = ModuleId;
@@ -79,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(deviceId));
+                throw new FormatException("Device Id cannot be null or white space.");
             }
 
             _deviceId = deviceId;
@@ -89,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(moduleId));
+                throw new FormatException("Module Id cannot be null or white space.");
             }
 
             _moduleId = moduleId;
@@ -99,12 +96,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (token.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(token));
+                throw new FormatException("Security token cannot be null or white space.");
             }
 
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Token must be of type SharedAccessSignature", nameof(token));
+                throw new FormatException("Security token must be of type SharedAccessSignature.");
             }
 
             _token = token;

@@ -118,10 +118,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
         public virtual IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionCredentials == null)
-            {
-                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
-            }
+            Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.SharedAccessSignature = _token;
             iotHubConnectionCredentials.SharedAccessKey = null;

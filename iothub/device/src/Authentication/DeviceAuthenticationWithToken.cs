@@ -49,10 +49,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
         public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionCredentials == null)
-            {
-                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
-            }
+            Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.SharedAccessSignature = Token;
@@ -66,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(deviceId));
+                throw new InvalidOperationException("Device Id cannot be null or white space.");
             }
 
             _deviceId = deviceId;
@@ -76,12 +73,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (token.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(token));
+                throw new InvalidOperationException("Security token cannot be null or white space.");
             }
 
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Token must be of type SharedAccessSignature", nameof(token));
+                throw new InvalidOperationException("Security token must be of type SharedAccessSignature.");
             }
 
             _token = token;
