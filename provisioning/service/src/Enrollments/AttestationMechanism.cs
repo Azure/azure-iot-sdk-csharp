@@ -15,10 +15,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public sealed class AttestationMechanism
     {
         private X509Attestation _x509;
-        private TpmAttestation _tpm;
         private SymmetricKeyAttestation _symmetricKey;
 
-        private static readonly NoneAttestation s_none = new NoneAttestation();
+        private static readonly NoneAttestation s_none = new();
 
         internal AttestationMechanism(Attestation attestation)
         {
@@ -27,11 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentNullException(nameof(attestation));
             }
 
-            if (attestation is TpmAttestation tpmAttestation)
-            {
-                Tpm = tpmAttestation;
-            }
-            else if (attestation is X509Attestation x509Attestation)
+             if (attestation is X509Attestation x509Attestation)
             {
                 X509 = x509Attestation;
             }
@@ -54,14 +49,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             switch (type)
             {
-                case AttestationMechanismType.Tpm:
-                    if (tpm == null)
-                    {
-                        throw new DeviceProvisioningServiceException("Invalid TPM attestation mechanism.", HttpStatusCode.BadRequest);
-                    }
-
-                    Tpm = tpm;
-                    break;
 
                 case AttestationMechanismType.X509:
                     if (x509 == null)
@@ -96,23 +83,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets or sets the instance used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "tpm", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        private TpmAttestation Tpm
-        {
-            get => _tpm;
-
-            set
-            {
-                _tpm = value;
-                _x509 = null;
-                _symmetricKey = null;
-                Type = AttestationMechanismType.Tpm;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the instance used for attestation.
-        /// </summary>
         [JsonProperty(PropertyName = "x509", DefaultValueHandling = DefaultValueHandling.Ignore)]
         private X509Attestation X509
         {
@@ -121,7 +91,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             set
             {
                 _x509 = value;
-                _tpm = null;
                 _symmetricKey = null;
                 Type = AttestationMechanismType.X509;
             }
@@ -136,7 +105,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 _symmetricKey = value;
                 _x509 = null;
-                _tpm = null;
                 Type = AttestationMechanismType.SymmetricKey;
             }
         }
@@ -152,7 +120,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             return Type switch
             {
-                AttestationMechanismType.Tpm => _tpm,
                 AttestationMechanismType.X509 => _x509,
                 AttestationMechanismType.None => s_none,
                 AttestationMechanismType.SymmetricKey => _symmetricKey,

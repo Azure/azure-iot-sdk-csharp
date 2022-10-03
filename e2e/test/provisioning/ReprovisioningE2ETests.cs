@@ -578,23 +578,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             switch (attestationType)
             {
-                // Commented out until we resolve plans for TPM support and library dependency
-                //case AttestationMechanismType.Tpm:
-                //    IndividualEnrollment tpmEnrollment = await CreateIndividualEnrollmentAsync(
-                //            provisioningServiceClient,
-                //            registrationId,
-                //            AttestationMechanismType.Tpm,
-                //            null,
-                //            reprovisionPolicy,
-                //            allocationPolicy,
-                //            customAllocationDefinition,
-                //            iothubs,
-                //            capabilities,
-                //            Logger)
-                //        .ConfigureAwait(false);
-
-                //    return new AuthenticationProviderTpmSimulator(tpmEnrollment.RegistrationId);
-
                 case AttestationMechanismType.X509:
                     X509Certificate2 certificate = null;
                     X509Certificate2Collection collection = null;
@@ -718,20 +701,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             throw new NotSupportedException($"Unknown attestation type: '{attestationType}'.");
         }
 
-        private Client.IAuthenticationMethod CreateAuthenticationMethodFromAuthenticationProvider(
+        private IAuthenticationMethod CreateAuthenticationMethodFromAuthenticationProvider(
             AuthenticationProvider provisioningAuth,
             string deviceId)
         {
             _verboseLog.WriteLine($"{nameof(CreateAuthenticationMethodFromAuthenticationProvider)}({deviceId})");
 
-            Client.IAuthenticationMethod auth;
+            IAuthenticationMethod auth;
 
-            // Commented out until we resolve plans for TPM support and library dependency
-            //if (provisioningAuth is AuthenticationProviderTpm tpmAuth)
-            //{
-            //    auth = new DeviceAuthenticationWithTpm(deviceId, tpmAuth);
-            //}
-            //else
             if (provisioningAuth is AuthenticationProviderX509 x509Auth)
             {
                 X509Certificate2 cert = x509Auth.GetAuthenticationCertificate();

@@ -14,12 +14,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
     [TestCategory("Unit")]
     public class AttestationMechanismTests
     {
-        private const string SampleEndorsementKey = "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
-            "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3dyKhZS3dkcvfBisB" +
-            "hP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmC" +
-            "Yv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7" +
-            "dLIVPnlgZcBhgy1SSDQMQ==";
-        TpmAttestation SampleTpmAttestation = new TpmAttestation(SampleEndorsementKey);
         private const string SampleId = "valid-id";
         private const string SamplePublicKeyCertificateString =
             "-----BEGIN CERTIFICATE-----\n" +
@@ -33,9 +27,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "/yAQNj2Vji9RthQ33HG/QdL12b1ABU5UXgIhAPJujG/c/S+7vcREWI7bQcCb31JI\n" +
             "BDhWZbt4eyCvXZtZ\n" +
             "-----END CERTIFICATE-----\n";
-        private X509Attestation SampleX509RootAttestation = X509Attestation.CreateFromRootCertificates(SamplePublicKeyCertificateString);
+        private readonly X509Attestation _sampleX509RootAttestation = X509Attestation.CreateFromRootCertificates(SamplePublicKeyCertificateString);
 
-        private string SampleX509AttestationJson =
+        private const string SampleX509AttestationJson =
             "{\n" +
             "   \"type\":\"x509\",\n" +
             "   \"x509\":{\n" +
@@ -56,14 +50,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   }\n" +
             "}";
 
-        private string SampleTpmAttestationJson =
-            "{\n" +
-            "   \"type\":\"tpm\",\n" +
-            "   \"tpm\":{\n" +
-            "       \"endorsementKey\":\"" + SampleEndorsementKey + "\"\n" +
-            "   }\n" +
-            "}";
-
         private sealed class UnknownAttestation : Attestation
         {
 
@@ -74,19 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void AttestationMechanismConstructorThrowsOnAttestationNull()
         {
             // arrange - act - assert
-            TestAssert.Throws<ArgumentNullException>(() => new AttestationMechanism(null));
-        }
-
-        [TestMethod]
-        public void AttestationMechanismConstructorSucceedOnTPMAttestation()
-        {
-            // arrange - act
-            var attestationMechanism = new AttestationMechanism(SampleTpmAttestation);
-
-            // assert
-            Assert.IsNotNull(attestationMechanism);
-            Assert.AreEqual(SampleEndorsementKey, ((TpmAttestation)attestationMechanism.GetAttestation()).EndorsementKey);
-            Assert.AreEqual(AttestationMechanismType.Tpm, attestationMechanism.Type);
+            _ = TestAssert.Throws<ArgumentNullException>(() => new AttestationMechanism(null));
         }
 
         [TestMethod]
@@ -103,75 +77,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void AttestationMechanismConstructorSucceedOnX509Attestation()
         {
             // arrange - act
-            var attestationMechanism = new AttestationMechanism(SampleX509RootAttestation);
+            var attestationMechanism = new AttestationMechanism(_sampleX509RootAttestation);
 
             // assert
             Assert.IsNotNull(attestationMechanism);
             Assert.AreEqual(SamplePublicKeyCertificateString, ((X509Attestation)attestationMechanism.GetAttestation()).RootCertificates.Primary.Certificate);
             Assert.AreEqual(AttestationMechanismType.X509, attestationMechanism.Type);
-        }
-
-        [TestMethod]
-        public void AttestationMechanismConstructorJSONThrowsOnTypeTPMWithX509Attestation()
-        {
-            // arrange
-            string invalidJson =
-                "{\n" +
-                "   \"type\":\"tpm\",\n" +
-                "   \"x509\":{\n" +
-                "       \"signingCertificates\":{\n" +
-                "           \"primary\":{\n" +
-                "               \"info\": {\n" +
-                "                   \"subjectName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-                "                   \"sha1Thumbprint\": \"0000000000000000000000000000000000\",\n" +
-                "                   \"sha256Thumbprint\": \"" + SampleId + "\",\n" +
-                "                   \"issuerName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-                "                   \"notBeforeUtc\": \"2017-11-14T12:34:18Z\",\n" +
-                "                   \"notAfterUtc\": \"2017-11-20T12:34:18Z\",\n" +
-                "                   \"serialNumber\": \"000000000000000000\",\n" +
-                "                   \"version\": 3\n" +
-                "               }\n" +
-                "           }\n" +
-                "       }\n" +
-                "   }\n" +
-                "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<AttestationMechanism>(invalidJson);
-            var error = act.Should().Throw<DeviceProvisioningServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error.And.IsTransient.Should().BeFalse();
-        }
-
-        [TestMethod]
-        public void AttestationMechanismConstructorJSONSucceedForTPM()
-        {
-            // arrange
-            AttestationMechanism attestationMechanism = JsonConvert.DeserializeObject<AttestationMechanism>(SampleTpmAttestationJson);
-
-            // act - assert
-            Assert.IsNotNull(attestationMechanism);
-            Assert.AreEqual(AttestationMechanismType.Tpm, attestationMechanism.Type);
-            Assert.IsTrue(attestationMechanism.GetAttestation() is TpmAttestation);
-        }
-
-        [TestMethod]
-        public void AttestationMechanismConstructorJSONThrowsOnTypeX509WithTPMAttestation()
-        {
-            // arrange
-            string invalidJson =
-            "{\n" +
-            "   \"type\":\"x509\",\n" +
-            "   \"tpm\":{\n" +
-            "       \"endorsementKey\":\"" + SampleEndorsementKey + "\"\n" +
-            "   }\n" +
-            "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<AttestationMechanism>(invalidJson);
-            var error = act.Should().Throw<DeviceProvisioningServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
@@ -184,22 +95,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestationMechanism);
             Assert.AreEqual(AttestationMechanismType.X509, attestationMechanism.Type);
             Assert.IsTrue(attestationMechanism.GetAttestation() is X509Attestation);
-        }
-
-        [TestMethod]
-        public void AttestationMechanismConstructorJSONSucceedOnNoneType()
-        {
-            // arrange
-            string typeNoneJson =
-            "{\n" +
-            "   \"type\":\"none\",\n" +
-            "   \"tpm\":{\n" +
-            "       \"endorsementKey\":\"" + SampleEndorsementKey + "\"\n" +
-            "   }\n" +
-            "}";
-
-            // act - assert
-            Assert.IsNotNull(JsonConvert.DeserializeObject<AttestationMechanism>(typeNoneJson));
         }
 
         [TestMethod]
