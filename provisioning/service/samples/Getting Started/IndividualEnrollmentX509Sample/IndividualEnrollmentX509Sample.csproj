@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -14,7 +14,7 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="2.0.0-preview001" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
   </ItemGroup>
 

@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
-    internal class EnrollmentGroupSample
+    internal class EnrollmentGroupX509Sample
     {
         private const string EnrollmentGroupId = "enrollmentgrouptest";
         private readonly ProvisioningServiceClient _provisioningServiceClient;
         private readonly X509Certificate2 _groupIssuerCertificate;
 
-        public EnrollmentGroupSample(ProvisioningServiceClient provisioningServiceClient, X509Certificate2 groupIssuerCertificate)
+        public EnrollmentGroupX509Sample(ProvisioningServiceClient provisioningServiceClient, X509Certificate2 groupIssuerCertificate)
         {
             _provisioningServiceClient = provisioningServiceClient;
             _groupIssuerCertificate = groupIssuerCertificate;
@@ -23,7 +23,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task RunSampleAsync()
         {
             await QueryEnrollmentGroupAsync().ConfigureAwait(false);
-
             await CreateEnrollmentGroupAsync().ConfigureAwait(false);
             await GetEnrollmentGroupInfoAsync().ConfigureAwait(false);
             await DeleteEnrollmentGroupAsync().ConfigureAwait(false);
@@ -59,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nCreating a new enrollmentGroup...");
             Attestation attestation = X509Attestation.CreateFromRootCertificates(_groupIssuerCertificate);
-            var enrollmentGroup =new EnrollmentGroup(EnrollmentGroupId, attestation);
+            var enrollmentGroup = new EnrollmentGroup(EnrollmentGroupId, attestation);
             Console.WriteLine(enrollmentGroup);
 
             Console.WriteLine("\nAdding new enrollmentGroup...");
