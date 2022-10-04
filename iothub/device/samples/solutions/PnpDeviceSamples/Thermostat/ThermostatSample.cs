@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // The default reported "value" and "av" for each "Thermostat" component on the client initial startup.
         // See https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties for more details in acknowledgment responses.
         private const double DefaultPropertyValue = 0d;
+
         private const long DefaultAckVersion = 0L;
 
         private const string TargetTemperatureProperty = "targetTemperature";
@@ -67,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await _deviceClient.OpenAsync(cancellationToken);
 
-            _deviceClient.SetConnectionStatusChangeCallback(async (info) =>
+            _deviceClient.SetConnectionStatusChangeCallback = async (info) =>
             {
                 _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
 
@@ -77,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     await GetWritablePropertiesAndHandleChangesAsync();
                 }
-            });
+            };
 
             _logger.LogDebug($"Set handler to receive \"targetTemperature\" updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);

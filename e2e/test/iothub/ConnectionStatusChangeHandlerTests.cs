@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
 
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            deviceClient.SetConnectionStatusChangeCallback = statusChangeHandler;
             Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: Created {nameof(IotHubDeviceClient)} with device Id={testDevice.Id}");
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var options = new IotHubClientOptions(transportSettings);
 
             using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
-            moduleClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            moduleClient.SetConnectionStatusChangeCallback = statusChangeHandler;
             Logger.Trace($"{nameof(IotHubModuleClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: Created {nameof(IotHubModuleClient)} with moduleId={testModule.Id}");
 
             await moduleClient.OpenAsync().ConfigureAwait(false);

@@ -25,9 +25,6 @@ namespace Microsoft.Azure.Devices.Client
 
         private volatile Func<IncomingMessage, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
-        // Connection status change information
-        private volatile Action<ConnectionStatusInfo> _connectionStatusChangeCallback;
-
         // Method callback information
         private bool _isDeviceMethodEnabled;
 
@@ -38,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private Func<TwinCollection, Task> _desiredPropertyUpdateCallback;
 
-        private protected readonly IotHubClientOptions _clientOptions;
+        internal readonly IotHubClientOptions _clientOptions;
 
         internal IotHubBaseClient(
             IotHubConnectionCredentials iotHubConnectionCredentials,
@@ -86,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        private protected PipelineContext PipelineContext { get; private set; }
+        internal PipelineContext PipelineContext { get; set; }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
@@ -106,17 +103,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new callback for receiving connection status change notifications. If a callback is already associated,
-        /// it will be replaced with the new callback.
+        /// The callback to be executed when connection status change notification is received.
         /// </summary>
-        /// <param name="statusChangeHandler">The callback for the connection status change notifications.</param>
-        public void SetConnectionStatusChangeCallback(Action<ConnectionStatusInfo> statusChangeHandler)
-        {
-            if (Logging.IsEnabled)
-                Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeCallback));
-
-            _connectionStatusChangeCallback = statusChangeHandler;
-        }
+        public Action<ConnectionStatusInfo> SetConnectionStatusChangeCallback { get; set; }
 
         /// <summary>
         /// Open the client instance. Must be done before any operation can begin.
@@ -433,7 +422,7 @@ namespace Microsoft.Azure.Devices.Client
                     || ConnectionStatusInfo.ChangeReason != reason)
                 {
                     ConnectionStatusInfo = new ConnectionStatusInfo(status, reason);
-                    _connectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
+                    SetConnectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
                 }
             }
             finally
@@ -480,7 +469,6 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-
                 if (Logging.IsEnabled)
                     Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
             }
@@ -528,7 +516,7 @@ namespace Microsoft.Azure.Devices.Client
             _isDeviceMethodEnabled = false;
         }
 
-        private protected static ClientPipelineBuilder BuildPipeline()
+        internal static ClientPipelineBuilder BuildPipeline()
         {
             var transporthandlerFactory = new TransportHandlerFactory();
             ClientPipelineBuilder pipelineBuilder = new ClientPipelineBuilder()

@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using IotHubDeviceClient deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, auth, options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
-            deviceClient.SetConnectionStatusChangeCallback((ConnectionStatusInfo connectionStatusInfo) =>
+            deviceClient.SetConnectionStatusChangeCallback = (ConnectionStatusInfo connectionStatusInfo) =>
             {
                 ConnectionStatus status = connectionStatusInfo.Status;
                 ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
@@ -156,8 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     deviceDisconnected.Release();
                 }
-            });
-
+            };
 
             var message = new OutgoingMessage("Hello");
 
@@ -203,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (transportSettings is IotHubClientMqttSettings
                 && transportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
-                deviceClient.SetConnectionStatusChangeCallback((ConnectionStatusInfo connectionStatusInfo) =>
+                deviceClient.SetConnectionStatusChangeCallback = (ConnectionStatusInfo connectionStatusInfo) =>
                 {
                     ConnectionStatus status = connectionStatusInfo.Status;
                     ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
@@ -212,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         deviceDisconnected.Release();
                     }
-                });
+                };
             }
 
             var message = new OutgoingMessage("Hello");

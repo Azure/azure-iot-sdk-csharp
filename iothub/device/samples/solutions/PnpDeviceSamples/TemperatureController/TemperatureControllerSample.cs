@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await _deviceClient.OpenAsync(cancellationToken);
 
-            _deviceClient.SetConnectionStatusChangeCallback(async (info) =>
+            _deviceClient.SetConnectionStatusChangeCallback = async (info) =>
             {
                 _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     await GetWritablePropertiesAndHandleChangesAsync();
                 }
-            });
+            };
 
             await _deviceClient.SetDirectMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
 
