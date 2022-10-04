@@ -14,18 +14,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         [TestMethod]
         public void ProvisioningServiceClientOptions()
         {
+            // arrange
             using var handler = new HttpClientHandler();
             var options = new ProvisioningServiceClientOptions()
             {
                 HttpClient = new HttpClient(handler, true),
             };
+
+            // act
             var clone = options.Clone();
 
+            // assert
             options.Should().NotBeSameAs(clone);
             options.Should().BeEquivalentTo(clone);
-            options.ProvisioningServiceHttpSettings.Should().NotBeSameAs(clone.ProvisioningServiceHttpSettings);
-            options.ProvisioningServiceHttpSettings.Should().BeEquivalentTo(clone.ProvisioningServiceHttpSettings);
-            options.HttpClient.Should().BeEquivalentTo(clone.HttpClient);
         }
     }
 }

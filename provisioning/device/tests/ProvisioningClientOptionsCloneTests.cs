@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         [TestMethod]
         public void ProvisioningClientAmqpSettings()
         {
+            // arrange
             var amqpSettings = new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp)
             {
                 SslProtocols = SslProtocols.Tls12,
@@ -24,19 +25,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 AdditionalUserAgentInfo = "info"
             };
+
+            // act
             var clone = options.Clone();
 
+            // assert
             options.Should().NotBeSameAs(clone);
             options.Should().BeEquivalentTo(clone);
-            options.AdditionalUserAgentInfo.Should().BeEquivalentTo(clone.AdditionalUserAgentInfo);
-            options.TransportSettings.Should().NotBeSameAs(clone.TransportSettings);
-            options.TransportSettings.Should().BeEquivalentTo(clone.TransportSettings);
 
+            options.AdditionalUserAgentInfo = "updated";
+            options.Should().NotBeEquivalentTo(clone);
         }
 
         [TestMethod]
         public void ProvisioningClientMqttSettings()
         {
+            // arrange
             var mqttSettings = new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp)
             {
                 SslProtocols = SslProtocols.Tls12,
@@ -47,18 +51,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 AdditionalUserAgentInfo = "info"
             };
+
+            // act
             var clone = options.Clone();
 
+            // assert
             options.Should().NotBeSameAs(clone);
             options.Should().BeEquivalentTo(clone);
-            options.AdditionalUserAgentInfo.Should().BeEquivalentTo(clone.AdditionalUserAgentInfo);
-            options.TransportSettings.Should().NotBeSameAs(clone.TransportSettings);
-            options.TransportSettings.Should().BeEquivalentTo(clone.TransportSettings);
+
+            options.AdditionalUserAgentInfo = "updated";
+            options.Should().NotBeEquivalentTo(clone);
         }
 
         [TestMethod]
         public void ProvisioningClientHttpSettings()
         {
+            // arrange
             var httpSettings = new ProvisioningClientHttpSettings()
             {
                 SslProtocols = SslProtocols.Tls12,
@@ -67,13 +75,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 AdditionalUserAgentInfo = "info"
             };
+
+            // act
             var clone = options.Clone();
 
+            // assert
             options.Should().NotBeSameAs(clone);
             options.Should().BeEquivalentTo(clone);
-            options.AdditionalUserAgentInfo.Should().BeEquivalentTo(clone.AdditionalUserAgentInfo);
-            options.TransportSettings.Should().NotBeSameAs(clone.TransportSettings);
-            options.TransportSettings.Should().BeEquivalentTo(clone.TransportSettings);
+
+            options.AdditionalUserAgentInfo = "updated";
+            options.Should().NotBeEquivalentTo(clone);
         }
     }
 }

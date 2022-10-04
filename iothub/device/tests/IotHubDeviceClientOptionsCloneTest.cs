@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void IotHubClientMqttSettings()
         {
+            // arrange
             var settings = new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)
             {
                 IdleTimeout = TimeSpan.FromSeconds(1),
@@ -38,25 +39,22 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 ModelId = "Id",
                 AdditionalUserAgentInfo = "info"
             };
+
+            // act
             var clone = options.Clone();
 
+            // assert
             options.Should().NotBeSameAs(clone);
             options.Should().BeEquivalentTo(clone);
-            options.TransportSettings.Should().NotBeSameAs(clone.TransportSettings);
-            options.TransportSettings.Should().BeEquivalentTo(clone.TransportSettings);
-            options.GatewayHostName.Should().BeEquivalentTo(clone.GatewayHostName);
-            options.SdkAssignsMessageId.Should().NotBeSameAs(clone.SdkAssignsMessageId);
-            options.SdkAssignsMessageId.Should().BeEquivalentTo(clone.SdkAssignsMessageId);
-            options.FileUploadTransportSettings.Should().NotBeSameAs(clone.FileUploadTransportSettings);
-            options.FileUploadTransportSettings.Should().BeEquivalentTo(clone.FileUploadTransportSettings);
-            options.PayloadConvention.Should().BeEquivalentTo(clone.PayloadConvention);
-            options.ModelId.Should().BeEquivalentTo(clone.ModelId);
-            options.AdditionalUserAgentInfo.Should().BeEquivalentTo(clone.AdditionalUserAgentInfo);
+
+            options.GatewayHostName = "newHost";
+            options.Should().NotBeEquivalentTo(clone);
         }
 
         [TestMethod]
         public void IotHubClientAmqpSettings()
         {
+            // arrange
             var settings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)
             {
                 IdleTimeout = TimeSpan.FromSeconds(1),
@@ -78,20 +76,16 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 ModelId = "Id",
                 AdditionalUserAgentInfo = "info"
             };
+
+            // act
             var clone = options.Clone();
 
+            // assert
             options.Should().NotBeSameAs(clone);
             options.Should().BeEquivalentTo(clone);
-            options.TransportSettings.Should().NotBeSameAs(clone.TransportSettings);
-            options.TransportSettings.Should().BeEquivalentTo(clone.TransportSettings);
-            options.GatewayHostName.Should().BeEquivalentTo(clone.GatewayHostName);
-            options.SdkAssignsMessageId.Should().NotBeSameAs(clone.SdkAssignsMessageId);
-            options.SdkAssignsMessageId.Should().BeEquivalentTo(clone.SdkAssignsMessageId);
-            options.FileUploadTransportSettings.Should().NotBeSameAs(clone.FileUploadTransportSettings);
-            options.FileUploadTransportSettings.Should().BeEquivalentTo(clone.FileUploadTransportSettings);
-            options.PayloadConvention.Should().BeEquivalentTo(clone.PayloadConvention);
-            options.ModelId.Should().BeEquivalentTo(clone.ModelId);
-            options.AdditionalUserAgentInfo.Should().BeEquivalentTo(clone.AdditionalUserAgentInfo);
+
+            options.GatewayHostName = "newHost";
+            options.Should().NotBeEquivalentTo(clone);
         }
     }
 }

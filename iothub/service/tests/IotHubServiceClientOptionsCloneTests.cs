@@ -16,33 +16,26 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void IotHubServiceClientOptions()
         {
-            var options = new IotHubServiceClientOptions()
+            // arrange
+            var options = new IotHubServiceClientOptions
             {
                 Proxy = new WebProxy("localhost"),
                 HttpClient = new HttpClient(new HttpClientHandler(), true),
                 Protocol = IotHubTransportProtocol.WebSocket,
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
-                CertificateRevocationCheck  = true,
+                CertificateRevocationCheck = true,
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
                 AmqpConnectionKeepAlive = TimeSpan.FromSeconds(1),
             };
 
+            // act
             var clone = options.Clone();
+
+            // asssert
             options.Should().NotBeSameAs(clone);
             options.Should().BeEquivalentTo(clone);
-            options.Proxy.Should().BeEquivalentTo(clone.Proxy);
-            options.HttpClient.Should().BeEquivalentTo(clone.HttpClient);
-            options.Protocol.Should().NotBeSameAs(clone.Protocol);
-            options.Protocol.Should().BeEquivalentTo(clone.Protocol);
-            options.SslProtocols.Should().NotBeSameAs(clone.SslProtocols);
-            options.SslProtocols.Should().BeEquivalentTo(clone.SslProtocols);
-            options.CertificateRevocationCheck.Should().BeTrue();
-            clone.CertificateRevocationCheck.Should().BeTrue();
-            options.SdkAssignsMessageId.Should().NotBeSameAs(clone.SdkAssignsMessageId);
-            options.SdkAssignsMessageId.Should().BeEquivalentTo(clone.SdkAssignsMessageId);
-            options.AmqpConnectionKeepAlive.Should().Be(TimeSpan.FromSeconds(1));
-            clone.AmqpConnectionKeepAlive.Should().Be(TimeSpan.FromSeconds(1));
 
+            // change one property to validate 'NotEquivalent' works
             clone.Protocol = IotHubTransportProtocol.Tcp;
             options.Should().NotBeEquivalentTo(clone);
         }
