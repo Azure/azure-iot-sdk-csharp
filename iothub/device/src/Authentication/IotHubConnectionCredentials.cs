@@ -262,28 +262,28 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (ModuleId.IsNullOrWhiteSpace())
                 {
-                    SasTokenRefresher = new DeviceAuthenticationWithSakRefresh(
-                        DeviceId,
-                        SharedAccessKey,
-                        SharedAccessKeyName,
-                        SasTokenTimeToLive,
-                        SasTokenRenewalBuffer);
+                    SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
+                        sharedAccessKey: SharedAccessKey,
+                        deviceId: DeviceId,
+                        sharedAccessKeyName: SharedAccessKeyName,
+                        sasTokenTimeToLive: SasTokenTimeToLive,
+                        sasTokenRenewalBuffer: SasTokenRenewalBuffer);
 
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
                 }
                 else
                 {
-                    SasTokenRefresher = new ModuleAuthenticationWithSakRefresh(
+                    SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
+                        SharedAccessKey,
                         DeviceId,
                         ModuleId,
-                        SharedAccessKey,
                         SharedAccessKeyName,
                         SasTokenTimeToLive,
                         SasTokenRenewalBuffer);
 
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
                 }
 
                 // This assignment resets any previously set SharedAccessSignature value. This is possible in flows where the same authentication method instance

@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 TestIotHubName);
 
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
-            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(DeviceAuthenticationWithSakRefresh));
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ClientAuthenticationWithSakRefresh));
 
             var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             return builder.ToSignature();
         }
 
-        private class TestImplementation : DeviceAuthenticationWithTokenRefresh
+        private class TestImplementation : ClientAuthenticationWithTokenRefresh
         {
             private int _callCount = 0;
 
@@ -194,7 +194,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 string deviceId,
                 TimeSpan suggestedTimeToLive,
                 int timeBufferPercentage)
-                : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
+                : base(
+                      deviceId: deviceId,
+                      suggestedTimeToLive: suggestedTimeToLive,
+                      timeBufferPercentage: timeBufferPercentage)
             {
             }
 

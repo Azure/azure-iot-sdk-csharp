@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class ModuleAuthenticationWithTokenRefreshTests
+    public class ClientAuthenticationWithTokenRefreshTests
     {
         private const string TestDeviceId = "TestDeviceID";
         private const string TestModuleId = "TestModuleID";
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
         private static string TestSharedAccessKey;
 
-        static ModuleAuthenticationWithTokenRefreshTests()
+        static ClientAuthenticationWithTokenRefreshTests()
         {
             var rnd = new Random();
             var rndBytes = new byte[32];
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void ModuleAuthenticationWithTokenRefresh_Ctor_WrongArguments_Fail()
+        public void ClientAuthenticationWithTokenRefresh_Ctor_WrongArguments_Fail()
         {
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(null, TestModuleId));
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(TestDeviceId, null));
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void ModuleAuthenticationWithTokenRefresh_Ctor_DefaultsGetProperties_Ok()
+        public void ClientAuthenticationWithTokenRefresh_Ctor_DefaultsGetProperties_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId, TestModuleId);
             Assert.AreEqual(TestDeviceId, refresher.DeviceId);
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task ModuleAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
+        public async Task ClientAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId, TestModuleId);
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(refresher, TestIotHubName);
@@ -81,14 +81,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task ModuleAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
+        public async Task ClientAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
         {
             IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
                 new ClientAuthenticationWithRegistrySymmetricKey(TestSharedAccessKey, TestDeviceId, TestModuleId),
                 TestIotHubName);
 
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
-            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ClientAuthenticationWithSakRefresh));
 
             var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             return builder.ToSignature();
         }
 
-        private class TestImplementation : ModuleAuthenticationWithTokenRefresh
+        private class TestImplementation : ClientAuthenticationWithTokenRefresh
         {
             private int _callCount = 0;
 

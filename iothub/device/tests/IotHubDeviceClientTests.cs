@@ -124,9 +124,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsHostNameAuthMethod_Works()
         {
             string hostName = "acme.azure-devices.net";
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
+                "device1",
                 s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod);
@@ -139,9 +139,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket);
             var options = new IotHubClientOptions(transportSettings);
 
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
+                "device1",
                 s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
@@ -154,9 +154,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             string gatewayHostName = "gateway.acme.azure-devices.net";
             var options = new IotHubClientOptions(new IotHubClientMqttSettings()) { GatewayHostName = gatewayHostName };
 
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
+                "device1",
                 s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
@@ -172,9 +172,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                 GatewayHostName = gatewayHostName,
             };
 
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
+                "device1",
                 s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
@@ -186,9 +186,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_Params_GatewayAuthMethod_Works()
         {
             string gatewayHostname = "myGatewayDevice";
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
+                "device1",
                 s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(gatewayHostname, authMethod);
@@ -201,9 +201,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string gatewayHostname = "myGatewayDevice";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
+                "device1",
                 s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(
@@ -219,9 +219,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string gatewayHostname = "myGatewayDevice";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
+                "device1",
                 s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(
@@ -1036,7 +1036,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // assert
             var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
-            sasTokenRefresher.Should().BeAssignableTo<DeviceAuthenticationWithSakRefresh>();
+            sasTokenRefresher.Should().BeAssignableTo<ClientAuthenticationWithSakRefresh>();
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
@@ -1362,10 +1362,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             act.Should().Throw<OperationCanceledException>();
         }
 
-        private class TestDeviceAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh
+        private class TestDeviceAuthenticationWithTokenRefresh : ClientAuthenticationWithTokenRefresh
         {
             // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
-            public TestDeviceAuthenticationWithTokenRefresh(TimeSpan ttl, int refreshBuffer) : base("someTestDevice", ttl, refreshBuffer)
+            public TestDeviceAuthenticationWithTokenRefresh(TimeSpan ttl, int refreshBuffer)
+                : base(deviceId: "someTestDevice", suggestedTimeToLive: ttl, timeBufferPercentage: refreshBuffer)
             {
             }
 

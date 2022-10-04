@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     /// <summary>
     /// Authentication method that uses HSM to get a SAS token.
     /// </summary>
-    internal class ModuleAuthenticationWithHsm : ModuleAuthenticationWithTokenRefresh
+    internal class ModuleAuthenticationWithHsm : ClientAuthenticationWithTokenRefresh
     {
         private readonly ISignatureProvider _signatureProvider;
         private readonly string _generationId;
