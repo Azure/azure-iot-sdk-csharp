@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Microsoft.Azure.Devices.Client.Utilities;
 
 namespace Microsoft.Azure.Devices.Client
 {
