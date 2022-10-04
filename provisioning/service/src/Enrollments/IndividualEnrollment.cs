@@ -25,9 +25,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The minimum information required by the provisioning service is the RegistrationId and the
     /// Attestation.
     ///
-    /// A new device can be provisioned by three attestation mechanisms, Trust Platform Module (see X509
-    /// (see <see cref="X509Attestation"/>) or Symmetric Key (see <see cref="SymmetricKeyAttestation"/>).
-    /// The definition of each one you
+    /// A new device can be provisioned by three attestation mechanisms, X509
+    /// (<see cref="X509Attestation"/>), Symmetric Key (see <see cref="SymmetricKeyAttestation"/>,
+    /// and TPM (<see cref="TpmAttestation"/>). The definition of each one you
     /// should use depending on the physical authentication hardware that the device contains.
     ///
     /// The content of this class will be serialized in a JSON format and sent as a body of the rest API to the
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// provided in the JSON. It is used by the SDK to parse enrollment responses from the provisioning service.
         /// </remarks>
         /// <param name="registrationId">The string with a unique id for the individualEnrollment. It cannot be null or empty.</param>
-        /// <param name="attestation">The <see cref="AttestationMechanism"/> for the enrollment. It shall be `X509` or `SymmetricKey`.</param>
+        /// <param name="attestation">The attestation mechanism for the enrollment. It shall be 'X509', 'SymmetricKey', or 'TPM'.</param>
         /// <param name="deviceId">The string with the device name. This is optional and can be null or empty.</param>
         /// <param name="iotHubHostName">The string with the target IoTHub name. This is optional and can be null or empty.</param>
         /// <param name="initialTwinState">The <see cref="TwinState"/> with the initial Twin condition. This is optional and can be null.</param>

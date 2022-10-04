@@ -22,6 +22,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private readonly DateTime _sampleLastUpdatedDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
 
+        private const string SampleEndorsementKey =
+            "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
+            "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjY" +
+            "O7KPVt3dyKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD" +
+            "6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI" +
+            "6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy" +
+            "1SSDQMQ==";
+
+        private readonly TpmAttestation _sampleTpmAttestation = new TpmAttestation(SampleEndorsementKey);
+
         private const string SamplePublicKeyCertificateString =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
@@ -89,6 +99,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // arrange - act - assert
             _ = TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, null));
             _ = TestAssert.Throws<InvalidOperationException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, _sampleX509ClientAttestation));
+            _ = TestAssert.Throws<InvalidOperationException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, _sampleTpmAttestation));
         }
 
         [TestMethod]

@@ -25,6 +25,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private readonly DeviceCapabilities _sampleEdgeCapabilityTrue = new() { IotEdge = true };
         private readonly DeviceCapabilities _sampleEdgeCapabilityFalse = new() { IotEdge = false };
 
+        private const string SampleEndorsementKey =
+            "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
+            "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjY" +
+            "O7KPVt3dyKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD" +
+            "6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI" +
+            "6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy" +
+            "1SSDQMQ==";
+
+        private readonly TpmAttestation _sampleTpmAttestation = new(SampleEndorsementKey);
+
         private const string SamplePublicKeyCertificateString =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
@@ -89,13 +99,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "       },\n" +
             "}\n";
 
-        private string SampleIndividualEnrollmentJsonWithCapabilitiesFalse =
+        private readonly string _sampleIndividualEnrollmentJsonWithCapabilitiesFalse =
             "{\n" +
                 s_sampleIndividualEnrollmentJsonBody +
             "   \"capabilities\": {\n" +
             "       \"iotEdge\": false \n" +
             "       },\n" +
             "}\n";
+
+        [TestMethod]
+        public void IndividualEnrollmentConstructorSucceedOnTpm()
+        {
+            // arrange - act
+            var individualEnrollment = new IndividualEnrollment(SampleRegistrationId, _sampleTpmAttestation);
+
+            // assert
+            Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
+            Assert.AreEqual(SampleEndorsementKey, ((TpmAttestation)individualEnrollment.Attestation).EndorsementKey);
+        }
 
         [TestMethod]
         public void IndividualEnrollmentConstructorSucceedOnX509Client()
@@ -284,7 +305,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void IndividualEnrollmentConstructorWithCapabilitiesFalseJsonSucceed()
         {
             // arrange
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(SampleIndividualEnrollmentJsonWithCapabilitiesFalse);
+            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesFalse);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);

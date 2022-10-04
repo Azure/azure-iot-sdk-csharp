@@ -188,13 +188,14 @@ Breaking changes:
 | `SecurityProvider` | `AuthenticationProvider` |
 | `SecurityProvider.GetRegistrationID()` | `AuthenticationProvider.GetRegistrationId()` |
 | `SecurityProviderSymmetricKey` | `AuthenticationProviderSymmetricKey` |
-| `SecurityProviderTpm` | `AuthenticationProviderTpm` |
 | `SecurityProviderX509` | `AuthenticationProviderX509` |
 | `SecurityProviderX509Certificate` | `AuthenticationProviderX509Certificate` |
+| `SecurityProviderTpm` | removed |
 
 #### Other notable breaking changes
 
 - Derived `AuthenticationProvider` types no longer require disposal because of the base class; only select derived types will (e.g., `AuthenticationProviderTpmHsm`.)
+- TPM support removed. The library used for TPM operations is broken on Linux and support for it is being shutdown. We'll reconsider how to support HSM.
 
 ## Frequently asked questions
 
