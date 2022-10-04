@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        /// <param name="connectionString">The connection string containing the device Id, optional module Id, shared access key aname
+        /// <param name="connectionString">The connection string containing the device Id, optional module Id, shared access key name
         /// and shared access key to be used for authenticating with IoT hub service.</param>
         /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.

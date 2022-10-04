@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationWithTokenRefresh_GetTokenAsync_NewTtl_Ok()
+        public async Task ClientAuthenticationWithTokenRefresh_GetTokenAsync_NewTtl_Ok()
         {
             TimeSpan ttl = TimeSpan.FromSeconds(1);
 
