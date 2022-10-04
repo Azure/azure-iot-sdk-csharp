@@ -11,8 +11,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class IotHubClientAmqpSettings : IotHubClientTransportSettings
     {
-        private TimeSpan _operationTimeout = TimeSpan.FromMinutes(1);
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -50,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan? WebSocketKeepAlive { get; set; }
 
         /// <summary>
-        /// The pre-fetch count
+        /// The pre-fetch count.
         /// </summary>
         public uint PrefetchCount { get; set; } = 50;
 
@@ -58,12 +56,12 @@ namespace Microsoft.Azure.Devices.Client
         /// A callback for remote certificate validation.
         /// </summary>
         /// <remarks>
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
+        /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>
-        /// The connection pool settings for AMQP
+        /// If using pooling, specify connection pool settings.
         /// </summary>
         public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
 

@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     internal class StringValidationHelper
     {
         private const char Base64Padding = '=';
-        private const string StringIsNotBase64 = "String '{0}' is not Base64";
+        private const string StringIsNotBase64 = "Value '{0}' for parameter '{1}' is not Base64.";
 
         private static readonly HashSet<char> s_base64Table = new()
         {
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!IsBase64StringValid(value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, StringIsNotBase64, value), paramName);
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, StringIsNotBase64, value, paramName));
             }
         }
 

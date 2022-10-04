@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(FormatException))]
         public void IotHubConnectionStringBuilder_ParamConnectionString_MissingHostName_Throws()
         {
             var connectionString = $"DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}";
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void IotHubConnectionStringBuilder_ParamConnectionString_MissingDeviceId_Throws()
         {
             var connectionString = $"HostName={HostName};SharedAccessKey={SharedAccessKey}";
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(FormatException))]
         public void IotHubConnectionStringBuilder_ParamConnectionString_NoAuthSpecied_Throws()
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId}";

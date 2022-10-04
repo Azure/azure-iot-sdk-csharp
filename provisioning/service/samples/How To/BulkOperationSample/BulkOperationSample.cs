@@ -12,22 +12,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly ProvisioningServiceClient _provisioningServiceClient;
         private const string SampleRegistrationId1 = "myvalid-registratioid-csharp-1";
         private const string SampleRegistrationId2 = "myvalid-registratioid-csharp-2";
-        private const string SampleTpmEndorsementKey =
-            "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj2gUS" +
-            "cTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3d" +
-            "yKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKR" +
-            "dln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFe" +
-            "WlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy1SSDQMQ==";
         
         // Maximum number of elements per query.
         private const int QueryPageSize = 100;
 
-        private static readonly IDictionary<string, string> s_registrationIds = new Dictionary<string, string>
-        {
-            { SampleRegistrationId1, SampleTpmEndorsementKey },
-            { SampleRegistrationId2, SampleTpmEndorsementKey },
-        };
-        
+        private static readonly List<string> s_registrationIds = new() { SampleRegistrationId1, SampleRegistrationId2 };
+
         public BulkOperationSample(ProvisioningServiceClient provisioningServiceClient)
         {
             _provisioningServiceClient = provisioningServiceClient;
@@ -46,10 +36,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nCreating a new set of individualEnrollments...");
             var individualEnrollments = new List<IndividualEnrollment>();
-            foreach (KeyValuePair<string, string> item in s_registrationIds)
+            foreach (string item in s_registrationIds)
             {
-                Attestation attestation = new TpmAttestation(item.Value);
-                individualEnrollments.Add(new IndividualEnrollment(item.Key, attestation));
+                string primaryKey = CryptoKeyGenerator.GenerateKey(32);
+                string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
+                Attestation attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
+                individualEnrollments.Add(new IndividualEnrollment(item, attestation));
             }
 
             Console.WriteLine("\nRunning the bulk operation to create the individualEnrollments...");

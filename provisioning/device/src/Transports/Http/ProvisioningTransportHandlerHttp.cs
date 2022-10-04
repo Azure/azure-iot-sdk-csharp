@@ -75,10 +75,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 switch (message.Authentication)
                 {
-                    case AuthenticationProviderTpm _:
-                        authStrategy = new HttpAuthStrategyTpm((AuthenticationProviderTpm)message.Authentication);
-                        break;
-
                     case AuthenticationProviderX509 _:
                         authStrategy = new HttpAuthStrategyX509((AuthenticationProviderX509)message.Authentication);
                         break;
@@ -92,18 +88,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                             Logging.Error(this, $"Invalid {nameof(AuthenticationProvider)} type.");
 
                         throw new NotSupportedException(
-                            $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderTpm)}, {nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
+                            $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
                 }
 
                 Logging.Associate(authStrategy, this);
 
-                using var httpClientHandler = new HttpClientHandler()
+                using var httpClientHandler = new HttpClientHandler
                 {
                     // Cannot specify a specific protocol here, as desired due to an error:
                     //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
                     // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
                     SslProtocols = _settings.SslProtocols,
+                    ServerCertificateCustomValidationCallback = (httpRequest, certificate, chain, policyErrors) =>
+                    {
+                        return _settings.RemoteCertificateValidationCallback.Invoke(httpRequest, certificate, chain, policyErrors);
+                    },
                 };
 
                 if (_settings.Proxy != null)
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         this,
                         registrationId,
                         message.IdScope,
-                        deviceRegistration.Tpm == null ? "X509" : "TPM",
+                        "X509",
                         operation.OperationId,
                         operation.RetryAfter,
                         operation.Status);

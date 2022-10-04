@@ -161,7 +161,6 @@ The scope should be the name of the package affected as perceived by person read
     * provisioning-transport-amqp
     * provisioning-transport-mqtt
     * provisioning-transport-http
-    * provisioning-security-tpm
     * pnp-device
     * pnp-service
     * e2e

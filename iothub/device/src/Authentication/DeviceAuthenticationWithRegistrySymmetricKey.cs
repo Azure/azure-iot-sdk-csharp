@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
         public byte[] Key
         {
             get => _key;
-            set => _key = value ?? throw new ArgumentNullException(nameof(value));
+            set => _key = value ?? throw new InvalidOperationException("Shared access key cannot be null.");
         }
 
         /// <summary>
@@ -101,10 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
         public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionCredentials == null)
-            {
-                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
-            }
+            Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.SharedAccessKey = KeyAsBase64String;
@@ -120,12 +117,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (key.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Shared access key cannot be null or white space.", nameof(key));
+                throw new InvalidOperationException("Shared access key cannot be null or white space.");
             }
 
             if (!StringValidationHelper.IsBase64String(key))
             {
-                throw new ArgumentException("Key must be base64 encoded", nameof(key));
+                throw new InvalidOperationException("Shared access key must be base64 encoded.");
             }
 
             _key = Convert.FromBase64String(key);
@@ -135,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Device Id cannot be null or white space.", nameof(deviceId));
+                throw new InvalidOperationException("Device Id cannot be null or white space.");
             }
 
             _deviceId = deviceId;

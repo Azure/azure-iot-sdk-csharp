@@ -70,11 +70,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 AmqpAuthStrategy authStrategy;
 
-                if (message.Authentication is AuthenticationProviderTpm tpm)
-                {
-                    authStrategy = new AmqpAuthStrategyTpm(tpm);
-                }
-                else if (message.Authentication is AuthenticationProviderX509 x509)
+                if (message.Authentication is AuthenticationProviderX509 x509)
                 {
                     authStrategy = new AmqpAuthStrategyX509(x509);
                 }
@@ -85,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 else
                 {
                     throw new NotSupportedException(
-                        $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderTpm)}, " +
+                        $"{nameof(message.Authentication)} must be of type " +
                         $"{nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
                 }
 
@@ -95,18 +91,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 cancellationToken.ThrowIfCancellationRequested();
 
                 bool useWebSocket = _settings.Protocol == ProvisioningClientTransportProtocol.WebSocket;
-                var builder = new UriBuilder
-                {
-                    Scheme = useWebSocket ? AmqpWebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
-                    Host = message.GlobalDeviceEndpoint,
-                    Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort,
-                };
 
                 string registrationId = message.Authentication.GetRegistrationId();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
                 using AmqpClientConnection connection = authStrategy.CreateConnection(
-                    builder.Uri,
+                    message.GlobalDeviceEndpoint,
                     message.IdScope,
                     () =>
                     {

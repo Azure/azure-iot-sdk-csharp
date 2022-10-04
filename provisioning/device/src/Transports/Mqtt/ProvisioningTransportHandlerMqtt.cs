@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
 
-        private readonly MqttFactory s_mqttFactory = new MqttFactory(new MqttLogger());
+        private readonly MqttFactory _mqttFactory = new(new MqttLogger());
 
         private TaskCompletionSource<RegistrationOperationStatus> _startProvisioningRequestStatusSource;
         private TaskCompletionSource<RegistrationOperationStatus> _checkRegistrationOperationStatusSource;
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             _connectionLossCause = null;
-            using IMqttClient mqttClient = s_mqttFactory.CreateMqttClient();
+            using IMqttClient mqttClient = _mqttFactory.CreateMqttClient();
             MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest);
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
@@ -364,11 +364,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             else if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey key1)
             {
-                password = ProvisioningSasBuilder.BuildSasSignature(key1.GetPrimaryKey(), string.Concat(provisioningRequest.IdScope, '/', "registrations", '/', provisioningRequest.Authentication.GetRegistrationId()), TimeSpan.FromHours(1));
-            }
-            else if (provisioningRequest.Authentication is AuthenticationProviderTpm)
-            {
-                throw new NotSupportedException("TPM authentication is not supported over MQTT TCP or MQTT web socket.");
+                password = ProvisioningSasBuilder.BuildSasSignature(
+                    key1.GetPrimaryKey(),
+                    string.Concat(
+                        provisioningRequest.IdScope,
+                        "/registrations/",
+                        provisioningRequest.Authentication.GetRegistrationId()),
+                    TimeSpan.FromHours(1));
             }
 
             var username = string.Format(

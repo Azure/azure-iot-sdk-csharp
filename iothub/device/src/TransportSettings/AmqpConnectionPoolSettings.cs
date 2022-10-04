@@ -6,13 +6,11 @@ using System;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Contains AMQP connection pool settings for DeviceClient.
+    /// Contains AMQP connection pool settings for device client.
     /// </summary>
     public sealed class AmqpConnectionPoolSettings
     {
         private uint _maxPoolSize;
-        // IotHub allows up to 999 tokens per connection. Setting the threshold just below that.
-        internal const uint MaxDevicesPerConnection = 995;
 
         /// <summary>
         /// The default size of the pool.
@@ -21,6 +19,9 @@ namespace Microsoft.Azure.Devices.Client
         /// Allows up to 100,000 devices.
         /// </remarks>
         private const uint DefaultPoolSize = 100;
+
+        // Iot hub allows up to 999 tokens per connection. Setting the threshold just below that.
+        internal const uint MaxDevicesPerConnection = 995;
 
         /// <summary>
         /// The maximum value that can be used for the MaxPoolSize property.
@@ -33,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         public AmqpConnectionPoolSettings()
         {
             _maxPoolSize = DefaultPoolSize;
-            Pooling = false;
+            UsePooling = false;
         }
 
         /// <summary>
@@ -49,9 +50,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Whether or not to use connection pooling
+        /// Whether or not to use connection pooling.
         /// </summary>
-        public bool Pooling { get; set; }
+        public bool UsePooling { get; set; }
 
         /// <summary>
         /// Compares the properties of this instance to another's.
@@ -67,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client
 
             return ReferenceEquals(this, other)
                 ? true
-                : Pooling == other.Pooling
+                : UsePooling == other.UsePooling
                     && MaxPoolSize == other.MaxPoolSize;
         }
     }

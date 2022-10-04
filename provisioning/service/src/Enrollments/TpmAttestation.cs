@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -17,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public sealed class TpmAttestation : Attestation
     {
         /// <summary>
-        /// CONSTRUCTOR
+        /// Constructor for serialization.
         /// </summary>
         /// <remarks>
         /// This function will create a new instance of the TPM attestation

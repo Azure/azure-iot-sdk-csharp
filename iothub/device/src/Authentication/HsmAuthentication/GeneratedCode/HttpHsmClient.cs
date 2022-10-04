@@ -26,6 +26,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 {
@@ -64,14 +65,10 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         internal async Task<SignResponse> SignAsync(string apiVersion, string name, string genid, SignRequest payload, CancellationToken cancellationToken = default)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
+            Debug.Assert(name != null, $"{nameof(name)} cannot be null. Validate parameter upstream.");
+            Debug.Assert(genid != null, $"{nameof(genid)} cannot be null. Validate parameter upstream.");
+            Debug.Assert(apiVersion != null, $"{nameof(apiVersion)} cannot be null. Validate parameter upstream.");
 
-            if (genid == null)
-                throw new ArgumentNullException("genid");
-
-            if (apiVersion == null)
-                throw new ArgumentNullException("apiVersion");
 
             var urlBuilder = new StringBuilder();
             urlBuilder.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/modules/{name}/genid/{genid}/sign?");

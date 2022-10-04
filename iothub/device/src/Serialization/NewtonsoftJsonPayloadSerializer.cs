@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyName">The name of the property to be retrieved.</param>
         /// <param name="outValue">The retrieved value.</param>
         /// <returns>True if the nested object contains an element with the specified key, otherwise false.</returns>
-        internal bool TryGetNestedJsonObjectValue<T>(JObject nestedJsonObject, string propertyName, out T outValue)
+        internal static bool TryGetNestedJsonObjectValue<T>(JObject nestedJsonObject, string propertyName, out T outValue)
         {
             outValue = default;
             if (nestedJsonObject == null

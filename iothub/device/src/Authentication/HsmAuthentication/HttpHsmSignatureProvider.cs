@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,14 +28,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
         public HttpHsmSignatureProvider(string providerUri, string apiVersion)
         {
-            if (string.IsNullOrEmpty(providerUri))
-            {
-                throw new ArgumentNullException(nameof(providerUri));
-            }
-            if (string.IsNullOrEmpty(apiVersion))
-            {
-                throw new ArgumentNullException(nameof(apiVersion));
-            }
+            Debug.Assert(!string.IsNullOrEmpty(providerUri), $"{nameof(providerUri)} cannot be null. Validate parameter upstream.");
+            Debug.Assert(!string.IsNullOrEmpty(apiVersion), $"{nameof(apiVersion)} cannot be null. Validate parameter upstream.");
 
             _providerUri = new Uri(providerUri);
             _apiVersion = apiVersion;
@@ -42,14 +37,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
         public async Task<string> SignAsync(string moduleId, string generationId, string data)
         {
-            if (string.IsNullOrEmpty(moduleId))
-            {
-                throw new ArgumentNullException(nameof(moduleId));
-            }
-            if (string.IsNullOrEmpty(generationId))
-            {
-                throw new ArgumentNullException(nameof(generationId));
-            }
+            Debug.Assert(!string.IsNullOrEmpty(moduleId), $"{nameof(moduleId)} cannot be null. Validate parameter upstream.");
+            Debug.Assert(!string.IsNullOrEmpty(generationId), $"{nameof(generationId)} cannot be null. Validate parameter upstream.");
 
             var signRequest = new SignRequest
             {

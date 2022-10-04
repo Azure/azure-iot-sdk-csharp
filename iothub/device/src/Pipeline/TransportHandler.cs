@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal abstract class TransportHandler : DefaultDelegatingHandler
     {
         private TaskCompletionSource<bool> _transportShouldRetry;
-        protected IotHubClientTransportSettings _transportSettings;
+        protected readonly IotHubClientTransportSettings _transportSettings;
 
         protected TransportHandler(PipelineContext context, IotHubClientTransportSettings transportSettings)
             : base(context, nextHandler: null)
@@ -27,9 +27,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
 
-                if (!_disposed) // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                if (!_isDisposed) // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
                 {
                     base.Dispose(disposing);
                     if (disposing)
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
             }
         }
 

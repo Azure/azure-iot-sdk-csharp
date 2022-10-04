@@ -3,7 +3,6 @@
 
 using System;
 using FluentAssertions;
-using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -18,9 +17,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
            "hP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmC" +
            "Yv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7" +
            "dLIVPnlgZcBhgy1SSDQMQ==";
-
-        /* SRS_TPM_ATTESTATION_21_001: [The EndorsementKey setter shall throws ArgumentNullException if the provided
-         *                              endorsementKey is null or white space.] */
 
         [TestMethod]
         public void TpmAttestationThrowsOnNullEndorsementKey()
@@ -43,8 +39,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Action act = () => new TpmAttestation(endorsementKey);
             var error = act.Should().Throw<ArgumentException>();
         }
-
-        /* SRS_TPM_ATTESTATION_21_002: [The StorageRootKey setter shall store the storageRootKey passed.] */
 
         [TestMethod]
         public void TpmAttestationSucceedOnNullStorageRootKey()

@@ -23,30 +23,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         None,
 
         /// <summary>
-        /// Tpm attestation mechanism.
-        /// </summary>
-        /// <remarks>
-        /// Identify the attestation mechanism as <see cref="TpmAttestation"/>.
-        /// </remarks>
-        [EnumMember(Value = "tpm")]
-        Tpm = 1,
-
-        /// <summary>
         /// x509 attestation mechanism.
         /// </summary>
         /// <remarks>
         /// Identify the attestation mechanism as <see cref="X509Attestation"/>.
         /// </remarks>
         [EnumMember(Value = "x509")]
-        X509 = 2,
+        X509 = 1,
 
         /// <summary>
         /// Symmetric Key attestation mechanism
         /// </summary>
         /// <remarks>
-        /// Identify the attestation mechanism as <see cref="SymmetricKeyAttestation"/>
+        /// Identify the attestation mechanism as <see cref="SymmetricKeyAttestation"/>.
         /// </remarks>
         [EnumMember(Value = "symmetricKey")]
-        SymmetricKey = 3,
+        SymmetricKey = 2,
+
+        /// <summary>
+        /// TPM attestation mechanism
+        /// </summary>
+        /// <remarks>
+        /// Identify the attestation mechanism as <see cref="TpmAttestation"/>.
+        /// </remarks>
+        [EnumMember(Value = "tpm")]
+        Tpm = 3,
     }
 }

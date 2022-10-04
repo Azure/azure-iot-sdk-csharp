@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
@@ -28,8 +29,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                 sasTokenTimeToLive,
                 sasTokenRenewalBuffer)
         {
-            _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
-            _generationId = generationId ?? throw new ArgumentNullException(nameof(generationId));
+            Debug.Assert(signatureProvider != null, $"{nameof(signatureProvider)} cannot be null. Validate argument upstream.");
+            Debug.Assert(generationId != null, $"{nameof(generationId)} cannot be null. Validate argument upstream.");
+
+            _signatureProvider = signatureProvider;
+            _generationId = generationId;
         }
 
         ///<inheritdoc/>
