@@ -112,10 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (connectionCredentials.AuthenticationModel == AuthenticationModel.SasIndividual)
             {
-                if (_amqpSasIndividualPool == null)
-                {
-                    _amqpSasIndividualPool = new AmqpConnectionHolder[amqpSettings.ConnectionPoolSettings.MaxPoolSize];
-                }
+                _amqpSasIndividualPool ??= new AmqpConnectionHolder[amqpSettings.ConnectionPoolSettings.MaxPoolSize];
 
                 return _amqpSasIndividualPool;
             }
@@ -138,10 +135,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             int index = GetClientIndex(connectionCredentials, pool.Length);
 
-            if (pool[index] == null)
-            {
-                pool[index] = new AmqpConnectionHolder(connectionCredentials, amqpSettings);
-            }
+            pool[index] ??= new AmqpConnectionHolder(connectionCredentials, amqpSettings);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, connectionCredentials, nameof(ResolveConnectionByHashing));

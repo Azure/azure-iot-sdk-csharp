@@ -57,8 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             lock (_connectionPoolLock)
             {
-                _amqpConnectionPools.TryGetValue(host, out IAmqpUnitManager amqpConnectionPool);
-                if (amqpConnectionPool == null)
+                if (!_amqpConnectionPools.TryGetValue(host, out IAmqpUnitManager amqpConnectionPool)
+                    || amqpConnectionPool == null)
                 {
                     amqpConnectionPool = new AmqpConnectionPool();
                     _amqpConnectionPools.Add(host, amqpConnectionPool);
