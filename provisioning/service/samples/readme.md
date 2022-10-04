@@ -13,5 +13,5 @@
 [bulk-op-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/service/samples/How%20To/BulkOperationSample
 [individual-enrollment-x509-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/provisioning/service/samples/Getting%20Started/IndividualEnrollmentX509Sample
 [enrollment-group-x509-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/provisioning/service/samples/Getting%20Started/EnrollmentGroupX509Sample
-[individual-enrollment-tpm-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/provisioning/service/samples/Getting%20Started/IndividualEnrollmentTPMSample
+[individual-enrollment-tpm-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/provisioning/service/samples/Getting%20Started/IndividualEnrollmentTpmSample
 [clean-up-enrollments-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/service/samples/Getting%20Started/CleanupEnrollmentsSample

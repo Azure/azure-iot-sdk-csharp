@@ -2,23 +2,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using IndividualEnrollmentTpmSample;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
-    internal class IndividualEnrollmentTPMSample
+    internal class IndividualEnrollmentTpmSample
     {
-        private const string RegistrationId = "myvalid-registratioid-csharp";
+        private readonly string _registrationId;
 
-        private const string TpmEndorsementKey =
-            "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj2gUS" +
-            "cTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3d" +
-            "yKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKR" +
-            "dln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFe" +
-            "WlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy1SSDQMQ==";
+        private readonly string _tpmEndorsementKey;
 
         // Optional parameters
-        private const string OptionalDeviceId = "myCSharpDevice";
+        private readonly string _deviceId;
 
         private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
         private readonly DeviceCapabilities _optionalEdgeCapabilityEnabled = new() { IotEdge = true };
@@ -26,37 +24,70 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
-        public IndividualEnrollmentTPMSample(ProvisioningServiceClient provisioningServiceClient)
+        public IndividualEnrollmentTpmSample(ProvisioningServiceClient provisioningServiceClient, string deviceId, string registrationId, string tpmEndorsementKey)
         {
             _provisioningServiceClient = provisioningServiceClient;
+            _deviceId = deviceId;
+            _registrationId = registrationId;
+            _tpmEndorsementKey = tpmEndorsementKey;
         }
 
         public async Task RunSampleAsync()
         {
             await QueryIndividualEnrollmentsAsync();
-
+            await CreateIndividualEnrollmentTpmAsync();
             await UpdateIndividualEnrollmentAsync();
             await DeleteIndividualEnrollmentAsync();
         }
 
         public async Task QueryIndividualEnrollmentsAsync()
         {
-            Console.WriteLine("\nCreating a query for enrollments...");
+            Console.WriteLine("Creating a query for enrollments...");
             Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery("SELECT * FROM enrollments");
             while (query.HasNext())
             {
-                Console.WriteLine("\nQuerying the next enrollments...");
+                Console.WriteLine("Querying the next page of enrollments...");
                 QueryResult queryResult = await query.NextAsync();
-                Console.WriteLine(queryResult);
+                IEnumerable<object> items = queryResult.Items;
+                foreach (IndividualEnrollment enrollment in items.Cast<IndividualEnrollment>())
+                {
+                    Console.WriteLine($"Individual enrollment '{enrollment.RegistrationId}'");
+                }
             }
+        }
+
+        public async Task CreateIndividualEnrollmentTpmAsync()
+        {
+            Console.WriteLine($"Creating an individual enrollment '{_registrationId}'...");
+            Attestation attestation = new TpmAttestation(_tpmEndorsementKey);
+            var individualEnrollment = new IndividualEnrollment(
+                _registrationId,
+                attestation)
+            {
+                // The following properties are optional:
+                DeviceId = _deviceId,
+                ProvisioningStatus = OptionalProvisioningStatus,
+                Capabilities = _optionalEdgeCapabilityEnabled,
+                InitialTwinState = new TwinState(
+                    tags: null,
+                    desiredProperties: new TwinCollection
+                    {
+                        ["Brand"] = "Contoso",
+                        ["Model"] = "SSC4",
+                        ["Color"] = "White",
+                    })
+            };
+
+            IndividualEnrollment individualEnrollmentResult =
+                await _provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
+            Console.WriteLine($"Successfully created the individual enrollment '{individualEnrollmentResult.RegistrationId}'.");
         }
 
         public async Task<IndividualEnrollment> GetIndividualEnrollmentInfoAsync()
         {
-            Console.WriteLine("\nGetting the individualEnrollment information...");
+            Console.WriteLine("Getting the individualEnrollment information...");
             IndividualEnrollment getResult =
-                await _provisioningServiceClient.GetIndividualEnrollmentAsync(RegistrationId);
-            Console.WriteLine(getResult);
+                await _provisioningServiceClient.GetIndividualEnrollmentAsync(_registrationId);
 
             return getResult;
         }
@@ -64,18 +95,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task UpdateIndividualEnrollmentAsync()
         {
             IndividualEnrollment individualEnrollment = await GetIndividualEnrollmentInfoAsync();
+            Console.WriteLine($"Initial device twin state is {individualEnrollment.InitialTwinState}.");
+            Console.WriteLine($"IoT Edge device set to '{individualEnrollment.Capabilities.IotEdge}'.");
             individualEnrollment.InitialTwinState.DesiredProperties["Color"] = "Yellow";
             individualEnrollment.Capabilities = _optionalEdgeCapabilityDisabled;
 
+            Console.WriteLine($"Updating desired properties and capabilities of the individual enrollment '{individualEnrollment.RegistrationId}'...");
             IndividualEnrollment individualEnrollmentResult =
                 await _provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
-            Console.WriteLine(individualEnrollmentResult);
+            Console.WriteLine($"Updated initial device twin state is {individualEnrollmentResult.InitialTwinState}.");
+            Console.WriteLine($"Updated IoT Edge device to '{individualEnrollmentResult.Capabilities.IotEdge}'.");
+            Console.WriteLine($"Successfully updated the individual enrollment '{_registrationId}'.");
         }
 
         public async Task DeleteIndividualEnrollmentAsync()
         {
-            Console.WriteLine("\nDeleting the individualEnrollment...");
-            await _provisioningServiceClient.DeleteIndividualEnrollmentAsync(RegistrationId);
+            Console.WriteLine($"Deleting the individual enrollment '{_registrationId}'...");
+            await _provisioningServiceClient.DeleteIndividualEnrollmentAsync(_registrationId);
+            Console.WriteLine($"Successfully deleted the individual enrollment '{_registrationId}'.");
         }
     }
 }
