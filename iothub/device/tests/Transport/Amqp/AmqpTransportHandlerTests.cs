@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 PrefetchCount = 60,
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
-                    Pooling = true,
+                    UsePooling = true,
                     MaxPoolSize = 10,
                 },
             };
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     PrefetchCount = 60,
                     ConnectionPoolSettings = new AmqpConnectionPoolSettings
                     {
-                        Pooling = true,
+                        UsePooling = true,
                         MaxPoolSize = 7, // different pool size
                     },
                 };

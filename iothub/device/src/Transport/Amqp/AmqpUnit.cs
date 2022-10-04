@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             return _connectionCredentials.Certificate == null
                 && _amqpSettings.ConnectionPoolSettings != null
-                && _amqpSettings.ConnectionPoolSettings.Pooling;
+                && _amqpSettings.ConnectionPoolSettings.UsePooling;
         }
 
         #endregion Open-Close

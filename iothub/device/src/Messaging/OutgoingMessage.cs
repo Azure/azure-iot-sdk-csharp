@@ -20,6 +20,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an outgoing message with the specified payload.
         /// </summary>
+        /// <remarks>
+        /// The payload will be serialized and encoded per <see cref="IotHubClientOptions.PayloadConvention"/>.
+        /// </remarks>
         /// <param name="payload">The payload to send.</param>
         public OutgoingMessage(object payload)
         {
@@ -53,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// An ID used to specify the origin of messages.
+        /// An Id used to specify the origin of messages.
         /// </summary>
         public string UserId
         {
@@ -64,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The event creation time when sending one message at a time.
         /// </summary>
-        public DateTime CreationTimeUtc
+        public DateTime CreatedOnUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
             set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
@@ -73,16 +76,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The event creation time when sending data in a batch.
         /// </summary>
-        public DateTime CreationTimeBatchUtc
+        public DateTime BatchCreatedOnUtc
         {
-            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
-            set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
+            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeBatchUtc);
+            set => SystemProperties[MessageSystemPropertyNames.CreationTimeBatchUtc] = value;
         }
 
         /// <summary>
         /// The time when this message is considered expired
         /// </summary>
-        public DateTime ExpiryTimeUtc
+        public DateTime ExpiresOnUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
             set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
@@ -128,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Date and time when the device-to-cloud message was received by the server.
         /// </summary>
-        public DateTime EnqueuedTimeUtc
+        public DateTime EnqueuedOnUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
             protected internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;

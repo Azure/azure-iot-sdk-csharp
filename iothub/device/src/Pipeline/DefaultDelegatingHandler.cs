@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
         private volatile IDelegatingHandler _nextHandler;
-        protected volatile bool _disposed;
+        protected volatile bool _isDisposed;
 
         protected DefaultDelegatingHandler(PipelineContext context, IDelegatingHandler nextHandler)
         {
@@ -146,9 +146,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             GC.SuppressFinalize(this);
         }
 
-        protected void ThrowIfDisposed()
+        protected private void ThrowIfDisposed()
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new ObjectDisposedException("IoT Client");
             }
@@ -156,25 +156,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected private virtual void Dispose(bool disposing)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Disposed={_isDisposed}; disposing={disposing}", $"{nameof(DefaultDelegatingHandler)}.{nameof(Dispose)}");
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(DefaultDelegatingHandler)}.{nameof(Dispose)}");
-
-                if (!_disposed)
+                if (!_isDisposed)
                 {
                     if (disposing)
                     {
                         _nextHandler?.Dispose();
                     }
 
-                    _disposed = true;
+                    _isDisposed = true;
                 }
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(DefaultDelegatingHandler)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"Disposed={_isDisposed}; disposing={disposing}", $"{nameof(DefaultDelegatingHandler)}.{nameof(Dispose)}");
             }
         }
 

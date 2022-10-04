@@ -163,9 +163,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             amqpMessage.Properties.MessageId = data.MessageId;
 
-            if (!data.ExpiryTimeUtc.Equals(default))
+            if (!data.ExpiresOnUtc.Equals(default))
             {
-                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc;
+                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiresOnUtc;
             }
 
             if (data.CorrelationId != null)
@@ -180,12 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.Ack, out object propertyValue))
-            {
-                amqpMessage.ApplicationProperties.Map["iothub-ack"] = (string)propertyValue;
-            }
-
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.MessageSchema, out propertyValue))
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.MessageSchema, out object propertyValue))
             {
                 amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.MessageSchema] = (string)propertyValue;
             }

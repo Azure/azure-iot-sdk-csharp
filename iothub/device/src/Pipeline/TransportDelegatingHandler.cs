@@ -22,12 +22,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, $"{nameof(TransportDelegatingHandler)}.{nameof(OpenAsync)}");
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, $"{nameof(TransportDelegatingHandler)}.{nameof(OpenAsync)}");
-
-                cancellationToken.ThrowIfCancellationRequested();
                 await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 try
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
                     // since Dispose is not synced with _handlerLock, double check if disposed.
-                    if (_disposed)
+                    if (_isDisposed)
                     {
                         NextHandler?.Dispose();
                         ThrowIfDisposed();

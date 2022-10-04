@@ -5,52 +5,50 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal static class MessageSystemPropertyNames
     {
-        public const string MessageId = "message-id";
+        internal const string MessageId = "message-id";
 
-        public const string LockToken = "iothub-messagelocktoken";
+        internal const string LockToken = "iothub-messagelocktoken";
 
-        public const string SequenceNumber = "sequence-number";
+        internal const string SequenceNumber = "sequence-number";
 
-        public const string To = "to";
+        internal const string To = "to";
 
-        public const string EnqueuedTime = "iothub-enqueuedtime";
+        internal const string EnqueuedTime = "iothub-enqueuedtime";
 
-        public const string ExpiryTimeUtc = "absolute-expiry-time";
+        internal const string ExpiryTimeUtc = "absolute-expiry-time";
 
-        public const string CorrelationId = "correlation-id";
+        internal const string CorrelationId = "correlation-id";
 
-        public const string DeliveryCount = "iothub-deliverycount";
+        internal const string DeliveryCount = "iothub-deliverycount";
 
-        public const string UserId = "user-id";
+        internal const string UserId = "user-id";
 
-        public const string Operation = "iothub-operation";
+        internal const string Operation = "iothub-operation";
 
-        public const string Ack = "iothub-ack";
+        internal const string OutputName = "iothub-outputname";
 
-        public const string OutputName = "iothub-outputname";
+        internal const string InputName = "iothub-inputname";
 
-        public const string InputName = "iothub-inputname";
+        internal const string MessageSchema = "iothub-message-schema";
 
-        public const string MessageSchema = "iothub-message-schema";
+        internal const string CreationTimeUtc = "iothub-creation-time-utc";
 
-        public const string CreationTimeUtc = "iothub-creation-time-utc";
+        internal const string CreationTimeBatchUtc = "iothub-app-iothub-creation-time-utc";
 
-        public const string CreationTimeBatchUtc = "iothub-app-iothub-creation-time-utc";
+        internal const string ContentEncoding = "iothub-content-encoding";
 
-        public const string ContentEncoding = "iothub-content-encoding";
+        internal const string ContentType = "iothub-content-type";
 
-        public const string ContentType = "iothub-content-type";
+        internal const string ConnectionDeviceId = "iothub-connection-device-id";
 
-        public const string ConnectionDeviceId = "iothub-connection-device-id";
+        internal const string ConnectionModuleId = "iothub-connection-module-id";
 
-        public const string ConnectionModuleId = "iothub-connection-module-id";
+        internal const string DiagId = "iothub-diag-id";
 
-        public const string DiagId = "iothub-diag-id";
+        internal const string DiagCorrelationContext = "diag-correlation-context";
 
-        public const string DiagCorrelationContext = "diag-correlation-context";
+        internal const string InterfaceId = "iothub-interface-id";
 
-        public const string InterfaceId = "iothub-interface-id";
-
-        public const string ComponentName = "dt-subject";
+        internal const string ComponentName = "dt-subject";
     }
 }

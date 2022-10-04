@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure that represents the message that is received from IotHub.
+    /// The data structure that represents the message that is received from Iot hub.
     /// </summary>
     public class IncomingMessage
     {
@@ -107,24 +107,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => GetSystemProperty<byte>(MessageSystemPropertyNames.DeliveryCount);
             protected internal set => SystemProperties[MessageSystemPropertyNames.DeliveryCount] = (byte)value;
-        }
-
-        /// <summary>
-        /// This property is used in cloud-to-device messages to request IoT Hub to generate feedback messages as a result of the consumption of the message by the device.
-        /// </summary>
-        /// <remarks>
-        /// Possible values:
-        /// <list type="bullet">
-        /// <item>none (default): no feedback message is generated.</item>
-        /// <item>positive: receive a feedback message if the message was completed.</item>
-        /// <item>negative: receive a feedback message if the message expired (or maximum delivery count was reached) without being completed by the device.</item>
-        /// <item>full: both positive and negative.</item>
-        /// </list>
-        /// </remarks>
-        public string Acknowledgement
-        {
-            get => GetSystemProperty<string>(MessageSystemPropertyNames.Ack);
-            protected internal set => SystemProperties[MessageSystemPropertyNames.Ack] = value;
         }
 
         /// <summary>

@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
                     MaxPoolSize = poolSize,
-                    Pooling = true,
+                    UsePooling = true,
                 },
             };
 
