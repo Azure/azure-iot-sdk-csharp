@@ -53,7 +53,6 @@ namespace Microsoft.Azure.Devices.Client
                 : new();
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;
-            _clientOptions = iotHubClientOptions;
 
             ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
