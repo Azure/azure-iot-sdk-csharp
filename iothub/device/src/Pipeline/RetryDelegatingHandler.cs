@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private volatile bool _isOpen;
+        private bool _isOpen;
         private SemaphoreSlim _handlerSemaphore = new(1, 1);
         private bool _wasOpenCalled;
         private bool _methodsEnabled;
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendMethodResponseAsync(method, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -320,7 +320,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
@@ -354,7 +354,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             return await base.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -378,7 +378,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            VerifyIsOpen();
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             return await base.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -477,14 +477,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private void VerifyIsOpen()
+        private async Task VerifyIsOpenAsync(CancellationToken cancellationToken)
         {
-            if (!_isOpen)
+            await _handlerSemaphore.WaitAsync(cancellationToken);
+
+            try
             {
-                throw new InvalidOperationException(
-                    _wasOpenCalled
-                        ? $"The transport has disconnected; call '{nameof(OpenAsync)}' to reconnect."
-                        : $"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
+                if (!_isOpen)
+                {
+                    throw new InvalidOperationException(
+                        _wasOpenCalled
+                            ? $"The transport has disconnected; call '{nameof(OpenAsync)}' to reconnect."
+                            : $"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
+                }
+            }
+            finally
+            {
+                _handlerSemaphore.Release();
             }
         }
 
