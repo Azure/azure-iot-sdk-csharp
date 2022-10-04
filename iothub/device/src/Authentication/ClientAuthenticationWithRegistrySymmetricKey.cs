@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Azure.Devices.Client.Utilities;
 
 namespace Microsoft.Azure.Devices.Client
 {
