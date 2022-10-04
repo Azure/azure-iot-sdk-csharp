@@ -163,6 +163,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupX509Sample",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentX509Sample", "provisioning\service\samples\Getting Started\IndividualEnrollmentX509Sample\IndividualEnrollmentX509Sample.csproj", "{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentTPMSample", "provisioning\service\samples\Getting Started\IndividualEnrollmentTPMSample\IndividualEnrollmentTPMSample.csproj", "{705C5B5A-6166-4566-B167-4401491D7650}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -341,6 +343,10 @@ Global
 		{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}.Release|Any CPU.Build.0 = Release|Any CPU
+		{705C5B5A-6166-4566-B167-4401491D7650}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{705C5B5A-6166-4566-B167-4401491D7650}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{705C5B5A-6166-4566-B167-4401491D7650}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{705C5B5A-6166-4566-B167-4401491D7650}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -411,6 +417,7 @@ Global
 		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
 		{83170B36-375E-40A9-B25D-999072362626} = {01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}
 		{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255} = {01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}
+		{705C5B5A-6166-4566-B167-4401491D7650} = {01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
