@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (_sharedAccessKeyName == null)
             {
-                builder.Target = ModuleId == string.Empty
+                builder.Target = ModuleId == default
                     ? "{0}/devices/{1}".FormatInvariant(
                         iotHub,
                         WebUtility.UrlEncode(DeviceId))

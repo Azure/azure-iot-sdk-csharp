@@ -37,9 +37,7 @@ namespace Microsoft.Azure.Devices.Client
 
             DeviceId = deviceId;
 
-            ModuleId = moduleId == default
-                ? string.Empty
-                : moduleId;
+            ModuleId = moduleId;
         }
 
         /// <summary>

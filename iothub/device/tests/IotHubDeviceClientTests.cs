@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod);
         }
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(gatewayHostname, authMethod);
         }
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(
                 gatewayHostname,
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(
                 gatewayHostname,

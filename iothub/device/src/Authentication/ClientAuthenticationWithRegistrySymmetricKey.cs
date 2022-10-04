@@ -154,9 +154,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetModuleId(string moduleId)
         {
-            _moduleId = moduleId == default
-                ? string.Empty
-                : moduleId;
+            _moduleId = moduleId;
         }
     }
 }
