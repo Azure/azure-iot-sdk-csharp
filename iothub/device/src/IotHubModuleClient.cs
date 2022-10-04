@@ -280,6 +280,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 httpClientHandler?.Dispose();
+                _certValidator.Dispose();
             }
         }
 

@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal interface ICertificateValidator
+    internal interface ICertificateValidator : IDisposable
     {
         internal Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> GetCustomCertificateValidation();
     }

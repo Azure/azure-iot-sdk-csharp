@@ -9,9 +9,18 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class InstalledCertificateValidator : ICertificateValidator
+    internal class InstalledCertificateValidator : ICertificateValidator, IDisposable
     {
         private readonly IList<X509Certificate2> _certs;
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            foreach (X509Certificate2 item in _certs)
+            {
+                item.Dispose();
+            }
+        }
 
         private InstalledCertificateValidator(IList<X509Certificate2> certs)
         {
