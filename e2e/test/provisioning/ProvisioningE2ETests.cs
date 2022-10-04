@@ -1294,7 +1294,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             else if (provisioningAuth is AuthenticationProviderSymmetricKey symmetricKeyAuth)
             {
-                auth = new DeviceAuthenticationWithRegistrySymmetricKey(deviceId, symmetricKeyAuth.GetPrimaryKey());
+                auth = new ClientAuthenticationWithRegistrySymmetricKey(symmetricKeyAuth.GetPrimaryKey(), deviceId);
             }
             else
             {

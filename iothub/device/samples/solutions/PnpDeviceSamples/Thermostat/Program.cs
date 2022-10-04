@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 case "dps":
                     logger.LogDebug($"Initializing via DPS");
                     DeviceRegistrationResult dpsRegistrationResult = await ProvisionDeviceAsync(parameters, cancellationToken);
-                    var authMethod = new DeviceAuthenticationWithRegistrySymmetricKey(dpsRegistrationResult.DeviceId, parameters.DeviceSymmetricKey);
+                    var authMethod = new ClientAuthenticationWithRegistrySymmetricKey(parameters.DeviceSymmetricKey, dpsRegistrationResult.DeviceId);
                     deviceClient = InitializeDeviceClient(dpsRegistrationResult.AssignedHub, authMethod);
                     break;
 

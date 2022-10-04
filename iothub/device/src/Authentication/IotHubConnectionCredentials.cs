@@ -405,13 +405,13 @@ namespace Microsoft.Azure.Devices.Client
             else if (iotHubConnectionString.SharedAccessKey != null)
             {
                 return iotHubConnectionString.ModuleId == null
-                    ? new DeviceAuthenticationWithRegistrySymmetricKey(
+                    ? new ClientAuthenticationWithRegistrySymmetricKey(
+                        iotHubConnectionString.SharedAccessKey,
+                        iotHubConnectionString.DeviceId)
+                    : new ClientAuthenticationWithRegistrySymmetricKey(
+                        iotHubConnectionString.SharedAccessKey,
                         iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.SharedAccessKey)
-                    : new ModuleAuthenticationWithRegistrySymmetricKey(
-                        iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.ModuleId,
-                        iotHubConnectionString.SharedAccessKey);
+                        iotHubConnectionString.ModuleId);
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {
