@@ -104,5 +104,25 @@ namespace Microsoft.Azure.Devices.Client
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
         /// </summary>
         internal string AuthenticationChain { get; set; }
+
+        internal IotHubClientMqttSettings Clone()
+        {
+            return new IotHubClientMqttSettings(Protocol)
+            {
+                Proxy = Proxy,
+                SslProtocols = SslProtocols,
+                CertificateRevocationCheck = CertificateRevocationCheck,
+                PublishToServerQoS = PublishToServerQoS,
+                ReceivingQoS = ReceivingQoS,
+                CleanSession = CleanSession,
+                IdleTimeout = IdleTimeout,
+                WebSocketKeepAlive = WebSocketKeepAlive,
+                HasWill = HasWill,
+                WillMessage = WillMessage,
+                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
+                AuthenticationChain = AuthenticationChain,
+
+            };
+        }
     }
 }

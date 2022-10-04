@@ -88,15 +88,7 @@ namespace Microsoft.Azure.Devices.Client
         public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
         {
             IotHubClientOptions clientOptions = options != null
-                ? new ()
-                {
-                    FileUploadTransportSettings = options.FileUploadTransportSettings,
-                    PayloadConvention = options.PayloadConvention,
-                    GatewayHostName = options.GatewayHostName,
-                    ModelId = options.ModelId,
-                    SdkAssignsMessageId = options.SdkAssignsMessageId,
-                    AdditionalUserAgentInfo = options.AdditionalUserAgentInfo,
-                }
+                ? options.Clone()
                 : new ();
 
             IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();

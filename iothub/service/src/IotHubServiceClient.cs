@@ -50,17 +50,7 @@ namespace Microsoft.Azure.Devices
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
             IotHubServiceClientOptions clientOptions = options != null
-                ? new ()
-                {
-                    Proxy = options.Proxy,
-                    HttpClient = options.HttpClient,
-                    Protocol = options.Protocol,
-                    SslProtocols = options.SslProtocols,
-                    CertificateRevocationCheck = options.CertificateRevocationCheck,
-                    SdkAssignsMessageId = options.SdkAssignsMessageId,
-                    AmqpConnectionKeepAlive = options.AmqpConnectionKeepAlive,
-                    RemoteCertificateValidationCallback = options.RemoteCertificateValidationCallback,
-                }
+                ? options.Clone()
                 : new ();
 
             IotHubConnectionString iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
@@ -94,17 +84,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNull(credential, nameof(credential));
 
             IotHubServiceClientOptions clientOptions = options != null
-                ? new ()
-                {
-                    Proxy = options.Proxy,
-                    HttpClient = options.HttpClient,
-                    Protocol = options.Protocol,
-                    SslProtocols = options.SslProtocols,
-                    CertificateRevocationCheck = options.CertificateRevocationCheck,
-                    SdkAssignsMessageId = options.SdkAssignsMessageId,
-                    AmqpConnectionKeepAlive = options.AmqpConnectionKeepAlive,
-                    RemoteCertificateValidationCallback = options.RemoteCertificateValidationCallback,
-                }
+                ? options.Clone()
                 : new ();
 
             _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
@@ -137,17 +117,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNull(credential, nameof(credential));
 
             IotHubServiceClientOptions clientOptions = options != null
-                ? new ()
-                {
-                    Proxy = options.Proxy,
-                    HttpClient = options.HttpClient,
-                    Protocol = options.Protocol,
-                    SslProtocols = options.SslProtocols,
-                    CertificateRevocationCheck = options.CertificateRevocationCheck,
-                    SdkAssignsMessageId = options.SdkAssignsMessageId,
-                    AmqpConnectionKeepAlive = options.AmqpConnectionKeepAlive,
-                    RemoteCertificateValidationCallback = options.RemoteCertificateValidationCallback,
-                }
+                ? options.Clone()
                 : new ();
 
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);

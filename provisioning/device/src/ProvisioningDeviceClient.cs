@@ -38,24 +38,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
 
             _options = options != default
-                ? new (options.TransportSettings)
-                {
-                    AdditionalUserAgentInfo = options.AdditionalUserAgentInfo,
-                }
+                ? options.Clone()
                 : new ();
 
-            if (_options.TransportSettings is ProvisioningClientMqttSettings)
-            {
-                _provisioningTransportHandler = new ProvisioningTransportHandlerMqtt(_options);
-            }
-            else if (_options.TransportSettings is ProvisioningClientAmqpSettings)
-            {
-                _provisioningTransportHandler = new ProvisioningTransportHandlerAmqp(_options);
-            }
-            else
-            {
-                _provisioningTransportHandler = new ProvisioningTransportHandlerHttp(_options);
-            }
+            _provisioningTransportHandler = _options.TransportSettings is ProvisioningClientMqttSettings
+                ? new ProvisioningTransportHandlerMqtt(_options)
+                : _options.TransportSettings is ProvisioningClientAmqpSettings
+                    ? new ProvisioningTransportHandlerAmqp(_options)
+                    : new ProvisioningTransportHandlerHttp(_options);
 
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;

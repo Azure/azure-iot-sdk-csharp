@@ -126,5 +126,20 @@ namespace Microsoft.Azure.Devices
         {
             return sslPolicyErrors == SslPolicyErrors.None;
         }
+
+        internal IotHubServiceClientOptions Clone()
+        {
+            return new IotHubServiceClientOptions()
+            {
+                Proxy = Proxy,
+                HttpClient = HttpClient,
+                Protocol = Protocol,
+                SslProtocols = SslProtocols,
+                CertificateRevocationCheck = CertificateRevocationCheck,
+                SdkAssignsMessageId = SdkAssignsMessageId,
+                AmqpConnectionKeepAlive = AmqpConnectionKeepAlive,
+                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
+            };
+        }
     }
 }

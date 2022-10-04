@@ -50,5 +50,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// and/or be open to security vulnerabilities.
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
+
+        internal ProvisioningClientAmqpSettings Clone()
+        {
+            return new ProvisioningClientAmqpSettings(Protocol)
+            {
+                Proxy = Proxy,
+                SslProtocols = SslProtocols,
+                IdleTimeout = IdleTimeout,
+                WebSocketKeepAlive = WebSocketKeepAlive,
+                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
+            };
+        }
     }
 }

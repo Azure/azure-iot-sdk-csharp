@@ -26,5 +26,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </para>
         /// </remarks>
         public HttpClient HttpClient { get; set; }
+
+        internal ProvisioningServiceClientOptions Clone()
+        {
+            return new ProvisioningServiceClientOptions()
+            {
+                HttpClient = HttpClient,
+            };
+        }
     }
 }

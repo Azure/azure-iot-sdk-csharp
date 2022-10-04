@@ -15,5 +15,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Protocol = ProvisioningClientTransportProtocol.WebSocket;
         }
+
+        internal ProvisioningClientHttpSettings Clone()
+        {
+            return new ProvisioningClientHttpSettings()
+            {
+                Proxy = Proxy,
+                SslProtocols = SslProtocols,
+                Protocol = Protocol,
+            };
+        }
     }
 }

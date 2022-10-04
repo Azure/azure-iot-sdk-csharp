@@ -54,5 +54,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         internal virtual ProductInfo UserAgentInfo { get; } = new();
+
+        internal ProvisioningClientOptions Clone()
+        {
+            ProvisioningClientTransportSettings transport = TransportSettings is ProvisioningClientAmqpSettings amqpSettings 
+                ? amqpSettings.Clone()
+                : TransportSettings is ProvisioningClientMqttSettings mqttSettings
+                ? mqttSettings.Clone()
+                : ((ProvisioningClientHttpSettings)TransportSettings).Clone();
+
+            return new ProvisioningClientOptions(transport)
+            {
+                AdditionalUserAgentInfo = AdditionalUserAgentInfo,
+            };
+        }
     }
 }

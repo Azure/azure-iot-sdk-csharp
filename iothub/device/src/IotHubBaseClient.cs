@@ -47,17 +47,9 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
 
-            
+
             _clientOptions = iotHubClientOptions != null
-                ? new (iotHubClientOptions.TransportSettings)
-                {
-                    FileUploadTransportSettings = iotHubClientOptions.FileUploadTransportSettings,
-                    PayloadConvention = iotHubClientOptions.PayloadConvention,
-                    GatewayHostName = iotHubClientOptions.GatewayHostName,
-                    ModelId = iotHubClientOptions.ModelId,
-                    SdkAssignsMessageId = iotHubClientOptions.SdkAssignsMessageId,
-                    AdditionalUserAgentInfo = iotHubClientOptions.AdditionalUserAgentInfo,
-                }
+                ? iotHubClientOptions.Clone()
                 : new ();
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;

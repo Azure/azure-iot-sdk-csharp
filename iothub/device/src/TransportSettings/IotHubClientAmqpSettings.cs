@@ -66,5 +66,21 @@ namespace Microsoft.Azure.Devices.Client
         /// The connection pool settings for AMQP
         /// </summary>
         public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
+
+        internal IotHubClientAmqpSettings Clone()
+        {
+            return new IotHubClientAmqpSettings(Protocol)
+            {
+                Proxy = Proxy,
+                SslProtocols = SslProtocols,
+                CertificateRevocationCheck = CertificateRevocationCheck,
+                AuthenticationChain = AuthenticationChain,
+                IdleTimeout = IdleTimeout,
+                WebSocketKeepAlive = WebSocketKeepAlive,
+                PrefetchCount = PrefetchCount,
+                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
+                ConnectionPoolSettings = ConnectionPoolSettings,
+            };
+        }
     }
 }
