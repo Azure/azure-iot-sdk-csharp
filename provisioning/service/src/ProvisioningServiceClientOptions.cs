@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         internal ProvisioningServiceClientOptions Clone()
         {
-            return new ProvisioningServiceClientOptions()
+            return new ProvisioningServiceClientOptions
             {
                 HttpClient = HttpClient,
             };

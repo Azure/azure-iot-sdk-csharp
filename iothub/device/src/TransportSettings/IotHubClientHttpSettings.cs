@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
             Protocol = IotHubClientTransportProtocol.WebSocket;
         }
 
-        internal IotHubClientHttpSettings Clone()
+        internal override IotHubClientTransportSettings Clone()
         {
             return new IotHubClientHttpSettings()
             {

@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             ProvisioningServiceClientOptions clientOptions = options != null
                 ? options.Clone()
-                : new ();
+                : new();
 
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 

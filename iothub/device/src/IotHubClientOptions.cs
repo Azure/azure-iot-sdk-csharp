@@ -92,13 +92,11 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IotHubClientOptions Clone()
         {
-            IotHubClientTransportSettings transport = TransportSettings is IotHubClientMqttSettings settings
-                ? settings.Clone()
-                : ((IotHubClientAmqpSettings)TransportSettings).Clone();
+            IotHubClientTransportSettings transport = TransportSettings.Clone();
 
             return new IotHubClientOptions(transport)
             {
-                FileUploadTransportSettings = FileUploadTransportSettings.Clone(),
+                FileUploadTransportSettings = (IotHubClientHttpSettings)FileUploadTransportSettings.Clone(),
                 PayloadConvention = PayloadConvention,
                 GatewayHostName = GatewayHostName,
                 ModelId = ModelId,

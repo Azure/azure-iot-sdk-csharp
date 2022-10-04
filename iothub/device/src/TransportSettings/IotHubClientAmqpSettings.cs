@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
 
-        internal IotHubClientAmqpSettings Clone()
+        internal override IotHubClientTransportSettings Clone()
         {
             return new IotHubClientAmqpSettings(Protocol)
             {

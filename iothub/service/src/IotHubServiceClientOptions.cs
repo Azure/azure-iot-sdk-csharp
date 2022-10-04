@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices
 
         internal IotHubServiceClientOptions Clone()
         {
-            return new IotHubServiceClientOptions()
+            return new IotHubServiceClientOptions
             {
                 Proxy = Proxy,
                 HttpClient = HttpClient,

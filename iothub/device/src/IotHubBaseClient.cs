@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client
 
             _clientOptions = iotHubClientOptions != null
                 ? iotHubClientOptions.Clone()
-                : new ();
+                : new();
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;
             _clientOptions = iotHubClientOptions;

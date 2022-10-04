@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             IotHubClientOptions clientOptions = options != null
                 ? options.Clone()
-                : new ();
+                : new();
 
             IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), clientOptions);

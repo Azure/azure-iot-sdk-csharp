@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
             IotHubServiceClientOptions clientOptions = options != null
                 ? options.Clone()
-                : new ();
+                : new();
 
             IotHubConnectionString iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
             _credentialProvider = iotHubConnectionString;
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices
 
             IotHubServiceClientOptions clientOptions = options != null
                 ? options.Clone()
-                : new ();
+                : new();
 
             _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
             _hostName = hostName;
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices
 
             IotHubServiceClientOptions clientOptions = options != null
                 ? options.Clone()
-                : new ();
+                : new();
 
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
             _hostName = hostName;

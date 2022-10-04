@@ -74,5 +74,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return $"{GetType().Name}/{Protocol}";
         }
+
+        internal abstract IotHubClientTransportSettings Clone();
     }
 }

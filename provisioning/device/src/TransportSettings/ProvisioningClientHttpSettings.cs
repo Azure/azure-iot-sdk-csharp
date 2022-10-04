@@ -16,9 +16,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             Protocol = ProvisioningClientTransportProtocol.WebSocket;
         }
 
-        internal ProvisioningClientHttpSettings Clone()
+        internal override ProvisioningClientTransportSettings Clone()
         {
-            return new ProvisioningClientHttpSettings()
+            return new ProvisioningClientHttpSettings
             {
                 Proxy = Proxy,
                 SslProtocols = SslProtocols,

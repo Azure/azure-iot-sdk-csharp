@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         internal string AuthenticationChain { get; set; }
 
-        internal IotHubClientMqttSettings Clone()
+        internal override IotHubClientTransportSettings Clone()
         {
             return new IotHubClientMqttSettings(Protocol)
             {
@@ -108,7 +108,6 @@ namespace Microsoft.Azure.Devices.Client
                 CleanSession = CleanSession,
                 IdleTimeout = IdleTimeout,
                 WebSocketKeepAlive = WebSocketKeepAlive,
-                HasWill = HasWill,
                 WillMessage = WillMessage,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
                 AuthenticationChain = AuthenticationChain,

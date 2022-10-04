@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using FluentAssertions;
 using System.Security.Authentication;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -19,10 +20,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 SslProtocols = SslProtocols.Tls12,
                 IdleTimeout = TimeSpan.FromSeconds(1),
             };
-            var options = new ProvisioningClientOptions(amqpSettings);
+            var options = new ProvisioningClientOptions(amqpSettings)
+            {
+                AdditionalUserAgentInfo = "info"
+            };
             var clone = options.Clone();
 
-            Assert.AreNotSame(options, clone);
+            options.Should().NotBeSameAs(clone);
+            options.Should().BeEquivalentTo(clone);
+            options.AdditionalUserAgentInfo.Should().BeEquivalentTo(clone.AdditionalUserAgentInfo);
+            options.TransportSettings.Should().NotBeSameAs(clone.TransportSettings);
+            options.TransportSettings.Should().BeEquivalentTo(clone.TransportSettings);
+
         }
 
         [TestMethod]
@@ -34,10 +43,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 IdleTimeout = TimeSpan.FromSeconds(1),
                 PublishToServerQoS = QualityOfService.AtMostOnce,
             };
-            var options = new ProvisioningClientOptions(mqttSettings);
+            var options = new ProvisioningClientOptions(mqttSettings)
+            {
+                AdditionalUserAgentInfo = "info"
+            };
             var clone = options.Clone();
 
-            Assert.AreNotSame(options, clone);
+            options.Should().NotBeSameAs(clone);
+            options.Should().BeEquivalentTo(clone);
+            options.AdditionalUserAgentInfo.Should().BeEquivalentTo(clone.AdditionalUserAgentInfo);
+            options.TransportSettings.Should().NotBeSameAs(clone.TransportSettings);
+            options.TransportSettings.Should().BeEquivalentTo(clone.TransportSettings);
         }
 
         [TestMethod]
@@ -47,10 +63,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 SslProtocols = SslProtocols.Tls12,
             };
-            var options = new ProvisioningClientOptions(httpSettings);
+            var options = new ProvisioningClientOptions(httpSettings)
+            {
+                AdditionalUserAgentInfo = "info"
+            };
             var clone = options.Clone();
 
-            Assert.AreNotSame(options, clone);
+            options.Should().NotBeSameAs(clone);
+            options.Should().BeEquivalentTo(clone);
+            options.AdditionalUserAgentInfo.Should().BeEquivalentTo(clone.AdditionalUserAgentInfo);
+            options.TransportSettings.Should().NotBeSameAs(clone.TransportSettings);
+            options.TransportSettings.Should().BeEquivalentTo(clone.TransportSettings);
         }
     }
 }

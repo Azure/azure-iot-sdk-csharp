@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             _options = options != default
                 ? options.Clone()
-                : new ();
+                : new();
 
             _provisioningTransportHandler = _options.TransportSettings is ProvisioningClientMqttSettings
                 ? new ProvisioningTransportHandlerMqtt(_options)
