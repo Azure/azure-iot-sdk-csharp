@@ -35,37 +35,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///         this token.</description>
     ///     </item>
     /// </list>
-    ///
-    /// And the body is a JSON list of the specific type. For instance, if the system
-    ///     property type is IndividualEnrollment, the body will look like:
-    /// <code>
-    /// [
-    ///     {
-    ///         "registrationId":"validRegistrationId-1",
-    ///         "deviceId":"ContosoDevice-1",
-    ///         "attestation":{
-    ///             "type":"tpm",
-    ///             "tpm":{
-    ///                 "endorsementKey":"validEndorsementKey"
-    ///             }
-    ///         },
-    ///         "iotHubHostName":"ContosoIoTHub.azure-devices.net",
-    ///         "provisioningStatus":"enabled"
-    ///     },
-    ///     {
-    ///         "registrationId":"validRegistrationId-2",
-    ///         "deviceId":"ContosoDevice-2",
-    ///         "attestation":{
-    ///             "type":"tpm",
-    ///            "tpm":{
-    ///                 "endorsementKey":"validEndorsementKey"
-    ///             }
-    ///         },
-    ///         "iotHubHostName":"ContosoIoTHub.azure-devices.net",
-    ///         "provisioningStatus":"enabled"
-    ///     }
-    /// ]
-    /// </code>
     /// </remarks>
     public class QueryResult
     {

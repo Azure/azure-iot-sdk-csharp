@@ -108,11 +108,6 @@ Contains the Provisioning Device SDK transport libraries source and unit-tests.
 Contains the Provisioning Service SDK source, unit-tests and samples.
 This produces the `Microsoft.Azure.Devices.Provisioning.Service` NuGet package.
 
-### /security
-
-Contains the SecurityProvider components for Hardware Security Modules.
-`/tpm` produces the `Microsoft.Azure.Devices.Provisioning.Security.Tpm` NuGet package.
-
 ### /shared
 
 This contains public API shared across the SDK components.

@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"{nameof(ProvisioningServiceClientE2ETests)}_";
 
-        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(DeviceProvisioningServiceException) };
+        private static readonly HashSet<Type> s_retryableExceptions = new() { typeof(DeviceProvisioningServiceException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
 #pragma warning disable CA1823
@@ -49,24 +47,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        public async Task ProvisioningServiceClient_Tpm_IndividualEnrollments_Create_HttpWithProxy_Ok()
-        {
-            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(s_proxyServerAddress, AttestationMechanismType.Tpm).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_SymmetricKey_IndividualEnrollments_Create_HttpWithProxy_Ok()
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(s_proxyServerAddress, AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task ProvisioningServiceClient_Tpm_IndividualEnrollments_Create_HttpWithoutProxy_Ok()
-        {
-            await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationMechanismType.Tpm).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -132,13 +115,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation_SymmetricKey()
         {
             await ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType.SymmetricKey);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation_Tpm()
-        {
-            await ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType.Tpm);
         }
 
         [LoggedTestMethod]
@@ -232,14 +208,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint);
                     x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint);
                 }
-                else
-                {
-                    attestationMechanism.Type.Should().Be(AttestationMechanismType.Tpm);
-
-                    var tpmAttestation = (TpmAttestation)attestationMechanism.GetAttestation();
-                    tpmAttestation.EndorsementKey.Should().Be(((TpmAttestation)individualEnrollment.Attestation).EndorsementKey);
-                    tpmAttestation.StorageRootKey.Should().Be(((TpmAttestation)individualEnrollment.Attestation).StorageRootKey);
-                }
             }
             finally
             {
@@ -273,7 +241,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     throw new ArgumentException($"The attestation mechanism for enrollment with group Id {enrollmentGroup.EnrollmentGroupId} could not retrieved, exiting test.");
                 }
 
-                // Note that tpm is not a supported attestation type for group enrollments
                 if (attestationType == AttestationMechanismType.SymmetricKey)
                 {
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.SymmetricKey);
@@ -484,64 +451,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             switch (attestationType)
             {
-                case AttestationMechanismType.Tpm:
-                    using (var tpmSim = new AuthenticationProviderTpmSimulator(registrationId))
-                    {
-                        string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-                        individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek))
-                        {
-                            Capabilities = capabilities,
-                            AllocationPolicy = allocationPolicy,
-                            ReprovisionPolicy = reprovisionPolicy,
-                            CustomAllocationDefinition = customAllocationDefinition,
-                            IotHubs = iotHubsToProvisionTo,
-                        };
-
-                        IndividualEnrollment temporaryCreatedEnrollment = null;
-                        await RetryOperationHelper
-                            .RetryOperationsAsync(
-                                async () =>
-                                {
-                                    temporaryCreatedEnrollment = await provisioningServiceClient
-                                        .CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment)
-                                        .ConfigureAwait(false);
-                                },
-                                s_provisioningServiceRetryPolicy,
-                                s_retryableExceptions,
-                                logger,
-                                CancellationToken.None)
-                            .ConfigureAwait(false);
-
-                        if (temporaryCreatedEnrollment == null)
-                        {
-                            throw new ArgumentException($"The enrollment entry with registration Id {registrationId} could not be created; exiting test.");
-                        }
-
-                        attestation = new TpmAttestation(base64Ek);
-                        temporaryCreatedEnrollment.Attestation = attestation;
-
-                        await RetryOperationHelper
-                            .RetryOperationsAsync(
-                                async () =>
-                                {
-                                    createdEnrollment = await provisioningServiceClient
-                                        .CreateOrUpdateIndividualEnrollmentAsync(temporaryCreatedEnrollment)
-                                        .ConfigureAwait(false);
-                                },
-                                s_provisioningServiceRetryPolicy,
-                                s_retryableExceptions,
-                                logger,
-                                CancellationToken.None)
-                            .ConfigureAwait(false);
-
-                        if (createdEnrollment == null)
-                        {
-                            throw new ArgumentException($"The enrollment entry with registration Id {registrationId} could not be updated; exiting test.");
-                        }
-
-                        return createdEnrollment;
-                    }
-
                 case AttestationMechanismType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
@@ -602,8 +511,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             switch (attestationType)
             {
-                case AttestationMechanismType.Tpm:
-                    throw new NotSupportedException("Group enrollments do not support tpm attestation");
                 case AttestationMechanismType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
@@ -713,20 +620,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         public static string AttestationTypeToString(AttestationMechanismType attestationType)
         {
-            switch (attestationType)
+            return attestationType switch
             {
-                case AttestationMechanismType.Tpm:
-                    return "tpm";
-
-                case AttestationMechanismType.SymmetricKey:
-                    return "symmetrickey";
-
-                case AttestationMechanismType.X509:
-                    return "x509";
-
-                default:
-                    throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
-            }
+                AttestationMechanismType.SymmetricKey => "symmetrickey",
+                AttestationMechanismType.X509 => "x509",
+                _ => throw new NotSupportedException("Test code has not been written for testing this attestation type yet"),
+            };
         }
     }
 }

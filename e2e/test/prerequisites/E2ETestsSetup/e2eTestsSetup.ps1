@@ -337,7 +337,6 @@ if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
 {
     Write-Host "`nSetting up docker images on windows."
     az acr login -n aziotacr -t --output tsv --query accessToken | docker login aziotacr.azurecr.io --username 00000000-0000-0000-0000-000000000000 --password-stdin
-    docker pull aziotacr.azurecr.io/aziotbld/testtpm
     docker pull aziotacr.azurecr.io/aziotbld/testproxy
 }
 
@@ -766,17 +765,11 @@ foreach ($kvp in $keyvaultKvps.GetEnumerator())
 }
 
 ###################################################################################################################################
-# Run docker containers for TPM simulators and proxy
+# Run docker containers for proxy
 ###################################################################################################################################
 
 if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
 {
-    if (-not (docker images -q aziotbld/testtpm))
-    {
-        Write-Host "Setting up docker container for TPM simulator."
-        docker run -d --restart unless-stopped --name azure-iot-tpmsim -p 127.0.0.1:2321:2321 -p 127.0.0.1:2322:2322 aziotbld/testtpm
-    }
-
     if (-not (docker images -q aziotbld/testproxy))
     {
         Write-Host "Setting up docker container for proxy."

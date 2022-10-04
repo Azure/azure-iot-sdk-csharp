@@ -11,13 +11,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
     [TestCategory("Unit")]
     public class BulkEnrollmentOperationTests
     {
-        private static IndividualEnrollment individualEnrollment1 = new IndividualEnrollment("regid1", new TpmAttestation("abc="));
-        private static IndividualEnrollment individualEnrollment2 = new IndividualEnrollment("regid2", new TpmAttestation("abc="));
-        private static IEnumerable<IndividualEnrollment> individualEnrollments = new List<IndividualEnrollment>() { individualEnrollment1, individualEnrollment2 };
+        private static readonly string s_primaryKey = CryptoKeyGenerator.GenerateKey(32);
+        private static readonly string s_secondaryKey = CryptoKeyGenerator.GenerateKey(32);
+        private static readonly IndividualEnrollment s_individualEnrollment1 = new("regid1", new SymmetricKeyAttestation(s_primaryKey, s_secondaryKey));
+        private static readonly IndividualEnrollment s_individualEnrollment2 = new("regid2", new SymmetricKeyAttestation(s_primaryKey, s_secondaryKey));
+        private static readonly List<IndividualEnrollment> s_individualEnrollments = new() { s_individualEnrollment1, s_individualEnrollment2 };
 
-
-        /* SRS_BULK_OPERATION_21_001: [The toJsonElement shall throw ArgumentException if the provided collection of 
-                                        individualEnrollments is null or empty.] */
         [TestMethod]
         public void BulkEnrollmentOperationToJsonThrowsOnInvalidParameters()
         {
@@ -26,8 +25,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TestAssert.Throws<ArgumentException>(() => BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, new List<IndividualEnrollment>()));
         }
 
-        /* SRS_BULK_OPERATION_21_002: [The toJson shall return a String with the mode and the collection of individualEnrollments 
-                                        using a JSON format.] */
         [TestMethod]
         public void BulkEnrollmentOperationConstructorSucceed()
         {
@@ -38,19 +35,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "    \"enrollments\": [ " +
                 "      {\n" +
                 "        \"registrationId\": \"regid1\",\n" +
-                "        \"attestation\": {\n" +
-                "          \"type\": \"tpm\",\n" +
-                "          \"tpm\": {\n" +
-                "            \"endorsementKey\": \"abc=\"\n" +
+                "        \"attestation\": {" +
+                "          \"type\": \"symmetricKey\"," +
+                "          \"symmetricKey\": {\n" +
+                $"           \"primaryKey\": \"{s_primaryKey}\",\n" +
+                $"           \"secondaryKey\": \"{s_secondaryKey}\"\n" +
                 "          }\n" +
                 "        }\n" +
                 "      }," +
                 "      {\n" +
                 "        \"registrationId\": \"regid2\",\n" +
-                "        \"attestation\": {\n" +
-                "          \"type\": \"tpm\",\n" +
-                "          \"tpm\": {\n" +
-                "            \"endorsementKey\": \"abc=\"\n" +
+                "        \"attestation\": {" +
+                "          \"type\": \"symmetricKey\"," +
+                "          \"symmetricKey\": {\n" +
+                $"           \"primaryKey\": \"{s_primaryKey}\",\n" +
+                $"           \"secondaryKey\": \"{s_secondaryKey}\"\n" +
                 "          }\n" +
                 "        }\n" +
                 "      }" +
@@ -58,7 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            string bulkJson = BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, individualEnrollments);
+            string bulkJson = BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, s_individualEnrollments);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, bulkJson);

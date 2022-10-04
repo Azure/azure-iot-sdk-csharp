@@ -16,13 +16,11 @@ Authentication can be done using one of the following:
 
 - [SAS tokens for the device](https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-sas?tabs=node#use-sas-tokens-as-a-device) - Using IoT hub [device shared access key](https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-sas?tabs=node#use-a-shared-access-policy-to-access-on-behalf-of-a-device) or [symmetric key](https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-sas?tabs=node#use-a-symmetric-key-in-the-identity-registry) from DPS identity registry
 - [x509 certificate](https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-sas#supported-x509-certificates)  - Self signed or [CA-signed](https://docs.microsoft.com/azure/iot-hub/iot-hub-x509ca-overview)
-- [TPM based authentication](https://azure.microsoft.com/blog/device-provisioning-identity-attestation-with-tpm/)
 
 Samples:
 - IoT hub device shared access key based authentication sample - [DeviceReconnectionSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs#L102)
 - Device provisioning service symmetric key based authentication sample - [ProvisioningDeviceClientSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/provisioning/Samples/device/SymmetricKeySample/ProvisioningDeviceClientSample.cs#L62)
 - x509 based authentication sample using CA-signed certificates - [X509DeviceCertWithChainSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/X509DeviceCertWithChainSample/Program.cs#L43)
-- TPM based authentication sample - [ProvisioningDeviceClientSample](https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/provisioning/Samples/device/TpmSample/ProvisioningDeviceClientSample.cs#L49)
 
 When using SAS tokens, authentication can be done by:
 
@@ -45,8 +43,6 @@ When using SAS tokens, authentication can be done by:
 
 When using x509 certificates, [DeviceAuthenticationWithX509Certificate](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithx509certificate) can be used. The client authentication will be valid until the certificate is valid. Any renewal will have to be done manually and the client needs to be recreated.
 
-When using TPM based authentication, the [DeviceAuthenticationWithTpm](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithtpm) can be used. TPM based authentication will eventually generate a SAS token but is more secure than using the shared access key of the IoT hub to generate the token.
-
 ### Authentication methods implemented by the SDK
 
 The different `IAuthenticationMethod` implementations provided by the SDK are:
@@ -55,7 +51,6 @@ The different `IAuthenticationMethod` implementations provided by the SDK are:
 - [DeviceAuthenticationWithSharedAccessPolicyKey](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithsharedaccesspolicykey) - Authentication method that uses a shared access policy key.
 - [DeviceAuthenticationWithToken](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithtoken) - Authentication method that uses a shared access signature token.
 - [DeviceAuthenticationWithTokenRefresh](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithtokenrefresh) - Abstract class that can be implemented to generate a shared access signature token and allows for token refresh.
-- [DeviceAuthenticationWithTpm](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithtpm) - Authentication method that uses a shared access signature token generated using TPM and allows for token refresh.
 - [DeviceAuthenticationWithX509Certificate](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithx509certificate) - Authentication method that uses a X.509 certificates.
 
 ### Connection retry logic
