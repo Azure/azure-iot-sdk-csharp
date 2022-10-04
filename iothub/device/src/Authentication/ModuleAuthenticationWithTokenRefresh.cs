@@ -23,6 +23,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         ///</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="deviceId"/> or <paramref name="moduleId"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         public ModuleAuthenticationWithTokenRefresh(
             string deviceId,
             string moduleId,
@@ -31,15 +33,8 @@ namespace Microsoft.Azure.Devices.Client
             : base(suggestedTimeToLive,
                   timeBufferPercentage)
         {
-            if (moduleId.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentNullException(nameof(moduleId));
-            }
-
-            if (deviceId.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
             ModuleId = moduleId;
             DeviceId = deviceId;

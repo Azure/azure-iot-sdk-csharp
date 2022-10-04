@@ -59,12 +59,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="iotHubConnectionCredentials"/> is null.</exception>
         public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionCredentials == null)
-            {
-                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
-            }
+            Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.SharedAccessKey = Key;
@@ -78,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Device Id cannot be null or white space.", nameof(deviceId));
+                throw new InvalidOperationException("Device Id cannot be null or white space.");
             }
 
             _deviceId = deviceId;
@@ -88,12 +86,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (key.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Shared access key cannot be null or white space.", nameof(key));
+                throw new InvalidOperationException("Shared access key cannot be null or white space.");
             }
 
             if (!StringValidationHelper.IsBase64String(key))
             {
-                throw new ArgumentException("Key must be base64 encoded", nameof(key));
+                throw new InvalidOperationException("Shared access key must be base64 encoded.");
             }
 
             _key = key;
@@ -103,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (policyName.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Policy name cannot be null or white space.", nameof(policyName));
+                throw new InvalidOperationException("Policy name cannot be null or white space.");
             }
 
             _policyName = policyName;

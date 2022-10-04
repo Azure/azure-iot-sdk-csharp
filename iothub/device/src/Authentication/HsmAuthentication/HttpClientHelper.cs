@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         [SuppressMessage(
             "Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The caller of this method is in charge of disposing the HTTP client that is returned.")]
-        public static HttpClient GetHttpClient(Uri providerUri)
+        internal static HttpClient GetHttpClient(Uri providerUri)
         {
             if (providerUri.Scheme.Equals(HttpScheme, StringComparison.OrdinalIgnoreCase)
                 || providerUri.Scheme.Equals(HttpsScheme, StringComparison.OrdinalIgnoreCase))
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             throw new InvalidOperationException("ProviderUri scheme is not supported");
         }
 
-        public static string GetBaseUrl(Uri providerUri)
+        internal static string GetBaseUrl(Uri providerUri)
         {
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {

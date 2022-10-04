@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
         private const char HeaderSeparator = ':';
         private const string ContentLengthHeaderName = "content-length";
 
-        public static byte[] SerializeRequest(HttpRequestMessage request)
+        internal static byte[] SerializeRequest(HttpRequestMessage request)
         {
             if (request == null)
             {
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             return Encoding.ASCII.GetBytes(builder.ToString());
         }
 
-        public static async Task<HttpResponseMessage> DeserializeResponseAsync(HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
+        internal static async Task<HttpResponseMessage> DeserializeResponseAsync(HttpBufferedStream bufferedStream, CancellationToken cancellationToken)
         {
             var httpResponse = new HttpResponseMessage();
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -26,7 +27,8 @@ namespace Microsoft.Azure.Devices.Client
                 sasTokenTimeToLive,
                 sasTokenRenewalBuffer)
         {
-            _sharedAccessKey = sharedAccessKey ?? throw new ArgumentNullException(nameof(sharedAccessKey));
+            Debug.Assert(!string.IsNullOrEmpty(sharedAccessKey), "Shared access key cannot be null. Validate argument upstream.");
+            _sharedAccessKey = sharedAccessKey;
             _sharedAccessKeyName = sharedAccessKeyName;
         }
 
