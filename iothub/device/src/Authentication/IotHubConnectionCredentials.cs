@@ -27,10 +27,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A new instance of the <c>IotHubConnectionCredentials</c> class with a populated connection string.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="iotHubHostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="iotHubHostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
-        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
+        /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
         /// <exception cref="FormatException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        /// <exception cref="IotHubClientException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
+        /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
         public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string iotHubHostName, string gatewayHostName = null)
         {
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Validate certs.
-            if (AuthenticationMethod is DeviceAuthenticationWithX509Certificate)
+            if (AuthenticationMethod is ClientAuthenticationWithX509Certificate)
             {
                 // Prep for certificate auth.
                 if (Certificate == null)

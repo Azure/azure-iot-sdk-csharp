@@ -9,9 +9,10 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a X.509 certificate
     /// </summary>
-    public sealed class DeviceAuthenticationWithX509Certificate : IAuthenticationMethod
+    public sealed class ClientAuthenticationWithX509Certificate : IAuthenticationMethod
     {
         private string _deviceId;
+        private string _moduleId;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -20,16 +21,19 @@ namespace Microsoft.Azure.Devices.Client
         /// The <paramref name="certificate"/> managed resource should be disposed by the user.
         /// This class doesn't dispose it since the user might want to reuse it.
         /// </remarks>
-        /// <param name="deviceId">Device identifier.</param>
         /// <param name="certificate">X.509 certificate.</param>
+        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="moduleId">Module identifier.</param>
         /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
         /// <exception cref="ArgumentException">When <paramref name="certificate"/> is null.</exception>
-        public DeviceAuthenticationWithX509Certificate(
-            string deviceId,
+        public ClientAuthenticationWithX509Certificate(
             X509Certificate2 certificate,
+            string deviceId,
+            string moduleId = default,
             X509Certificate2Collection chainCertificates = null)
         {
             SetDeviceId(deviceId);
+            SetModuleId(moduleId);
             Certificate = certificate
                 ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(certificate));
             ChainCertificates = chainCertificates;
@@ -42,6 +46,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => _deviceId;
             set => SetDeviceId(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the module identifier.
+        /// </summary>
+        public string ModuleId
+        {
+            get => _moduleId;
+            set => SetModuleId(value);
         }
 
         /// <summary>
@@ -69,6 +82,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
             iotHubConnectionCredentials.Certificate = Certificate;
             iotHubConnectionCredentials.ChainCertificates = ChainCertificates;
             iotHubConnectionCredentials.SharedAccessSignature = null;
@@ -86,6 +100,11 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             _deviceId = deviceId;
+        }
+
+        private void SetModuleId(string moduleId)
+        {
+            _moduleId = moduleId;
         }
     }
 }
