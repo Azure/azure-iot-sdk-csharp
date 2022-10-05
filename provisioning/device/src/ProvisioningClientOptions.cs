@@ -54,5 +54,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         internal virtual ProductInfo UserAgentInfo { get; } = new();
+
+        internal ProvisioningClientOptions Clone()
+        {
+            ProvisioningClientTransportSettings transport = TransportSettings.Clone();
+
+            return new ProvisioningClientOptions(transport)
+            {
+                AdditionalUserAgentInfo = AdditionalUserAgentInfo,
+            };
+        }
     }
 }

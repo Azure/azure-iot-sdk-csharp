@@ -47,14 +47,12 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
 
-            // Make sure client options is initialized.
-            if (iotHubClientOptions == default)
-            {
-                iotHubClientOptions = new();
-            }
+
+            _clientOptions = iotHubClientOptions != null
+                ? iotHubClientOptions.Clone()
+                : new();
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;
-            _clientOptions = iotHubClientOptions;
 
             ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
@@ -480,7 +478,6 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-
                 if (Logging.IsEnabled)
                     Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
             }

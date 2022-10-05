@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
@@ -17,5 +15,18 @@ namespace Microsoft.Azure.Devices.Client
         {
             Protocol = IotHubClientTransportProtocol.WebSocket;
         }
+
+        internal override IotHubClientTransportSettings Clone()
+        {
+            return new IotHubClientHttpSettings()
+            {
+                Protocol = Protocol,
+                Proxy = Proxy,
+                SslProtocols = SslProtocols,
+                CertificateRevocationCheck = CertificateRevocationCheck,
+            };
+        }
     }
+
+    
 }

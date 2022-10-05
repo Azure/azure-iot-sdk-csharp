@@ -35,5 +35,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </para>
         /// </remarks>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
+
+        internal override ProvisioningClientTransportSettings Clone()
+        {
+            return new ProvisioningClientAmqpSettings(Protocol)
+            {
+                Proxy = Proxy,
+                SslProtocols = SslProtocols,
+                IdleTimeout = IdleTimeout,
+            };
+        }
     }
 }

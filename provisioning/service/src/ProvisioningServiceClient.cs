@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -85,10 +86,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="UnauthorizedAccessException">If the provided shared access signature is expired.</exception>
         public ProvisioningServiceClient(string connectionString, ProvisioningServiceClientOptions options = default)
         {
-            if (options == default)
-            {
-                options = new();
-            }
+            ProvisioningServiceClientOptions clientOptions = options != null
+                ? options.Clone()
+                : new();
 
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,
-                options);
+                clientOptions);
         }
 
         /// <inheritdoc/>

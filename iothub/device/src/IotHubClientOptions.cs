@@ -89,5 +89,20 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         internal virtual ProductInfo UserAgentInfo { get; } = new();
+
+        internal IotHubClientOptions Clone()
+        {
+            IotHubClientTransportSettings transport = TransportSettings.Clone();
+
+            return new IotHubClientOptions(transport)
+            {
+                FileUploadTransportSettings = (IotHubClientHttpSettings)FileUploadTransportSettings.Clone(),
+                PayloadConvention = PayloadConvention,
+                GatewayHostName = GatewayHostName,
+                ModelId = ModelId,
+                SdkAssignsMessageId = SdkAssignsMessageId,
+                AdditionalUserAgentInfo = AdditionalUserAgentInfo,
+            };
+        }
     }
 }

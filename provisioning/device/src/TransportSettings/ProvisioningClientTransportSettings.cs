@@ -89,5 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             return $"{GetType().Name}/{Protocol}";
         }
+
+        internal abstract ProvisioningClientTransportSettings Clone();
     }
 }
