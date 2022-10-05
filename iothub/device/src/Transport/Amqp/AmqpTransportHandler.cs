@@ -275,10 +275,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     .SendMethodResponseAsync(methodResponse, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (amqpIotOutcome != null)
-                {
-                    amqpIotOutcome.ThrowIfNotAccepted();
-                }
+                amqpIotOutcome?.ThrowIfNotAccepted();
             }
             finally
             {
