@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (retryPolicy == null)
                     {
-                        throw new ArgumentNullException(nameof(retryPolicy));
+                        retryPolicy = new NoRetry();
                     }
                     retryHandler.SetRetryPolicy(retryPolicy);
                 }

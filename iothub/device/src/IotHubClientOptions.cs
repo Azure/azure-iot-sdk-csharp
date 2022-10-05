@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets the retry policy used in the operation retries.
         /// </summary>
         /// <remarks>
-        /// Defaults to a near infinite exponential backoff
+        /// Defaults to a near infinite exponential backoff. If set to null, will use <see cref="NoRetry"/> to perform no retries
         /// </remarks>
         public IRetryPolicy RetryPolicy { get; set; } = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
 
