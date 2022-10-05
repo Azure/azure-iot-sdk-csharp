@@ -330,6 +330,40 @@ jobs:
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
 
+      - powershell: ./buildSamples.ps1 -clean -configuration Release -build $(testConfig)
+        displayName: build and run
+        env:
+          # Environment variables for IoT hub device samples
+          IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
+          IOTHUB_MODULE_CONN_STRING: $(IOTHUB-MODULE-CONN-STRING)
+          PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
+          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
+
+          # Environment variables for IoT hub service samples
+          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
+          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          FAR_AWAY_IOTHUB_CONNECTION_STRING: $(FAR-AWAY-IOTHUB-CONNECTION-STRING)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
+          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
+          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
+
+          # PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE is a variable configured on the pipeline. The possible values are: csharp_devices_list.csv, csharp_samples_devices_list.csv.
+          # The value of this variable determines whether to delete devices created by the sample or e2e tests.
+          # csharp_devices_list.csv contains the prefixes of devices created by e2e tests.
+          # csharp_samples_devices_list.csv contains the prefixes of devices created by samples.
+          PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
+
+          # Environment variables for DPS device samples
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID : $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID)
+          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY : $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
+
+          # Environment variables for DPS service samples
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
         inputs:
@@ -508,6 +542,40 @@ jobs:
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+
+      - powershell: ./buildSamples.ps1 -clean -configuration Release -build $(testConfig)
+        displayName: build and run
+        env:
+          # Environment variables for IoT hub device samples
+          IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
+          IOTHUB_MODULE_CONN_STRING: $(IOTHUB-MODULE-CONN-STRING)
+          PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
+          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
+
+          # Environment variables for IoT hub service samples
+          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
+          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          FAR_AWAY_IOTHUB_CONNECTION_STRING: $(FAR-AWAY-IOTHUB-CONNECTION-STRING)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
+          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
+          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
+
+          # PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE is a variable configured on the pipeline. The possible values are: csharp_devices_list.csv, csharp_samples_devices_list.csv.
+          # The value of this variable determines whether to delete devices created by the sample or e2e tests.
+          # csharp_devices_list.csv contains the prefixes of devices created by e2e tests.
+          # csharp_samples_devices_list.csv contains the prefixes of devices created by samples.
+          PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
+
+          # Environment variables for DPS device samples
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID : $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID)
+          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY : $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
+
+          # Environment variables for DPS service samples
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
