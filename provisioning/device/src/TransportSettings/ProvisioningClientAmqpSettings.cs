@@ -43,10 +43,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// This option is ignored for TCP connections.
         /// <para>
         /// If not provided, a client web socket instance will be created for you based on the other
-        /// settings provided in this class.
+        /// settings provided in this class. If provided, all other web socket level options set in this
+        /// class will be ignored (WebSocketKeepAlive, proxy, and x509 certificates, for example).
         /// </para>
         /// </remarks>
-        public ClientWebSocket ClientWebSocket { get; set; } = new ClientWebSocket();
+        public ClientWebSocket ClientWebSocket { get; set; }
 
         /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
