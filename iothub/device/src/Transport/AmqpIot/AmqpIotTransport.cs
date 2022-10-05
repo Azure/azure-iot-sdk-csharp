@@ -67,6 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         public void Dispose()
         {
             _clientWebSocketTransport?.Dispose();
+            _websocket?.Dispose();
             _clientWebSocketTransport = null;
         }
 
@@ -129,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (Logging.IsEnabled)
                     Logging.Enter(this, nameof(CreateClientWebSocket));
 
-                using var websocket = new ClientWebSocket();
+                var websocket = new ClientWebSocket();
 
                 // Set SubProtocol to AMQPWSB10
                 websocket.Options.AddSubProtocol(Amqpwsb10);
@@ -145,10 +146,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     }
                     catch (PlatformNotSupportedException)
                     {
+                        websocket.Dispose();
                         // Some .NET runtimes don't support this property.
                         if (Logging.IsEnabled)
                             Logging.Error(this, $"{nameof(CreateClientWebSocket)} PlatformNotSupportedException thrown as this framework doesn't support proxy.");
-                        throw new InvalidOperationException("The current .NET runtime does not support setting the proxy.");
+                        throw new PlatformNotSupportedException("The current .NET runtime does not support setting the proxy.");
                     }
                 }
 

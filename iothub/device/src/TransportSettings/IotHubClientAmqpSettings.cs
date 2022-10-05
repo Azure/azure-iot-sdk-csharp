@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client
         /// This feature is only applicable for HTTP, MQTT over TCP, MQTT over web socket, AMQP
         /// over TCP. AMQP web socket communication does not support this feature. For users who want
         /// this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
-        /// instance with the desired callback set.
+        /// instance with the desired callback and other websocket options (eg. proxy, keep-alive etc.) set.
         /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
@@ -71,8 +71,7 @@ namespace Microsoft.Azure.Devices.Client
         /// An instance of client web socket to be used when transport protocol is set to web socket.
         /// </summary>
         /// <remarks>
-        /// If not provided, an instance will be created from provided values for
-        /// <see cref="IotHubClientTransportSettings.Proxy"/> and <see cref="IotHubConnectionCredentials.Certificate"/>.
+        /// If not provided, an instance will be created from provided websocket options (eg. proxy, keep-alive etc.)
         /// </remarks>
         public ClientWebSocket ClientWebSocket { get; set; }
 

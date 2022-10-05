@@ -21,11 +21,11 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class DeviceClientX509AuthenticationE2ETests : E2EMsTestBase
     {
+        private const string Amqpwsb10 = "AMQPWSB10";
         private static readonly string s_devicePrefix = $"{nameof(DeviceClientX509AuthenticationE2ETests)}_";
         private static X509Certificate2 s_selfSignedCertificateWithPrivateKey = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
         private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IotHub.GetChainDeviceCertificateWithPrivateKey();
         private readonly string _hostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
-        private const string Amqpwsb10 = "AMQPWSB10";
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
