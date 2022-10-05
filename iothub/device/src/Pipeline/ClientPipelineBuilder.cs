@@ -37,11 +37,7 @@ namespace Microsoft.Azure.Devices.Client
                 currentHandler = currentFactory(context, nextHandler);
                 if (currentHandler is RetryDelegatingHandler retryHandler)
                 {
-                    if (retryPolicy == null)
-                    {
-                        retryPolicy = new NoRetry();
-                    }
-                    retryHandler.SetRetryPolicy(retryPolicy);
+                    retryHandler.SetRetryPolicy(retryPolicy ?? new NoRetry());
                 }
                 currentHandler.ContinuationFactory = nextFactory;
 
