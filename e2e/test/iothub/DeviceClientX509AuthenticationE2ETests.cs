@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
+using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static X509Certificate2 s_selfSignedCertificateWithPrivateKey = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
         private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IotHub.GetChainDeviceCertificateWithPrivateKey();
         private readonly string _hostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
+        private const string Amqpwsb10 = "AMQPWSB10";
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -84,6 +87,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_Enable_CertificateRevocationCheck_AmqpWs()
         {
             IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_CustomWebSocket_AmqpWs()
+        {
+            IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCustomWebSocket(IotHubClientTransportProtocol.WebSocket);
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
@@ -182,6 +193,19 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static IotHubClientTransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
         {
             return new IotHubClientMqttSettings(transportProtocol) { CertificateRevocationCheck = true };
+        }
+
+        private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCustomWebSocket(IotHubClientTransportProtocol transportProtocol)
+        {
+            var websocket = new ClientWebSocket();
+            websocket.Options.AddSubProtocol(Amqpwsb10);
+            websocket.Options.Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress);
+            websocket.Options.ClientCertificates.Add(TestConfiguration.CommonCertificates.GetRootCaCertificate());
+
+            return new IotHubClientAmqpSettings(transportProtocol)
+            {
+                ClientWebSocket = websocket,
+            };
         }
 
         private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
