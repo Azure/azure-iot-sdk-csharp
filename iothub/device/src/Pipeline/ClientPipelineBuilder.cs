@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Azure.Core;
 using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
@@ -36,6 +37,10 @@ namespace Microsoft.Azure.Devices.Client
                 currentHandler = currentFactory(context, nextHandler);
                 if (currentHandler is RetryDelegatingHandler retryHandler)
                 {
+                    if (retryPolicy == null)
+                    {
+                        throw new ArgumentNullException(nameof(retryPolicy));
+                    }
                     retryHandler.SetRetryPolicy(retryPolicy);
                 }
                 currentHandler.ContinuationFactory = nextFactory;
