@@ -3,7 +3,6 @@
 
 using System;
 using System.Net.Security;
-using System.Net.WebSockets;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {

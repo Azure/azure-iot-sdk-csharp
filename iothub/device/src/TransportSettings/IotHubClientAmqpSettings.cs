@@ -85,6 +85,7 @@ namespace Microsoft.Azure.Devices.Client
                 CertificateRevocationCheck = CertificateRevocationCheck,
                 AuthenticationChain = AuthenticationChain,
                 IdleTimeout = IdleTimeout,
+                WebSocketKeepAlive = WebSocketKeepAlive,
                 PrefetchCount = PrefetchCount,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
                 ConnectionPoolSettings = ConnectionPoolSettings,
