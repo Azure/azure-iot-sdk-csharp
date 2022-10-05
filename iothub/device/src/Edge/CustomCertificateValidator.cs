@@ -23,6 +23,15 @@ namespace Microsoft.Azure.Devices.Client
             _transportSettings = transportSettings;
         }
 
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            foreach (X509Certificate2 item in _certs)
+            {
+                item.Dispose();
+            }
+        }
+
         internal static CustomCertificateValidator Create(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
         {
             var instance = new CustomCertificateValidator(certs, transportSettings);
