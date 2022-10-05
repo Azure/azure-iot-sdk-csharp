@@ -9,9 +9,21 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class InstalledCertificateValidator : ICertificateValidator, IDisposable
+    internal class InstalledCertificateValidator : ICertificateValidator
     {
         private readonly IList<X509Certificate2> _certs;
+
+        private InstalledCertificateValidator(IList<X509Certificate2> certs)
+        {
+            _certs = certs;
+        }
+
+        internal static InstalledCertificateValidator Create(IList<X509Certificate2> certs)
+        {
+            var instance = new InstalledCertificateValidator(certs);
+            instance.SetupCertificateValidation();
+            return instance;
+        }
 
         /// <inheritdoc/>
         public void Dispose()
@@ -20,18 +32,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 item.Dispose();
             }
-        }
-
-        private InstalledCertificateValidator(IList<X509Certificate2> certs)
-        {
-            _certs = certs;
-        }
-
-        public static InstalledCertificateValidator Create(IList<X509Certificate2> certs)
-        {
-            var instance = new InstalledCertificateValidator(certs);
-            instance.SetupCertificateValidation();
-            return instance;
         }
 
         Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> ICertificateValidator.GetCustomCertificateValidation()

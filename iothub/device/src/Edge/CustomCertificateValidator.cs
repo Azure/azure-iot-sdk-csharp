@@ -10,10 +10,18 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class CustomCertificateValidator : ICertificateValidator, IDisposable
+    internal class CustomCertificateValidator : ICertificateValidator
     {
         private readonly IEnumerable<X509Certificate2> _certs;
         private readonly IotHubClientTransportSettings _transportSettings;
+
+        private CustomCertificateValidator(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
+        {
+            Debug.Assert(certs.Any(), $"No certs were sent to {nameof(CustomCertificateValidator)}");
+
+            _certs = certs;
+            _transportSettings = transportSettings;
+        }
 
         /// <inheritdoc/>
         public void Dispose()
@@ -22,14 +30,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 item.Dispose();
             }
-        }
-
-        private CustomCertificateValidator(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
-        {
-            Debug.Assert(certs.Any(), $"No certs were sent to {nameof(CustomCertificateValidator)}");
-
-            _certs = certs;
-            _transportSettings = transportSettings;
         }
 
         internal static CustomCertificateValidator Create(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
