@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
     {
         private readonly IConnectionCredentials _connectionCredentials;
 
-        public AmqpIotCbsTokenProvider(IConnectionCredentials connectionCredentials)
+        internal AmqpIotCbsTokenProvider(IConnectionCredentials connectionCredentials)
         {
             _connectionCredentials = connectionCredentials;
         }
