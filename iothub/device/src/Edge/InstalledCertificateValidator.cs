@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetupCertificateValidation()
         {
-            Debug.WriteLine("InstalledCertificateValidator.SetupCertificateValidation()");
+            Console.WriteLine("InstalledCertificateValidator.SetupCertificateValidation()");
             using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
             try
             {

@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices.Client
                     if (calculatedDelay < minimumTimeBetweenRetries)
                     {
                         retryDelay = minimumTimeBetweenRetries - stopwatch.Elapsed;
-                        Debug.WriteLine(
+                        Console.WriteLine(
                             $"{cancellationToken.GetHashCode()} Last execution time was {stopwatch.Elapsed}. Adjusting back-off time to {retryDelay} to avoid high CPU/Memory spikes.");
                     }
 
