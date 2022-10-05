@@ -61,6 +61,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Proxy = Proxy,
                 SslProtocols = SslProtocols,
                 IdleTimeout = IdleTimeout,
+                ClientWebSocket = ClientWebSocket,
+                WebSocketKeepAlive = WebSocketKeepAlive,
             };
         }
     }
