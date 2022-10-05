@@ -209,7 +209,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, IWebProxy webProxy, CancellationToken cancellationToken)
         {
-            var websocket = new ClientWebSocket();
+            var websocket = _clientSettings?.ClientWebSocket ?? new ClientWebSocket();
+
+            if (_clientSettings.WebSocketKeepAlive.HasValue)
+            {
+                websocket.Options.KeepAliveInterval = _clientSettings.WebSocketKeepAlive.Value;
+            }
+
             // Set SubProtocol to AMQPWSB10
             websocket.Options.AddSubProtocol(Amqpwsb10);
 

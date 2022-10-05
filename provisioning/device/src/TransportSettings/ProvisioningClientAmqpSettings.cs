@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net.Security;
+using System.Net.WebSockets;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -35,6 +35,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </para>
         /// </remarks>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
+
+        /// <summary>
+        /// The client web socket to use when communicating over web sockets.
+        /// </summary>
+        /// <remarks>
+        /// This option is ignored for TCP connections.
+        /// </remarks>
+        public ClientWebSocket ClientWebSocket { get; set; } = new ClientWebSocket();
+
+        /// <summary>
+        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
+        public TimeSpan? WebSocketKeepAlive { get; set; }
 
         internal override ProvisioningClientTransportSettings Clone()
         {

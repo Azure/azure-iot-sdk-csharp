@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Security;
+using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
@@ -67,7 +68,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// <para>
         /// This feature is only applicable for HTTP, MQTT over TCP, MQTT over web socket, AMQP
-        /// over TCP. AMQP web socket communication does not support this feature.
+        /// over TCP. AMQP web socket communication does not support this feature. For users who want
+        /// this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
+        /// instance with the desired callback set.
         /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
