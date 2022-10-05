@@ -8,10 +8,10 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Transport;
 
-using Microsoft.Azure.Devices.Client;
-
-namespace Microsoft.Azure.Amqp.Transport
+namespace Microsoft.Azure.Devices.Client
 {
     internal sealed class ClientWebSocketTransport : TransportBase, IDisposable
     {
@@ -349,7 +349,6 @@ namespace Microsoft.Azure.Amqp.Transport
                 throw new ArgumentOutOfRangeException(nameof(size));
             }
         }
-
 
         private static IAsyncResult ToAsyncResult(Task task, AsyncCallback callback, object state)
         {

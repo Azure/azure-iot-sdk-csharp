@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Security;
+using System.Net.WebSockets;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -56,9 +57,19 @@ namespace Microsoft.Azure.Devices.Client
         /// A callback for remote certificate validation.
         /// </summary>
         /// <remarks>
+        /// Remote certificate validation is not supported for web socket implementation.
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
+
+        /// <summary>
+        /// An instance of client web socket to be used when transport protocol is set to web socket.
+        /// </summary>
+        /// <remarks>
+        /// If not provided, an instance will be created from provided values for
+        /// <see cref="IotHubClientTransportSettings.Proxy"/> and <see cref="IotHubConnectionCredentials.Certificate"/>.
+        /// </remarks>
+        public ClientWebSocket ClientWebSocket { get; set; }
 
         /// <summary>
         /// If using pooling, specify connection pool settings.
@@ -74,10 +85,10 @@ namespace Microsoft.Azure.Devices.Client
                 CertificateRevocationCheck = CertificateRevocationCheck,
                 AuthenticationChain = AuthenticationChain,
                 IdleTimeout = IdleTimeout,
-                WebSocketKeepAlive = WebSocketKeepAlive,
                 PrefetchCount = PrefetchCount,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
                 ConnectionPoolSettings = ConnectionPoolSettings,
+                ClientWebSocket = ClientWebSocket,
             };
         }
     }
