@@ -404,25 +404,17 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (iotHubConnectionString.SharedAccessKey != null)
             {
-                return iotHubConnectionString.ModuleId == null
-                    ? new ClientAuthenticationWithRegistrySymmetricKey(
-                        iotHubConnectionString.SharedAccessKey,
-                        iotHubConnectionString.DeviceId)
-                    : new ClientAuthenticationWithRegistrySymmetricKey(
+                return new ClientAuthenticationWithRegistrySymmetricKey(
                         iotHubConnectionString.SharedAccessKey,
                         iotHubConnectionString.DeviceId,
                         iotHubConnectionString.ModuleId);
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {
-                return iotHubConnectionString.ModuleId == null
-                    ? new ClientAuthenticationWithToken(
-                        iotHubConnectionString.SharedAccessSignature,
-                        iotHubConnectionString.DeviceId)
-                    : new ClientAuthenticationWithToken(
-                        iotHubConnectionString.SharedAccessSignature,
-                        iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.ModuleId);
+                return new ClientAuthenticationWithToken(
+                    iotHubConnectionString.SharedAccessSignature,
+                    iotHubConnectionString.DeviceId,
+                    iotHubConnectionString.ModuleId);
             }
 
             throw new FormatException($"Should specify either SharedAccessKey or SharedAccessSignature" +

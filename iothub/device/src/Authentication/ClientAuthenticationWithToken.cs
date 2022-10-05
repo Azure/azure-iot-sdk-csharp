@@ -85,6 +85,12 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetModuleId(string moduleId)
         {
+            // The module Id is optional so we only check whether it is whitespace or not here.
+            if (moduleId.IsWhiteSpace())
+            {
+                throw new InvalidOperationException("Module Id cannot be white space.");
+            }
+
             _moduleId = moduleId;
         }
 

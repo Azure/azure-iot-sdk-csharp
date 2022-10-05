@@ -41,12 +41,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets the DeviceId.
+        /// Gets the device Id.
         /// </summary>
         public string DeviceId { get; private set; }
 
         /// <summary>
-        /// Gets the ModuleId.
+        /// Gets the module Id.
         /// </summary>
         public string ModuleId { get; private set; }
 
