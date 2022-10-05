@@ -51,6 +51,11 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - Some options that were previously set in the `DeviceClient` constructor are now in the optional `IotHubClientOptions` parameter.
 - This method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
 - Cloud-to-device messages can be received by calling `SetMessageHandlerAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
+- Remote certificate validation is no longer supported for AMQP web socket connections.
+
+#### Notable additions
+
+- Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
 
 #### ModuleClient
 
