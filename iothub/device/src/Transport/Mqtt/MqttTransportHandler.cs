@@ -1018,7 +1018,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         Status = status,
                         Version = version,
-                        //Message = payloadString, // what will this even contain??
+                        Message = Encoding.UTF8.GetString(payloadBytes), // This will only ever contain an error message which is encoded based on service contract (UTF-8).
                     };
 
                     patchTwinCompletion.TrySetResult(patchTwinResponse);
