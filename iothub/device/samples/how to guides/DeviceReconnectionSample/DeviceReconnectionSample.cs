@@ -131,7 +131,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         _logger.LogDebug("Initialized the client instance.");
 
                         // Force connection now.
-                        // We have set the "shouldExecuteOperation" function to always try to open the connection.
                         // OpenAsync() is an idempotent call, it has the same effect if called once or multiple times on the same client.
                         await s_deviceClient.OpenAsync(cancellationToken);
                         _logger.LogDebug($"The client instance has been opened.");
