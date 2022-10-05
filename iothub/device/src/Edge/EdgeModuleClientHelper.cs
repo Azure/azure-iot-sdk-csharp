@@ -74,7 +74,8 @@ namespace Microsoft.Azure.Devices.Client
                 moduleId,
                 generationId);
 
-            Console.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
+            if (Logging.IsEnabled)
+                Logging.Info("EdgeModuleClientFactory setupTrustBundle from service");
 
             return new IotHubConnectionCredentials(authMethod, hostName, gateway);
         }
@@ -97,7 +98,9 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (!string.IsNullOrWhiteSpace(certPath))
                 {
-                    Console.WriteLine("EdgeModuleClientFactory setupTrustBundle from file");
+                    if (Logging.IsEnabled)
+                        Logging.Info("EdgeModuleClientFactory setupTrustBundle from file");
+
                     var expectedRoot = new X509Certificate2(certPath);
                     certificateValidator = CreateCertificateValidator(new List<X509Certificate2>() { expectedRoot }, options);
                 }
@@ -108,7 +111,8 @@ namespace Microsoft.Azure.Devices.Client
             string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
             string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
 
-            Console.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
+            if (Logging.IsEnabled)
+                Logging.Info("EdgeModuleClientFactory setupTrustBundle from service");
 
             if (!string.IsNullOrEmpty(gateway))
             {
@@ -123,17 +127,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (certs.Count != 0)
             {
-                Console.WriteLine("EdgeModuleClientFactory.GetCertificateValidator()");
-                if (IsOSPlatform(OSPlatform.Windows))
+                if (Logging.IsEnabled)
                 {
-                    Console.WriteLine("EdgeModuleClientFactory GetCertificateValidator on Windows");
-                    return CustomCertificateValidator.Create(certs, options.TransportSettings);
+                    string os = IsOSPlatform(OSPlatform.Windows) ? "Windows" : "Linux";
+                    Logging.Info($"EdgeModuleClientFactory.GetCertificateValidator() on {os}.");
                 }
-                else
-                {
-                    Console.WriteLine("EdgeModuleClientFactory GetCertificateValidator on Linux");
-                    return InstalledCertificateValidator.Create(certs);
-                }
+
+                return IsOSPlatform(OSPlatform.Windows)
+                    ? CustomCertificateValidator.Create(certs, options.TransportSettings)
+                    : InstalledCertificateValidator.Create(certs);
             }
 
             return NullCertificateValidator.Instance;
