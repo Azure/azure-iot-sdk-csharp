@@ -40,6 +40,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | `DeviceClient` | `IotHubDeviceClient` |
 | `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
 | `MessageResponse` | `MessageAcknowledgement` |
+| `SetRetryPolicy` | `IoTHubClientOptions.RetryPolicy` |
 
 #### Other notable breaking changes
 
@@ -48,7 +49,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
   - TCP will be the default. For web socket, pass `IotHubClientTransportProtocol.WebSocket` to the transport settings constructors.
 - HTTP has been removed as a transport option.
   - It had very limited support across the device options and some APIs behaved differently.
-- Some options that were previously set in the `DeviceClient` constructor are now in the optional `IotHubClientOptions` parameter.
+- Some options that were previously set in the `DeviceClient` constructor are now in the optional `IotHubClientOptions` parameter
 - This method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
 - Cloud-to-device messages can be received by calling `SetMessageHandlerAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
 
