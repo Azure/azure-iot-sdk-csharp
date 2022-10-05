@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 // Set the device client connection status change handler
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(logger);
-                deviceClient.SetConnectionStatusChangeCallback = amqpConnectionStatusChange.ConnectionStatusChangeHandler;
+                deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusChange.ConnectionStatusChangeHandler;
 
                 var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
 

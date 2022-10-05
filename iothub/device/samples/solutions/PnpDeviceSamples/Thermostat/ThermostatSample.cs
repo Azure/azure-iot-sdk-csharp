@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await GetWritablePropertiesAndHandleChangesAsync();
                 }
             }
-            _deviceClient.SetConnectionStatusChangeCallback = StatusChangeHandler;
+            _deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             _logger.LogDebug($"Set handler to receive \"targetTemperature\" updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);

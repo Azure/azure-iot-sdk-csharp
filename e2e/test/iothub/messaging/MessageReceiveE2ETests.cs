@@ -250,14 +250,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;
 
-            void connectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
+            void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
             {
                 if (connectionStatusInfo.Status == ConnectionStatus.Disconnected || connectionStatusInfo.Status == ConnectionStatus.DisconnectedRetrying)
                 {
                     lostConnection = true;
                 }
             }
-            deviceClient.SetConnectionStatusChangeCallback = connectionStatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 

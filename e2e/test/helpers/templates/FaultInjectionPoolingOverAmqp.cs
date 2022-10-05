@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope);
 
                 var amqpConnectionStatusesChange = new AmqpConnectionStatusChange(testDevice.Id, logger);
-                deviceClient.SetConnectionStatusChangeCallback = amqpConnectionStatusesChange.ConnectionStatusChangeHandler;
+                deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusesChange.ConnectionStatusChangeHandler;
 
                 var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
 

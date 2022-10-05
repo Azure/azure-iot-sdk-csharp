@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await GetWritablePropertiesAndHandleChangesAsync();
                 }
             }
-            _deviceClient.SetConnectionStatusChangeCallback = StatusChangeHandler;
+            _deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             await _deviceClient.SetDirectMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
 

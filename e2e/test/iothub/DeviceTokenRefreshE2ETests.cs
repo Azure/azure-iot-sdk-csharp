@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            deviceClient.SetConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
             var message = new OutgoingMessage("Hello");
 
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                 };
 
-                deviceClient.SetConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
+                deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
             }
 
             var message = new OutgoingMessage("Hello");

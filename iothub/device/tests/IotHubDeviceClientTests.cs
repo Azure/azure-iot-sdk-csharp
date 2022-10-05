@@ -745,7 +745,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -766,8 +766,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback = StatusChangeHandler;
-            deviceClient.SetConnectionStatusChangeCallback = null;
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = null;
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -786,7 +786,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
             // current status = disabled
 
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -816,7 +816,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             // current status = disabled
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));

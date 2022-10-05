@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await _deviceClient.OpenAsync(cts.Token);
 
-            _deviceClient.SetConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
+            _deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
             // Setup a callback dispatcher for the incoming methods.
             await _deviceClient.SetDirectMethodCallbackAsync(
