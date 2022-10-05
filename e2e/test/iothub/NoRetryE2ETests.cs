@@ -92,14 +92,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: 2 device client instances with the same deviceId={testDevice.Id}.");
 
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
+            Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: set device client instance 1 to no retry.");
+            var options1 = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
                 RetryPolicy = new NoRetry(),
             };
-            using IotHubDeviceClient deviceClient1 = testDevice.CreateDeviceClient(options);
-            using IotHubDeviceClient deviceClient2 = testDevice.CreateDeviceClient(options);
-
-            Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: set device client instance 1 to no retry.");
+            var options2 = new IotHubClientOptions(new IotHubClientAmqpSettings());
+            
+            using IotHubDeviceClient deviceClient1 = testDevice.CreateDeviceClient(options1);
+            using IotHubDeviceClient deviceClient2 = testDevice.CreateDeviceClient(options2);
 
             var connectionStatusChangeDevice1 = new Dictionary<ConnectionStatus, int>();
             deviceClient1.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
