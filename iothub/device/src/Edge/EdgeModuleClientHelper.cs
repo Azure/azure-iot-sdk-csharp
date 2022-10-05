@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (!string.IsNullOrWhiteSpace(certPath))
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info("EdgeModuleClientFactory setupTrustBundle from file");
+                        Logging.Info($"EdgeModuleClientFactory setupTrustBundle from file {certPath}.");
 
                     var expectedRoot = new X509Certificate2(certPath);
                     certificateValidator = CreateCertificateValidator(new List<X509Certificate2>() { expectedRoot }, options);
