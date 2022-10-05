@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
                 MessageEventCallback = OnMessageReceivedAsync,
             };
 
-            InnerHandler = pipelineBuilder.Build(PipelineContext);
+            InnerHandler = pipelineBuilder.Build(PipelineContext, _clientOptions.RetryPolicy);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, _clientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
@@ -87,23 +87,6 @@ namespace Microsoft.Azure.Devices.Client
         internal IDelegatingHandler InnerHandler { get; set; }
 
         private protected PipelineContext PipelineContext { get; private set; }
-
-        /// <summary>
-        /// Sets the retry policy used in the operation retries.
-        /// The change will take effect after any in-progress operations.
-        /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is
-        /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c></param>
-        public void SetRetryPolicy(IRetryPolicy retryPolicy)
-        {
-            RetryDelegatingHandler retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
-            if (retryDelegatingHandler == null)
-            {
-                throw new NotSupportedException();
-            }
-
-            retryDelegatingHandler.SetRetryPolicy(retryPolicy);
-        }
 
         /// <summary>
         /// Sets a new callback for receiving connection status change notifications. If a callback is already associated,
@@ -480,7 +463,6 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-
                 if (Logging.IsEnabled)
                     Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
             }

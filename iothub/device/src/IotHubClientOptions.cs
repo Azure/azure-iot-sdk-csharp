@@ -80,6 +80,14 @@ namespace Microsoft.Azure.Devices.Client
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
 
         /// <summary>
+        /// Sets the retry policy used in the operation retries.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to a near infinite exponential backoff
+        /// </remarks>
+        public IRetryPolicy RetryPolicy { get; set; } = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
+
+        /// <summary>
         /// Specifies additional information that will be appended to the user-agent string that is sent to IoT hub.
         /// </summary>
         public string AdditionalUserAgentInfo

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -16,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
             return this;
         }
 
-        public IDelegatingHandler Build(PipelineContext context)
+        public IDelegatingHandler Build(PipelineContext context, IRetryPolicy retryPolicy)
         {
             if (_pipeline.Count == 0)
             {
@@ -33,6 +34,10 @@ namespace Microsoft.Azure.Devices.Client
             {
                 ContinuationFactory<IDelegatingHandler> currentFactory = _pipeline[i];
                 currentHandler = currentFactory(context, nextHandler);
+                if (currentHandler is RetryDelegatingHandler retryHandler)
+                {
+                    retryHandler.SetRetryPolicy(retryPolicy);
+                }
                 currentHandler.ContinuationFactory = nextFactory;
 
                 nextHandler = currentHandler;
