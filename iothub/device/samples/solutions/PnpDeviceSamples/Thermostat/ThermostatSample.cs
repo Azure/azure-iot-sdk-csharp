@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await _deviceClient.OpenAsync(cancellationToken);
 
-            _deviceClient.SetConnectionStatusChangeCallback = async (info) =>
+            async void StatusChangeHandler(ConnectionStatusInfo info)
             {
                 _logger.LogDebug($"Connection status change registered - status={info.Status}, reason={info.ChangeReason}.");
 
@@ -78,7 +78,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     await GetWritablePropertiesAndHandleChangesAsync();
                 }
-            };
+            }
+            _deviceClient.SetConnectionStatusChangeCallback = StatusChangeHandler;
 
             _logger.LogDebug($"Set handler to receive \"targetTemperature\" updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);

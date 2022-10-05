@@ -103,8 +103,17 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The callback to be executed when connection status change notification is received.
+        /// The callback to be executed each time connection status change notification is received.
         /// </summary>
+        /// <example>
+        /// deviceClient.SetConnectionStatusChangeCallback = OnConnectionStatusChanged;
+        /// //...
+        ///
+        /// public void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
+        /// {
+        ///     // Add connection status changed logic as needed
+        /// }
+        /// </example>
         public Action<ConnectionStatusInfo> SetConnectionStatusChangeCallback { get; set; }
 
         /// <summary>

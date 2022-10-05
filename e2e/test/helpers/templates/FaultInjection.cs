@@ -122,11 +122,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             int connectionStatusChangeCount = 0;
 
-            deviceClient.SetConnectionStatusChangeCallback = (connectionStatusInfo =>
+            void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
             {
                 connectionStatusChangeCount++;
                 logger.Trace($"{nameof(FaultInjection)}.{nameof(TestErrorInjectionAsync)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={connectionStatusChangeCount}");
-            });
+            }
+
+            deviceClient.SetConnectionStatusChangeCallback = OnConnectionStatusChanged;
 
             var faultInjectionDuration = new Stopwatch();
 
