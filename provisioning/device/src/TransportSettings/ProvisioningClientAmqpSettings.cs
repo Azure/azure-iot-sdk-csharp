@@ -41,6 +41,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <remarks>
         /// This option is ignored for TCP connections.
+        /// <para>
+        /// If not provided, a client web socket instance will be created for you based on the other
+        /// settings provided in this class.
+        /// </para>
         /// </remarks>
         public ClientWebSocket ClientWebSocket { get; set; } = new ClientWebSocket();
 
