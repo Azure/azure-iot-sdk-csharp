@@ -66,9 +66,9 @@ namespace Microsoft.Azure.Devices.Client
             ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
 
             // TODO: environment variables need to be added to accept SasTokenTimeToLive and SasTokenRenewalBuffer.
-            // These values can then be passed on to ModuleAuthenticationWithHsm (internal class).
+            // These values can then be passed on to EdgeModuleAuthenticationWithHsm (internal class).
 
-            var authMethod = new ModuleAuthenticationWithHsm(
+            var authMethod = new EdgeModuleAuthenticationWithHsm(
                 signatureProvider,
                 deviceId,
                 moduleId,
