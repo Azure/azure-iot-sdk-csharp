@@ -396,7 +396,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, s_listOfPropertyValues, Logger).ConfigureAwait(false);
         }
 
-        public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(IotHubDeviceClient deviceClient, string deviceId, object propValue, MsTestLogger logger)
+        public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync<T>(IotHubDeviceClient deviceClient, string deviceId, T propValue, MsTestLogger logger)
         {
             string propName = Guid.NewGuid().ToString();
 
@@ -408,9 +408,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            dynamic actual = deviceTwin.Properties.Reported[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
+            ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            bool propertyFound = deviceTwin.ReportedByClient.TryGetValue(propName, out T actual);
+            propertyFound.Should().BeTrue();
+            actual.Should().BeEquivalentTo(propValue);
 
             // Validate the updated twin from the service-client
             Twin completeTwin = await _serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
@@ -494,9 +495,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync<T>(
             IotHubClientTransportSettings transportSettings,
-            Func<IotHubDeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
+            Func<IotHubDeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
+            T propValue)
         {
             string propName = Guid.NewGuid().ToString();
 
@@ -514,9 +516,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 updateReceivedTask).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            dynamic actual = deviceTwin.Properties.Desired[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
+            ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            bool propertyFound = deviceTwin.RequestsFromService.TryGetValue(propName, out T actual);
+            propertyFound.Should().BeTrue();
+            actual.Should().BeEquivalentTo(propValue);
 
             // Validate the updated twin from the service-client
             Twin completeTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
@@ -541,8 +544,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await _serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            Assert.AreEqual<string>(deviceTwin.Properties.Desired[propName].ToString(), propValue);
+            ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            bool propertyFound = deviceTwin.RequestsFromService.TryGetValue(propName, out string actual);
+            propertyFound.Should().BeTrue();
+            actual.Should().Be(propValue);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }

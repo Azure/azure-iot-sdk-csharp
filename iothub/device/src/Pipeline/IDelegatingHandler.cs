@@ -36,9 +36,9 @@ namespace Microsoft.Azure.Devices.Client
         Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken);
 
         // Twin.
-        Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken);
+        Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken);
 
-        Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken);
+        Task<long> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken);
 
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 

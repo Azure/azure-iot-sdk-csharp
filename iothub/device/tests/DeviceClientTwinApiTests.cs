@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinGetAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+                GetTwinAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinPatchAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+                UpdateReportedPropertiesAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]

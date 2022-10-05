@@ -295,12 +295,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The twin object for the current client.</returns>
-        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
+        public async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
-            return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
+            return await InnerHandler.GetTwinAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -316,7 +315,7 @@ namespace Microsoft.Azure.Devices.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
-            return await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+            return await InnerHandler.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
