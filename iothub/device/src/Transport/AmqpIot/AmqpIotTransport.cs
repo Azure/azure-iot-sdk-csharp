@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     break;
 
                 default:
-                    throw new InvalidOperationException("AmqpTransportSettings must specify either web socket or Tcp");
+                    throw new InvalidOperationException("AmqpTransportSettings must specify either web socket or TCP.");
             }
 
             if (Logging.IsEnabled)
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (Logging.IsEnabled)
                     Logging.Enter(this, nameof(CreateClientWebSocket));
 
-                var websocket = new ClientWebSocket();
+                using var websocket = new ClientWebSocket();
 
                 // Set SubProtocol to AMQPWSB10
                 websocket.Options.AddSubProtocol(Amqpwsb10);
@@ -148,6 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         // Some .NET runtimes don't support this property.
                         if (Logging.IsEnabled)
                             Logging.Error(this, $"{nameof(CreateClientWebSocket)} PlatformNotSupportedException thrown as this framework doesn't support proxy.");
+                        throw new InvalidOperationException("The current .NET runtime does not support setting the proxy.");
                     }
                 }
 

@@ -37,14 +37,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </remarks>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
-        /// <summary>
-        /// An instance of client web socket to be used when transport protocol is set to web socket.
-        /// </summary>
-        /// <remarks>
-        /// If not provided, an instance will be created from provided values for Proxy and Certificate.
-        /// </remarks>
-        public ClientWebSocket ClientWebSocket { get; set; }
-
         internal override ProvisioningClientTransportSettings Clone()
         {
             return new ProvisioningClientAmqpSettings(Protocol)

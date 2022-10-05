@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private TaskCompletionSource<TransportBase> _tcs;
         private TransportBase _transport;
         private ProtocolHeader _sentHeader;
-        private ClientWebSocket _websocket;
 
         internal AmqpClientConnection(
             string host,
@@ -201,15 +200,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Host = _host,
                 Port = WebSocketPort
             };
-            _websocket = _clientSettings.ClientWebSocket ?? CreateClientWebSocket(proxy);
-            await _websocket.ConnectAsync(webSocketUriBuilder.Uri, cancellationToken).ConfigureAwait(false);
+            ClientWebSocket websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, proxy, cancellationToken).ConfigureAwait(false);
             return new ClientWebSocketTransport(
-                _websocket,
+                websocket,
                 null,
                 null);
         }
 
-        private ClientWebSocket CreateClientWebSocket(IWebProxy webProxy)
+        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, IWebProxy webProxy, CancellationToken cancellationToken)
         {
             var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
@@ -225,20 +223,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateClientWebSocket)} Setting ClientWebSocket.Options.Proxy");
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
                 }
             }
             catch (PlatformNotSupportedException)
             {
                 // .NET Core 2.0 doesn't support WebProxy configuration - ignore this setting.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateClientWebSocket)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                    Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
             }
 
             if (TransportSettings.Certificate != null)
             {
                 websocket.Options.ClientCertificates.Add(TransportSettings.Certificate);
             }
+
+            await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
             return websocket;
         }

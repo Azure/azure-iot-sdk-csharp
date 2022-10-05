@@ -359,14 +359,14 @@ namespace Microsoft.Azure.Devices.Client
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<object>(state);
+            var tcs = new TaskCompletionSource<object>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 _ =>
                 {
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Devices.Client
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;
@@ -401,14 +401,14 @@ namespace Microsoft.Azure.Devices.Client
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<TResult>(state);
+            var tcs = new TaskCompletionSource<TResult>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 _ =>
                 {
@@ -428,7 +428,7 @@ namespace Microsoft.Azure.Devices.Client
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;
