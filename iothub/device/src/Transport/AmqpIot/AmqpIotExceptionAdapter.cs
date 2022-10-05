@@ -10,8 +10,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
     {
         internal static Exception ConvertToIotHubException(Exception exception, AmqpObject source)
         {
-            if (source != null 
-                && source.IsClosing() 
+            if (source != null
+                && source.IsClosing()
                 && exception is InvalidOperationException)
             {
                 return new IotHubClientException("AMQP resource is disconnected.", trackingId: null, IotHubClientErrorCode.NetworkErrors, exception);
