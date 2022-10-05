@@ -163,7 +163,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupX509Sample",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentX509Sample", "provisioning\service\samples\Getting Started\IndividualEnrollmentX509Sample\IndividualEnrollmentX509Sample.csproj", "{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentTpmSample", "provisioning\service\samples\Getting Started\IndividualEnrollmentTPMSample\IndividualEnrollmentTpmSample.csproj", "{705C5B5A-6166-4566-B167-4401491D7650}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentTpmSample", "provisioning\service\samples\Getting Started\IndividualEnrollmentTpmSample\IndividualEnrollmentTpmSample.csproj", "{705C5B5A-6166-4566-B167-4401491D7650}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
