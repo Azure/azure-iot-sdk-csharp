@@ -25,10 +25,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FaultInjection_NoRetry_NoRecovery_OpenAsync()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
+            
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
+            {
+                RetryPolicy = new NoRetry(),
+            };
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
-            deviceClient.SetRetryPolicy(new NoRetry());
 
             var connectionStatusChange = new Dictionary<ConnectionStatus, int>();
             deviceClient.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
@@ -88,12 +92,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: 2 device client instances with the same deviceId={testDevice.Id}.");
 
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
+            {
+                RetryPolicy = new NoRetry(),
+            };
             using IotHubDeviceClient deviceClient1 = testDevice.CreateDeviceClient(options);
             using IotHubDeviceClient deviceClient2 = testDevice.CreateDeviceClient(options);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: set device client instance 1 to no retry.");
-            deviceClient1.SetRetryPolicy(new NoRetry());
 
             var connectionStatusChangeDevice1 = new Dictionary<ConnectionStatus, int>();
             deviceClient1.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
