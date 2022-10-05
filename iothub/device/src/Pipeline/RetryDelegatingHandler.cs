@@ -687,7 +687,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // If this object has already been disposed, we will throw an exception indicating that.
             // This is the entry point for interacting with the client and this safety check should be done here.
             // The current behavior does not support open->close->open
-            if (_disposed)
+            if (_isDisposed)
             {
                 throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
             }
@@ -717,7 +717,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw;
                     }
 
-                    if (!_disposed)
+                    if (!_isDisposed)
                     {
                         _opened = true;
                         _openCalled = true;
@@ -772,7 +772,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw;
                     }
 
-                    if (!_disposed)
+                    if (!_isDisposed)
                     {
                         _opened = true;
                         _openCalled = true;
@@ -911,7 +911,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // Triggered from connection loss event
         private async Task HandleDisconnectAsync()
         {
-            if (_disposed)
+            if (_isDisposed)
             {
                 if (Logging.IsEnabled)
                     Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
@@ -1080,10 +1080,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
                 }
 
-                if (!_disposed)
+                if (!_isDisposed)
                 {
                     base.Dispose(disposing);
                     if (disposing)
@@ -1105,7 +1105,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
                 }
             }
         }

@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override bool IsUsable => !_disposed;
+        public override bool IsUsable => !_isDisposed;
 
         public override async Task OpenAsync(TimeoutHelper timeoutHelper)
         {
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             lock (_lock)
             {
-                if (_disposed)
+                if (_isDisposed)
                 {
                     return;
                 }
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             cancellationToken.ThrowIfCancellationRequested();
             lock (_lock)
             {
-                if (_disposed)
+                if (_isDisposed)
                 {
                     return;
                 }
@@ -620,19 +620,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
                 }
 
                 lock (_lock)
                 {
-                    if (!_disposed)
+                    if (!_isDisposed)
                     {
                         base.Dispose(disposing);
                         if (disposing)
                         {
                             _closed = true;
                             AmqpUnitManager.GetInstance()?.RemoveAmqpUnit(_amqpUnit);
-                            _disposed = true;
+                            _isDisposed = true;
                         }
                     }
 
@@ -643,7 +643,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
                 }
             }
         }

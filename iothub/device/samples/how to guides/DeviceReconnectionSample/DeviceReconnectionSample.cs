@@ -1,43 +1,46 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class DeviceReconnectionSample
     {
-        private const int TemperatureThreshold = 30;
         private static readonly Random s_randomGenerator = new();
         private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(15);
 
-        private readonly SemaphoreSlim _initSemaphore = new(1, 1);
+        private static readonly SemaphoreSlim s_initSemaphore = new(1, 1);
         private readonly List<string> _deviceConnectionStrings;
         private readonly TransportType _transportType;
-        private readonly ClientOptions _clientOptions = new() { SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset };
+        private static readonly ClientOptions s_clientOptions = new() { SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset };
+
+        private readonly ILogger _logger;
 
         // An UnauthorizedException is handled in the connection status change handler through its corresponding status change event.
         // We will ignore this exception when thrown by client API operations.
-        private readonly Dictionary<Type, string> _exceptionsToBeIgnored = new()
+        private static readonly HashSet<Type> s_exceptionsToBeRetried = new()
         {
-            { typeof(UnauthorizedException), "Unauthorized exceptions are handled by the ConnectionStatusChangeHandler." }
+            // Unauthorized exception conditions are handled by the ConnectionStatusChangeHandler in this sample and the sample will try
+            // to reconnect indefinitely, so don't give up on an operation that sees this exception.
+            typeof(UnauthorizedException),
         };
+        private readonly IRetryPolicy _customRetryPolicy;
 
-        private readonly ILogger _logger;
 
         // Mark these fields as volatile so that their latest values are referenced.
         private static volatile DeviceClient s_deviceClient;
         private static volatile ConnectionStatus s_connectionStatus = ConnectionStatus.Disconnected;
 
-        private static CancellationTokenSource s_cancellationTokenSource;
+        private static CancellationTokenSource s_appCancellation;
 
         // A safe initial value for caching the twin desired properties version is 1, so the client
         // will process all previous property change requests and initialize the device application
@@ -48,6 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public DeviceReconnectionSample(List<string> deviceConnectionStrings, TransportType transportType, ILogger logger)
         {
             _logger = logger;
+            _customRetryPolicy = new CustomRetryPolicy(s_exceptionsToBeRetried, _logger);
 
             // This class takes a list of potentially valid connection strings (most likely the currently known good primary and secondary keys)
             // and will attempt to connect with the first. If it receives feedback that a connection string is invalid, it will discard it, and
@@ -70,11 +74,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
-            s_cancellationTokenSource = new CancellationTokenSource(sampleRunningTime);
+            s_appCancellation = new CancellationTokenSource(sampleRunningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
-                s_cancellationTokenSource.Cancel();
+                s_appCancellation.Cancel();
                 _logger.LogWarning("Sample execution cancellation requested; will exit.");
             };
 
@@ -82,18 +86,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             try
             {
-                await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
-                await Task.WhenAll(SendMessagesAsync(s_cancellationTokenSource.Token), ReceiveMessagesAsync(s_cancellationTokenSource.Token));
+                await InitializeAndSetupClientAsync(s_appCancellation.Token);
+                await Task.WhenAll(SendMessagesAsync(s_appCancellation.Token), ReceiveMessagesAsync(s_appCancellation.Token));
             }
             catch (OperationCanceledException) { } // User canceled the operation
             catch (Exception ex)
             {
                 _logger.LogError($"Unrecoverable exception caught, user action is required, so exiting: \n{ex}");
-                s_cancellationTokenSource.Cancel();
+                s_appCancellation.Cancel();
             }
 
-            _initSemaphore.Dispose();
-            s_cancellationTokenSource.Dispose();
+            // Finally, close the client, but we can't use s_appCancellation because it has been signaled to quit the app.
+            await s_deviceClient.CloseAsync(CancellationToken.None);
+            s_initSemaphore.Dispose();
+            s_appCancellation.Dispose();
         }
 
         private async Task InitializeAndSetupClientAsync(CancellationToken cancellationToken)
@@ -101,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             if (ShouldClientBeInitialized(s_connectionStatus))
             {
                 // Allow a single thread to dispose and initialize the client instance.
-                await _initSemaphore.WaitAsync(cancellationToken);
+                await s_initSemaphore.WaitAsync(cancellationToken);
                 try
                 {
                     if (ShouldClientBeInitialized(s_connectionStatus))
@@ -115,40 +121,29 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             {
                                 await s_deviceClient.CloseAsync(cancellationToken);
                             }
-                            catch (UnauthorizedException) { } // if the previous token is now invalid, this call may fail
+                            catch (UnauthorizedException) { } // If the previous token is now invalid, this call may fail
                             s_deviceClient.Dispose();
                         }
 
-                        s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _transportType, _clientOptions);
+                        s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _transportType, s_clientOptions);
                         s_deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandlerAsync);
+                        s_deviceClient.SetRetryPolicy(_customRetryPolicy);
                         _logger.LogDebug("Initialized the client instance.");
+
+                        // Force connection now.
+                        // We have set the "shouldExecuteOperation" function to always try to open the connection.
+                        // OpenAsync() is an idempotent call, it has the same effect if called once or multiple times on the same client.
+                        await s_deviceClient.OpenAsync(cancellationToken);
+                        _logger.LogDebug($"The client instance has been opened.");
                     }
                 }
                 finally
                 {
-                    _initSemaphore.Release();
+                    s_initSemaphore.Release();
                 }
 
-                // Force connection now.
-                // We have set the "shouldExecuteOperation" function to always try to open the connection.
-                // OpenAsync() is an idempotent call, it has the same effect if called once or multiple times on the same client.
-                await RetryOperationHelper.RetryTransientExceptionsAsync(
-                    operationName: "OpenConnection",
-                    asyncOperation: async () => await s_deviceClient.OpenAsync(cancellationToken),
-                    shouldExecuteOperation: () => true,
-                    logger: _logger,
-                    exceptionsToBeIgnored: _exceptionsToBeIgnored,
-                    cancellationToken: cancellationToken);
-                _logger.LogDebug($"The client instance has been opened.");
-
                 // You will need to subscribe to the client callbacks any time the client is initialized.
-                await RetryOperationHelper.RetryTransientExceptionsAsync(
-                    operationName: "SubscribeTwinUpdates",
-                    asyncOperation: async () => await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(HandleTwinUpdateNotificationsAsync, cancellationToken),
-                    shouldExecuteOperation: () => IsDeviceConnected,
-                    logger: _logger,
-                    exceptionsToBeIgnored: _exceptionsToBeIgnored,
-                    cancellationToken: cancellationToken);
+                await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(HandleTwinUpdateNotificationsAsync, null, cancellationToken);
                 _logger.LogDebug("The client has subscribed to desired property update notifications.");
             }
         }
@@ -174,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     // work on a device (e.g., get twin) when it comes online. If all the devices go offline and then come online at the same time (for example,
                     // during a servicing event) it could introduce increased latency or even throttling responses.
                     // For more information, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#traffic-shaping.
-                    await GetTwinAndDetectChangesAsync(s_cancellationTokenSource.Token);
+                    await GetTwinAndDetectChangesAsync(s_appCancellation.Token);
                     _logger.LogDebug("The client has retrieved twin values after the connection status changes into CONNECTED.");
                     break;
 
@@ -200,7 +195,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                                 try
                                 {
-                                    await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
+                                    await InitializeAndSetupClientAsync(s_appCancellation.Token);
                                 }
                                 catch (OperationCanceledException) { } // User canceled
 
@@ -208,13 +203,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             }
 
                             _logger.LogWarning("### The supplied credentials are invalid. Update the parameters and run again.");
-                            s_cancellationTokenSource.Cancel();
+                            s_appCancellation.Cancel();
                             break;
 
                         case ConnectionStatusChangeReason.Device_Disabled:
                             _logger.LogWarning("### The device has been deleted or marked as disabled (on your hub instance)." +
                                 "\nFix the device status in Azure and then create a new device client instance.");
-                            s_cancellationTokenSource.Cancel();
+                            s_appCancellation.Cancel();
                             break;
 
                         case ConnectionStatusChangeReason.Retry_Expired:
@@ -223,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                             try
                             {
-                                await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
+                                await InitializeAndSetupClientAsync(s_appCancellation.Token);
                             }
                             catch (OperationCanceledException) { } // User canceled
 
@@ -235,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                             try
                             {
-                                await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
+                                await InitializeAndSetupClientAsync(s_appCancellation.Token);
                             }
                             catch (OperationCanceledException) { } // User canceled
 
@@ -256,70 +251,45 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetTwinAndDetectChangesAsync(CancellationToken cancellationToken)
         {
-            Twin twin = null;
+            // For the following call, we execute with a retry strategy with incrementally increasing delays between retry.
+            Twin twin = await s_deviceClient.GetTwinAsync(cancellationToken);
+            _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
 
-            // Allow a single thread to call GetTwin here
-            await _initSemaphore.WaitAsync(cancellationToken);
+            TwinCollection twinCollection = twin.Properties.Desired;
+            long serverDesiredPropertyVersion = twinCollection.Version;
 
-            try
+            // Check if the desired property version is outdated on the local side.
+            if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
             {
-                // For the following call, we execute with a retry strategy with incrementally increasing delays between retry.
-                await RetryOperationHelper.RetryTransientExceptionsAsync(
-                    operationName: "GetTwin",
-                    asyncOperation: async () =>
-                    {
-                        twin = await s_deviceClient.GetTwinAsync();
-                        _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
-
-                        TwinCollection twinCollection = twin.Properties.Desired;
-                        long serverDesiredPropertyVersion = twinCollection.Version;
-
-                        // Check if the desired property version is outdated on the local side.
-                        if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
-                        {
-                            _logger.LogDebug($"The desired property version cached on local is changing from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
-                            await HandleTwinUpdateNotificationsAsync(twinCollection, cancellationToken);
-                        }
-                    },
-                    shouldExecuteOperation: () => IsDeviceConnected,
-                    logger: _logger,
-                    exceptionsToBeIgnored: _exceptionsToBeIgnored,
-                    cancellationToken: cancellationToken);
-            }
-            finally
-            {
-                _initSemaphore.Release();
+                _logger.LogDebug($"The desired property version cached on local is changing from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
+                await HandleTwinUpdateNotificationsAsync(twinCollection, cancellationToken);
             }
         }
 
         private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest, object userContext)
         {
-            var cancellationToken = (CancellationToken)userContext;
+            var reportedProperties = new TwinCollection();
 
-            if (!cancellationToken.IsCancellationRequested)
+            _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.ToJson()}");
+
+            // For the purpose of this sample, we'll blindly accept all twin property write requests.
+            foreach (KeyValuePair<string, object> desiredProperty in twinUpdateRequest)
             {
-                var reportedProperties = new TwinCollection();
+                _logger.LogInformation($"Setting property {desiredProperty.Key} to {desiredProperty.Value}.");
+                reportedProperties[desiredProperty.Key] = desiredProperty.Value;
+            }
 
-                _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.ToJson()}");
+            s_localDesiredPropertyVersion = twinUpdateRequest.Version;
+            _logger.LogDebug($"The desired property version on local is currently {s_localDesiredPropertyVersion}.");
 
+            try
+            {
                 // For the purpose of this sample, we'll blindly accept all twin property write requests.
-                foreach (KeyValuePair<string, object> desiredProperty in twinUpdateRequest)
-                {
-                    _logger.LogInformation($"Setting property {desiredProperty.Key} to {desiredProperty.Value}.");
-                    reportedProperties[desiredProperty.Key] = desiredProperty.Value;
-                }
-
-                s_localDesiredPropertyVersion = twinUpdateRequest.Version;
-                _logger.LogDebug($"The desired property version on local is currently {s_localDesiredPropertyVersion}.");
-
-                // For the purpose of this sample, we'll blindly accept all twin property write requests.
-                await RetryOperationHelper.RetryTransientExceptionsAsync(
-                    operationName: "UpdateReportedProperties",
-                    asyncOperation: async () => await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken),
-                    shouldExecuteOperation: () => IsDeviceConnected,
-                    logger: _logger,
-                    exceptionsToBeIgnored: _exceptionsToBeIgnored,
-                    cancellationToken: cancellationToken);
+                await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties, s_appCancellation.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Fail gracefully on sample exit.
             }
         }
 
@@ -332,16 +302,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 if (IsDeviceConnected)
                 {
                     _logger.LogInformation($"Device sending message {++messageCount} to IoT hub.");
-
                     using Message message = PrepareMessage(messageCount);
-                    await RetryOperationHelper.RetryTransientExceptionsAsync(
-                        operationName: $"SendD2CMessage_{messageCount}",
-                        asyncOperation: async () => await s_deviceClient.SendEventAsync(message),
-                        shouldExecuteOperation: () => IsDeviceConnected,
-                        logger: _logger,
-                        exceptionsToBeIgnored: _exceptionsToBeIgnored,
-                        cancellationToken: cancellationToken);
-
+                    await s_deviceClient.SendEventAsync(message, cancellationToken);
                     _logger.LogInformation($"Device sent message {messageCount} to IoT hub.");
                 }
 
@@ -351,11 +313,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task ReceiveMessagesAsync(CancellationToken cancellationToken)
         {
-            var c2dReceiveExceptionsToBeIgnored = new Dictionary<Type, string>(_exceptionsToBeIgnored)
-            {
-                { typeof(DeviceMessageLockLostException), "Attempted to complete a received message whose lock token has expired" },
-            };
-
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (!IsDeviceConnected)
@@ -374,23 +331,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogInformation($"Device waiting for C2D messages from the hub for {s_sleepDuration}." +
                     $"\nUse the IoT Hub Azure Portal or Azure IoT Explorer to send a message to this device.");
 
-                await RetryOperationHelper.RetryTransientExceptionsAsync(
-                    operationName: "ReceiveAndCompleteC2DMessage",
-                    asyncOperation: async () => await ReceiveMessageAndCompleteAsync(),
-                    shouldExecuteOperation: () => IsDeviceConnected,
-                    logger: _logger,
-                    exceptionsToBeIgnored: c2dReceiveExceptionsToBeIgnored,
-                    cancellationToken: cancellationToken);
+                await ReceiveMessageAndCompleteAsync(cancellationToken);
             }
         }
 
-        private async Task ReceiveMessageAndCompleteAsync()
+        private async Task ReceiveMessageAndCompleteAsync(CancellationToken cancellationToken)
         {
-            using var cts = new CancellationTokenSource(s_sleepDuration);
             Message receivedMessage = null;
             try
             {
-                receivedMessage = await s_deviceClient.ReceiveAsync(cts.Token);
+                receivedMessage = await s_deviceClient.ReceiveAsync(cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -403,10 +353,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 return;
             }
 
-            try
+            using (receivedMessage)
             {
                 string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
+                var formattedMessage = new StringBuilder($"Received message '{receivedMessage.MessageId}': [{messageData}]");
 
                 foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
                 {
@@ -414,17 +364,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
                 _logger.LogInformation(formattedMessage.ToString());
 
-                await s_deviceClient.CompleteAsync(receivedMessage);
-                _logger.LogInformation($"Completed message [{messageData}].");
-            }
-            finally
-            {
-                receivedMessage.Dispose();
+                try
+                {
+                    await s_deviceClient.CompleteAsync(receivedMessage, cancellationToken);
+                    _logger.LogInformation($"Completed message '{receivedMessage.MessageId}'.");
+                }
+                catch (DeviceMessageLockLostException)
+                {
+                    _logger.LogWarning($"Took too long to process and complete a C2D message; it will be redelivered.");
+                }
             }
         }
 
         private static Message PrepareMessage(int messageId)
         {
+            const int temperatureThreshold = 30;
+
             int temperature = s_randomGenerator.Next(20, 35);
             int humidity = s_randomGenerator.Next(60, 80);
             string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
@@ -435,7 +390,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 ContentEncoding = Encoding.UTF8.ToString(),
                 ContentType = "application/json",
             };
-            eventMessage.Properties.Add("temperatureAlert", (temperature > TemperatureThreshold) ? "true" : "false");
+            eventMessage.Properties.Add("temperatureAlert", (temperature > temperatureThreshold) ? "true" : "false");
 
             return eventMessage;
         }

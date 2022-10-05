@@ -456,10 +456,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
                 }
 
-                if (!_disposed)
+                if (!_isDisposed)
                 {
                     base.Dispose(disposing);
                     if (disposing)
@@ -492,7 +492,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
                 }
             }
         }
