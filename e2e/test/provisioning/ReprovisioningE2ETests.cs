@@ -483,7 +483,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ValidateDeviceRegistrationResult(result);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
+            // The certificate instance referenced in the ClientAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
             Client.IAuthenticationMethod authMethod = CreateAuthenticationMethodFromAuthenticationProvider(auth, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
@@ -712,11 +712,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (provisioningAuth is AuthenticationProviderX509 x509Auth)
             {
                 X509Certificate2 cert = x509Auth.GetAuthenticationCertificate();
-                auth = new DeviceAuthenticationWithX509Certificate(deviceId, cert);
+                auth = new ClientAuthenticationWithX509Certificate(cert, deviceId);
             }
             else if (provisioningAuth is AuthenticationProviderSymmetricKey symmetricKeyAuth)
             {
-                auth = new DeviceAuthenticationWithRegistrySymmetricKey(deviceId, symmetricKeyAuth.GetPrimaryKey());
+                auth = new ClientAuthenticationWithRegistrySymmetricKey(symmetricKeyAuth.GetPrimaryKey(), deviceId);
             }
             else
             {

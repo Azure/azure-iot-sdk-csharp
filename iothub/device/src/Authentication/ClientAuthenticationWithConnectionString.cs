@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses the device connection string to generate SAS tokens for authenticating with service.
     /// </summary>
-    public sealed class DeviceAuthenticationWithConnectionString : IAuthenticationMethod
+    public sealed class ClientAuthenticationWithConnectionString : IAuthenticationMethod
     {
         private const int DefaultSasRenewalBufferPercentage = 15;
         private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        /// <param name="connectionString">The connection string containing the device Id, shared access key aname and shared access key
-        /// to be used for authenticating with IoT hub service.</param>
+        /// <param name="connectionString">The connection string containing the device Id, optional module Id, shared access key name
+        /// and shared access key to be used for authenticating with IoT hub service.</param>
         /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
         /// The default value is 1 hour.
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client
         ///</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
         /// <paramref name="timeBufferPercentage"/> is outside the range 0-100.</exception>
-        public DeviceAuthenticationWithConnectionString(
+        public ClientAuthenticationWithConnectionString(
             string connectionString,
             TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default)
@@ -66,6 +66,7 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             iotHubConnectionCredentials.DeviceId = _iotHubConnectionString.DeviceId;
+            iotHubConnectionCredentials.ModuleId = _iotHubConnectionString.ModuleId;
             iotHubConnectionCredentials.SharedAccessKeyName = _iotHubConnectionString.SharedAccessKeyName;
             iotHubConnectionCredentials.SharedAccessKey = _iotHubConnectionString.SharedAccessKey;
             iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;

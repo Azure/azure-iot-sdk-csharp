@@ -12,14 +12,15 @@ namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class DeviceAuthenticationWithTokenRefreshTests
+    public class ClientAuthenticationWithTokenRefreshTests
     {
         private const string TestDeviceId = "TestDeviceID";
+        private const string TestModuleId = "TestModuleID";
         private const string TestIotHubName = "contoso.azure-devices.net";
         private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
         private static string TestSharedAccessKey;
 
-        static DeviceAuthenticationWithTokenRefreshTests()
+        static ClientAuthenticationWithTokenRefreshTests()
         {
             var rnd = new Random();
             var rndBytes = new byte[32];
@@ -29,17 +30,20 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceAuthenticationWithTokenRefresh_Ctor_WrongArguments_Fail()
+        public void ClientAuthenticationWithTokenRefresh_Ctor_WrongArguments_Fail()
         {
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(null));
             TestAssert.Throws<ArgumentException>(() => new TestImplementation("   "));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(-1), 10));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(60), -1));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(60), 101));
+            TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(null, TestModuleId));
+            TestAssert.Throws<ArgumentException>(() => new TestImplementation("   ", TestModuleId));
+            TestAssert.Throws<ArgumentException>(() => new TestImplementation(TestDeviceId, "   "));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(-1), 10));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), -1));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), 101));
         }
 
         [TestMethod]
-        public void DeviceAuthenticationWithTokenRefresh_Ctor_DefaultsGetProperties_Ok()
+        public void ClientAuthenticationWithTokenRefresh_Ctor_DefaultsGetProperties_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId);
             Assert.AreEqual(TestDeviceId, refresher.DeviceId);
@@ -53,12 +57,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationWithTokenRefresh_InitializedToken_GetProperties_Ok()
+        public async Task ClientAuthenticationWithTokenRefresh_InitializedToken_GetProperties_Ok()
         {
             TimeSpan ttl = TimeSpan.FromSeconds(5);
             int buffer = 20;  // Token should refresh after 4 seconds.
 
-            var refresher = new TestImplementation(TestDeviceId, ttl, buffer);
+            var refresher = new TestImplementation(TestDeviceId, suggestedTimeToLive: ttl, timeBufferPercentage: buffer);
             await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
 
             DateTime currentTime = DateTime.UtcNow;
@@ -86,41 +90,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
-        {
-            var refresher = new TestImplementation(TestDeviceId);
-            var iotHubConnectionCredentials = new IotHubConnectionCredentials(refresher, TestIotHubName);
-
-            refresher.Populate(iotHubConnectionCredentials);
-
-            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
-            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
-            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
-            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
-
-            string token = await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
-
-            refresher.Populate(iotHubConnectionCredentials);
-
-            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
-            Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
-            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
-            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
-        }
-
-        [TestMethod]
-        public void DeviceAuthenticationWithTokenRefresh_Populate_InvalidConnectionStringBuilder_Fail()
+        public void ClientAuthenticationWithTokenRefresh_Populate_InvalidConnectionStringBuilder_Fail()
         {
             var refresher = new TestImplementation(TestDeviceId);
             TestAssert.Throws<ArgumentNullException>(() => refresher.Populate(null));
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationWithTokenRefresh_GetTokenAsync_NewTtl_Ok()
+        public async Task ClientAuthenticationWithTokenRefresh_GetTokenAsync_NewTtl_Ok()
         {
             TimeSpan ttl = TimeSpan.FromSeconds(1);
 
-            var refresher = new TestImplementation(TestDeviceId, ttl, 90);
+            var refresher = new TestImplementation(TestDeviceId, suggestedTimeToLive: ttl, timeBufferPercentage: 90);
             await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
 
             DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl.TotalSeconds);
@@ -145,14 +126,85 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
+        public async Task ClientAuthenticationWithTokenRefresh_WithDevice_Populate_DefaultParameters_Ok()
+        {
+            var refresher = new TestImplementation(TestDeviceId);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(refresher, TestIotHubName);
+
+            refresher.Populate(iotHubConnectionCredentials);
+
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
+
+            string token = await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
+
+            refresher.Populate(iotHubConnectionCredentials);
+
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+            Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
+        }
+
+        [TestMethod]
+        public async Task ClientAuthenticationWithTokenRefresh_WithModule_Populate_DefaultParameters_Ok()
+        {
+            var refresher = new TestImplementation(TestDeviceId, TestModuleId);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(refresher, TestIotHubName);
+
+            refresher.Populate(iotHubConnectionCredentials);
+
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+            Assert.AreEqual(TestModuleId, iotHubConnectionCredentials.ModuleId);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
+
+            string token = await refresher.GetTokenAsync(TestIotHubName);
+
+            refresher.Populate(iotHubConnectionCredentials);
+
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+            Assert.AreEqual(TestModuleId, iotHubConnectionCredentials.ModuleId);
+            Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
+        }
+
+        [TestMethod]
+        public async Task ClientAuthenticationWithSakRefresh_WithDevice_SharedAccessKeyConnectionString_HasRefresher()
         {
             IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new DeviceAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestSharedAccessKey),
+                new ClientAuthenticationWithRegistrySymmetricKey(TestSharedAccessKey, TestDeviceId),
                 TestIotHubName);
 
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
-            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(DeviceAuthenticationWithSakRefresh));
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ClientAuthenticationWithSakRefresh));
+
+            var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
+
+            string token1 = await iotHubConnectionCredentials.GetPasswordAsync().ConfigureAwait(false);
+            CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIotHubName), "testAppliesTo", null).ConfigureAwait(false);
+
+            Assert.IsNull(iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+
+            Assert.IsNotNull(token1);
+            Assert.IsNotNull(token2);
+            Assert.AreEqual(token1, token2.TokenValue);
+        }
+
+        [TestMethod]
+        public async Task ClientAuthenticationWithSakRefresh_WithModule_SharedAccessKeyConnectionString_HasRefresher()
+        {
+            IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
+                new ClientAuthenticationWithRegistrySymmetricKey(TestSharedAccessKey, TestDeviceId, TestModuleId),
+                TestIotHubName);
+
+            Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ClientAuthenticationWithSakRefresh));
 
             var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
@@ -178,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             return builder.ToSignature();
         }
 
-        private class TestImplementation : DeviceAuthenticationWithTokenRefresh
+        private class TestImplementation : ClientAuthenticationWithTokenRefresh
         {
             private int _callCount = 0;
 
@@ -186,15 +238,12 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             public int ActualTimeToLive { get; set; }
 
-            public TestImplementation(string deviceId) : base(deviceId)
-            {
-            }
-
             public TestImplementation(
                 string deviceId,
-                TimeSpan suggestedTimeToLive,
-                int timeBufferPercentage)
-                : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
+                string moduleId = default,
+                TimeSpan suggestedTimeToLive = default,
+                int timeBufferPercentage = default)
+                : base(deviceId, moduleId, suggestedTimeToLive, timeBufferPercentage)
             {
             }
 

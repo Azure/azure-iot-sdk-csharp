@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             const string hostName = "acme.azure-devices.net";
-            var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
+            var authMethod = new ClientAuthenticationWithX509Certificate(null, "device1");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act

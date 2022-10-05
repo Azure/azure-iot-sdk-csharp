@@ -98,10 +98,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
-            var auth = new DeviceAuthenticationWithX509Certificate(
-                TestConfiguration.IotHub.X509ChainDeviceName,
+            var auth = new ClientAuthenticationWithX509Certificate(
                 s_chainCertificateWithPrivateKey,
-                chainCerts);
+                TestConfiguration.IotHub.X509ChainDeviceName,
+                chainCertificates: chainCerts);
             using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
@@ -126,10 +126,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
             };
-            var auth = new DeviceAuthenticationWithX509Certificate(
-                TestConfiguration.IotHub.X509ChainDeviceName,
+            var auth = new ClientAuthenticationWithX509Certificate(
                 s_chainCertificateWithPrivateKey,
-                chainCerts);
+                TestConfiguration.IotHub.X509ChainDeviceName,
+                chainCertificates: chainCerts);
             using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task X509InvalidDeviceIdOpenAsyncTest(IotHubClientTransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
+            var auth = new ClientAuthenticationWithX509Certificate(s_selfSignedCertificateWithPrivateKey, deviceName);
             using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             try
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(IotHubClientTransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
+            var auth = new ClientAuthenticationWithX509Certificate(s_selfSignedCertificateWithPrivateKey, deviceName);
             using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             for (int i = 0; i < 2; i++)
