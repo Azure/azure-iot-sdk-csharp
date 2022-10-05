@@ -173,12 +173,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        /// <summary>
-        /// Remote certificate validation callback.
-        /// </summary>
-        /// <remarks>
-        /// Remote certificate validation is not supported for web socket implementation.
-        /// </remarks>
         private bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)

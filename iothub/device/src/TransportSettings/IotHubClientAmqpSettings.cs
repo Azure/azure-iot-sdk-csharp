@@ -57,8 +57,13 @@ namespace Microsoft.Azure.Devices.Client
         /// A callback for remote certificate validation.
         /// </summary>
         /// <remarks>
-        /// Remote certificate validation is not supported for web socket implementation.
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
+        /// <para>
+        /// This feature is only applicable for HTTP, MQTT over TCP, MQTT over web socket, AMQP
+        /// over TCP. AMQP web socket communication does not support this feature. For users who want
+        /// this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
+        /// instance with the desired callback set.
+        /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
