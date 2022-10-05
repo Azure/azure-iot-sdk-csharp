@@ -24,7 +24,9 @@ namespace Microsoft.Azure.Devices.Client
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         ///</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="deviceId"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="deviceId"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown when <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.
+        /// </exception>
         public ClientAuthenticationWithTokenRefresh(
             string deviceId,
             string moduleId = default,
@@ -34,9 +36,13 @@ namespace Microsoft.Azure.Devices.Client
                   timeBufferPercentage)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-
             DeviceId = deviceId;
 
+            if (moduleId != null
+                && moduleId.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentException("Module Id cannot be white space.");
+            }
             ModuleId = moduleId;
         }
 

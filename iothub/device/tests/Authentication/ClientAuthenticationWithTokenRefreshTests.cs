@@ -36,6 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             TestAssert.Throws<ArgumentException>(() => new TestImplementation("   "));
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(null, TestModuleId));
             TestAssert.Throws<ArgumentException>(() => new TestImplementation("   ", TestModuleId));
+            TestAssert.Throws<ArgumentException>(() => new TestImplementation(TestDeviceId, "   "));
             TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(-1), 10));
             TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), -1));
             TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), 101));
