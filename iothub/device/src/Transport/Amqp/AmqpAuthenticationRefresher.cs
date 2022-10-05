@@ -66,10 +66,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, refreshOn, nameof(IAmqpAuthenticationRefresher.StartLoop));
 
-            if (_loopCancellationTokenSource != null)
+            if (_loopCancellationTokenSource == null
+                || _refreshLoop == null)
             {
-                _loopCancellationTokenSource.Cancel();
-                _loopCancellationTokenSource.Dispose();
+                (this as IAmqpAuthenticationRefresher)?.StopLoop();
             }
 
             _loopCancellationTokenSource = new CancellationTokenSource();
@@ -83,14 +83,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         async void IAmqpAuthenticationRefresher.StopLoop()
         {
-            _loopCancellationTokenSource.Cancel();
-            try
+            _loopCancellationTokenSource?.Cancel();
+            if (_refreshLoop != null)
             {
-                await _refreshLoop.ConfigureAwait(false);
+                try
+                {
+                    await _refreshLoop.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) { }
+                _refreshLoop = null;
             }
-            catch (OperationCanceledException) { }
 
-            _loopCancellationTokenSource.Dispose();
+            _loopCancellationTokenSource?.Dispose();
             _loopCancellationTokenSource = null;
 
             if (Logging.IsEnabled)
