@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<DirectMethodRequest, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
+            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageCallback,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _amqpSettings = amqpSettings;
 
             _onMethodCallback = onMethodCallback;
-            _twinMessageListener = twinMessageListener;
+            _twinMessageListener = twinMessageCallback;
             _onMessageReceivedCallback = onMessageReceivedCallback;
 
             _amqpConnectionHolder = amqpConnectionHolder;

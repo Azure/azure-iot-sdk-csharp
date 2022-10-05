@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var refresher = new TestImplementation();
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new ModuleAuthenticationWithRegistrySymmetricKey("deviceId", "moduleid", TestSharedAccessKey),
+                new ClientAuthenticationWithRegistrySymmetricKey(TestSharedAccessKey,"deviceId", "moduleId"),
                 TestIotHubName);
 
             refresher.Populate(iotHubConnectionCredentials);

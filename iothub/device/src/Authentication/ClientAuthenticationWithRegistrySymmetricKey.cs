@@ -8,9 +8,9 @@ using Microsoft.Azure.Devices.Client.Utilities;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Authentication method that uses the symmetric key associated with the device in the device registry.
+    /// Authentication method that uses the symmetric key associated with the device/module in the device/module registry.
     /// </summary>
-    public sealed class DeviceAuthenticationWithRegistrySymmetricKey : IAuthenticationMethod
+    public sealed class ClientAuthenticationWithRegistrySymmetricKey : IAuthenticationMethod
     {
         private const int DefaultSasRenewalBufferPercentage = 15;
         private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly int _timeBufferPercentage;
 
         private string _deviceId;
+        private string _moduleId;
         private byte[] _key;
 
         /// <summary>
@@ -26,6 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="key">Symmetric key associated with the device.</param>
+        /// <param name="moduleId">Module identifier.</param>
         /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
         /// The default value is 1 hour.
@@ -36,9 +38,10 @@ namespace Microsoft.Azure.Devices.Client
         ///</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
         /// <paramref name="timeBufferPercentage"/> is outside the range 0-100.</exception>
-        public DeviceAuthenticationWithRegistrySymmetricKey(
-            string deviceId,
+        public ClientAuthenticationWithRegistrySymmetricKey(
             string key,
+            string deviceId,
+            string moduleId = default,
             TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default)
         {
@@ -52,8 +55,9 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
             }
 
-            SetDeviceId(deviceId);
             SetKeyFromBase64String(key);
+            SetDeviceId(deviceId);
+            SetModuleId(moduleId);
 
             _suggestedTimeToLive = suggestedTimeToLive == default
                 ? s_defaultSasTimeToLive
@@ -71,6 +75,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => _deviceId;
             set => SetDeviceId(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the module identifier.
+        /// </summary>
+        public string ModuleId
+        {
+            get => _moduleId;
+            set => SetModuleId(value);
         }
 
         /// <summary>
@@ -105,6 +118,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
             iotHubConnectionCredentials.SharedAccessKey = KeyAsBase64String;
             iotHubConnectionCredentials.SharedAccessKeyName = null;
             iotHubConnectionCredentials.SharedAccessSignature = null;
@@ -137,6 +151,18 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             _deviceId = deviceId;
+        }
+
+        private void SetModuleId(string moduleId)
+        {
+            // The module Id is optional so we only check whether it is whitespace or not here.
+            if (moduleId != null 
+                && moduleId.IsNullOrWhiteSpace())
+            {
+                throw new InvalidOperationException("Module Id cannot be white space.");
+            }
+
+            _moduleId = moduleId;
         }
     }
 }

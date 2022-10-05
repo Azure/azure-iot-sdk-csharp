@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a shared access signature token.
     /// </summary>
-    public sealed class ModuleAuthenticationWithToken : IAuthenticationMethod
+    public sealed class ClientAuthenticationWithToken : IAuthenticationMethod
     {
         private string _deviceId;
         private string _moduleId;
@@ -17,10 +17,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        /// <param name="deviceId">Device identifier.</param>
-        /// <param name="moduleId">Module identifier.</param>
-        /// <param name="token">Security token.</param>
-        public ModuleAuthenticationWithToken(string deviceId, string moduleId, string token)
+        /// <param name="token">Security Token.</param>
+        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="moduleId">Module Identifier.</param>
+        public ClientAuthenticationWithToken(string token, string deviceId, string moduleId = default)
         {
             SetDeviceId(deviceId);
             SetModuleId(moduleId);
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new FormatException("Device Id cannot be null or white space.");
+                throw new InvalidOperationException("Device Id cannot be null or white space.");
             }
 
             _deviceId = deviceId;
@@ -85,9 +85,11 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetModuleId(string moduleId)
         {
-            if (moduleId.IsNullOrWhiteSpace())
+            // The module Id is optional so we only check whether it is whitespace or not here.
+            if (moduleId != null
+                && moduleId.IsNullOrWhiteSpace())
             {
-                throw new FormatException("Module Id cannot be null or white space.");
+                throw new InvalidOperationException("Module Id cannot be white space.");
             }
 
             _moduleId = moduleId;
@@ -97,12 +99,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (token.IsNullOrWhiteSpace())
             {
-                throw new FormatException("Security token cannot be null or white space.");
+                throw new InvalidOperationException("Security token cannot be null or white space.");
             }
 
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
-                throw new FormatException("Security token must be of type SharedAccessSignature.");
+                throw new InvalidOperationException("Security token must be of type SharedAccessSignature.");
             }
 
             _token = token;

@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Target = $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}",
             };
 
-            var auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
+            var auth = new ClientAuthenticationWithToken(builder.ToSignature(), deviceId);
 
             using var deviceClient = new IotHubDeviceClient(iotHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
             Logger.Trace($"{deviceId}: Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceDisconnected = new SemaphoreSlim(0);
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            var auth = new DeviceAuthenticationWithConnectionString(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
+            var auth = new ClientAuthenticationWithConnectionString(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
 
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
@@ -270,7 +270,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
+        private class TestTokenRefresher : ClientAuthenticationWithTokenRefresh
         {
             private readonly string _key;
             private readonly IotHubClientTransportSettings _transportSettings;
@@ -293,7 +293,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 int timeBufferPercentage,
                 IotHubClientTransportSettings transportSettings,
                 MsTestLogger logger)
-                : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
+                : base(
+                      deviceId: deviceId,
+                      suggestedTimeToLive: suggestedTimeToLive,
+                      timeBufferPercentage: timeBufferPercentage)
             {
                 _key = key;
                 _transportSettings = transportSettings;

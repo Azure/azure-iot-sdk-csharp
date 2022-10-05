@@ -108,11 +108,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             X509Certificate2 cert = null;
-            DeviceAuthenticationWithX509Certificate x509Auth = null;
+            ClientAuthenticationWithX509Certificate x509Auth = null;
             if (useX509auth)
             {
                 cert = s_selfSignedCertificate;
-                x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+                x509Auth = new ClientAuthenticationWithX509Certificate(cert, testDevice.Id);
 
                 deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, x509Auth, new IotHubClientOptions { FileUploadTransportSettings = fileUploadTransportSettings });
             }
@@ -173,11 +173,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
             IotHubDeviceClient deviceClient;
             X509Certificate2 cert = null;
-            DeviceAuthenticationWithX509Certificate x509Auth = null;
+            ClientAuthenticationWithX509Certificate x509Auth = null;
             if (useX509auth)
             {
                 cert = s_selfSignedCertificate;
-                x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+                x509Auth = new ClientAuthenticationWithX509Certificate(cert, testDevice.Id);
 
                 deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, x509Auth, options);
             }
