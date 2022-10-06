@@ -148,14 +148,6 @@ Function RunSamples($path, $message)
     Write-Host -ForegroundColor Cyan $label
 
     try {
-            if ($clean)
-            {
-                # Clear device and enrollment
-                RunSample 'provisioning\service\samples\Getting Started\CleanupEnrollmentsSample' "Provisioning\Service\samples\Getting Started\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-                RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"" --PathToDevicePrefixForDeletion ""$env:PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE"""
-                RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:FAR_AWAY_IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"" --PathToDevicePrefixForDeletion ""$env:PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE"""
-            }
-
             $sampleRunningTimeInSeconds = 60
 
             # Run the iot-hub\device samples
@@ -199,6 +191,11 @@ Function RunSamples($path, $message)
             # Run provisioning\service samples
             RunSample 'provisioning\service\samples\how to\BulkOperationSample' "Provisioning\Service\BulkOperationSample"
             RunSample 'provisioning\service\samples\getting started\EnrollmentSample' "Provisioning\Service\EnrollmentSample"
+    
+            # Run the cleanup again so that identities and enrollments created for the samples are cleaned up.
+            RunSample 'provisioning\service\samples\Getting Started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:IOTHUB_CONNECTION_STRING"""
+            RunSample 'iothub\service\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"" --PathToDevicePrefixForDeletion ""$env:PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE"""
+            RunSample 'iothub\service\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:FAR_AWAY_IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"" --PathToDevicePrefixForDeletion ""$env:PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE"""
     }  
     catch [Exception]{
         throw "Running Samples Failed: $label"
