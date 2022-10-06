@@ -89,10 +89,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets or sets the key associated with the device.
         /// </summary>
-        [SuppressMessage(
-            "Performance",
-            "CA1819:Properties should not return arrays",
-            Justification = "Cannot change property types on public classes.")]
         public byte[] Key
         {
             get => _key;
@@ -156,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client
         private void SetModuleId(string moduleId)
         {
             // The module Id is optional so we only check whether it is whitespace or not here.
-            if (moduleId != null 
+            if (moduleId != null
                 && moduleId.IsNullOrWhiteSpace())
             {
                 throw new InvalidOperationException("Module Id cannot be white space.");

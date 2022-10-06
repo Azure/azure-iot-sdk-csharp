@@ -20,10 +20,6 @@ namespace Microsoft.Azure.Devices
         /// If the operation was not successful, this contains an array of DeviceRegistryOperationError objects.
         /// </summary>
         [JsonProperty(PropertyName = "errors", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Performance",
-            "CA1819:Properties should not return arrays",
-            Justification = "Cannot change property types on public classes.")]
         public DeviceRegistryOperationError[] Errors { get; internal set; }
     }
 }
