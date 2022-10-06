@@ -330,6 +330,9 @@ jobs:
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
 
+          # Environment variable for running cleanups
+          PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
+
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
         inputs:
@@ -508,6 +511,9 @@ jobs:
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          
+          # Environment variable for running cleanups
+          PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
