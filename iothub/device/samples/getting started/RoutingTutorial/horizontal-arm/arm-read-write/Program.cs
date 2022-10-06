@@ -3,13 +3,12 @@
 
 using System;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Microsoft.Azure.Devices.Client;
-using Newtonsoft.Json;
 
-namespace ArmReadWrite
+namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
     /// This code that messages to an IoT Hub for testing the routing as defined
@@ -40,8 +39,12 @@ namespace ArmReadWrite
                     Environment.Exit(1);
                 });
 
+            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
+
             Console.WriteLine("write messages to a hub and use routing to write them to storage");
-            using var deviceClient = DeviceClient.CreateFromConnectionString(parameters.PrimaryConnectionString);
+            using var deviceClient = new IotHubDeviceClient(
+                parameters.PrimaryConnectionString,
+                options);
 
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
@@ -58,13 +61,15 @@ namespace ArmReadWrite
                 await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
             }
             catch (OperationCanceledException) { }
-            await deviceClient.CloseAsync(cts.Token);
+            await deviceClient.CloseAsync();
+
+            Console.WriteLine("Done.");
         }
 
         /// <summary>
         /// Send message to the Iot hub. This generates the object to be sent to the hub in the message.
         /// </summary>
-        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, CancellationToken token)
+        private static async Task SendDeviceToCloudMessagesAsync(IotHubDeviceClient deviceClient, CancellationToken token)
         {
             double minTemperature = 20;
             double minHumidity = 60;
@@ -103,27 +108,25 @@ namespace ArmReadWrite
                     humidity = currentHumidity,
                     pointInfo = infoString
                 };
+
                 // serialize the telemetry data and convert it to JSON.
-                string telemetryDataString = JsonConvert.SerializeObject(telemetryDataPoint);
+                string messageBody = JsonSerializer.Serialize(telemetryDataPoint);
 
                 // Encode the serialized object using UTF-8 so it can be parsed by IoT Hub when
                 // processing messaging rules.
-                using var message = new Message(Encoding.UTF8.GetBytes(telemetryDataString))
-                {
-                    ContentEncoding = "utf-8",
-                    ContentType = "application/json",
-                };
+                var message = new OutgoingMessage(Encoding.UTF8.GetBytes(messageBody));
 
                 //Add one property to the message.
                 message.Properties.Add("level", levelValue);
 
                 try
                 {
+                    await deviceClient.OpenAsync(token);
                     // Submit the message to the hub.
                     await deviceClient.SendEventAsync(message, token);
 
                     // Print out the message.
-                    Console.WriteLine("{0} > Sent message: {1}", DateTime.Now, telemetryDataString);
+                    Console.WriteLine("{0} > Sent message: {1}", DateTime.Now, messageBody);
                 }
                 catch (OperationCanceledException) { }
 

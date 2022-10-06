@@ -5,15 +5,13 @@
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples
 
 using System;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client;
 using CommandLine;
 
-namespace SimulatedDevice
+namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
     /// This sample illustrates the very basics of a device app sending telemetry. For a more comprehensive device app sample, please see
@@ -30,8 +28,12 @@ namespace SimulatedDevice
 
             Console.WriteLine("IoT Hub Quickstarts #1 - Simulated device.");
 
+            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
+
             // Connect to the IoT hub using the MQTT protocol by default
-            using var deviceClient = DeviceClient.CreateFromConnectionString(parameters.DeviceConnectionString, parameters.TransportType);
+            using var deviceClient = new IotHubDeviceClient(
+                parameters.DeviceConnectionString,
+                options);
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press control-C to exit.");
@@ -58,7 +60,7 @@ namespace SimulatedDevice
         }
 
         // Async method to send simulated telemetry
-        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, CancellationToken ct)
+        private static async Task SendDeviceToCloudMessagesAsync(IotHubDeviceClient deviceClient, CancellationToken ct)
         {
             // Initial telemetry values
             double minTemperature = 20;
@@ -79,11 +81,7 @@ namespace SimulatedDevice
                             temperature = currentTemperature,
                             humidity = currentHumidity,
                         });
-                    using var message = new Message(Encoding.ASCII.GetBytes(messageBody))
-                    {
-                        ContentType = "application/json",
-                        ContentEncoding = "utf-8",
-                    };
+                    var message = new OutgoingMessage(Encoding.ASCII.GetBytes(messageBody));
 
                     // Add a custom application property to the message.
                     // An IoT hub can filter on these properties without access to the message body.
