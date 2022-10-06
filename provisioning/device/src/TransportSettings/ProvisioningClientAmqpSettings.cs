@@ -50,6 +50,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ClientWebSocket ClientWebSocket { get; set; }
 
         /// <summary>
+        /// If true, this client will dispose the provided <see cref="ClientWebSocket"/> for you when
+        /// you dispose this client. If false, this client will not dispose the provided <see cref="ClientWebSocket"/>
+        /// when you dispose this client.
+        /// </summary>
+        /// <remarks>
+        /// By default, this is true.
+        /// </remarks>
+        public bool DisposeClientWebSocket { get; set; } = true;
+
+        /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>

@@ -205,7 +205,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             await websocket.ConnectAsync(webSocketUriBuilder.Uri, cancellationToken).ConfigureAwait(false);
 
-            return new ClientWebSocketTransport(websocket, null, null);
+            // Dispose the created websocket if it was created by the SDK (because the user didn't provide one)
+            // or if the user did provide a client websocket, but they wanted it not to be disposed.
+            bool disposeWebSocket = _clientSettings.DisposeClientWebSocket || _clientSettings.ClientWebSocket == null;
+            return new ClientWebSocketTransport(websocket, disposeWebSocket);
         }
 
         private ClientWebSocket CreateClientWebSocket(IWebProxy webProxy)

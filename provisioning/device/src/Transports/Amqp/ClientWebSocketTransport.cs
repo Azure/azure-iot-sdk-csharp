@@ -20,23 +20,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private static readonly TimeSpan s_closeTimeout = TimeSpan.FromSeconds(30);
 
         private readonly ClientWebSocket _webSocket;
-        private readonly EndPoint _localEndPoint;
-        private readonly EndPoint _remoteEndPoint;
+        private readonly bool _disposeClientWebSocket;
         private CancellationTokenSource _writeCancellationTokenSource;
         private bool _disposed;
 
-        public ClientWebSocketTransport(ClientWebSocket clientwebSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
+        public ClientWebSocketTransport(ClientWebSocket clientwebSocket, bool disposeClientWebSocket)
             : base("clientwebsocket")
         {
             _webSocket = clientwebSocket;
-            _localEndPoint = localEndpoint;
-            _remoteEndPoint = remoteEndpoint;
+            _disposeClientWebSocket = disposeClientWebSocket;
             _writeCancellationTokenSource = new CancellationTokenSource();
         }
 
-        public override string LocalEndPoint => _localEndPoint.ToString();
+        public override string LocalEndPoint => null; // Unused
 
-        public override string RemoteEndPoint => _remoteEndPoint.ToString();
+        public override string RemoteEndPoint => null; // Unused
 
         public override bool RequiresCompleteFrames => true;
 
