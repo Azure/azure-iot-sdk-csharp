@@ -160,7 +160,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 var reportedPropertyPending = new ReportedPropertyCollection
                 {
-                    { TargetTemperatureProperty, new PropertyAcknowledgement
+                    {
+                        TargetTemperatureProperty,
+                        new PropertyAcknowledgement
                         {
                             Value = targetTemperature,
                             AckCode = (int)StatusCode.InProgress,
