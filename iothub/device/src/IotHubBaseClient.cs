@@ -79,6 +79,20 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
 
+        /// <summary>
+        /// The callback to be executed each time connection status change notification is received.
+        /// </summary>
+        /// <example>
+        /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
+        /// //...
+        ///
+        /// public void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
+        /// {
+        ///     // Add connection status changed logic as needed
+        /// }
+        /// </example>
+        public Action<ConnectionStatusInfo> ConnectionStatusChangeCallback { get; set; }
+
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
 
         internal IDelegatingHandler InnerHandler { get; set; }
@@ -101,20 +115,6 @@ namespace Microsoft.Azure.Devices.Client
 
             retryDelegatingHandler.SetRetryPolicy(retryPolicy);
         }
-
-        /// <summary>
-        /// The callback to be executed each time connection status change notification is received.
-        /// </summary>
-        /// <example>
-        /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
-        /// //...
-        ///
-        /// public void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
-        /// {
-        ///     // Add connection status changed logic as needed
-        /// }
-        /// </example>
-        public Action<ConnectionStatusInfo> ConnectionStatusChangeCallback { get; set; }
 
         /// <summary>
         /// Open the client instance. Must be done before any operation can begin.
