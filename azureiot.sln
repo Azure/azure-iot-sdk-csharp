@@ -175,7 +175,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RoutingTutorial", "RoutingT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\Getting Started\RoutingTutorial\SimulatedDevice\SimulatedDevice.csproj", "{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "iothub\device\samples\Getting Started\ReadD2cMessages\ReadD2cMessages.csproj", "{9E7B5E85-FD69-4816-8405-80BDD3F3A486}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "iothub\service\samples\getting started\ReadD2cMessages\ReadD2cMessages.csproj", "{F4DA6FA4-7655-4116-994B-9B2E3D3522C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -375,10 +375,10 @@ Global
 		{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9E7B5E85-FD69-4816-8405-80BDD3F3A486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9E7B5E85-FD69-4816-8405-80BDD3F3A486}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9E7B5E85-FD69-4816-8405-80BDD3F3A486}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9E7B5E85-FD69-4816-8405-80BDD3F3A486}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4DA6FA4-7655-4116-994B-9B2E3D3522C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4DA6FA4-7655-4116-994B-9B2E3D3522C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4DA6FA4-7655-4116-994B-9B2E3D3522C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4DA6FA4-7655-4116-994B-9B2E3D3522C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -455,7 +455,7 @@ Global
 		{0C078DE2-1785-44A3-8235-C990FA680F76} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{F690C980-97D9-47F2-86C3-1745CB0BE530} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54} = {F690C980-97D9-47F2-86C3-1745CB0BE530}
-		{9E7B5E85-FD69-4816-8405-80BDD3F3A486} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
+		{F4DA6FA4-7655-4116-994B-9B2E3D3522C0} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
