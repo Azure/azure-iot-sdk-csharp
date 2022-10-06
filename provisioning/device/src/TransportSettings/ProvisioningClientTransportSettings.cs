@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// This feature is only applicable for HTTP, MQTT over TCP, MQTT over web socket, AMQP
         /// over TCP. AMQP web socket communication does not support this feature. For users who want
         /// this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
-        /// instance with the desired callback and other websocket options (e.g. proxy, keep-alive etc.) set.
+        /// instance with the desired callback and other web socket options (e.g., proxy, keep-alive etc..) set.
         /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;

@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices
         /// This feature is only applicable for HTTP and AMQP over TCP. AMQP web socket communication
         /// does not support this feature. For users who want this support over AMQP websocket, you
         /// must instead provide a <see cref="ClientWebSocket"/> instance with the desired callback
-        /// and other websocket options (e.g. proxy, keep-alive etc.) set.
+        /// and other web socket options (e.g., proxy, keep-alive etc..) set.
         /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices
         /// An instance of client web socket to be used when transport protocol is set to web socket.
         /// </summary>
         /// <remarks>
-        /// If not provided, an instance will be created from provided websocket options (e.g. proxy, keep-alive etc.)
+        /// If not provided, an instance will be created from provided websocket options (e.g., proxy, keep-alive etc..)
         /// <para>
         /// Only used for communications over AMQP, used in <see cref="MessagesClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
         /// and <see cref="FileUploadNotificationProcessorClient"/>.
