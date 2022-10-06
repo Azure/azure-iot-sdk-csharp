@@ -88,6 +88,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 throw new IOException(webSocketException.Message, webSocketException);
             }
+            catch (HttpListenerException httpListenerException)
+            {
+                throw new IOException(httpListenerException.Message, httpListenerException);
+            }
             finally
             {
                 if (!succeeded)
@@ -135,6 +139,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             catch (WebSocketException webSocketException)
             {
                 throw new IOException(webSocketException.Message, webSocketException);
+            }
+            catch (HttpListenerException httpListenerException)
+            {
+                throw new IOException(httpListenerException.Message, httpListenerException);
             }
             finally
             {
