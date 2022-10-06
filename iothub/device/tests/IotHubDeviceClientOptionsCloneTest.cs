@@ -88,6 +88,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             options.GatewayHostName = "newHost";
             options.Should().NotBeEquivalentTo(clone);
+
+            settings.ClientWebSocket.Dispose();
         }
     }
 }

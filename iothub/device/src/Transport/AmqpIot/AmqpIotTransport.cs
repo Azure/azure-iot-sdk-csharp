@@ -144,13 +144,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         if (Logging.IsEnabled)
                             Logging.Info(this, $"{nameof(CreateClientWebSocket)} Set ClientWebSocket.Options.Proxy to {_amqpTransportSettings.Proxy}");
                     }
-                    catch (PlatformNotSupportedException)
+                    catch (PlatformNotSupportedException ex)
                     {
                         websocket.Dispose();
                         // Some .NET runtimes don't support this property.
                         if (Logging.IsEnabled)
                             Logging.Error(this, $"{nameof(CreateClientWebSocket)} PlatformNotSupportedException thrown as this framework doesn't support proxy.");
-                        throw new PlatformNotSupportedException("The current .NET runtime does not support setting the proxy.");
+                        throw new InvalidOperationException("The current .NET runtime does not support setting the proxy.", ex);
                     }
                 }
 

@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var websocket = new ClientWebSocket();
             websocket.Options.AddSubProtocol(Amqpwsb10);
             websocket.Options.Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress);
-            websocket.Options.ClientCertificates.Add(TestConfiguration.CommonCertificates.GetRootCaCertificate());
+            websocket.Options.ClientCertificates.Add(s_selfSignedCertificateWithPrivateKey);
 
             return new IotHubClientAmqpSettings(transportProtocol)
             {
