@@ -184,7 +184,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 var reportedProperty = new ReportedPropertyCollection
                 {
-                    { TargetTemperatureProperty, new PropertyAcknowledgement
+                    {
+                        TargetTemperatureProperty,
+                        new PropertyAcknowledgement
                         {
                             Value = targetTemperature,
                             AckCode = (int)StatusCode.Completed,
