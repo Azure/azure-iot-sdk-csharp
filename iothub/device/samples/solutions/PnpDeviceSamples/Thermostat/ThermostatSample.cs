@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             _logger.LogDebug($"Set handler to receive \"targetTemperature\" updates.");
-            //await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);
 
             _logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
             await _deviceClient.SetDirectMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
