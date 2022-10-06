@@ -151,7 +151,7 @@ Function RunSamples($path, $message)
             if ($clean)
             {
                 # Clear device and enrollment
-                RunSample 'provisioning\service\samples\Getting Started\CleanupEnrollmentsSample' "Provisioning\Service\samples\Getting Started\CleanupEnrollmentsSample" "-c ""$env:IOTHUB_CONNECTION_STRING"""
+                RunSample 'provisioning\service\samples\Getting Started\CleanupEnrollmentsSample' "Provisioning\Service\samples\Getting Started\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
                 RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"" --PathToDevicePrefixForDeletion ""$env:PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE"""
                 RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:FAR_AWAY_IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"" --PathToDevicePrefixForDeletion ""$env:PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE"""
             }
