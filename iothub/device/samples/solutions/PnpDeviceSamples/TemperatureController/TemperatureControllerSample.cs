@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the componentName.
-        private readonly Dictionary<string, Func<TwinCollection, object, Task>> _desiredPropertyUpdateCallbacks = new();
+        private readonly Dictionary<string, Func<DesiredPropertyCollection, object, Task>> _desiredPropertyUpdateCallbacks = new();
 
         // Dictionary to hold the current temperature for each "Thermostat" component.
         private readonly Dictionary<string, double> _temperature = new Dictionary<string, double>();
@@ -102,8 +102,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, cancellationToken);
-            //_desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
-            //_desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
+            _desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
+            _desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
 
             _logger.LogDebug("For each component, check if the device properties are empty on the initial startup.");
             await CheckEmptyPropertiesAsync(Thermostat1, cancellationToken);
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
         }
 
-        private Task SetDesiredPropertyUpdateCallback(TwinCollection desiredProperties)
+        private Task SetDesiredPropertyUpdateCallback(DesiredPropertyCollection desiredProperties)
         {
             bool callbackNotInvoked = true;
 

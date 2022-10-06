@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly MqttQualityOfServiceLevel _receivingQualityOfService;
 
         private readonly Func<DirectMethodRequest, Task> _methodListener;
-        private readonly Action<TwinCollection> _onDesiredStatePatchListener;
+        private readonly Action<DesiredPropertyCollection> _onDesiredStatePatchListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _messageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
@@ -946,9 +946,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             receivedEventArgs.AutoAcknowledge = true;
 
             string patch = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
-            TwinCollection twinCollection = JsonConvert.DeserializeObject<TwinCollection>(patch);
+            Dictionary<string, object> desiredPropertyPatchDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(patch);
+            var desiredPropertyPatch = new DesiredPropertyCollection(desiredPropertyPatchDictionary)
+            {
+                PayloadConvention = _payloadConvention,
+            };
 
-            _onDesiredStatePatchListener.Invoke(twinCollection);
+            _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
         }
 
         private void HandleTwinResponse(MqttApplicationMessageReceivedEventArgs receivedEventArgs)

@@ -62,12 +62,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(null);
         }
 
-        private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties)
+        private async Task OnDesiredPropertyChangedAsync(DesiredPropertyCollection desiredProperties)
         {
             var reportedProperties = new ReportedPropertyCollection();
 
             Console.WriteLine("\tDesired properties requested:");
-            Console.WriteLine($"\t{desiredProperties.ToJson()}");
+            Console.WriteLine($"\t{desiredProperties.GetSerializedString()}");
 
             // For the purpose of this sample, we'll blindly accept all twin property write requests.
             foreach (KeyValuePair<string, object> desiredProperty in desiredProperties)
