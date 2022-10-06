@@ -307,7 +307,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
             var reportedProperty = new ReportedPropertyCollection
             {
-                { propertyName, new PropertyAcknowledgement
+                {
+                    propertyName,
+                    new PropertyAcknowledgement
                     {
                         Value = DefaultPropertyValue,
                         AckCode = (int)StatusCode.ReportDeviceInitialProperty,
