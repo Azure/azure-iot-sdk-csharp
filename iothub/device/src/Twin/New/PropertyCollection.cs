@@ -11,13 +11,41 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public abstract class PropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {
+        private const string VersionName = "$version";
+
+        private protected PropertyCollection()
+        {
+        }
+
         internal PropertyCollection(Dictionary<string, object> properties)
         {
+            // The version information should not be a part of the enumerable ProperyCollection, but rather should be
+            // accessible through its dedicated accessor.
+            bool versionPresent = properties.TryGetValue(VersionName, out object version);
+
+            Version = versionPresent && ObjectConversionHelper.TryCastNumericTo(version, out long longVersion)
+                ? longVersion
+                : throw new IotHubClientException("Properties document either missing version number or not formatted as expected. Contact service with logs.", false);
+
             foreach (KeyValuePair<string, object> property in properties)
             {
-                _properties.Add(property.Key, property.Value);
+                // Ignore the version entry since we've already saved it off.
+                if (property.Key == VersionName)
+                {
+                    // no-op
+                }
+                else
+                {
+                    _properties.Add(property.Key, property.Value);
+                }
             }
         }
+
+        /// <summary>
+        /// Gets the version of the client twin properties.
+        /// </summary>
+        /// <value>A <see cref="long"/> that is used to identify the version of the client twin properties.</value>
+        public long Version { get; private set; }
 
         /// <summary>
         ///
@@ -65,6 +93,14 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// The client twin properties, as a serialized string.
+        /// </summary>
+        public string GetSerializedString()
+        {
+            return PayloadConvention.PayloadSerializer.SerializeToString(_properties);
         }
 
         /// <inheritdoc/>

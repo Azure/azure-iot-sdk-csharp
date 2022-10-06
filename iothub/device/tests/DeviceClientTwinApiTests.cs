@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            var props = new TwinCollection();
+            var props = new ReportedPropertyCollection();
 
             // act
             await client.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);

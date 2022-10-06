@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -82,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             _logger.LogDebug($"Set handler to receive \"targetTemperature\" updates.");
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);
+            //await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, cancellationToken);
 
             _logger.LogDebug($"Set handler for \"getMaxMinReport\" command.");
             await _deviceClient.SetDirectMethodCallbackAsync(OnDirectMethodAsync, cancellationToken);
@@ -116,11 +115,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetWritablePropertiesAndHandleChangesAsync()
         {
-            Twin twin = await _deviceClient.GetTwinAsync();
-            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.ToJson()}");
+            ClientTwin twin = await _deviceClient.GetTwinAsync();
+            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.RequestsFromService.GetSerializedString()}");
 
-            TwinCollection twinCollection = twin.Properties.Desired;
-            long serverWritablePropertiesVersion = twinCollection.Version;
+            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
+            long serverWritablePropertiesVersion = desiredProperties.Version;
 
             // Check if the writable property version is outdated on the local side.
             // For the purpose of this sample, we'll only check the writable property versions between local and server
@@ -130,12 +129,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogInformation($"The writable property version cached on local is changing " +
                     $"from {s_localWritablePropertiesVersion} to {serverWritablePropertiesVersion}.");
 
-                foreach (KeyValuePair<string, object> propertyUpdate in twinCollection)
+                foreach (KeyValuePair<string, object> propertyUpdate in desiredProperties)
                 {
                     string propertyName = propertyUpdate.Key;
                     if (propertyName == TargetTemperatureProperty)
                     {
-                        await TargetTemperatureUpdateCallbackAsync(twinCollection);
+                        await TargetTemperatureUpdateCallbackAsync(desiredProperties);
                     }
                     else
                     {
@@ -150,18 +149,26 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and reported property update.
-        private async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties)
+        private async Task TargetTemperatureUpdateCallbackAsync(DesiredPropertyCollection desiredProperties)
         {
-            (bool targetTempUpdateReceived, double targetTemperature) = GetPropertyFromTwin<double>(desiredProperties, TargetTemperatureProperty);
+            bool targetTempUpdateReceived = desiredProperties.TryGetValue(TargetTemperatureProperty, out double targetTemperature);
             if (targetTempUpdateReceived)
             {
                 _logger.LogDebug($"Property: Received - {{ \"{TargetTemperatureProperty}\": {targetTemperature}°C }}.");
 
                 s_localWritablePropertiesVersion = desiredProperties.Version;
 
-                string jsonPropertyPending = $"{{ \"{TargetTemperatureProperty}\": {{ \"value\": {targetTemperature}, \"ac\": {(int)StatusCode.InProgress}, " +
-                    $"\"av\": {desiredProperties.Version}, \"ad\": \"In progress - reporting current temperature\" }} }}";
-                var reportedPropertyPending = new TwinCollection(jsonPropertyPending);
+                var reportedPropertyPending = new ReportedPropertyCollection
+                {
+                    { TargetTemperatureProperty, new PropertyAcknowledgement
+                        {
+                            Value = targetTemperature,
+                            AckCode = (int)StatusCode.InProgress,
+                            AckVersion = desiredProperties.Version,
+                            AckDescription = "In progress - reporting current temperature"
+                        }
+                    }
+                };
                 await _deviceClient.UpdateReportedPropertiesAsync(reportedPropertyPending);
                 _logger.LogDebug($"Property: Update - {{\"{TargetTemperatureProperty}\": {targetTemperature}°C }} is {StatusCode.InProgress}.");
 
@@ -173,21 +180,24 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await Task.Delay(6 * 1000);
                 }
 
-                string jsonProperty = $"{{ \"{TargetTemperatureProperty}\": {{ \"value\": {targetTemperature}, \"ac\": {(int)StatusCode.Completed}, " +
-                    $"\"av\": {desiredProperties.Version}, \"ad\": \"Successfully updated target temperature\" }} }}";
-                var reportedProperty = new TwinCollection(jsonProperty);
+                var reportedProperty = new ReportedPropertyCollection
+                {
+                    { TargetTemperatureProperty, new PropertyAcknowledgement
+                        {
+                            Value = targetTemperature,
+                            AckCode = (int)StatusCode.Completed,
+                            AckVersion = desiredProperties.Version,
+                            AckDescription = "Successfully updated target temperature"
+                        }
+                    }
+                };
                 await _deviceClient.UpdateReportedPropertiesAsync(reportedProperty);
                 _logger.LogDebug($"Property: Update - {{\"{TargetTemperatureProperty}\": {targetTemperature}°C }} is {StatusCode.Completed}.");
             }
             else
             {
-                _logger.LogDebug($"Property: Received an unrecognized property update from service:\n{desiredProperties.ToJson()}");
+                _logger.LogDebug($"Property: Received an unrecognized property update from service:\n{desiredProperties.GetSerializedString()}");
             }
-        }
-
-        private static (bool, T) GetPropertyFromTwin<T>(TwinCollection collection, string propertyName)
-        {
-            return collection.Contains(propertyName) ? (true, (T)collection[propertyName]) : (false, default);
         }
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature
@@ -269,8 +279,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string propertyName = "maxTempSinceLastReboot";
 
-            var reportedProperties = new TwinCollection();
-            reportedProperties[propertyName] = _maxTemp;
+            var reportedProperties = new ReportedPropertyCollection
+            {
+                [propertyName] = _maxTemp
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
             _logger.LogDebug($"Property: Update - {{ \"{propertyName}\": {_maxTemp}°C }} is {StatusCode.Completed}.");
@@ -278,12 +290,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task CheckEmptyPropertiesAsync(CancellationToken cancellationToken)
         {
-            Twin twin = await _deviceClient.GetTwinAsync(cancellationToken);
-            TwinCollection writableProperty = twin.Properties.Desired;
-            TwinCollection reportedProperty = twin.Properties.Reported;
+            ClientTwin twin = await _deviceClient.GetTwinAsync(cancellationToken);
+            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
+            ReportedPropertyCollection reportedProperties = twin.ReportedByClient;
 
             // Check if the device properties (both writable and reported) are empty.
-            if (!writableProperty.Contains(TargetTemperatureProperty) && !reportedProperty.Contains(TargetTemperatureProperty))
+            if (!desiredProperties.TryGetValue(TargetTemperatureProperty, out object _) && !reportedProperties.TryGetValue(TargetTemperatureProperty, out object _))
             {
                 await ReportInitialPropertyAsync(TargetTemperatureProperty, cancellationToken);
             }
@@ -293,12 +305,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             // If the device properties are empty, report the default value with ACK(ac=203, av=0) as part of the PnP convention.
             // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
-            string jsonProperty = $"{{ \"{propertyName}\": {{ \"value\": {DefaultPropertyValue}, \"ac\": {(int)StatusCode.ReportDeviceInitialProperty}, " +
-                    $"\"av\": {DefaultAckVersion}, \"ad\": \"Initialized with default value\"}} }}";
-
-            var reportedProperty = new TwinCollection(jsonProperty);
+            var reportedProperty = new ReportedPropertyCollection
+            {
+                { propertyName, new PropertyAcknowledgement
+                    {
+                        Value = DefaultPropertyValue,
+                        AckCode = (int)StatusCode.ReportDeviceInitialProperty,
+                        AckVersion = DefaultAckVersion,
+                        AckDescription = "Initialized with default value"
+                    }
+                }
+            };
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperty, cancellationToken);
-            _logger.LogDebug($"Report the default values.\nProperty: Update - {jsonProperty} is {StatusCode.Completed}.");
+            _logger.LogDebug($"Report the default values.\nProperty: Update - {DefaultPropertyValue} is {StatusCode.Completed}.");
         }
     }
 }

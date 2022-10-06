@@ -5,12 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using PnpHelpers;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -36,6 +33,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const string Thermostat1 = "thermostat1";
         private const string Thermostat2 = "thermostat2";
         private const string SerialNumber = "SR-123456";
+        private const string ComponentIdentifierKey = "__t";
+        private const string ComponentIdentifierValue = "c";
 
         private static readonly Random s_random = new();
 
@@ -103,8 +102,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             _logger.LogDebug("Set handler to receive 'targetTemperature' updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, cancellationToken);
-            _desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
-            _desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
+            //_desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
+            //_desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
 
             _logger.LogDebug("For each component, check if the device properties are empty on the initial startup.");
             await CheckEmptyPropertiesAsync(Thermostat1, cancellationToken);
@@ -148,11 +147,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetWritablePropertiesAndHandleChangesAsync()
         {
-            Twin twin = await _deviceClient.GetTwinAsync();
-            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.ToJson()}");
+            ClientTwin twin = await _deviceClient.GetTwinAsync();
+            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.RequestsFromService.GetSerializedString()}");
 
-            TwinCollection twinCollection = twin.Properties.Desired;
-            long serverWritablePropertiesVersion = twinCollection.Version;
+            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
+            long serverWritablePropertiesVersion = desiredProperties.Version;
 
             // Check if the writable property version is outdated on the local side.
             // For the purpose of this sample, we'll only check the writable property versions between local and server
@@ -162,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogInformation($"The writable property version cached on local is changing " +
                     $"from {s_localWritablePropertiesVersion} to {serverWritablePropertiesVersion}.");
 
-                foreach (KeyValuePair<string, object> propertyUpdate in twinCollection)
+                foreach (KeyValuePair<string, object> propertyUpdate in desiredProperties)
                 {
                     string componentName = propertyUpdate.Key;
                     switch (componentName)
@@ -174,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             {
                                 _temperature[componentName] = 21d; // The default temperature value is 21°C.
                             }
-                            await TargetTemperatureUpdateCallbackAsync(twinCollection, componentName);
+                            await TargetTemperatureUpdateCallbackAsync(desiredProperties, componentName);
                             break;
 
                         default:
@@ -195,25 +194,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             if (delayReceived)
             {
-                try
-                {
-                    _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
-                    await Task.Delay(delay * 1000);
+                _logger.LogDebug($"Command: Received - Rebooting thermostat (resetting temperature reading to 0°C after {delay} seconds).");
+                await Task.Delay(delay * 1000);
 
-                    _logger.LogDebug("\tRebooting...");
+                _logger.LogDebug("\tRebooting...");
 
-                    _temperature[Thermostat1] = _maxTemp[Thermostat1] = 0;
-                    _temperature[Thermostat2] = _maxTemp[Thermostat2] = 0;
+                _temperature[Thermostat1] = _maxTemp[Thermostat1] = 0;
+                _temperature[Thermostat2] = _maxTemp[Thermostat2] = 0;
 
-                    _temperatureReadingsDateTimeOffset.Clear();
-
-                    _logger.LogDebug("\tRestored.");
-                }
-                catch (JsonReaderException ex)
-                {
-                    _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                    return new DirectMethodResponse((int)StatusCode.BadRequest);
-                }
+                _temperatureReadingsDateTimeOffset.Clear();
+                _logger.LogDebug("\tRestored.");
 
                 return new DirectMethodResponse((int)StatusCode.Completed);
             }
@@ -225,56 +215,48 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // specified time to the current time.
         private Task<DirectMethodResponse> HandleMaxMinReportCommand(DirectMethodRequest request, object userContext)
         {
-            try
-            {
-                string componentName = (string)userContext;
-                bool sinceInUtcReceived = request.TryGetPayload(out DateTime sinceInUtc);
+            string componentName = (string)userContext;
+            bool sinceInUtcReceived = request.TryGetPayload(out DateTime sinceInUtc);
 
-                if (sinceInUtcReceived)
+            if (sinceInUtcReceived)
+            {
+                var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
+
+                if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))
                 {
-                    var sinceInDateTimeOffset = new DateTimeOffset(sinceInUtc);
+                    _logger.LogDebug($"Command: Received - component=\"{componentName}\", generating max, min and avg temperature " +
+                        $"report since {sinceInDateTimeOffset.LocalDateTime}.");
 
-                    if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))
+                    Dictionary<DateTimeOffset, double> allReadings = _temperatureReadingsDateTimeOffset[componentName];
+                    var filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset)
+                        .ToDictionary(i => i.Key, i => i.Value);
+
+                    if (filteredReadings != null && filteredReadings.Any())
                     {
-                        _logger.LogDebug($"Command: Received - component=\"{componentName}\", generating max, min and avg temperature " +
-                            $"report since {sinceInDateTimeOffset.LocalDateTime}.");
-
-                        Dictionary<DateTimeOffset, double> allReadings = _temperatureReadingsDateTimeOffset[componentName];
-                        var filteredReadings = allReadings.Where(i => i.Key > sinceInDateTimeOffset)
-                            .ToDictionary(i => i.Key, i => i.Value);
-
-                        if (filteredReadings != null && filteredReadings.Any())
+                        var report = new
                         {
-                            var report = new
-                            {
-                                maxTemp = filteredReadings.Values.Max<double>(),
-                                minTemp = filteredReadings.Values.Min<double>(),
-                                avgTemp = filteredReadings.Values.Average(),
-                                startTime = filteredReadings.Keys.Min(),
-                                endTime = filteredReadings.Keys.Max(),
-                            };
+                            maxTemp = filteredReadings.Values.Max<double>(),
+                            minTemp = filteredReadings.Values.Min<double>(),
+                            avgTemp = filteredReadings.Values.Average(),
+                            startTime = filteredReadings.Keys.Min(),
+                            endTime = filteredReadings.Keys.Max(),
+                        };
 
-                            _logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
-                                $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime.LocalDateTime}, " +
-                                $"endTime={report.endTime.LocalDateTime}");
+                        _logger.LogDebug($"Command: component=\"{componentName}\", MaxMinReport since {sinceInDateTimeOffset.LocalDateTime}:" +
+                            $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime.LocalDateTime}, " +
+                            $"endTime={report.endTime.LocalDateTime}");
 
-                            return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = report });
-                        }
-
-                        _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
-                            $"cannot generate any report.");
-                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
+                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = report });
                     }
-                }
 
-                _logger.LogDebug($"Command: component=\"{componentName}\", no temperature readings sent yet, cannot generate any report.");
-                return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
+                    _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +
+                        $"cannot generate any report.");
+                    return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
+                }
             }
-            catch (JsonReaderException ex)
-            {
-                _logger.LogDebug($"Command input is invalid: {ex.Message}.");
-                return Task.FromResult(new DirectMethodResponse((int)StatusCode.BadRequest));
-            }
+
+            _logger.LogDebug($"Command: component=\"{componentName}\", no temperature readings sent yet, cannot generate any report.");
+            return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
         }
 
         private Task SetDesiredPropertyUpdateCallback(TwinCollection desiredProperties)
@@ -301,18 +283,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and property update.
-        private async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
+        private async Task TargetTemperatureUpdateCallbackAsync(DesiredPropertyCollection desiredProperties, object userContext)
         {
             string componentName = (string)userContext;
 
-            bool targetTempUpdateReceived = PnpConvention.TryGetPropertyFromTwin(
-                desiredProperties,
-                TargetTemperatureProperty,
-                out double targetTemperature,
-                componentName);
+            bool targetTempUpdateReceived = desiredProperties.TryGetValue(TargetTemperatureProperty, out double targetTemperature);
             if (!targetTempUpdateReceived)
             {
-                _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.\n{desiredProperties.ToJson()}");
+                _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.\n{desiredProperties.GetSerializedString()}");
                 return;
             }
 
@@ -320,13 +298,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             s_localWritablePropertiesVersion = desiredProperties.Version;
 
-            TwinCollection pendingReportedProperty = PnpConvention.CreateComponentWritablePropertyResponse(
-                componentName,
-                TargetTemperatureProperty,
-                targetTemperature,
-                (int)StatusCode.InProgress,
-                desiredProperties.Version,
-                "In progress - reporting current temperature");
+            var pendingReportedProperty = new ReportedPropertyCollection
+            {
+                { componentName, new Dictionary<string, object>
+                    {
+                        { ComponentIdentifierKey, ComponentIdentifierValue },
+                        { TargetTemperatureProperty, new PropertyAcknowledgement
+                            {
+                                Value = targetTemperature,
+                                AckCode = (int)StatusCode.InProgress,
+                                AckVersion = desiredProperties.Version,
+                                AckDescription = "In progress - reporting current temperature",
+                            }},
+                    } },
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(pendingReportedProperty);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{TargetTemperatureProperty}\": {targetTemperature} }} in °C is {StatusCode.InProgress}.");
@@ -339,13 +324,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await Task.Delay(6 * 1000);
             }
 
-            TwinCollection completedReportedProperty = PnpConvention.CreateComponentWritablePropertyResponse(
-                componentName,
-                TargetTemperatureProperty,
-                _temperature[componentName],
-                (int)StatusCode.Completed,
-                desiredProperties.Version,
-                "Successfully updated target temperature");
+            var completedReportedProperty = new ReportedPropertyCollection
+            {
+                { componentName, new Dictionary<string, object>
+                    {
+                        { ComponentIdentifierKey, ComponentIdentifierValue },
+                        { TargetTemperatureProperty, new PropertyAcknowledgement
+                            {
+                                Value = _temperature[componentName],
+                                AckCode = (int)StatusCode.Completed,
+                                AckVersion = desiredProperties.Version,
+                                AckDescription = "Successfully updated target temperature",
+                            }},
+                    } },
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(completedReportedProperty);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{TargetTemperatureProperty}\": {_temperature[componentName]} }} in °C is {StatusCode.Completed}");
@@ -355,20 +347,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task UpdateDeviceInformationAsync(CancellationToken cancellationToken)
         {
             const string componentName = "deviceInformation";
+            var deviceInformationProperties = new Dictionary<string, object>
+            {
+                { ComponentIdentifierKey, ComponentIdentifierValue },
+                { "manufacturer", "element15" },
+                { "model", "ModelIDxcdvmk" },
+                { "swVersion", "1.0.0" },
+                { "osName", "Windows 10" },
+                { "processorArchitecture", "64-bit" },
+                { "processorManufacturer", "Intel" },
+                { "totalStorage", 256 },
+                { "totalMemory", 1024 },
+            };
 
-            TwinCollection deviceInfoTc = PnpConvention.CreateComponentPropertyPatch(
-                componentName,
-                new Dictionary<string, object>
-                {
-                    { "manufacturer", "element15" },
-                    { "model", "ModelIDxcdvmk" },
-                    { "swVersion", "1.0.0" },
-                    { "osName", "Windows 10" },
-                    { "processorArchitecture", "64-bit" },
-                    { "processorManufacturer", "Intel" },
-                    { "totalStorage", 256 },
-                    { "totalMemory", 1024 },
-                });
+            var deviceInfoTc = new ReportedPropertyCollection
+            {
+                { componentName, deviceInformationProperties }
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(deviceInfoTc, cancellationToken);
             _logger.LogDebug($"Property: Update - component = '{componentName}', properties update is complete.");
@@ -378,30 +373,25 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task SendDeviceMemoryAsync(CancellationToken cancellationToken)
         {
             const string workingSetName = "workingSet";
-
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
 
-            var telemetry = new Dictionary<string, object>
-            {
-                { workingSetName, workingSet },
-            };
+            var message = new OutgoingMessage(new Dictionary<string, object> { { workingSetName, workingSet } });
 
-            OutgoingMessage msg = PnpConvention.CreateMessage(telemetry);
-
-            await _deviceClient.SendEventAsync(msg, cancellationToken);
-            _logger.LogDebug($"Telemetry: Sent - {JsonConvert.SerializeObject(telemetry)} in KB.");
+            await _deviceClient.SendEventAsync(message, cancellationToken);
+            _logger.LogDebug($"Telemetry: Sent - {{ \"{workingSetName}\": {workingSet} }} in KB.");
         }
 
         // Send device serial number over property update.
         private async Task SendDeviceSerialNumberAsync(CancellationToken cancellationToken)
         {
             const string propertyName = "serialNumber";
-            TwinCollection reportedProperties = PnpConvention.CreatePropertyPatch(propertyName, SerialNumber);
+            var reportedProperties = new ReportedPropertyCollection
+            {
+                { propertyName, SerialNumber },
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
-            var oBrace = '{';
-            var cBrace = '}';
-            _logger.LogDebug($"Property: Update - {oBrace} \"{propertyName}\": \"{SerialNumber}\" {cBrace} is complete.");
+            _logger.LogDebug($"Property: Update - [\"{propertyName}\": \"{SerialNumber}\"] is complete.");
         }
 
         private async Task SendTemperatureAsync(string componentName, CancellationToken cancellationToken)
@@ -420,9 +410,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string telemetryName = "temperature";
             double currentTemperature = _temperature[componentName];
-            OutgoingMessage msg = PnpConvention.CreateMessage(telemetryName, currentTemperature, componentName);
 
-            await _deviceClient.SendEventAsync(msg, cancellationToken);
+            var message = new OutgoingMessage(new Dictionary<string, object> { { telemetryName, currentTemperature } })
+            {
+                ComponentName = componentName,
+            };
+
+            await _deviceClient.SendEventAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature} }} in °C.");
 
             if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))
@@ -444,7 +438,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string propertyName = "maxTempSinceLastReboot";
             double maxTemp = _maxTemp[componentName];
-            TwinCollection reportedProperties = PnpConvention.CreateComponentPropertyPatch(componentName, propertyName, maxTemp);
+
+            var reportedProperties = new ReportedPropertyCollection
+            {
+                { componentName, new Dictionary<string, object>{
+                    { ComponentIdentifierKey, ComponentIdentifierValue },
+                    { propertyName, maxTemp },
+                } },
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ \"{propertyName}\": {maxTemp} }} in °C is complete.");
@@ -452,12 +453,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task CheckEmptyPropertiesAsync(string componentName, CancellationToken cancellationToken)
         {
-            Twin twin = await _deviceClient.GetTwinAsync(cancellationToken);
-            TwinCollection writableProperty = twin.Properties.Desired;
-            TwinCollection reportedProperty = twin.Properties.Reported;
+            ClientTwin twin = await _deviceClient.GetTwinAsync(cancellationToken);
+            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
+            ReportedPropertyCollection reportedProperties = twin.ReportedByClient;
 
             // Check if the device properties (both writable and reported) for the current component are empty.
-            if (!writableProperty.Contains(componentName) && !reportedProperty.Contains(componentName))
+            if (!desiredProperties.TryGetValue(componentName, out object _) && !reportedProperties.TryGetValue(componentName, out object _))
             {
                 await ReportInitialPropertyAsync(componentName, TargetTemperatureProperty, cancellationToken);
             }
@@ -467,17 +468,24 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             // If the device properties are empty, report the default value with ACK(ac=203, av=0) as part of the PnP convention.
             // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
-            TwinCollection reportedProperties = PnpConvention.CreateComponentWritablePropertyResponse(
-                componentName,
-                propertyName,
-                DefaultPropertyValue,
-                (int)StatusCode.ReportDeviceInitialProperty,
-                DefaultAckVersion,
-                "Initialized with default value");
+            var reportedProperty = new ReportedPropertyCollection
+            {
+                { componentName, new Dictionary<string, object>
+                    {
+                        { ComponentIdentifierKey, ComponentIdentifierValue },
+                        { propertyName, new PropertyAcknowledgement
+                            {
+                                Value = DefaultPropertyValue,
+                                AckCode = (int)StatusCode.ReportDeviceInitialProperty,
+                                AckVersion = DefaultAckVersion,
+                                AckDescription = "Initialized with default value"
+                            }
+                        },
+                    } },
+            };
 
-            await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
-
-            _logger.LogDebug($"Report the default values for \"{componentName}\".\nProperty: Update - {reportedProperties.ToJson()} is complete.");
+            await _deviceClient.UpdateReportedPropertiesAsync(reportedProperty, cancellationToken);
+            _logger.LogDebug($"Report the default values for \"{componentName}\".\nProperty: Update - {reportedProperty.GetSerializedString()} is complete.");
         }
     }
 }

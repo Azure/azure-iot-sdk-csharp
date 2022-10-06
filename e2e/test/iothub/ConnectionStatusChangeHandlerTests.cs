@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Receiving the module twin should succeed right now.
             Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: DeviceClient GetTwinAsync.");
-            Client.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            ClientTwin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             Assert.IsNotNull(twin);
 
             // Delete/disable the device in IoT hub. This should trigger the ConnectionStatusChangeHandler.
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Receiving the module twin should succeed right now.
             Logger.Trace($"{nameof(IotHubModuleClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: ModuleClient GetTwinAsync.");
-            Client.Twin twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
+            ClientTwin twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
             Assert.IsNotNull(twin);
 
             // Delete/disable the device in IoT hub.

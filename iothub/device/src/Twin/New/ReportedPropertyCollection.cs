@@ -10,6 +10,13 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ReportedPropertyCollection : PropertyCollection
     {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        public ReportedPropertyCollection()
+        {
+        }
+
         internal ReportedPropertyCollection(Dictionary<string, object> reportedProperties)
             : base(reportedProperties)
         {

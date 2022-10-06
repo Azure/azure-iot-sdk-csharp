@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.GetTwinAsync(cancellationToken) ?? Task.FromResult((ClientTwin)null);
         }
 
-        public virtual Task<long> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public virtual Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return NextHandler?.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0L);

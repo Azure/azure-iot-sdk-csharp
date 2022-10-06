@@ -34,14 +34,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync);
 
             Console.WriteLine("Retrieving twin...");
-            Twin twin = await _deviceClient.GetTwinAsync();
+            ClientTwin twin = await _deviceClient.GetTwinAsync();
 
             Console.WriteLine("\tInitial twin value received:");
-            Console.WriteLine($"\t{twin.ToJson()}");
+            Console.WriteLine($"\tDesired properties: {twin.RequestsFromService.GetSerializedString()}");
+            Console.WriteLine($"\tReported properties: {twin.ReportedByClient.GetSerializedString()}");
 
             Console.WriteLine("Sending sample start time as reported property");
-            TwinCollection reportedProperties = new TwinCollection();
-            reportedProperties["DateTimeLastAppLaunch"] = DateTime.UtcNow;
+            var reportedProperties = new ReportedPropertyCollection
+            {
+                ["DateTimeLastAppLaunch"] = DateTime.UtcNow
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
@@ -61,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties)
         {
-            var reportedProperties = new TwinCollection();
+            var reportedProperties = new ReportedPropertyCollection();
 
             Console.WriteLine("\tDesired properties requested:");
             Console.WriteLine($"\t{desiredProperties.ToJson()}");

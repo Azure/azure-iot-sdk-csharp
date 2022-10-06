@@ -621,7 +621,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<long> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (!_isSubscribedToTwinResponses)
             {
@@ -632,12 +632,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = Guid.NewGuid().ToString();
             string topic = string.Format(TwinReportedPropertiesPatchTopicFormat, requestId);
 
-            string body = JsonConvert.SerializeObject(reportedProperties);
+            byte[] body = _payloadConvention.GetObjectBytes(reportedProperties);
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithQualityOfServiceLevel(_publishingQualityOfService)
-                .WithPayload(Encoding.UTF8.GetBytes(body))
+                .WithPayload(body)
                 .Build();
 
             try
@@ -987,14 +987,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                     .ContentEncoding
                                     .GetString(payloadBytes));
 
-                            var clientTwin = new ClientTwin(
-                                new DesiredPropertyCollection(clientTwinProperties.Desired),
-                                new ReportedPropertyCollection(clientTwinProperties.Reported));
+                            var twinDesiredProperties = new DesiredPropertyCollection(clientTwinProperties.Desired)
+                            {
+                                PayloadConvention = _payloadConvention,
+                            };
+
+                            var twinReportedProperties = new ReportedPropertyCollection(clientTwinProperties.Reported)
+                            {
+                                PayloadConvention = _payloadConvention,
+                            };
 
                             var getTwinResponse = new GetTwinResponse
                             {
                                 Status = status,
-                                Twin = clientTwin,
+                                Twin = new ClientTwin(twinDesiredProperties, twinReportedProperties),
                             };
 
                             getTwinCompletion.TrySetResult(getTwinResponse);

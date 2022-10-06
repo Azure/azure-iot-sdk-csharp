@@ -552,14 +552,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (transportProtocolSupportsTwinOperations)
             {
                 Logger.Trace("DeviceClient updating reported property.");
+<<<<<<< HEAD
                 Client.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
                 await deviceClient.UpdateReportedPropertiesAsync(new Client.TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
+=======
+                ClientTwin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
+                var propertiesToReport = new ReportedPropertyCollection
+                {
+                    [new Guid().ToString()] = new Guid().ToString(),
+                };
+                await iotClient.UpdateReportedPropertiesAsync(propertiesToReport).ConfigureAwait(false);
+>>>>>>> 178e0b4d6 (build ok)
             }
 
             Logger.Trace("DeviceClient CloseAsync.");
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
+<<<<<<< HEAD
         private static async Task ConfirmExpectedDeviceCapabilities(
             DeviceRegistrationResult result,
             Client.IAuthenticationMethod auth,
@@ -575,6 +585,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
+=======
+>>>>>>> 178e0b4d6 (build ok)
         private async Task<AuthenticationProvider> CreateAuthenticationProviderFromNameAsync(
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
@@ -896,7 +908,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // from previous hub's records.
             if (transportProtocolSupportsTwinOperations)
             {
+<<<<<<< HEAD
                 Client.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+=======
+                ClientTwin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
+>>>>>>> 178e0b4d6 (build ok)
 
                 // Reprovision
                 if (reprovisionPolicy.UpdateHubAssignment)
@@ -908,8 +924,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         // as a part of ConfirmRegisteredDeviceWorks.
                         // On device creation the twin reported property version starts at 1. For this scenario the reported property update
                         // operation should increment the version to 2.
-                        twin.Properties.Reported.Count.Should().Be(1);
-                        twin.Properties.Reported.Version.Should().Be(2);
+                        twin.ReportedByClient.Count().Should().Be(1);
+                        twin.ReportedByClient.Version.Should().Be(2);
                         result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.DeviceDataMigrated);
                     }
                     // Reset to initial configuration
@@ -918,8 +934,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         // The reprovisioned twin should not have an entry for the reprorted property updated previously in the test
                         // as a part of ConfirmRegisteredDeviceWorks.
                         // On device creation the twin reported property version starts at 1.
-                        twin.Properties.Reported.Count.Should().Be(0);
-                        twin.Properties.Reported.Version.Should().Be(1);
+                        twin.ReportedByClient.Count().Should().Be(0);
+                        twin.ReportedByClient.Version.Should().Be(1);
                         result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.DeviceDataReset);
                     }
                 }
@@ -930,8 +946,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     // as a part of ConfirmRegisteredDeviceWorks.
                     // On device creation the twin reported property version starts at 1. For this scenario the reported property update
                     // operation should increment the version to 2.
-                    twin.Properties.Reported.Count.Should().Be(1);
-                    twin.Properties.Reported.Version.Should().Be(2);
+                    twin.ReportedByClient.Count().Should().Be(1);
+                    twin.ReportedByClient.Version.Should().Be(2);
                     result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.InitialAssignment);
                 }
             }
