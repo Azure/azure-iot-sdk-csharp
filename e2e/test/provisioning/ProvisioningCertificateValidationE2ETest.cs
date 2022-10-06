@@ -81,21 +81,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateHttp_Fails()
-        {
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientHttpSettings());
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
-
-            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
-#if NET472
-                Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#else
-            Assert.IsInstanceOfType(error.And.InnerException.InnerException, typeof(AuthenticationException));
-#endif
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));

@@ -41,14 +41,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="innerException">The inner exception.</param>
-        /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
+        /// <param name="isTransient">If the error is transient and the application should retry at a later time.</param>
         /// <param name="errorCode">The specific 6-digit error code in the DPS response, if available.</param>
         /// <param name="trackingId">Service reported tracking Id.</param>
-        protected internal DeviceProvisioningClientException(string message, Exception innerException, HttpStatusCode statusCode, int errorCode, string trackingId)
+        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, int errorCode, string trackingId)
             : base(message, innerException)
         {
-            IsTransient = DetermineIfTransient(statusCode);
-            StatusCode = statusCode;
+            IsTransient = isTransient;
             ErrorCode = errorCode;
             TrackingId = trackingId;
         }
@@ -79,11 +78,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public string TrackingId { get; }
 
         /// <summary>
-        /// The 3-digit HTTP status code returned by Device Provisioning Service.
-        /// </summary>
-        public HttpStatusCode StatusCode { get; }
-
-        /// <summary>
         /// The specific 6-digit error code in the DPS response, if available.
         /// </summary>
         public int ErrorCode { get; }
@@ -97,13 +91,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             base.GetObjectData(info, context);
             info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
-        }
-
-        private static bool DetermineIfTransient(HttpStatusCode statusCode)
-        {
-            return statusCode >= HttpStatusCode.InternalServerError
-                || statusCode == HttpStatusCode.RequestTimeout
-                || (int)statusCode == 429;
         }
     }
 }

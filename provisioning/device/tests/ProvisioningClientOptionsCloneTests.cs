@@ -62,29 +62,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             options.AdditionalUserAgentInfo = "updated";
             options.Should().NotBeEquivalentTo(clone);
         }
-
-        [TestMethod]
-        public void ProvisioningClientHttpSettings()
-        {
-            // arrange
-            var httpSettings = new ProvisioningClientHttpSettings()
-            {
-                SslProtocols = SslProtocols.Tls12,
-            };
-            var options = new ProvisioningClientOptions(httpSettings)
-            {
-                AdditionalUserAgentInfo = "info"
-            };
-
-            // act
-            var clone = options.Clone();
-
-            // assert
-            options.Should().NotBeSameAs(clone);
-            options.Should().BeEquivalentTo(clone);
-
-            options.AdditionalUserAgentInfo = "updated";
-            options.Should().NotBeEquivalentTo(clone);
-        }
     }
 }

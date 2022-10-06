@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// The protocol over which a transport (i.e., MQTT, AMQP, HTTP) communicates.
+    /// The protocol over which a transport (i.e., MQTT, AMQP) communicates.
     /// </summary>
     public enum ProvisioningClientTransportProtocol
     {
