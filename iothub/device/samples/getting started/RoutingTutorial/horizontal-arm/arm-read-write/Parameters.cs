@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public enum Transport
     {
         Mqtt,
-        Amqp,
+        Amqp
     };
 
     /// <summary>
