@@ -103,7 +103,7 @@ namespace ReadD2cMessages
                     }
                 }
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
                 // This is expected when the token is signaled; it should not be considered an
                 // error in this scenario.

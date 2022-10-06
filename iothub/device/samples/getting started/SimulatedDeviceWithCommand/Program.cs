@@ -43,7 +43,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var sample = new SimulatedDeviceWithCommand(deviceClient, appRunTime);
             await sample.RunSampleAsync();
             await deviceClient.CloseAsync();
-            deviceClient.Dispose();
 
             Console.WriteLine("Done.\n");
         }

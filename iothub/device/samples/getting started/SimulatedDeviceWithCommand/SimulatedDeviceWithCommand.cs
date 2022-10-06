@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -85,14 +83,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     double currentTemperature = minTemperature + rand.NextDouble() * 15;
                     double currentHumidity = minHumidity + rand.NextDouble() * 20;
 
-                    // Create JSON message.
-                    string messageBody = JsonSerializer.Serialize(
-                        new
-                        {
-                            temperature = currentTemperature,
-                            humidity = currentHumidity,
-                        });
-                    var message = new OutgoingMessage(Encoding.ASCII.GetBytes(messageBody));
+                    // Create message.
+                    var telemetryDataPoint = new
+                    {
+                        temperature = currentTemperature,
+                        humidity = currentHumidity
+                    };
+                    var message = new OutgoingMessage(telemetryDataPoint);
 
                     // Add a custom application property to the message.
                     // An IoT hub can filter on these properties without access to the message body.
@@ -100,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     // Send the telemetry message.
                     await _deviceClient.SendEventAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {telemetryDataPoint}");
 
                     await Task.Delay(s_telemetryInterval, ct);
                 }

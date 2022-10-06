@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -109,12 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     pointInfo = infoString
                 };
 
-                // serialize the telemetry data and convert it to JSON.
-                string messageBody = JsonSerializer.Serialize(telemetryDataPoint);
-
-                // Encode the serialized object using UTF-8 so it can be parsed by IoT Hub when
-                // processing messaging rules.
-                var message = new OutgoingMessage(Encoding.UTF8.GetBytes(messageBody));
+                var message = new OutgoingMessage(telemetryDataPoint);
 
                 //Add one property to the message.
                 message.Properties.Add("level", levelValue);
@@ -126,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.SendEventAsync(message, token);
 
                     // Print out the message.
-                    Console.WriteLine("{0} > Sent message: {1}", DateTime.Now, messageBody);
+                    Console.WriteLine("{0} > Sent message: {1}", DateTime.Now, telemetryDataPoint);
                 }
                 catch (OperationCanceledException) { }
 

@@ -5,8 +5,6 @@
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples
 
 using System;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -74,14 +72,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     double currentTemperature = minTemperature + rand.NextDouble() * 15;
                     double currentHumidity = minHumidity + rand.NextDouble() * 20;
 
-                    // Create JSON message
-                    string messageBody = JsonSerializer.Serialize(
-                        new
-                        {
-                            temperature = currentTemperature,
-                            humidity = currentHumidity,
-                        });
-                    var message = new OutgoingMessage(Encoding.ASCII.GetBytes(messageBody));
+                    var telemetryDataPoint = new
+                    {
+                        temperature = currentTemperature,
+                        humidity = currentHumidity,
+                    };
+                    var message = new OutgoingMessage(telemetryDataPoint);
 
                     // Add a custom application property to the message.
                     // An IoT hub can filter on these properties without access to the message body.
@@ -90,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.OpenAsync(ct);
                     // Send the telemetry message
                     await deviceClient.SendEventAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {telemetryDataPoint}");
 
                     await Task.Delay(1000, ct);
                 }

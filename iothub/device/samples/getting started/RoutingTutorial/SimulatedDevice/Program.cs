@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -138,12 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     humidity = currentHumidity,
                     pointInfo = infoString
                 };
-                // serialize the telemetry data and convert it to JSON.
-                string telemetryDataString = JsonSerializer.Serialize(telemetryDataPoint);
-
-                // Encode the serialized object using UTF-8 so it can be parsed by IoT Hub when
-                // processing messaging rules.
-                var message = new OutgoingMessage(Encoding.UTF8.GetBytes(telemetryDataString));
+                var message = new OutgoingMessage(telemetryDataPoint);
 
                 // Add one property to the message.
                 message.Properties.Add("level", levelValue);
@@ -154,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.SendEventAsync(message, token);
 
                     // Print out the message.
-                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, telemetryDataString);
+                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, telemetryDataPoint);
                 }
                 catch (OperationCanceledException) { }
 
