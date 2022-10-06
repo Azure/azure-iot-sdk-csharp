@@ -383,7 +383,7 @@ namespace Microsoft.Azure.Devices
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<TResult>(state);
+            var tcs = new TaskCompletionSource<TResult>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 _ =>
                 {
