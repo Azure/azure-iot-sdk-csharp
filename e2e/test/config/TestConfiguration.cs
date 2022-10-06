@@ -11,7 +11,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static string GetValue(string envName, string defaultValue = null)
         {
             string envValue = Environment.GetEnvironmentVariable(envName);
-
             if (string.IsNullOrWhiteSpace(envValue))
             {
                 return defaultValue ?? throw new InvalidOperationException($"Configuration missing: {envName}");

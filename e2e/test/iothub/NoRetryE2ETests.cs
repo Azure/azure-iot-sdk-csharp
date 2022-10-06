@@ -31,12 +31,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient.SetRetryPolicy(new NoRetry());
 
             var connectionStatusChange = new Dictionary<ConnectionStatus, int>();
-            deviceClient.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
+
+            void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
             {
                 connectionStatusChange.TryGetValue(connectionStatusInfo.Status, out int count);
                 count++;
                 connectionStatusChange[connectionStatusInfo.Status] = count;
-            });
+            }
+            deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -96,20 +98,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient1.SetRetryPolicy(new NoRetry());
 
             var connectionStatusChangeDevice1 = new Dictionary<ConnectionStatus, int>();
-            deviceClient1.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
+            void ConnectionStatusChangeHandler1(ConnectionStatusInfo connectionStatusInfo)
             {
                 connectionStatusChangeDevice1.TryGetValue(connectionStatusInfo.Status, out int count);
                 count++;
                 connectionStatusChangeDevice1[connectionStatusInfo.Status] = count;
-            });
+            }
+            deviceClient1.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler1;
 
             var connectionStatusChangeDevice2 = new Dictionary<ConnectionStatus, int>();
-            deviceClient2.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
+            void ConnectionStatusChangeHandler2(ConnectionStatusInfo connectionStatusInfo)
             {
                 connectionStatusChangeDevice2.TryGetValue(connectionStatusInfo.Status, out int count);
                 count++;
                 connectionStatusChangeDevice2[connectionStatusInfo.Status] = count;
-            });
+            }
+            deviceClient2.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler2;
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");
             await deviceClient1.OpenAsync().ConfigureAwait(false);

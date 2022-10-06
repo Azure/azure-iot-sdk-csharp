@@ -25,9 +25,6 @@ namespace Microsoft.Azure.Devices.Client
 
         private volatile Func<IncomingMessage, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
-        // Connection status change information
-        private volatile Action<ConnectionStatusInfo> _connectionStatusChangeCallback;
-
         // Method callback information
         private bool _isDeviceMethodEnabled;
 
@@ -80,6 +77,20 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
 
+        /// <summary>
+        /// The callback to be executed each time connection status change notification is received.
+        /// </summary>
+        /// <example>
+        /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
+        /// //...
+        ///
+        /// public void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
+        /// {
+        ///     // Add connection status changed logic as needed
+        /// }
+        /// </example>
+        public Action<ConnectionStatusInfo> ConnectionStatusChangeCallback { get; set; }
+
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
 
         internal IDelegatingHandler InnerHandler { get; set; }
@@ -101,19 +112,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             retryDelegatingHandler.SetRetryPolicy(retryPolicy);
-        }
-
-        /// <summary>
-        /// Sets a new callback for receiving connection status change notifications. If a callback is already associated,
-        /// it will be replaced with the new callback.
-        /// </summary>
-        /// <param name="statusChangeHandler">The callback for the connection status change notifications.</param>
-        public void SetConnectionStatusChangeCallback(Action<ConnectionStatusInfo> statusChangeHandler)
-        {
-            if (Logging.IsEnabled)
-                Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeCallback));
-
-            _connectionStatusChangeCallback = statusChangeHandler;
         }
 
         /// <summary>
@@ -431,7 +429,7 @@ namespace Microsoft.Azure.Devices.Client
                     || ConnectionStatusInfo.ChangeReason != reason)
                 {
                     ConnectionStatusInfo = new ConnectionStatusInfo(status, reason);
-                    _connectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
+                    ConnectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
                 }
             }
             finally
