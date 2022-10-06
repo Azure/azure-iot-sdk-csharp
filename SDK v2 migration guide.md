@@ -175,6 +175,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - The security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
 - The previous way of providing transport level settings (`ProvisioningTransportHandler`) has been replaced with `ProvisioningClientTransportSettings`.
 - TPM support removed. The library used for TPM operations is broken on Linux and support for it is being shutdown. We'll reconsider how to support HSM.
+- HTTP has been removed as a transport option to keep the provisioning SDK consistent with IoT hub device SDK.
 
 #### Notable additions
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.

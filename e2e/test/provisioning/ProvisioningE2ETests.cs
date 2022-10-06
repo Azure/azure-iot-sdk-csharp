@@ -1089,11 +1089,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     : new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
             }
 
-            if (transportSettings is IotHubClientHttpSettings)
-            {
-                return new ProvisioningClientOptions(new ProvisioningClientHttpSettings());
-            }
-
             throw new NotSupportedException($"Unknown transport: '{transportSettings}'.");
         }
 

@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send message.", IotHubClientErrorCode.NetworkErrors, ex);
+                throw new IotHubClientException($"Failed to send message with message Id: {message.MessageId}.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 

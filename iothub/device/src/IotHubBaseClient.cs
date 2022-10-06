@@ -44,7 +44,6 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
 
-
             _clientOptions = iotHubClientOptions != null
                 ? iotHubClientOptions.Clone()
                 : new();
@@ -577,7 +576,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 // The SDK should only receive messages when the user sets a listener, so this should never happen.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, "Received a message when no listener was set. Abandoning message.", nameof(OnMessageReceivedAsync));
+                    Logging.Error(this, $"Received a message when no listener was set. Abandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
 
                 return MessageAcknowledgement.Abandon;
             }
