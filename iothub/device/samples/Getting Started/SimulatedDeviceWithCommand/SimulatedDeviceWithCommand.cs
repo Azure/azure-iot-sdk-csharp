@@ -35,11 +35,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Console.WriteLine($"{DateTime.Now}> Press Control+C at any time to quit the sample.");
 
-            await _deviceClient.OpenAsync(cts.Token);
+            try
+            {
+                await _deviceClient.OpenAsync(cts.Token);
 
-            await _deviceClient.SetDirectMethodCallbackAsync(SetTelemetryInterval, cts.Token);
+                await _deviceClient.SetDirectMethodCallbackAsync(SetTelemetryInterval, cts.Token);
 
-            await SendDeviceToCloudMessagesAsync(cts.Token);
+                await SendDeviceToCloudMessagesAsync(cts.Token);
+            }
+            catch (OperationCanceledException) { }
         }
 
         // Handle the direct method call.
@@ -101,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await Task.Delay(s_telemetryInterval, ct);
                 }
             }
-            catch (TaskCanceledException) { } // User canceled
+            catch (OperationCanceledException) { } // User canceled
         }
     }
 }

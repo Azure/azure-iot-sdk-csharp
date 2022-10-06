@@ -88,6 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 try
                 {
+                    await deviceClient.OpenAsync(cts.Token);
                     await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
                 }
                 catch (OperationCanceledException) { }

@@ -87,6 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     // An IoT hub can filter on these properties without access to the message body.
                     message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
 
+                    await deviceClient.OpenAsync(ct);
                     // Send the telemetry message
                     await deviceClient.SendEventAsync(message, ct);
                     Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
