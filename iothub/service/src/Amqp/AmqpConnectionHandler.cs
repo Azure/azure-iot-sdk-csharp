@@ -295,12 +295,23 @@ namespace Microsoft.Azure.Devices.Amqp
                 // Check if we're configured to use a proxy server
                 IWebProxy webProxy = _options.Proxy;
 
+                //Check if we're configured to use a proxy server
                 if (webProxy != null)
                 {
-                    // Configure proxy server. This may throw a PlatformNotSupportedException
-                    websocket.Options.Proxy = webProxy;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, "Setting ClientWebSocket.Options.Proxy", nameof(CreateClientWebSocket));
+                    try
+                    {
+                        // Configure proxy server
+                        websocket.Options.Proxy = webProxy;
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, $"{nameof(CreateClientWebSocket)} Setting ClientWebSocket.Options.Proxy");
+                    }
+                    catch (PlatformNotSupportedException ex)
+                    {
+                        // Failed to create the web socket with all the expected settings, so dispose it.
+                        websocket.Dispose();
+
+                        throw new InvalidOperationException("Failed to assign the supplied proxy to the web socket because the .NET platform being run does not support it.", ex);
+                    }
                 }
 
                 return websocket;

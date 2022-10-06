@@ -232,21 +232,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             websocket.Options.SetBuffer(BufferSize, BufferSize);
 
             //Check if we're configured to use a proxy server
-            try
+            if (webProxy != null)
             {
-                if (webProxy != null)
+                try
                 {
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"{nameof(CreateClientWebSocket)} Setting ClientWebSocket.Options.Proxy");
                 }
-            }
-            catch (PlatformNotSupportedException)
-            {
-                // .NET Core 2.0 doesn't support WebProxy configuration - ignore this setting.
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateClientWebSocket)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                catch (PlatformNotSupportedException ex)
+                {
+                    // Failed to create the web socket with all the expected settings, so dispose it.
+                    websocket.Dispose();
+
+                    throw new InvalidOperationException("Failed to assign the supplied proxy to the web socket because the .NET platform being run does not support it.", ex);
+                }
             }
 
             if (TransportSettings.Certificate != null)
