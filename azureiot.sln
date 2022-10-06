@@ -165,15 +165,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentX509Sam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentTpmSample", "provisioning\service\samples\Getting Started\IndividualEnrollmentTpmSample\IndividualEnrollmentTpmSample.csproj", "{705C5B5A-6166-4566-B167-4401491D7650}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmReadWrite", "iothub\device\samples\Getting Started\RoutingTutorial\horizontal-arm\arm-read-write\ArmReadWrite.csproj", "{12AF0A26-CDC9-49D0-8B19-1BA1A09BDCAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmReadWrite", "iothub\device\samples\getting started\RoutingTutorial\horizontal-arm\arm-read-write\ArmReadWrite.csproj", "{12AF0A26-CDC9-49D0-8B19-1BA1A09BDCAA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\Getting Started\SimulatedDevice\SimulatedDevice.csproj", "{D3A771DC-1763-4A14-952C-CD69433FEC74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\getting started\SimulatedDevice\SimulatedDevice.csproj", "{D3A771DC-1763-4A14-952C-CD69433FEC74}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDeviceWithCommand", "iothub\device\samples\Getting Started\SimulatedDeviceWithCommand\SimulatedDeviceWithCommand.csproj", "{0C078DE2-1785-44A3-8235-C990FA680F76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDeviceWithCommand", "iothub\device\samples\getting started\SimulatedDeviceWithCommand\SimulatedDeviceWithCommand.csproj", "{0C078DE2-1785-44A3-8235-C990FA680F76}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RoutingTutorial", "RoutingTutorial", "{F690C980-97D9-47F2-86C3-1745CB0BE530}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\Getting Started\RoutingTutorial\SimulatedDevice\SimulatedDevice.csproj", "{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\getting started\RoutingTutorial\SimulatedDevice\SimulatedDevice.csproj", "{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "iothub\service\samples\getting started\ReadD2cMessages\ReadD2cMessages.csproj", "{F4DA6FA4-7655-4116-994B-9B2E3D3522C0}"
 EndProject
