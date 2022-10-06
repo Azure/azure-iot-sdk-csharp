@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task MessagingClient_SendsMessage(IotHubTransportProtocol protocol)
+        public async Task MessagesClient_SendsMessage(IotHubTransportProtocol protocol)
         {
             // arrange
             var options = new IotHubServiceClientOptions
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task MessagingClient_CanReopenClosedClient(IotHubTransportProtocol protocol)
+        public async Task MessagesClient_CanReopenClosedClient(IotHubTransportProtocol protocol)
         {
             // arrange
             var options = new IotHubServiceClientOptions
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task MessagingClient_CanSendMultipleMessagesInOneConnection(IotHubTransportProtocol protocol)
+        public async Task MessagesClient_CanSendMultipleMessagesInOneConnection(IotHubTransportProtocol protocol)
         {
             // arrange
             var options = new IotHubServiceClientOptions
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task MessagingClient_SendToNonexistentDevice_ThrowIotHubServiceException(IotHubTransportProtocol protocol)
+        public async Task MessagesClient_SendToNonexistentDevice_ThrowIotHubServiceException(IotHubTransportProtocol protocol)
         {
             // arrange
             var options = new IotHubServiceClientOptions
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task MessagingClient_SendToNonexistentModule_ThrowIotHubServiceException(IotHubTransportProtocol protocol)
+        public async Task MessagesClient_SendToNonexistentModule_ThrowIotHubServiceException(IotHubTransportProtocol protocol)
         {
             // arrange
             var options = new IotHubServiceClientOptions
