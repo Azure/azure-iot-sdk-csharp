@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
@@ -80,6 +81,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>If the client operation times out before the response is returned.</exception>
         /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a web socket connection.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -113,6 +115,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>If the client operation times out before the response is returned.</exception>
         /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a web socket connection.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -154,6 +157,7 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a web socket connection.</exception>
         public virtual async Task SendAsync(string deviceId, Message message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)

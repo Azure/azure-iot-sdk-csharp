@@ -29,15 +29,15 @@ namespace Microsoft.Azure.Devices
         // Disposables
 
         private readonly ClientWebSocket _webSocket;
+        private readonly bool _disposeClientWebSocket;
         private readonly CancellationTokenSource _writeCancellationTokenSource;
         private bool _isDisposed;
 
-        internal ClientWebSocketTransport(ClientWebSocket webSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
+        internal ClientWebSocketTransport(ClientWebSocket webSocket, bool disposeClientWebSocket)
             : base("clientwebsocket")
         {
             _webSocket = webSocket;
-            _localEndPoint = localEndpoint;
-            _remoteEndPoint = remoteEndpoint;
+            _disposeClientWebSocket = disposeClientWebSocket;
             _writeCancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -98,7 +98,13 @@ namespace Microsoft.Azure.Devices
             if (!_isDisposed)
             {
                 _webSocket.Abort();
-                _webSocket.Dispose();
+
+                // A user may opt to not dispose the websocket just because the service client is being
+                // disposed.
+                if (_disposeClientWebSocket)
+                {
+                    _webSocket.Dispose();
+                }
 
                 _writeCancellationTokenSource.Dispose();
 
@@ -319,7 +325,7 @@ namespace Microsoft.Azure.Devices
                 || webSocketState == WebSocketState.CloseReceived
                 || webSocketState == WebSocketState.CloseSent)
             {
-                throw new ObjectDisposedException(GetType().Name);
+                throw new WebSocketException($"The client web socket is in an unexpected state {webSocketState}");
             }
 
             throw new AmqpException(AmqpErrorCode.IllegalState, null);

@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>If the client operation times out before the response is returned.</exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <exception cref="SocketException">If a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a WebSocket connection.</exception>
+        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a web socket connection.</exception>
         /// <exception cref="IOException">If an I/O error occurs.</exception>
         /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <exception cref="SocketException">If a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a WebSocket connection.</exception>
+        /// <exception cref="WebSocketException">If an error occurs when performing an operation on a web socket connection.</exception>
         /// <exception cref="IOException">If an I/O error occurs.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {

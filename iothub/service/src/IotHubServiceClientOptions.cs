@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices
         /// This feature is only applicable for HTTP and AMQP over TCP. AMQP web socket communication
         /// does not support this feature. For users who want this support over AMQP websocket, you
         /// must instead provide a <see cref="ClientWebSocket"/> instance with the desired callback
-        /// and other websocket options (eg. proxy, keep-alive etc.) set.
+        /// and other websocket options (e.g. proxy, keep-alive etc.) set.
         /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
@@ -133,13 +133,23 @@ namespace Microsoft.Azure.Devices
         /// An instance of client web socket to be used when transport protocol is set to web socket.
         /// </summary>
         /// <remarks>
-        /// If not provided, an instance will be created from provided websocket options (eg. proxy, keep-alive etc.)
+        /// If not provided, an instance will be created from provided websocket options (e.g. proxy, keep-alive etc.)
         /// <para>
         /// Only used for communications over AMQP, used in <see cref="MessagesClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
         /// and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </para>
         /// </remarks>
         public ClientWebSocket ClientWebSocket { get; set; }
+
+        /// <summary>
+        /// If true, this client will dispose the provided <see cref="ClientWebSocket"/> for you when
+        /// you dispose this client. If false, this client will not dispose the provided <see cref="ClientWebSocket"/>
+        /// when you dispose this client.
+        /// </summary>
+        /// <remarks>
+        /// By default, this is true.
+        /// </remarks>
+        public bool DisposeClientWebSocket { get; set; } = true;
 
         internal IotHubServiceClientOptions Clone()
         {
