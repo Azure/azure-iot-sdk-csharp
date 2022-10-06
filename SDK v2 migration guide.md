@@ -166,6 +166,11 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - The previous way of providing transport level settings (`ProvisioningTransportHandler`) has been replaced with `ProvisioningClientTransportSettings`.
 - TPM support removed. The library used for TPM operations is broken on Linux and support for it is being shutdown. We'll reconsider how to support HSM.
 
+#### Notable additions
+- Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
+- Added support for setting the web socket level keep alive interval for AMQP web socket connections.
+- Added support for setting the remote certificate validation callback for AMQP TCP connections.
+
 ### DPS service client
 
 | Version 1.x API | Equivalent version 2.x API |
