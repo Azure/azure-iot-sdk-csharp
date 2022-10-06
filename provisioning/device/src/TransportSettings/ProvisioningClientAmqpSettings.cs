@@ -46,6 +46,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// settings provided in this class. If provided, all other web socket level options set in this
         /// class will be ignored (WebSocketKeepAlive, proxy, and x509 certificates, for example).
         /// </para>
+        /// <para>
+        /// By default, this client web socket will be disposed when you dispose the provisioning device
+        /// client. However, you can opt out of this behavior by setting the <see cref="DisposeClientWebSocket"/> flag.
+        /// </para>
         /// </remarks>
         public ClientWebSocket ClientWebSocket { get; set; }
 

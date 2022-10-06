@@ -138,6 +138,10 @@ namespace Microsoft.Azure.Devices
         /// Only used for communications over AMQP, used in <see cref="MessagesClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
         /// and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </para>
+        /// <para>
+        /// By default, this client web socket will be disposed when you dispose the service client.
+        /// However, you can opt out of this behavior by setting the <see cref="DisposeClientWebSocket"/> flag.
+        /// </para>
         /// </remarks>
         public ClientWebSocket ClientWebSocket { get; set; }
 
