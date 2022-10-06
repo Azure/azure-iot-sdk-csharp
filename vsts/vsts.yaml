@@ -479,12 +479,17 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
-          # Environment variables for IoT Hub E2E tests
+                   # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
+          IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
           IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
+
           IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
           IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
           IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
+          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
 
           # Environment variables for DPS E2E tests
           DPS_IDSCOPE: $(DPS-IDSCOPE)
@@ -507,7 +512,7 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
 
           # Environment variables for the DevOps pipeline
-          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
+          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
@@ -521,10 +526,14 @@ jobs:
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-          
-          # Environment variable for running cleanups
+
+          # Environment variable for running samples/cleanups
           PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
           FAR_AWAY_IOTHUB_CONNECTION_STRING: $(FAR-AWAY-IOTHUB-CONNECTION-STRING)
+          PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
+          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
+          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID)
+          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
