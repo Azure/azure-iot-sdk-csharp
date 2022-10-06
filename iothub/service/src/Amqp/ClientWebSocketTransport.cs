@@ -94,12 +94,11 @@ namespace Microsoft.Azure.Devices
         {
             if (!_isDisposed)
             {
-                _webSocket.Abort();
-
                 // A user may opt to not dispose the websocket just because the service client is being
                 // disposed.
                 if (_disposeClientWebSocket)
                 {
+                    _webSocket.Abort();
                     _webSocket.Dispose();
                 }
 
