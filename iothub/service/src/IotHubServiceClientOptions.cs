@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
@@ -110,22 +111,35 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// <para>
-        /// This feature is only applicable for HTTP connections and for AMQP TCP connections. AMQP web socket communication
-        /// does not support this feature.
+        /// This feature is only applicable for HTTP and AMQP over TCP. AMQP web socket communication
+        /// does not support this feature. For users who want this support over AMQP websocket, you
+        /// must instead provide a <see cref="ClientWebSocket"/> instance with the desired callback
+        /// and other websocket options (eg. proxy, keep-alive etc.) set.
         /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
 
-        // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
-        // during the handshake.
-        private static bool DefaultRemoteCertificateValidation(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            return sslPolicyErrors == SslPolicyErrors.None;
-        }
+        /// <summary>
+        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
+        /// </summary>
+        /// <remarks>
+        /// Only used for communications over AMQP, used in <see cref="MessagesClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
+        /// and <see cref="FileUploadNotificationProcessorClient"/>.
+        /// </remarks>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
+        public TimeSpan? WebSocketKeepAlive { get; set; }
+
+        /// <summary>
+        /// An instance of client web socket to be used when transport protocol is set to web socket.
+        /// </summary>
+        /// <remarks>
+        /// If not provided, an instance will be created from provided websocket options (eg. proxy, keep-alive etc.)
+        /// <para>
+        /// Only used for communications over AMQP, used in <see cref="MessagesClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
+        /// and <see cref="FileUploadNotificationProcessorClient"/>.
+        /// </para>
+        /// </remarks>
+        public ClientWebSocket ClientWebSocket { get; set; }
 
         internal IotHubServiceClientOptions Clone()
         {
@@ -140,6 +154,17 @@ namespace Microsoft.Azure.Devices
                 AmqpConnectionKeepAlive = AmqpConnectionKeepAlive,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
             };
+        }
+
+        // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
+        // during the handshake.
+        private static bool DefaultRemoteCertificateValidation(
+            object sender,
+            X509Certificate certificate,
+            X509Chain chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            return sslPolicyErrors == SslPolicyErrors.None;
         }
     }
 }

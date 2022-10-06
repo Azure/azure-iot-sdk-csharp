@@ -3,7 +3,9 @@
 
 using System;
 using System.Globalization;
+using System.Net;
 using System.Net.Security;
+using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -248,6 +250,83 @@ namespace Microsoft.Azure.Devices.Amqp
                 Logging.Info(s_amqpVersion_1_0_0, nameof(CreateAmqpSettings));
 
             return amqpSettings;
+        }
+
+        private async Task<ClientWebSocketTransport> CreateClientWebSocketTransportAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));
+
+            try
+            {
+                var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.WebsocketPort}{AmqpsConstants.UriSuffix}");
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
+
+                ClientWebSocket websocket = CreateClientWebSocket();
+
+                await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
+
+                return new ClientWebSocketTransport(websocket, null, null);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));
+            }
+        }
+
+        private ClientWebSocket CreateClientWebSocket()
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(CreateClientWebSocket));
+
+            try
+            {
+                // If the user provided a client web socket instance, just use it as is.
+                if (_options.ClientWebSocket != null)
+                {
+                    return _options.ClientWebSocket;
+                }
+
+                var websocket = new ClientWebSocket();
+
+                // Set SubProtocol to AMQPWSB10
+                websocket.Options.AddSubProtocol(AmqpsConstants.Amqpwsb10);
+
+                if (_options.WebSocketKeepAlive.HasValue)
+                {
+                    websocket.Options.KeepAliveInterval = _options.WebSocketKeepAlive.Value;
+                }
+
+                // Check if we're configured to use a proxy server
+                IWebProxy webProxy = _options.Proxy;
+
+                try
+                {
+                    if (webProxy != null)
+                    {
+                        // Configure proxy server
+                        websocket.Options.Proxy = webProxy;
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, "Setting ClientWebSocket.Options.Proxy", nameof(CreateClientWebSocket));
+                    }
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // .NET Core 2.0 doesn't support proxy. Ignore this setting.
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy", nameof(CreateClientWebSocket));
+                }
+
+                return websocket;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(CreateClientWebSocket));
+            }
         }
 
         /// <inheritdoc/>
