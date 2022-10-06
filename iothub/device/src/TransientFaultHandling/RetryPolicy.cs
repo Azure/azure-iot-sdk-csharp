@@ -260,16 +260,16 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             bool fastFirstRetry,
             CancellationToken cancellationToken)
         {
-            Func<Task<bool>> taskWrapper = async () =>
+            async Task<bool> TaskWrapper()
             {
-                // There are two typews of tasks: return nothing and return a specific type.
+                // There are two types of tasks: return nothing and return a specific type.
                 // We use this to proxy to the generics implementation.
                 await taskFunc();
                 return true;
-            };
+            }
 
             await RunWithRetryAsync(
-                    taskWrapper,
+                    TaskWrapper,
                     shouldRetry,
                     isTransient,
                     onRetrying,
@@ -293,7 +293,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 throw new TaskCanceledException();
             }
 
-            TimeSpan minimumTimeBetweenRetries = TimeSpan.FromSeconds(1);
+            var minimumTimeBetweenRetries = TimeSpan.FromSeconds(1);
             var stopwatch = new Stopwatch();
             int retryCount = 0;
             Exception lastException = null;

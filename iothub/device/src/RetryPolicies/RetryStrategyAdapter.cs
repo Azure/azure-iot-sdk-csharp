@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public override ShouldRetry GetShouldRetry()
         {
-            return this.ShouldRetry;
+            return ShouldRetry;
         }
 
         private bool ShouldRetry(int retryCount, Exception lastException, out TimeSpan retryInterval)
