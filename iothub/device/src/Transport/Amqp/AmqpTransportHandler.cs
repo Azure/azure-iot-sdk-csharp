@@ -497,6 +497,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             Logging.Info("Could not remove correlation Id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
                     }
                 }
+                else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
+                    // This is an acknowledgement received from service for subscribing to desired property updates
+                    if (Logging.IsEnabled)
+                        Logging.Info("Subscribed for twin desired property updates successfully", nameof(TwinMessageListener));
+                }
             }
         }
 
