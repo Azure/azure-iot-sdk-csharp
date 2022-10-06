@@ -23,9 +23,6 @@ namespace Microsoft.Azure.Devices
         private static readonly AsyncCallback s_onWriteComplete = OnWriteComplete;
         private static readonly TimeSpan s_closeTimeout = TimeSpan.FromSeconds(30);
 
-        private readonly EndPoint _localEndPoint;
-        private readonly EndPoint _remoteEndPoint;
-
         // Disposables
 
         private readonly ClientWebSocket _webSocket;
@@ -41,9 +38,9 @@ namespace Microsoft.Azure.Devices
             _writeCancellationTokenSource = new CancellationTokenSource();
         }
 
-        public override string LocalEndPoint => _localEndPoint.ToString();
+        public override string LocalEndPoint => null; // Unused
 
-        public override string RemoteEndPoint => _remoteEndPoint.ToString();
+        public override string RemoteEndPoint => null; // Unused
 
         public override bool RequiresCompleteFrames => true;
 

@@ -163,6 +163,9 @@ namespace Microsoft.Azure.Devices
                 SdkAssignsMessageId = SdkAssignsMessageId,
                 AmqpConnectionKeepAlive = AmqpConnectionKeepAlive,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
+                WebSocketKeepAlive = WebSocketKeepAlive,
+                ClientWebSocket = ClientWebSocket,
+                DisposeClientWebSocket = DisposeClientWebSocket,
             };
         }
 
