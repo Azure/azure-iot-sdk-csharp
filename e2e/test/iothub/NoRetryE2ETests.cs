@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: waiting fault injection occurs...");
             var sw = Stopwatch.StartNew();
-            while (sw.Elapsed < FaultInjection.LatencyTimeBuffer)
+            while (sw.Elapsed < FaultInjection.DefaultFaultDuration)
             {
                 if (connectionStatusChange.ContainsKey(ConnectionStatus.Disconnected))
                 {
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: waiting device client instance 1 to be kicked off...");
             var sw = Stopwatch.StartNew();
-            while (sw.Elapsed < FaultInjection.LatencyTimeBuffer)
+            while (sw.Elapsed < TimeSpan.FromMinutes(1))
             {
                 if (connectionStatusChangeDevice1.ContainsKey(ConnectionStatus.Disconnected))
                 {
