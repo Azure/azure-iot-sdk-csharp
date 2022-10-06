@@ -333,9 +333,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                if (Logging.IsEnabled)
+            if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));
 
             try
@@ -359,9 +357,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
-            try
-            {
-                if (Logging.IsEnabled)
+            if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
 
             try

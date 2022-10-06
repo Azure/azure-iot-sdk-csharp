@@ -235,7 +235,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, nameof(CloseAsync));
-
             }
         }
 
@@ -867,51 +866,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _twinLinksSemaphore.Release();
                 if (Logging.IsEnabled)
                     Logging.Exit(this, nameof(EnableTwinLinksAsync));
-            }
-        }
-
-        internal async Task SendTwinMessageAsync(
-            AmqpTwinMessageType amqpTwinMessageType,
-            string correlationId,
-            TwinCollection reportedProperties,
-            CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(SendTwinMessageAsync));
-
-            await EnableTwinLinksAsync(cancellationToken).ConfigureAwait(false);
-            Debug.Assert(_twinSendingLink != null);
-
-            try
-            {
-                AmqpIotOutcome amqpIotOutcome = null;
-                switch (amqpTwinMessageType)
-                {
-                    case AmqpTwinMessageType.Get:
-                        amqpIotOutcome = await _twinSendingLink
-                            .SendTwinGetMessageAsync(correlationId, cancellationToken)
-                            .ConfigureAwait(false);
-                        break;
-
-                    case AmqpTwinMessageType.Patch:
-                        amqpIotOutcome = await _twinSendingLink
-                            .SendTwinPatchMessageAsync(correlationId, reportedProperties, cancellationToken)
-                            .ConfigureAwait(false);
-                        break;
-
-                    case AmqpTwinMessageType.Put:
-                        amqpIotOutcome = await _twinSendingLink
-                            .SubscribeToDesiredPropertiesAsync(correlationId, cancellationToken)
-                            .ConfigureAwait(false);
-                        break;
-                }
-
-                amqpIotOutcome?.ThrowIfNotAccepted();
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(SendTwinMessageAsync));
             }
         }
 
