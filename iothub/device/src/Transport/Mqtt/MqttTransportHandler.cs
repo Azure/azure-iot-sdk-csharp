@@ -632,7 +632,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = Guid.NewGuid().ToString();
             string topic = string.Format(TwinReportedPropertiesPatchTopicFormat, requestId);
 
-            byte[] body = _payloadConvention.GetObjectBytes(reportedProperties);
+            byte[] body = reportedProperties.GetObjectBytes();
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
@@ -944,9 +944,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
-
-            string patch = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
-            Dictionary<string, object> desiredPropertyPatchDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(patch);
+            
+            string patch = _payloadConvention.PayloadEncoder.ContentEncoding.GetString(receivedEventArgs.ApplicationMessage.Payload);
+            Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(patch);
             var desiredPropertyPatch = new DesiredPropertyCollection(desiredPropertyPatchDictionary)
             {
                 PayloadConvention = _payloadConvention,

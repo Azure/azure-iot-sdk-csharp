@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly IotHubClientAmqpSettings _amqpSettings;
 
         private readonly Func<DirectMethodRequest, Task> _onMethodCallback;
-        private readonly Action<Twin, string, TwinCollection, IotHubClientException> _twinMessageListener;
+        private readonly Action<AmqpMessage, string, IotHubClientException> _twinMessageListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _onMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
         private readonly Action _onUnitDisconnected;
@@ -69,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<DirectMethodRequest, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageCallback,
+            Action<AmqpMessage, string, IotHubClientException> twinMessageCallback,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {
@@ -988,19 +989,59 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection, IotHubClientException ex = default)
+        private void OnDesiredPropertyReceived(AmqpMessage responseFromService, string correlationId, IotHubClientException ex = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, twin, nameof(OnDesiredPropertyReceived));
+                Logging.Enter(this, responseFromService, nameof(OnDesiredPropertyReceived));
 
             try
             {
-                _twinMessageListener?.Invoke(twin, correlationId, twinCollection, ex);
+                _twinMessageListener?.Invoke(responseFromService, correlationId, ex);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, twin, nameof(OnDesiredPropertyReceived));
+                    Logging.Exit(this, responseFromService, nameof(OnDesiredPropertyReceived));
+            }
+        }
+
+        public async Task SendTwinMessageAsync(
+            AmqpTwinMessageType amqpTwinMessageType,
+            string correlationId,
+            ReportedPropertyCollection reportedProperties,
+            CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(SendTwinMessageAsync));
+
+            await EnableTwinLinksAsync(cancellationToken).ConfigureAwait(false);
+            Debug.Assert(_twinSendingLink != null);
+
+            try
+            {
+                AmqpIotOutcome amqpIotOutcome;
+                switch (amqpTwinMessageType)
+                {
+                    case AmqpTwinMessageType.Get:
+                        amqpIotOutcome = await _twinSendingLink.SendTwinGetMessageAsync(correlationId, cancellationToken).ConfigureAwait(false);
+                        amqpIotOutcome?.ThrowIfNotAccepted();
+                        break;
+
+                    case AmqpTwinMessageType.Patch:
+                        amqpIotOutcome = await _twinSendingLink.SendTwinPatchMessageAsync(correlationId, reportedProperties, cancellationToken).ConfigureAwait(false);
+                        amqpIotOutcome?.ThrowIfNotAccepted();
+                        break;
+
+                    case AmqpTwinMessageType.Put:
+                        amqpIotOutcome = await _twinSendingLink.SubscribeToDesiredPropertiesAsync(correlationId, cancellationToken).ConfigureAwait(false);
+                        amqpIotOutcome?.ThrowIfNotAccepted();
+                        break;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(SendTwinMessageAsync));
             }
         }
 

@@ -42,5 +42,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             _properties.Add(propertyKey, propertyValue);
         }
+
+        internal byte[] GetObjectBytes()
+        {
+            return PayloadConvention.GetObjectBytes(_properties);
+        }
     }
 }
