@@ -320,15 +320,7 @@ namespace Microsoft.Azure.Devices
                 return;
             }
 
-            if (webSocketState == WebSocketState.Aborted
-                || webSocketState == WebSocketState.Closed
-                || webSocketState == WebSocketState.CloseReceived
-                || webSocketState == WebSocketState.CloseSent)
-            {
-                throw new WebSocketException($"The client web socket is in an unexpected state {webSocketState}");
-            }
-
-            throw new AmqpException(AmqpErrorCode.IllegalState, null);
+            throw new WebSocketException($"The client web socket is in an unexpected state {webSocketState}");
         }
 
         private static IAsyncResult ToAsyncResult(Task task, AsyncCallback callback, object state)
