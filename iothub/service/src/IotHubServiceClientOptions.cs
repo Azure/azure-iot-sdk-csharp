@@ -142,8 +142,8 @@ namespace Microsoft.Azure.Devices
         public ClientWebSocket ClientWebSocket { get; set; }
 
         /// <summary>
-        /// If true, this client will dispose the provided <see cref="ClientWebSocket"/> for you when
-        /// you dispose this client. If false, this client will not dispose the provided <see cref="ClientWebSocket"/>
+        /// If true, the provided <see cref="ClientWebSocket"/> will be disposed for you when you
+        /// dispose this client. If false, the provided <see cref="ClientWebSocket"/> will not be disposed
         /// when you dispose this client.
         /// </summary>
         /// <remarks>
