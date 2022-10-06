@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -12,6 +10,16 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class DesiredPropertyCollection : PropertyCollection
     {
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
+        protected internal DesiredPropertyCollection()
+        {
+        }
+
         internal DesiredPropertyCollection(Dictionary<string, object> desiredProperties)
             : base(desiredProperties)
         {

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client
@@ -23,10 +24,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        ///
+        /// Gets or sets the value associated with the specified key.
         /// </summary>
-        /// <param name="propertyKey"></param>
-        /// <returns></returns>
+        /// <param name="propertyKey"> The key of the value to get or set. </param>
         public object this[string propertyKey]
         {
             get => _properties[propertyKey];
@@ -34,10 +34,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        ///
+        /// Adds the values to the collection.
         /// </summary>
-        /// <param name="propertyKey"></param>
-        /// <param name="propertyValue"></param>
+        /// <param name="propertyKey">The key of the property to add.</param>
+        /// <param name="propertyValue">The value of the property to add.</param>
+        /// <exception cref="ArgumentException"><paramref name="propertyKey"/> already exists in the collection.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyKey"/> is <c>null</c>.</exception>
         public void Add(string propertyKey, object propertyValue)
         {
             _properties.Add(propertyKey, propertyValue);

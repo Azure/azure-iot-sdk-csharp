@@ -68,27 +68,9 @@ namespace Microsoft.Azure.Devices.Client
 
             if (_properties.ContainsKey(propertyKey))
             {
-                object retrievedPropertyValue = _properties[propertyKey];
-
-                // Case 1:
-                // If the object is of type T or can be cast to type T, go ahead and return it.
-                if (ObjectConversionHelper.TryCast(retrievedPropertyValue, out propertyValue))
+                if (ObjectConversionHelper.TryCastOrConvert<T>(_properties[propertyKey], PayloadConvention, out propertyValue))
                 {
                     return true;
-                }
-
-                try
-                {
-                    // Case 2:
-                    // If the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
-                    // If it can be successfully converted, go ahead and return it.
-                    propertyValue = PayloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(retrievedPropertyValue);
-                    return true;
-                }
-                catch
-                {
-                    // In case the value cannot be converted using the serializer,
-                    // then return false with the default value of the type <T> passed in.
                 }
             }
 

@@ -3,7 +3,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.Azure.Devices.Client.Samples
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// A <see cref="System.Text.Json"/> <see cref="PayloadSerializer"/> implementation.
