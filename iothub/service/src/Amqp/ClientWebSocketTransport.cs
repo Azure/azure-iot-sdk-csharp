@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Devices
                 return;
             }
 
-            throw new WebSocketException($"The client web socket is in an unexpected state {webSocketState}");
+            throw new WebSocketException($"The client web socket is in an unexpected state '{webSocketState}'");
         }
 
         private static IAsyncResult ToAsyncResult(Task task, AsyncCallback callback, object state)

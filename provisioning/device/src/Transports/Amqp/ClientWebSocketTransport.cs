@@ -308,19 +308,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 return;
             }
 
-            if (webSocketState == WebSocketState.Aborted ||
-                webSocketState == WebSocketState.Closed ||
-                webSocketState == WebSocketState.CloseReceived ||
-                webSocketState == WebSocketState.CloseSent)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
-
-            throw new AmqpException(AmqpErrorCode.IllegalState, null);
+            throw new WebSocketException($"The client web socket is in an unexpected state '{webSocketState}'");
         }
 
         public void Dispose()
         {
+            // A user may opt to not dispose the websocket just because the service client is being
+            // disposed.
+            if (_disposeClientWebSocket)
+            {
+                _webSocket.Abort();
+                _webSocket.Dispose();
+            }
+
             _writeCancellationTokenSource?.Dispose();
             _writeCancellationTokenSource = null;
         }
