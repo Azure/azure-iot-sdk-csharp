@@ -348,14 +348,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     throw new InvalidOperationException("Service rejected the message");
                 }
 
+                // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
                 using var reader = new StreamReader(responseFromService.BodyStream, _payloadConvention.PayloadEncoder.ContentEncoding);
                 string body = reader.ReadToEnd();
 
                 try
                 {
-                    ClientTwinProperties clientTwinProperties = _payloadConvention
-                        .PayloadSerializer
-                        .DeserializeToType<ClientTwinProperties>(body);
+                    // The response here is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
+                    // For this reason, we use NewtonSoft Json serializer for this deserialization.
+                    ClientTwinProperties clientTwinProperties = JsonConvert.DeserializeObject<ClientTwinProperties>(body);
 
                     var twinDesiredProperties = new DesiredPropertyCollection(clientTwinProperties.Desired)
                     {

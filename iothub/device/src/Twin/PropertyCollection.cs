@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets the version of the client twin properties.
+        /// The version of the client twin properties.
         /// </summary>
         /// <value>A <see cref="long"/> that is used to identify the version of the client twin properties.</value>
         public long Version { get; private set; }
