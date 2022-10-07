@@ -27,12 +27,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         {
             Console.WriteLine($"Initializing the device provisioning client...");
 
-            // For individual enrollments, the first parameter must be the registration Id, where in the enrollment
-            // the device Id is already chosen. However, for group enrollments the device Id can be requested by
-            // the device, as long as the key has been computed using that value.
-            // Also, the secondary could be included, but was left out for the simplicity of this sample.
+            // For group enrollments, the second parameter must be the derived device key.
+            // See the ComputeDerivedSymmetricKeySample for how to generate the derived key.
+            // The secondary key could be included, but was left out for the simplicity of this sample.
             using var security = new SecurityProviderSymmetricKey(
-                _parameters.Id,
+                _parameters.RegistrationId,
                 _parameters.PrimaryKey,
                 null);
 
