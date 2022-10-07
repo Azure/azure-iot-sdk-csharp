@@ -93,7 +93,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ClientAuthenticationWithTokenRefresh_Populate_InvalidConnectionStringBuilder_Fail()
         {
             var refresher = new TestImplementation(TestDeviceId);
-            TestAssert.Throws<ArgumentNullException>(() => refresher.Populate(null));
+            IotHubConnectionCredentials iotHubConnectionCredentials = null;
+            TestAssert.Throws<ArgumentNullException>(() => refresher.Populate(ref iotHubConnectionCredentials));
         }
 
         [TestMethod]
@@ -131,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var refresher = new TestImplementation(TestDeviceId);
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(refresher, TestIotHubName);
 
-            refresher.Populate(iotHubConnectionCredentials);
+            refresher.Populate(ref iotHubConnectionCredentials);
 
             Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
             Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
@@ -140,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             string token = await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
 
-            refresher.Populate(iotHubConnectionCredentials);
+            refresher.Populate(ref iotHubConnectionCredentials);
 
             Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
             Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
@@ -154,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var refresher = new TestImplementation(TestDeviceId, TestModuleId);
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(refresher, TestIotHubName);
 
-            refresher.Populate(iotHubConnectionCredentials);
+            refresher.Populate(ref iotHubConnectionCredentials);
 
             Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
             Assert.AreEqual(TestModuleId, iotHubConnectionCredentials.ModuleId);
@@ -164,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             string token = await refresher.GetTokenAsync(TestIotHubName);
 
-            refresher.Populate(iotHubConnectionCredentials);
+            refresher.Populate(ref iotHubConnectionCredentials);
 
             Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
             Assert.AreEqual(TestModuleId, iotHubConnectionCredentials.ModuleId);

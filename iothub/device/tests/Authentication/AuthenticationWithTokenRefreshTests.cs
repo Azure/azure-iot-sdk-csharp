@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 new ClientAuthenticationWithRegistrySymmetricKey(TestSharedAccessKey,"deviceId", "moduleId"),
                 TestIotHubName);
 
-            refresher.Populate(iotHubConnectionCredentials);
+            refresher.Populate(ref iotHubConnectionCredentials);
 
             Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
             Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             string token = await refresher.GetTokenAsync(TestIotHubName);
 
-            refresher.Populate(iotHubConnectionCredentials);
+            refresher.Populate(ref iotHubConnectionCredentials);
 
             Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
             Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
@@ -83,7 +83,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void AuthenticationWithTokenRefresh_Populate_InvalidConnectionStringBuilder_Fail()
         {
             var refresher = new TestImplementation();
-            TestAssert.Throws<ArgumentNullException>(() => refresher.Populate(null));
+            IotHubConnectionCredentials iotHubConnectionCredentials = null;
+            TestAssert.Throws<ArgumentNullException>(() => refresher.Populate(ref iotHubConnectionCredentials));
         }
 
         [TestMethod]
