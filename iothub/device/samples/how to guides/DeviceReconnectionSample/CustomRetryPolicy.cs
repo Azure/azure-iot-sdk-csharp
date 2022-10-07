@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             if (!shouldRetry
                 && _exceptionsToBeRetried.Contains(lastException.GetType()))
             {
+                // If the base class denied retry, but our extra logic confirmed retry, we'll use a fixed retry.
                 retryInterval = TimeSpan.FromSeconds(15);
                 shouldRetry = true;
             }
