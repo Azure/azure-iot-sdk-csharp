@@ -112,8 +112,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Populates an <see cref="IotHubConnectionCredentials"/> instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
-        public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
+        public void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
@@ -124,8 +123,6 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SharedAccessSignature = null;
             iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
             iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
-
-            return iotHubConnectionCredentials;
         }
 
         private void SetKeyFromBase64String(string key)

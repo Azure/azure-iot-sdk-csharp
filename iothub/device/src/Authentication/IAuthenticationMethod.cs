@@ -12,7 +12,6 @@ namespace Microsoft.Azure.Devices.Client
         /// Populates an <c>IotHubConnectionCredentials</c> instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
-        IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials);
+        void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials);
     }
 }
