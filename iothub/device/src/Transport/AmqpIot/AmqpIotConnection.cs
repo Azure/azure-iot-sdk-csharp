@@ -58,21 +58,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 await amqpSession.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return new AmqpIotSession(amqpSession);
             }
-            catch (Exception e) when (!Fx.IsFatal(e))
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _amqpConnection);
-                if (ReferenceEquals(e, ex))
+                Exception convertedEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, _amqpConnection);
+                if (ReferenceEquals(ex, convertedEx))
                 {
                     throw;
                 }
 
-                if (ex is IotHubClientException hubEx && hubEx.InnerException is AmqpException)
+                if (convertedEx is IotHubClientException hubEx && hubEx.InnerException is AmqpException)
                 {
                     _amqpConnection.SafeClose();
-                    throw ex;
+                    throw convertedEx;
                 }
 
-                throw ex;
+                throw convertedEx;
             }
         }
 

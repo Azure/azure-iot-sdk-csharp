@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _amqpCbsLink = amqpCbsLink;
         }
 
-        public async Task<DateTime> SendTokenAsync(
+        internal async Task<DateTime> SendTokenAsync(
             ICbsTokenProvider tokenProvider,
             Uri namespaceAddress,
             string audience,

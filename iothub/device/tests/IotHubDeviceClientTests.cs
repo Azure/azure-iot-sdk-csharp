@@ -740,12 +740,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -761,13 +761,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
-            deviceClient.SetConnectionStatusChangeCallback(null);
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = null;
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -781,12 +781,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
             // current status = disabled
 
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -811,12 +811,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sender = new object();
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             // current status = disabled
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));

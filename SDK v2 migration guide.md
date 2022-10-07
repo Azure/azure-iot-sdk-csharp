@@ -49,8 +49,18 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - HTTP has been removed as a transport option.
   - It had very limited support across the device options and some APIs behaved differently.
 - Some options that were previously set in the `DeviceClient` constructor are now in the optional `IotHubClientOptions` parameter.
-- This method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
+- The connection status callback parameters have changed. Instead of two parameters, a class with several properties is provided.
+  - Two properties are the same as before, but with some renames (underscores removed) and obsolete members removed.
+  - A new property has been added with a recommended action, which a device developer may observe or ignore.
+- The file upload method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
 - Cloud-to-device messages can be received by calling `SetMessageHandlerAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
+- Several callback handler set methods and definitions have changed, losing the `userContext` parameter.
+
+#### Notable additions
+
+- The device and module clients now have a property (e.g., `IotHubDeviceClient.ConnectionStatusInfo`)with the latest connection status information on it, eliminating the need for a connection status callback method to cache the latest values.
+- Remote certificate validation is no natively longer supported for AMQP web socket connections. Supprted workaround is to provide a client web socket instance in the client options.
+- Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
 
 #### ModuleClient
 
@@ -165,6 +175,12 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - The security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
 - The previous way of providing transport level settings (`ProvisioningTransportHandler`) has been replaced with `ProvisioningClientTransportSettings`.
 - TPM support removed. The library used for TPM operations is broken on Linux and support for it is being shutdown. We'll reconsider how to support HSM.
+- HTTP has been removed as a transport option to keep the provisioning device SDK consistent with IoT hub device SDK.
+
+#### Notable additions
+- Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
+- Added support for setting the web socket level keep alive interval for AMQP web socket connections.
+- Added support for setting the remote certificate validation callback for AMQP TCP connections.
 
 ### DPS service client
 

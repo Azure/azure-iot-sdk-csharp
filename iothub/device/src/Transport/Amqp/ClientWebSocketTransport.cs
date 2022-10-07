@@ -8,10 +8,10 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Transport;
 
-using Microsoft.Azure.Devices.Client;
-
-namespace Microsoft.Azure.Amqp.Transport
+namespace Microsoft.Azure.Devices.Client
 {
     internal sealed class ClientWebSocketTransport : TransportBase, IDisposable
     {
@@ -350,7 +350,6 @@ namespace Microsoft.Azure.Amqp.Transport
             }
         }
 
-
         private static IAsyncResult ToAsyncResult(Task task, AsyncCallback callback, object state)
         {
             if (task.AsyncState == state)
@@ -360,14 +359,14 @@ namespace Microsoft.Azure.Amqp.Transport
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<object>(state);
+            var tcs = new TaskCompletionSource<object>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 _ =>
                 {
@@ -387,7 +386,7 @@ namespace Microsoft.Azure.Amqp.Transport
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;
@@ -402,14 +401,14 @@ namespace Microsoft.Azure.Amqp.Transport
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<TResult>(state);
+            var tcs = new TaskCompletionSource<TResult>(state, TaskCreationOptions.RunContinuationsAsynchronously);
             task.ContinueWith(
                 _ =>
                 {
@@ -429,7 +428,7 @@ namespace Microsoft.Azure.Amqp.Transport
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;

@@ -359,11 +359,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
 
             int connectionStatusChangeCount = 0;
-            void connectionStatusChangeHandler(ConnectionStatusInfo connInfo)
+            void ConnectionStatusChangeHandler(ConnectionStatusInfo connInfo)
             {
                 Interlocked.Increment(ref connectionStatusChangeCount);
             }
-            deviceClient.SetConnectionStatusChangeCallback(connectionStatusChangeHandler);
+            deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();

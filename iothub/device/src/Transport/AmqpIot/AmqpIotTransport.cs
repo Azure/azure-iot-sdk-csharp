@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly AmqpSettings _amqpSettings;
         private readonly IotHubClientAmqpSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
+        private ClientWebSocket _websocket;
 
         private ClientWebSocketTransport _clientWebSocketTransport;
 
@@ -66,6 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         public void Dispose()
         {
             _clientWebSocketTransport?.Dispose();
+            _websocket?.Dispose();
             _clientWebSocketTransport = null;
         }
 
@@ -89,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     break;
 
                 default:
-                    throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
+                    throw new InvalidOperationException("AmqpTransportSettings must specify either web socket or TCP.");
             }
 
             if (Logging.IsEnabled)
@@ -109,9 +111,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 string additionalQueryParams = "";
                 var websocketUri = new Uri($"{Scheme}{_hostName}:{SecurePort}{UriSuffix}{additionalQueryParams}");
-                // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
-                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, cancellationToken).ConfigureAwait(false);
-                return new ClientWebSocketTransport(websocket, null, null);
+                _websocket = _amqpTransportSettings.ClientWebSocket ?? CreateClientWebSocket();
+
+                await _websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
+                return new ClientWebSocketTransport(_websocket, null, null);
             }
             finally
             {
@@ -120,12 +123,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, CancellationToken cancellationToken)
+        private ClientWebSocket CreateClientWebSocket()
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, nameof(CreateClientWebSocketAsync));
+                    Logging.Enter(this, nameof(CreateClientWebSocket));
 
                 var websocket = new ClientWebSocket();
 
@@ -139,13 +142,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         // Configure proxy server
                         websocket.Options.Proxy = _amqpTransportSettings.Proxy;
                         if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set ClientWebSocket.Options.Proxy to {_amqpTransportSettings.Proxy}");
+                            Logging.Info(this, $"{nameof(CreateClientWebSocket)} Set ClientWebSocket.Options.Proxy to {_amqpTransportSettings.Proxy}");
                     }
-                    catch (PlatformNotSupportedException)
+                    catch (PlatformNotSupportedException ex)
                     {
+                        websocket.Dispose();
                         // Some .NET runtimes don't support this property.
                         if (Logging.IsEnabled)
-                            Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as this framework doesn't support proxy.");
+                            Logging.Error(this, $"{nameof(CreateClientWebSocket)} PlatformNotSupportedException thrown as this framework doesn't support proxy.");
+                        throw new InvalidOperationException("The current .NET runtime does not support setting the proxy.", ex);
                     }
                 }
 
@@ -153,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 {
                     websocket.Options.KeepAliveInterval = _amqpTransportSettings.WebSocketKeepAlive.Value;
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set websocket keep-alive to {_amqpTransportSettings.WebSocketKeepAlive}");
+                        Logging.Info(this, $"{nameof(CreateClientWebSocket)} Set websocket keep-alive to {_amqpTransportSettings.WebSocketKeepAlive}");
                 }
 
                 if (_connectionCredentials.Certificate != null)
@@ -161,14 +166,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     websocket.Options.ClientCertificates.Add(_connectionCredentials.Certificate);
                 }
 
-                await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
-
                 return websocket;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(CreateClientWebSocketAsync));
+                    Logging.Exit(this, nameof(CreateClientWebSocket));
             }
         }
 
