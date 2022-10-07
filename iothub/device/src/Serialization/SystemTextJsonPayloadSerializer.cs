@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The default instance of this class.
         /// </summary>
-        public static readonly SystemTextJsonPayloadSerializer Instance = new SystemTextJsonPayloadSerializer();
+        public static readonly SystemTextJsonPayloadSerializer Instance = new();
 
         /// <inheritdoc/>
         public override string ContentType => ApplicationJson;
