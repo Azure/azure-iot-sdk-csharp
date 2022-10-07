@@ -869,6 +869,46 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
+        internal async Task SendTwinMessageAsync(
+            AmqpTwinMessageType amqpTwinMessageType,
+            string correlationId,
+            ReportedPropertyCollection reportedProperties,
+            CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(SendTwinMessageAsync));
+
+            await EnableTwinLinksAsync(cancellationToken).ConfigureAwait(false);
+            Debug.Assert(_twinSendingLink != null);
+
+            try
+            {
+                AmqpIotOutcome amqpIotOutcome;
+                switch (amqpTwinMessageType)
+                {
+                    case AmqpTwinMessageType.Get:
+                        amqpIotOutcome = await _twinSendingLink.SendTwinGetMessageAsync(correlationId, cancellationToken).ConfigureAwait(false);
+                        amqpIotOutcome?.ThrowIfNotAccepted();
+                        break;
+
+                    case AmqpTwinMessageType.Patch:
+                        amqpIotOutcome = await _twinSendingLink.SendTwinPatchMessageAsync(correlationId, reportedProperties, cancellationToken).ConfigureAwait(false);
+                        amqpIotOutcome?.ThrowIfNotAccepted();
+                        break;
+
+                    case AmqpTwinMessageType.Put:
+                        amqpIotOutcome = await _twinSendingLink.SubscribeToDesiredPropertiesAsync(correlationId, cancellationToken).ConfigureAwait(false);
+                        amqpIotOutcome?.ThrowIfNotAccepted();
+                        break;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(SendTwinMessageAsync));
+            }
+        }
+
         private async Task OpenTwinReceiverLinkAsync(AmqpIotSession amqpIotSession, string correlationIdSuffix, CancellationToken cancellationToken)
         {
             if (_twinReceivingLink == null || _twinReceivingLink.IsClosing())
@@ -956,46 +996,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, responseFromService, nameof(OnDesiredPropertyReceived));
-            }
-        }
-
-        public async Task SendTwinMessageAsync(
-            AmqpTwinMessageType amqpTwinMessageType,
-            string correlationId,
-            ReportedPropertyCollection reportedProperties,
-            CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(SendTwinMessageAsync));
-
-            await EnableTwinLinksAsync(cancellationToken).ConfigureAwait(false);
-            Debug.Assert(_twinSendingLink != null);
-
-            try
-            {
-                AmqpIotOutcome amqpIotOutcome;
-                switch (amqpTwinMessageType)
-                {
-                    case AmqpTwinMessageType.Get:
-                        amqpIotOutcome = await _twinSendingLink.SendTwinGetMessageAsync(correlationId, cancellationToken).ConfigureAwait(false);
-                        amqpIotOutcome?.ThrowIfNotAccepted();
-                        break;
-
-                    case AmqpTwinMessageType.Patch:
-                        amqpIotOutcome = await _twinSendingLink.SendTwinPatchMessageAsync(correlationId, reportedProperties, cancellationToken).ConfigureAwait(false);
-                        amqpIotOutcome?.ThrowIfNotAccepted();
-                        break;
-
-                    case AmqpTwinMessageType.Put:
-                        amqpIotOutcome = await _twinSendingLink.SubscribeToDesiredPropertiesAsync(correlationId, cancellationToken).ConfigureAwait(false);
-                        amqpIotOutcome?.ThrowIfNotAccepted();
-                        break;
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(SendTwinMessageAsync));
             }
         }
 
