@@ -66,7 +66,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Name of the shared access policy.
         /// </summary>
         /// <remarks>
-        /// The name of relevant field in a connection string is "SharedAccessKeyName", so we call the property "KeyName" here.
+        /// A sample of device connection string in this case is "HostName=[Host Name];DeviceId=[Device Name];SharedAccessKey=[Device Key];SharedAccessKeyName=[Key Name]".
+        /// This property is for the field "SharedAccessKeyName".
         /// </remarks>
         public string KeyName
         {
