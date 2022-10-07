@@ -6,28 +6,32 @@ using System;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Represents a retry policy that performs a specified number of retries, using a exponential back-off scheme with jitter
+    /// Represents a retry policy that performs a specified number of retries, using a exponential back-off scheme, with option jitter,
     /// to determine the interval between retries.
     /// </summary>
     /// <remarks>
-    /// Jitter can be under 1 second, plus or minus.
+    /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
     public class ExponentialBackoffRetryPolicy : RetryPolicyBase
     {
         private const uint MaxExponent = 30; // Avoid integer overlow (max of 30) and clamp max wait to just over 1 hour (2^30 = ~12.43 days).
-        private readonly TimeSpan _maxWait;
+        private static readonly TimeSpan s_minDelay = TimeSpan.FromMilliseconds(100);
+        private readonly TimeSpan _maxDelay;
+        private readonly bool _useJitter;
 
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="maxRetries">The maximum number of retry attempts; use 0 for infinite retries.</param>
         /// <param name="maxWait">The maximum amount of time to wait between retries (will not exceed ~12.43 days).</param>
-        public ExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait)
+        /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
+        public ExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait, bool useJitter = true)
             : base(maxRetries)
         {
             Argument.AssertNotNegativeValue(maxWait.Ticks, nameof(maxWait));
 
-            _maxWait = maxWait;
+            _maxDelay = maxWait;
+            _useJitter = useJitter;
         }
 
         /// <summary>
@@ -48,14 +52,13 @@ namespace Microsoft.Azure.Devices.Client
             uint exponent = Math.Min(MaxExponent, currentRetryCount);
 
             // 2 to the power of the retry count gives us exponential back-off.
-            double exponentialIntervalMs = Math.Pow(2.0, exponent);
+            double exponentialIntervalMs = Math.Pow(2.0, exponent) + s_minDelay.TotalMilliseconds;
 
-            TimeSpan jitter = GetJitter(exponentialIntervalMs);
+            double clampedWaitMs = Math.Min(exponentialIntervalMs, _maxDelay.TotalMilliseconds);
 
-            double actualWaitMs = Math.Min(exponentialIntervalMs, _maxWait.TotalMilliseconds) + jitter.TotalMilliseconds;
-
-            // Because jitter could be negative, protect the result with absolute value.
-            retryInterval = TimeSpan.FromMilliseconds(Math.Abs(actualWaitMs));
+            retryInterval = _useJitter
+                ? UpdateWithJitter(clampedWaitMs)
+                : TimeSpan.FromMilliseconds(clampedWaitMs);
 
             return true;
         }

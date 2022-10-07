@@ -9,27 +9,30 @@ namespace Microsoft.Azure.Devices.Client
     /// Represents a retry policy that performs a specified number of retries, using an incrementally increasing retry delay with jitter.
     /// </summary>
     /// <remarks>
-    /// Jitter can be under 1 second, plus or minus.
+    /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
-    public class IncrementingDelayRetryPolicy : RetryPolicyBase
+    public class IncrementalDelayRetryPolicy : RetryPolicyBase
     {
         private readonly TimeSpan _delayIncrement;
-        private readonly TimeSpan _maxWait;
+        private readonly TimeSpan _maxDelay;
+        private readonly bool _useJitter;
 
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="maxRetries">The maximum number of retry attempts; use 0 for infinite retries.</param>
         /// <param name="delayIncrement"></param>
-        /// <param name="maxWait">The maximum amount of time to wait between retries (will not exceed ~12.43 days).</param>
-        public IncrementingDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxWait)
+        /// <param name="maxDelay">The maximum amount of time to wait between retries.</param>
+        /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
+        public IncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter)
             : base(maxRetries)
         {
             Argument.AssertNotNegativeValue(delayIncrement.Ticks, nameof(delayIncrement));
-            Argument.AssertNotNegativeValue(maxWait.Ticks, nameof(maxWait));
+            Argument.AssertNotNegativeValue(maxDelay.Ticks, nameof(maxDelay));
 
             _delayIncrement = delayIncrement;
-            _maxWait = maxWait;
+            _maxDelay = maxDelay;
+            _useJitter = useJitter;
         }
 
         /// <summary>
@@ -46,14 +49,13 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            double waitDurationMs = currentRetryCount * _delayIncrement.TotalMilliseconds;
+            double waitDurationMs = Math.Min(
+                currentRetryCount * _delayIncrement.TotalMilliseconds,
+                _maxDelay.TotalMilliseconds);
 
-            double minDelayMs = Math.Min(waitDurationMs, _maxWait.TotalMilliseconds);
-            TimeSpan jitter = GetJitter(minDelayMs);
-            double actualWaitMs = minDelayMs + jitter.TotalMilliseconds;
-
-            // Because jitter could be negative, protect the result with absolute value.
-            retryInterval = TimeSpan.FromMilliseconds(Math.Abs(actualWaitMs));
+            retryInterval = _useJitter
+                ? UpdateWithJitter(waitDurationMs)
+                : TimeSpan.FromMilliseconds(waitDurationMs);
 
             return true;
         }

@@ -48,23 +48,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </returns>
         internal async Task RunWithRetryAsync(Func<Task> taskFunc, CancellationToken cancellationToken = default)
         {
-            await RunWithRetryAsync(taskFunc, (ex) => false, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Repetitively executes the specified asynchronous task while it satisfies the current retry policy.
-        /// </summary>
-        /// <param name="taskFunc">A function that returns a started task (also known as "hot" task).</param>
-        /// <param name="transientErrorCheck">Additional check for transient exceptions.</param>
-        /// <param name="cancellationToken">The token used to cancel the retry operation. This token does not cancel the execution
-        /// of the asynchronous task.</param>
-        /// <returns>
-        /// Returns a task that will run to completion if the original task completes successfully (either the
-        /// first time or after retrying transient failures). If the task fails with a non-transient error or
-        /// the retry limit is reached, the returned task will transition to a faulted state and the exception must be observed.
-        /// </returns>
-        internal async Task RunWithRetryAsync(Func<Task> taskFunc, Func<Exception, bool> transientErrorCheck, CancellationToken cancellationToken = default)
-        {
             async Task<bool> TaskWrapper()
             {
                 // There are two typews of tasks: return nothing and return a specific type.
@@ -73,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
                 return true;
             }
 
-            await RunWithRetryAsync(TaskWrapper, transientErrorCheck, cancellationToken).ConfigureAwait(false);
+            await RunWithRetryAsync(TaskWrapper, (ex) => false, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -112,41 +95,26 @@ namespace Microsoft.Azure.Devices.Client
 
             uint retryCount = 0;
             TimeSpan retryDelay;
-            Exception lastException;
 
-            do
+            while (true)
             {
                 try
                 {
                     return await taskFunc().ConfigureAwait(false);
                 }
-                catch (Exception ex) when (!cancellationToken.IsCancellationRequested
-                    && (transientErrorCheck.Invoke(ex)
-                        || _retryPolicy.ShouldRetry(++retryCount, ex, out retryDelay)))
+                catch (Exception ex) when (transientErrorCheck.Invoke(ex)
+                    || _retryPolicy.ShouldRetry(++retryCount, ex, out retryDelay))
                 {
-                    lastException = ex;
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"Retry handler observed an exception approved for retry {retryCount} with delay {retryDelay}: {ex}");
                 }
 
-                if (retryDelay < TimeSpan.Zero)
+                if (retryDelay > TimeSpan.Zero)
                 {
-                    retryDelay = TimeSpan.Zero;
+                    // If cancellation is requested, we don't want to wait the full duration.
+                    await Task.Delay(retryDelay, cancellationToken).ConfigureAwait(false);
                 }
-
-                // If we expect to wait until retry, calculate the remaining wait time, considering how much time the operation already
-                // took, and the minimum delay.
-                if (retryDelay > TimeSpan.Zero
-                    && !cancellationToken.IsCancellationRequested)
-                {
-                    // Don't pass in the cancellation token, because we'll handle that
-                    // condition specially in the catch blocks above.
-                    await Task.Delay(retryDelay, CancellationToken.None).ConfigureAwait(false);
-                }
-            } while (!cancellationToken.IsCancellationRequested);
-
-            // On cancellation, we'll rethrow the last exception we've seen if available.
-            return lastException == null
-                ? (T)default
-                : throw lastException;
+            }
         }
     }
 }

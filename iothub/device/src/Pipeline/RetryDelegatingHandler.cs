@@ -65,7 +65,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
                         },
-                        null,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -90,7 +89,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
                         },
-                        null,
                         cancellationToken)
                     .ConfigureAwait(false);
             }

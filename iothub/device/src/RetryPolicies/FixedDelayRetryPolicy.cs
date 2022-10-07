@@ -9,24 +9,27 @@ namespace Microsoft.Azure.Devices.Client
     /// Represents a retry policy that performs a specified number of retries, using a fixed retry delay with jitter.
     /// </summary>
     /// <remarks>
-    /// Jitter can be under 1 second, plus or minus.
+    /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
     public class FixedDelayRetryPolicy : RetryPolicyBase
     {
         private readonly TimeSpan _fixedDelay;
+        private readonly bool _useJitter;
 
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="maxRetries">The maximum number of retry attempts; use 0 for infinite retries.</param>
         /// <param name="fixedDelay">The fixed delay to wait between retries.</param>
-        public FixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay)
+        /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in retrying clients.</param>
+        public FixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay, bool useJitter = true)
             : base(maxRetries)
         {
             Argument.AssertNotNegativeValue(maxRetries, nameof(maxRetries));
             Argument.AssertNotNegativeValue(fixedDelay.Ticks, nameof(fixedDelay));
 
             _fixedDelay = fixedDelay;
+            _useJitter = useJitter;
         }
 
         /// <summary>
@@ -43,12 +46,9 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            TimeSpan jitter = GetJitter(_fixedDelay.TotalMilliseconds);
-
-            double actualWaitMs = _fixedDelay.TotalMilliseconds + jitter.TotalMilliseconds;
-
-            // Because jitter could be negative, protect the result with absolute value.
-            retryInterval = TimeSpan.FromMilliseconds(Math.Abs(actualWaitMs));
+            retryInterval = _useJitter
+                ? UpdateWithJitter(_fixedDelay.TotalMilliseconds)
+                : _fixedDelay;
 
             return true;
         }

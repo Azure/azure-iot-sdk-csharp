@@ -36,24 +36,27 @@ namespace Microsoft.Azure.Devices.Client
             return lastException is IotHubClientException hubEx
                     && hubEx.IsTransient
                 && MaxRetries == 0
-                || MaxRetries > 0
-                    && currentRetryCount < MaxRetries;
+                || currentRetryCount < MaxRetries;
         }
 
         /// <summary>
-        /// Gets jitter up to a second, plus or minus.
+        /// Gets jitter between 95% and 105% of the base time.
         /// </summary>
-        protected TimeSpan GetJitter(double baseTimeMs)
+        protected TimeSpan UpdateWithJitter(double baseTimeMs)
         {
+            // Don't calculate jitter if the value is very small
+            if (baseTimeMs < 10)
+            {
+                return TimeSpan.FromMilliseconds(baseTimeMs);
+            }
+
             double jitterMs;
+
             // Because Random is not threadsafe
             lock (_rngLock)
             {
-                int plusOrMinus = _rng.Next(0, 2) * 2 - 1;
-
-                // a random double from 0 to 999, positive or negative
-                double maxJitter = Math.Min(baseTimeMs, 1000);
-                jitterMs = plusOrMinus * _rng.NextDouble() * maxJitter;
+                // A random double from 95% to 105% of the baseTimeMs
+                jitterMs = _rng.Next(95, 106) * baseTimeMs / 100.0;
             }
 
             return TimeSpan.FromMilliseconds(jitterMs);
