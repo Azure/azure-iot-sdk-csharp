@@ -398,10 +398,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionString.SharedAccessKeyName != null)
             {
-                return new DeviceAuthenticationWithSharedAccessPolicyKey(
-                    iotHubConnectionString.DeviceId,
+                return new ClientAuthenticationWithSharedAccessPolicy(
                     iotHubConnectionString.SharedAccessKeyName,
-                    iotHubConnectionString.SharedAccessKey);
+                    iotHubConnectionString.SharedAccessKey,
+                    iotHubConnectionString.DeviceId,
+                    iotHubConnectionString.ModuleId);
             }
             else if (iotHubConnectionString.SharedAccessKey != null)
             {
