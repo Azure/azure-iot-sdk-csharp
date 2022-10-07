@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()
         {
-            Action act = () => new DeviceAuthenticationWithX509Certificate("device1", null);
+            Action act = () => new ClientAuthenticationWithX509Certificate(null, "device1");
 
             act.Should().Throw<ArgumentException>();
         }
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cert = new X509Certificate2();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
-            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "fakeDeviceId", chainCertificates: certs);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cert = new X509Certificate2();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
-            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "fakeDeviceId", chainCertificates: certs);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cert = new X509Certificate2();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
-            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "fakeDeviceId", chainCertificates: certs);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cert = new X509Certificate2();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
-            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "fakeDeviceId", chainCertificates: certs);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
@@ -124,10 +124,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsHostNameAuthMethod_Works()
         {
             string hostName = "acme.azure-devices.net";
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                "device1",
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod);
         }
@@ -139,10 +139,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket);
             var options = new IotHubClientOptions(transportSettings);
 
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                "device1",
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
@@ -154,10 +154,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             string gatewayHostName = "gateway.acme.azure-devices.net";
             var options = new IotHubClientOptions(new IotHubClientMqttSettings()) { GatewayHostName = gatewayHostName };
 
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                "device1",
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
@@ -172,10 +172,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 GatewayHostName = gatewayHostName,
             };
 
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                "device1",
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
@@ -186,10 +186,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_Params_GatewayAuthMethod_Works()
         {
             string gatewayHostname = "myGatewayDevice";
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                "device1",
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(gatewayHostname, authMethod);
         }
@@ -201,10 +201,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string gatewayHostname = "myGatewayDevice";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                "device1",
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(
                 gatewayHostname,
@@ -219,10 +219,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string gatewayHostname = "myGatewayDevice";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
-            var authMethod = new DeviceAuthenticationWithSakRefresh(
-                "device1",
+            var authMethod = new ClientAuthenticationWithSakRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
-                s_iotHubConnectionCredentials.SharedAccessKeyName);
+                "device1",
+                sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
 
             using var deviceClient = new IotHubDeviceClient(
                 gatewayHostname,
@@ -740,12 +740,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -761,13 +761,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
-            deviceClient.SetConnectionStatusChangeCallback(null);
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = null;
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -781,12 +781,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
             // current status = disabled
 
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -811,12 +811,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sender = new object();
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.SetConnectionStatusChangeCallback(statusChangeHandler);
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             // current status = disabled
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -1004,7 +1004,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             // act
-            Action createDeviceClientAuth = () => { new DeviceAuthenticationWithConnectionString(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
+            Action createDeviceClientAuth = () => { new ClientAuthenticationWithConnectionString(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
 
             // assert
             createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
@@ -1015,7 +1015,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             // act
-            Action createDeviceClientAuth = () => { new DeviceAuthenticationWithConnectionString(FakeConnectionString, timeBufferPercentage: 200); };
+            Action createDeviceClientAuth = () => { new ClientAuthenticationWithConnectionString(FakeConnectionString, timeBufferPercentage: 200); };
 
             // assert
             createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
@@ -1027,7 +1027,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
             int sasTokenRenewalBuffer = 50;
-            var auth = new DeviceAuthenticationWithConnectionString(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
+            var auth = new ClientAuthenticationWithConnectionString(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
             // act
@@ -1036,7 +1036,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // assert
             var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
-            sasTokenRefresher.Should().BeAssignableTo<DeviceAuthenticationWithSakRefresh>();
+            sasTokenRefresher.Should().BeAssignableTo<ClientAuthenticationWithSakRefresh>();
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
@@ -1362,10 +1362,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             act.Should().Throw<OperationCanceledException>();
         }
 
-        private class TestDeviceAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh
+        private class TestDeviceAuthenticationWithTokenRefresh : ClientAuthenticationWithTokenRefresh
         {
             // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
-            public TestDeviceAuthenticationWithTokenRefresh(TimeSpan ttl, int refreshBuffer) : base("someTestDevice", ttl, refreshBuffer)
+            public TestDeviceAuthenticationWithTokenRefresh(TimeSpan ttl, int refreshBuffer)
+                : base(deviceId: "someTestDevice", suggestedTimeToLive: ttl, timeBufferPercentage: refreshBuffer)
             {
             }
 

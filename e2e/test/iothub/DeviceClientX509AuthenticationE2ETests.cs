@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
+using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class DeviceClientX509AuthenticationE2ETests : E2EMsTestBase
     {
+        private const string Amqpwsb10 = "AMQPWSB10";
         private static readonly string s_devicePrefix = $"{nameof(DeviceClientX509AuthenticationE2ETests)}_";
         private static X509Certificate2 s_selfSignedCertificateWithPrivateKey = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
         private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IotHub.GetChainDeviceCertificateWithPrivateKey();
@@ -89,6 +92,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_CustomWebSocket_AmqpWs()
+        {
+            IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCustomWebSocket(IotHubClientTransportProtocol.WebSocket);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Cert_Chain_Install_Test_MqttTcp()
         {
             // arrange
@@ -98,10 +109,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
-            var auth = new DeviceAuthenticationWithX509Certificate(
-                TestConfiguration.IotHub.X509ChainDeviceName,
+            var auth = new ClientAuthenticationWithX509Certificate(
                 s_chainCertificateWithPrivateKey,
-                chainCerts);
+                TestConfiguration.IotHub.X509ChainDeviceName,
+                chainCertificates: chainCerts);
             using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
@@ -126,10 +137,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
             };
-            var auth = new DeviceAuthenticationWithX509Certificate(
-                TestConfiguration.IotHub.X509ChainDeviceName,
+            var auth = new ClientAuthenticationWithX509Certificate(
                 s_chainCertificateWithPrivateKey,
-                chainCerts);
+                TestConfiguration.IotHub.X509ChainDeviceName,
+                chainCertificates: chainCerts);
             using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
@@ -184,6 +195,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             return new IotHubClientMqttSettings(transportProtocol) { CertificateRevocationCheck = true };
         }
 
+        private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCustomWebSocket(IotHubClientTransportProtocol transportProtocol)
+        {
+            var websocket = new ClientWebSocket();
+            websocket.Options.AddSubProtocol(Amqpwsb10);
+            websocket.Options.Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress);
+            websocket.Options.ClientCertificates.Add(s_selfSignedCertificateWithPrivateKey);
+
+            return new IotHubClientAmqpSettings(transportProtocol)
+            {
+                ClientWebSocket = websocket,
+            };
+        }
+
         private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
         {
             return new IotHubClientAmqpSettings(transportProtocol) { CertificateRevocationCheck = true };
@@ -192,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task X509InvalidDeviceIdOpenAsyncTest(IotHubClientTransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
+            var auth = new ClientAuthenticationWithX509Certificate(s_selfSignedCertificateWithPrivateKey, deviceName);
             using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             try
@@ -216,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(IotHubClientTransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
+            var auth = new ClientAuthenticationWithX509Certificate(s_selfSignedCertificateWithPrivateKey, deviceName);
             using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             for (int i = 0; i < 2; i++)

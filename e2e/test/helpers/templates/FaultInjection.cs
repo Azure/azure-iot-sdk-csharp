@@ -122,11 +122,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             int connectionStatusChangeCount = 0;
 
-            deviceClient.SetConnectionStatusChangeCallback(connectionStatusInfo =>
+            void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
             {
                 connectionStatusChangeCount++;
                 logger.Trace($"{nameof(FaultInjection)}.{nameof(TestErrorInjectionAsync)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={connectionStatusChangeCount}");
-            });
+            }
+
+            deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
 
             var faultInjectionDuration = new Stopwatch();
 
@@ -135,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 await initOperation(deviceClient, testDevice).ConfigureAwait(false);
-                
+
                 int countBeforeFaultInjection = connectionStatusChangeCount;
                 logger.Trace($"{nameof(FaultInjection)} Testing fault handling");
                 faultInjectionDuration.Start();

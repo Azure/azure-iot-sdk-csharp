@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Security;
+using System.Net.WebSockets;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -57,12 +58,43 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
+        /// <para>
+        /// This feature is only applicable for HTTP, MQTT over TCP, MQTT over web socket, AMQP
+        /// over TCP. AMQP web socket communication does not support this feature. For users who want
+        /// this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
+        /// instance with the desired callback and other websocket options (eg. proxy, keep-alive etc.) set.
+        /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
+
+        /// <summary>
+        /// An instance of client web socket to be used when transport protocol is set to web socket.
+        /// </summary>
+        /// <remarks>
+        /// If not provided, an instance will be created from provided websocket options (eg. proxy, keep-alive etc.)
+        /// </remarks>
+        public ClientWebSocket ClientWebSocket { get; set; }
 
         /// <summary>
         /// If using pooling, specify connection pool settings.
         /// </summary>
         public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
+
+        internal override IotHubClientTransportSettings Clone()
+        {
+            return new IotHubClientAmqpSettings(Protocol)
+            {
+                Proxy = Proxy,
+                SslProtocols = SslProtocols,
+                CertificateRevocationCheck = CertificateRevocationCheck,
+                AuthenticationChain = AuthenticationChain,
+                IdleTimeout = IdleTimeout,
+                WebSocketKeepAlive = WebSocketKeepAlive,
+                PrefetchCount = PrefetchCount,
+                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
+                ConnectionPoolSettings = ConnectionPoolSettings,
+                ClientWebSocket = ClientWebSocket,
+            };
+        }
     }
 }

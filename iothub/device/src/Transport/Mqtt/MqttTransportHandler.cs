@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException("Failed to send message.", IotHubClientErrorCode.NetworkErrors, ex);
+                throw new IotHubClientException($"Failed to send message with message Id: {message.MessageId}.", IotHubClientErrorCode.NetworkErrors, ex);
             }
         }
 
@@ -916,6 +916,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private void HandleReceivedDirectMethodRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
 
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
@@ -941,7 +942,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private void HandleReceivedDesiredPropertiesUpdateRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
+
             string patch = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
             TwinCollection twinCollection = JsonConvert.DeserializeObject<TwinCollection>(patch);
 
@@ -950,6 +953,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private void HandleTwinResponse(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            // This message is always QoS 0, so no ack will be sent.
+            receivedEventArgs.AutoAcknowledge = true;
+
             if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out long version))
             {
                 string payloadString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload ?? new byte[0]);

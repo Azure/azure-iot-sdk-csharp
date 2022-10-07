@@ -25,9 +25,6 @@ namespace Microsoft.Azure.Devices.Client
 
         private volatile Func<IncomingMessage, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
-        // Connection status change information
-        private volatile Action<ConnectionStatusInfo> _connectionStatusChangeCallback;
-
         // Method callback information
         private bool _isDeviceMethodEnabled;
 
@@ -47,14 +44,11 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
 
-            // Make sure client options is initialized.
-            if (iotHubClientOptions == default)
-            {
-                iotHubClientOptions = new();
-            }
+            _clientOptions = iotHubClientOptions != null
+                ? iotHubClientOptions.Clone()
+                : new();
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;
-            _clientOptions = iotHubClientOptions;
 
             ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
@@ -82,24 +76,25 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
 
+        /// <summary>
+        /// The callback to be executed each time connection status change notification is received.
+        /// </summary>
+        /// <example>
+        /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
+        /// //...
+        ///
+        /// public void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
+        /// {
+        ///     // Add connection status changed logic as needed
+        /// }
+        /// </example>
+        public Action<ConnectionStatusInfo> ConnectionStatusChangeCallback { get; set; }
+
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
         private protected PipelineContext PipelineContext { get; private set; }
-
-        /// <summary>
-        /// Sets a new callback for receiving connection status change notifications. If a callback is already associated,
-        /// it will be replaced with the new callback.
-        /// </summary>
-        /// <param name="statusChangeHandler">The callback for the connection status change notifications.</param>
-        public void SetConnectionStatusChangeCallback(Action<ConnectionStatusInfo> statusChangeHandler)
-        {
-            if (Logging.IsEnabled)
-                Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeCallback));
-
-            _connectionStatusChangeCallback = statusChangeHandler;
-        }
 
         /// <summary>
         /// Open the client instance. Must be done before any operation can begin.
@@ -416,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client
                     || ConnectionStatusInfo.ChangeReason != reason)
                 {
                     ConnectionStatusInfo = new ConnectionStatusInfo(status, reason);
-                    _connectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
+                    ConnectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
                 }
             }
             finally
@@ -564,7 +559,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 // The SDK should only receive messages when the user sets a listener, so this should never happen.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, "Received a message when no listener was set. Abandoning message.", nameof(OnMessageReceivedAsync));
+                    Logging.Error(this, $"Received a message when no listener was set. Abandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
 
                 return MessageAcknowledgement.Abandon;
             }

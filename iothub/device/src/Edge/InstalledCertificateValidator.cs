@@ -18,11 +18,20 @@ namespace Microsoft.Azure.Devices.Client
             _certs = certs;
         }
 
-        public static InstalledCertificateValidator Create(IList<X509Certificate2> certs)
+        internal static InstalledCertificateValidator Create(IList<X509Certificate2> certs)
         {
             var instance = new InstalledCertificateValidator(certs);
             instance.SetupCertificateValidation();
             return instance;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            foreach (X509Certificate2 item in _certs)
+            {
+                item.Dispose();
+            }
         }
 
         Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> ICertificateValidator.GetCustomCertificateValidation()
@@ -32,7 +41,9 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetupCertificateValidation()
         {
-            Debug.WriteLine("InstalledCertificateValidator.SetupCertificateValidation()");
+            if (Logging.IsEnabled)
+                Logging.Info("InstalledCertificateValidator.SetupCertificateValidation()");
+
             using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
             try
             {

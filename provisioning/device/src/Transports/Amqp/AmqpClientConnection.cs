@@ -200,19 +200,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 Host = _host,
                 Port = WebSocketPort
             };
-            ClientWebSocket websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, proxy, cancellationToken).ConfigureAwait(false);
-            return new ClientWebSocketTransport(
-                websocket,
-                null,
-                null);
+
+            ClientWebSocket websocket = CreateClientWebSocket(proxy);
+
+            await websocket.ConnectAsync(webSocketUriBuilder.Uri, cancellationToken).ConfigureAwait(false);
+
+            return new ClientWebSocketTransport(websocket, null, null);
         }
 
-        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, IWebProxy webProxy, CancellationToken cancellationToken)
+        private ClientWebSocket CreateClientWebSocket(IWebProxy webProxy)
         {
+            // Just return the user-supplied client websocket if they provided one.
+            if (_clientSettings?.ClientWebSocket != null)
+            {
+                return _clientSettings.ClientWebSocket;
+            }
+
+            // Otherwise we'll create the client web socket for them.
             var websocket = new ClientWebSocket();
+
+            if (_clientSettings.WebSocketKeepAlive.HasValue)
+            {
+                websocket.Options.KeepAliveInterval = _clientSettings.WebSocketKeepAlive.Value;
+            }
+
             // Set SubProtocol to AMQPWSB10
             websocket.Options.AddSubProtocol(Amqpwsb10);
-
             websocket.Options.SetBuffer(BufferSize, BufferSize);
 
             //Check if we're configured to use a proxy server
@@ -223,22 +236,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                        Logging.Info(this, $"{nameof(CreateClientWebSocket)} Setting ClientWebSocket.Options.Proxy");
                 }
             }
             catch (PlatformNotSupportedException)
             {
                 // .NET Core 2.0 doesn't support WebProxy configuration - ignore this setting.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                    Logging.Error(this, $"{nameof(CreateClientWebSocket)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
             }
 
             if (TransportSettings.Certificate != null)
             {
                 websocket.Options.ClientCertificates.Add(TransportSettings.Certificate);
             }
-
-            await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
             return websocket;
         }

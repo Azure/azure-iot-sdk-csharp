@@ -18,16 +18,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal class AmqpIotMessageConverter
     {
-        private const string LockTokenName = "x-opt-lock-token";
         private const string SequenceNumberName = "x-opt-sequence-number";
         private const string TimeSpanName = AmqpConstants.Vendor + ":timespan";
         private const string UriName = AmqpConstants.Vendor + ":uri";
         private const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
         private const string InputName = "x-opt-input-name";
-
-        private const string AmqpDiagIdKey = "Diagnostic-Id";
-        private const string AmqpDiagCorrelationContextKey = "Correlation-Context";
-
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
         private const string FailedToSerializeUnsupportedType = "Failed to serialize an unsupported type of '{0}'.";
@@ -39,17 +34,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
             using var ms = new MemoryStream();
-            amqpMessage.BodyStream.CopyTo(ms);
-
-            var message = new IncomingMessage(ms.ToArray())
+            using (amqpMessage)
             {
-                PayloadConvention = payloadConvention,
-            };
+                amqpMessage.BodyStream.CopyTo(ms);
 
-            UpdateMessageHeaderAndProperties(amqpMessage, message);
-            amqpMessage.Dispose();
+                var message = new IncomingMessage(ms.ToArray())
+                {
+                    PayloadConvention = payloadConvention,
+                };
 
-            return message;
+                UpdateMessageHeaderAndProperties(amqpMessage, message);
+
+                return message;
+            }
         }
 
         public static AmqpMessage OutgoingMessageToAmqpMessage(OutgoingMessage message)
@@ -128,28 +125,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 foreach (KeyValuePair<MapKey, object> pair in amqpMessage.ApplicationProperties.Map)
                 {
-                    if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out object netObject))
+                    if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out object netObject)
+                        && netObject is string stringObject)
                     {
-                        if (netObject is string stringObject)
+                        switch (pair.Key.ToString())
                         {
-                            switch (pair.Key.ToString())
-                            {
-                                case MessageSystemPropertyNames.Operation:
-                                    message.SystemProperties[pair.Key.ToString()] = stringObject;
-                                    break;
+                            case MessageSystemPropertyNames.Operation:
+                                message.SystemProperties[pair.Key.ToString()] = stringObject;
+                                break;
 
-                                case MessageSystemPropertyNames.MessageSchema:
-                                    message.MessageSchema = stringObject;
-                                    break;
+                            case MessageSystemPropertyNames.MessageSchema:
+                                message.MessageSchema = stringObject;
+                                break;
 
-                                case MessageSystemPropertyNames.CreationTimeUtc:
-                                    message.CreationTimeUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
-                                    break;
+                            case MessageSystemPropertyNames.CreationTimeUtc:
+                                message.CreationTimeUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
+                                break;
 
-                                default:
-                                    message.Properties[pair.Key.ToString()] = stringObject;
-                                    break;
-                            }
+                            default:
+                                message.Properties[pair.Key.ToString()] = stringObject;
+                                break;
                         }
                     }
                 }
@@ -252,26 +247,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             string methodRequestId = string.Empty;
             string methodName = string.Empty;
 
-            SectionFlag sections = amqpMessage.Sections;
-            if ((sections & SectionFlag.Properties) != 0)
+            using (amqpMessage)
             {
-                // Extract only the Properties that we support
-                methodRequestId = amqpMessage.Properties.CorrelationId?.ToString();
+                SectionFlag sections = amqpMessage.Sections;
+                if ((sections & SectionFlag.Properties) != 0)
+                {
+                    // Extract only the Properties that we support
+                    methodRequestId = amqpMessage.Properties.CorrelationId?.ToString();
+                }
+
+                amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName);
+
+                using var ms = new MemoryStream();
+                amqpMessage.BodyStream.CopyTo(ms);
+                return new DirectMethodRequest
+                {
+                    PayloadConvention = payloadConvention,
+                    MethodName = methodName,
+                    Payload = ms.ToArray(),
+                    RequestId = methodRequestId,
+                };
             }
-
-            amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName);
-
-            using var ms = new MemoryStream();
-            amqpMessage.BodyStream.CopyTo(ms);
-            amqpMessage.Dispose();
-            var directMethodRequest = new DirectMethodRequest
-            {
-                PayloadConvention = payloadConvention,
-                MethodName = methodName,
-                Payload = ms.ToArray(),
-                RequestId = methodRequestId
-            };
-            return directMethodRequest;
         }
 
         /// <summary>

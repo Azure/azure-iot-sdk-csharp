@@ -27,10 +27,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A new instance of the <c>IotHubConnectionCredentials</c> class with a populated connection string.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="iotHubHostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="iotHubHostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
-        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
+        /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
         /// <exception cref="FormatException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        /// <exception cref="IotHubClientException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
+        /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
         public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string iotHubHostName, string gatewayHostName = null)
         {
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
@@ -262,28 +262,28 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (ModuleId.IsNullOrWhiteSpace())
                 {
-                    SasTokenRefresher = new DeviceAuthenticationWithSakRefresh(
-                        DeviceId,
-                        SharedAccessKey,
-                        SharedAccessKeyName,
-                        SasTokenTimeToLive,
-                        SasTokenRenewalBuffer);
+                    SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
+                        sharedAccessKey: SharedAccessKey,
+                        deviceId: DeviceId,
+                        sharedAccessKeyName: SharedAccessKeyName,
+                        sasTokenTimeToLive: SasTokenTimeToLive,
+                        sasTokenRenewalBuffer: SasTokenRenewalBuffer);
 
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
                 }
                 else
                 {
-                    SasTokenRefresher = new ModuleAuthenticationWithSakRefresh(
+                    SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
+                        SharedAccessKey,
                         DeviceId,
                         ModuleId,
-                        SharedAccessKey,
                         SharedAccessKeyName,
                         SasTokenTimeToLive,
                         SasTokenRenewalBuffer);
 
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
                 }
 
                 // This assignment resets any previously set SharedAccessSignature value. This is possible in flows where the same authentication method instance
@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Validate certs.
-            if (AuthenticationMethod is DeviceAuthenticationWithX509Certificate)
+            if (AuthenticationMethod is ClientAuthenticationWithX509Certificate)
             {
                 // Prep for certificate auth.
                 if (Certificate == null)
@@ -397,32 +397,25 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionString.SharedAccessKeyName != null)
             {
-                return new DeviceAuthenticationWithSharedAccessPolicyKey(
-                    iotHubConnectionString.DeviceId,
+                return new ClientAuthenticationWithSharedAccessPolicy(
                     iotHubConnectionString.SharedAccessKeyName,
-                    iotHubConnectionString.SharedAccessKey);
+                    iotHubConnectionString.SharedAccessKey,
+                    iotHubConnectionString.DeviceId,
+                    iotHubConnectionString.ModuleId);
             }
             else if (iotHubConnectionString.SharedAccessKey != null)
             {
-                return iotHubConnectionString.ModuleId == null
-                    ? new DeviceAuthenticationWithRegistrySymmetricKey(
+                return new ClientAuthenticationWithRegistrySymmetricKey(
+                        iotHubConnectionString.SharedAccessKey,
                         iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.SharedAccessKey)
-                    : new ModuleAuthenticationWithRegistrySymmetricKey(
-                        iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.ModuleId,
-                        iotHubConnectionString.SharedAccessKey);
+                        iotHubConnectionString.ModuleId);
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {
-                return iotHubConnectionString.ModuleId == null
-                    ? new DeviceAuthenticationWithToken(
-                        iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.SharedAccessSignature)
-                    : new ModuleAuthenticationWithToken(
-                        iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.ModuleId,
-                        iotHubConnectionString.SharedAccessSignature);
+                return new ClientAuthenticationWithToken(
+                    iotHubConnectionString.SharedAccessSignature,
+                    iotHubConnectionString.DeviceId,
+                    iotHubConnectionString.ModuleId);
             }
 
             throw new FormatException($"Should specify either SharedAccessKey or SharedAccessSignature" +

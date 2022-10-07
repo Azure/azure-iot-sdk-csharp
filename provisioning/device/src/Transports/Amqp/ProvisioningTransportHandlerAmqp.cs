@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     ProvisioningErrorDetailsAmqp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
                     // status code has an extra 3 trailing digits as a sub-code, so turn this into a standard 3 digit status code
                     int statusCode = errorDetails.ErrorCode / 1000;
-                    bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
+                    bool isTransient = statusCode == 429;
                     if (isTransient)
                     {
                         errorDetails.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromRejection(rejected, s_defaultOperationPollingInterval);
@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new DeviceProvisioningClientException(
                         rejected.Error.Description,
                         null,
-                        (HttpStatusCode)statusCode,
+                        isTransient,
                         errorDetails.ErrorCode,
                         errorDetails.TrackingId);
                 }

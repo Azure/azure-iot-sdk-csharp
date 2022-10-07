@@ -11,6 +11,10 @@ namespace Microsoft.Azure.Devices.Client
     {
         public static NullCertificateValidator Instance { get; } = new NullCertificateValidator();
 
+        public void Dispose()
+        {
+        }
+
         Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> ICertificateValidator.GetCustomCertificateValidation()
         {
             return null;

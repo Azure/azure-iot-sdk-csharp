@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpIotConnector : IDisposable
     {
-        private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
+        private static readonly AmqpVersion s_amqpVersion_1_0_0 = new(1, 0, 0);
         private static readonly bool s_disableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
         private readonly IotHubClientAmqpSettings _amqpTransportSettings;
@@ -27,7 +27,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _hostName = hostName;
         }
 
-        public async Task<AmqpIotConnection> OpenConnectionAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
+        public void Dispose()
+        {
+            _amqpIotTransport?.Dispose();
+            _amqpIotTransport = null;
+        }
+
+        internal async Task<AmqpIotConnection> OpenConnectionAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(OpenConnectionAsync));
@@ -77,12 +83,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private static bool InitializeDisableServerCertificateValidation()
         {
             return AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out bool flag) && flag;
-        }
-
-        public void Dispose()
-        {
-            _amqpIotTransport?.Dispose();
-            _amqpIotTransport = null;
         }
     }
 }

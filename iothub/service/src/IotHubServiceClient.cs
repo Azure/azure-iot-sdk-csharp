@@ -49,20 +49,18 @@ namespace Microsoft.Azure.Devices
         public IotHubServiceClient(string connectionString, IotHubServiceClientOptions options = default)
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
-
-            if (options == null)
-            {
-                options = new IotHubServiceClientOptions();
-            }
+            IotHubServiceClientOptions clientOptions = options != null
+                ? options.Clone()
+                : new();
 
             IotHubConnectionString iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
             _credentialProvider = iotHubConnectionString;
             _hostName = iotHubConnectionString.HostName;
-            _httpClient = HttpClientFactory.Create(_hostName, options);
+            _httpClient = HttpClientFactory.Create(_hostName, clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
-            InitializeSubclients(options);
+            InitializeSubclients(clientOptions);
         }
 
         /// <summary>
@@ -85,19 +83,18 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(credential, nameof(credential));
 
-            if (options == null)
-            {
-                options = new IotHubServiceClientOptions();
-            }
+            IotHubServiceClientOptions clientOptions = options != null
+                ? options.Clone()
+                : new();
 
             _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
             _hostName = hostName;
-            _httpClient = HttpClientFactory.Create(_hostName, options);
+            _httpClient = HttpClientFactory.Create(_hostName, clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
 
-            InitializeSubclients(options);
+            InitializeSubclients(clientOptions);
         }
 
         /// <summary>
@@ -119,19 +116,18 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(credential, nameof(credential));
 
-            if (options == null)
-            {
-                options = new IotHubServiceClientOptions();
-            }
+            IotHubServiceClientOptions clientOptions = options != null
+                ? options.Clone()
+                : new();
 
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
             _hostName = hostName;
-            _httpClient = HttpClientFactory.Create(_hostName, options);
+            _httpClient = HttpClientFactory.Create(_hostName, clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
 
-            InitializeSubclients(options);
+            InitializeSubclients(clientOptions);
         }
 
         /// <summary>

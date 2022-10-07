@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -60,37 +61,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Receive Message
 
-        internal async Task<AmqpIotOutcome> DisposeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
+        internal async Task DisposeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
 
-            Outcome disposeOutcome =
-                await _receivingAmqpLink.DisposeMessageAsync(
+            Outcome disposeOutcome = await _receivingAmqpLink
+                .DisposeMessageAsync(
                     deliveryTag,
                     outcome,
                     batchable: true,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            Debug.Assert(disposeOutcome is Accepted, "IoT hub rejected the ack, which we don't expect and if we find it does, we should handle it.");
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, outcome, nameof(DisposeMessageAsync));
-
-            return new AmqpIotOutcome(disposeOutcome);
-        }
-
-        private static ArraySegment<byte> ConvertToDeliveryTag(string lockToken)
-        {
-            if (lockToken == null)
-            {
-                throw new ArgumentNullException(nameof(lockToken));
-            }
-
-            if (!Guid.TryParse(lockToken, out Guid lockTokenGuid))
-            {
-                throw new ArgumentException("Should be a valid Guid", nameof(lockToken));
-            }
-
-            return new ArraySegment<byte>(lockTokenGuid.ToByteArray());
         }
 
         internal void RegisterReceiveMessageListener(Func<IncomingMessage, ArraySegment<byte>, Task> onDeviceMessageReceived)

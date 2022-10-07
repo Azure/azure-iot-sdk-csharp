@@ -40,7 +40,7 @@ namespace X509DeviceCertWithChainSample
                 new X509Certificate2(parameters.Intermediate2CertPath)
             };
             using var deviceCert = new X509Certificate2(parameters.DevicePfxPath, parameters.DevicePfxPassword);
-            var auth = new DeviceAuthenticationWithX509Certificate(parameters.DeviceName, deviceCert, chainCerts);
+            var auth = new ClientAuthenticationWithX509Certificate(deviceCert, parameters.DeviceName, chainCertificates: chainCerts);
 
             var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
             using var deviceClient = new IotHubDeviceClient(

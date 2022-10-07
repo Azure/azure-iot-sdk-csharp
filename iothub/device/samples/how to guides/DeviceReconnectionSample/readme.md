@@ -15,16 +15,17 @@ This sample code demonstrates the various connection status changes and connecti
 //  az iot hub device-identity connection-string show --device-id <device_id> [--key-type {primary, secondary}]
 //  --key-type is optional. It defaults to "primary".
 //
-// Transport type:
-// The transport to use to communicate with the IoT Hub. Possible values include Mqtt,
-// Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_only, and Http1.
+// Transport:
+// The transport to use to communicate with IoT ub. Possible values include Mqtt and Amqp.
+//
+// Transport protocol:
+// The protocol to use to communicate with IoT hub. Possible values include Tcp and WebSocket.
 
 string connectionString = "<connection_string>";
-TransportType transportType = TransportType.Mqtt;
 
 // This option is helpful in delegating the assignment of Message.MessageId to the sdk.
 // If the user doesn't set a value for Message.MessageId, the sdk will assign it a random GUID before sending the message.
-var options = new IotHubClientOptions
+var options = new IotHubClientOptions(new IotHubClientMqttSettings())
 {
     SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
 };
@@ -55,30 +56,26 @@ await deviceClient.SendEventAsync(message);
 // This snippet shows you how to call the API for receiving telemetry sent to your device client.
 // In order to ensure that your client is resilient to disconnection events and exceptions,
 // refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
-private async Task OnC2dMessageReceived(Message receivedMessage, object userContext)
+private async Task OnC2dMessageReceived(IncomingMessage receivedMessage)
 {
-    string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-    var formattedMessage = new StringBuilder($"Received message: [{messageData}]\n");
-
-    // User set application properties can be retrieved from the Message.Properties dictionary.
-    foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
+    bool messageDeserialized = receivedMessage.TryGetPayload(out string messageData);
+    if (messageDeserialized)
     {
-        formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
+        var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
+
+        foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
+        {
+            formattedMessage.AppendLine($"\n\tProperty: key={prop.Key}, value={prop.Value}");
+        }
+        _logger.LogInformation(formattedMessage.ToString());
+
+        _logger.LogInformation($"Completed message [{messageData}].");
+        return Task.FromResult(MessageAcknowledgement.Complete);
     }
 
-    // System properties can be accessed using their respective accessors.
-    formattedMessage.AppendLine($"\tMessageId: {receivedMessage.MessageId}");
-
-    Console.WriteLine(formattedMessage.ToString());
-    await deviceClient.CompleteAsync(receivedMessage);
+    // A message was received that did not conform to the serialization specifications; ignore it.
+    return Task.FromResult(MessageAcknowledgement.Reject);
 }
-
-// Subscribe to the receive message API.
-await deviceClient.SetMessageHandlerAsync(OnC2dMessageReceived, userContext);
-
-// Once you are done receiving telemetry messages sent to your device client,
-// you can unsubscribe from the receive callback by setting a null handler.
-await deviceClient.SetMessageHandlerAsync(null, null);
 ```
 
 ### Receive twin desired property update notifications and update device twin's reported properties:
@@ -88,7 +85,7 @@ await deviceClient.SetMessageHandlerAsync(null, null);
 // and sending reported property updates from your device client.
 // In order to ensure that your client is resilient to disconnection events and exceptions,
 // refer to https://github.com/Azure-Samples/azure-iot-samples-csharp/blob/main/iot-hub/Samples/device/DeviceReconnectionSample/DeviceReconnectionSample.cs.
-private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest, object userContext)
+private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest)
 {
     _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.ToJson()}");
 
@@ -127,59 +124,58 @@ The device client exhibits the following connection status changes with reason:
 
 <table>
   <tr>
-    <th> Connection Status </th>
-    <th> Change Reason </th>
-    <th> Ownership of connectivity </th>
-    <th> Comments </th>
-    <th> Action </th>
+    <th>Connection Status</th>
+    <th>Change Reason</th>
+    <th>Ownership of connectivity</th>
+    <th>Comments</th>
+    <th>Action</th>
   </tr>
   <tr>
-    <td> Connected </td>
-    <td> Connection_Ok </td>
-    <td> SDK </td>
-    <td> SDK tries to remain connected to the service and can carry out all operations as normal. </td>
-    <td> The client is ready to be used. </td>
+    <td>Connected</td>
+    <td>ConnectionOk</td>
+    <td>SDK</td>
+    <td>SDK tries to remain connected to the service and can carry out all operations as normal.</td>
+    <td>The client is ready to be used.</td>
   </tr>
   <tr>
-    <td> Disconnected_Retrying </td>
-    <td> Communication_Error </td>
-    <td> SDK </td>
-    <td> When disconnection happens because of any reason (network failures, transient loss of connectivity etc.), SDK makes best attempt to connect back to IotHub. The RetryPolicy applied on the DeviceClient will be used to determine the count of reconnection attempts for <em>retriable</em> errors. </td>
-    <td> Do NOT dispose and reinitialize the client when it is in this state. <br/> Any operation carried out will be queued up, and will be subsequently either completed (if client reports a state of "Connected") or abandoned (if the client reports a state of "Disconnected"). </td>
+    <td>DisconnectedRetrying</td>
+    <td>CommunicationError</td>
+    <td>SDK</td>
+    <td>When disconnection happens because of any reason (network failures, transient loss of connectivity etc.), SDK makes best attempt to connect back to IotHub. The RetryPolicy applied on the DeviceClient will be used to determine the count of reconnection attempts for <em>retriable</em> errors.</td>
+    <td>Do NOT dispose and reinitialize the client when it is in this state. <br/> Any operation carried out will be queued up, and will be subsequently either completed (if client reports a state of "Connected") or abandoned (if the client reports a state of "Disconnected").</td>
   </tr>
   <tr>
-    <td rowspan="4"> Disconnected </td>
-    <td> Device_Disabled </td>
-    <td rowspan="4"> Application </td>
-    <td> This signifies that the device/ module has been deleted or marked as disabled (on your hub instance). </td>
-    <td> Dispose the existing client instance, fix the device/ module status in Azure and then reinitialize a new client instance. </td>
+    <td rowspan="4">Disconnected</td>
+    <td>DeviceDisabled</td>
+    <td rowspan="4">Application</td>
+    <td>This signifies that the device/module has been deleted or marked as disabled (on your hub instance).</td>
+    <td>Dispose the existing client instance, fix the device/module status in Azure and then reinitialize a new client instance.</td>
   </tr>
   <tr>
-    <td> Bad_Credential </td>
-    <td> Supplied credential isn’t good for device to connect to service. </td>
-    <td> Dispose the existing client instance, fix the supplied credentials and then reinitialize a new client instance. </td>
+    <td>BadCredential</td>
+    <td>Supplied credential isn’t good for device to connect to service.</td>
+    <td>Dispose the existing client instance, fix the supplied credentials and then reinitialize a new client instance.</td>
   </tr>
   <tr>
-    <td> Communication_Error </td>
-    <td> This is the state when SDK landed up in a non-retriable error during communication. </td>
-    <td> If you want to perform more operations on the device client, you should inspect the associated exception details to determine if user intervention is required. <br/> Dispose the existing client instance, make modifications (if required), and then reinitialize a new client instance. </td>
+    <td>CommunicationError</td>
+    <td>This is the state when SDK landed up in a non-retriable error during communication.</td>
+    <td>If you want to perform more operations on the device client, you should inspect the associated exception details to determine if user intervention is required. <br/> Dispose the existing client instance, make modifications (if required), and then reinitialize a new client instance.</td>
   </tr>
   <tr>
-    <td> Retry_Expired </td>
-    <td> This signifies that the client was disconnected due to a transient exception, but the retry policy expired before a connection could be re-established. </td>
-    <td> If you want to perform more operations on the device client, you should dispose and then re-initialize the client. </br> Note that the SDK's default retry policy is set to never expire. </td>
+    <td>RetryExpired</td>
+    <td>This signifies that the client was disconnected due to a transient exception, but the retry policy expired before a connection could be re-established.</td>
+    <td>If you want to perform more operations on the device client, you should dispose and then re-initialize the client. </br> Note that the SDK's default retry policy is set to never expire.</td>
   </tr>
   <tr>
-    <td> Disabled </td>
-    <td> Client_Close </td>
-    <td> Application </td>
-    <td> This is the state when SDK was asked to close the connection by application. </td>
-    <td> If you want to perform more operations on the device client, you should dispose and then re-initialize the client. </td>
+    <td>Disabled</td>
+    <td>ClientClosed</td>
+    <td>Application</td>
+    <td>This is the state when SDK was asked to close the connection by application.</td>
+    <td>If you want to perform more operations on the device client, you should dispose and then re-initialize the client.</td>
   </tr>
 </table>
 
 NOTE:
-* If the device is in `Connected` state, you can perform subsequent operations on the same client instance.
-* If the device is in `Disconnected_Retrying` state, then the SDK is retrying to recover its connection. Wait until device recovers and reports a `Connected` state, and then perform subsequent operations.
-* If the device is in `Disconnected` or `Disabled` state, then the underlying transport layer has been disposed. You should dispose of the existing `DeviceClient` instance and then initialize a new client (initializing a new `DeviceClient` instance without disposing the previously used instance will cause them to fight for the same connection resources).
-
+- If the device is in `Connected` state, you can perform subsequent operations on the same client instance.
+- If the device is in `DisconnectedRetrying` state, then the SDK is retrying to recover its connection. Wait until device recovers and reports a `Connected` state, and then perform subsequent operations.
+- If the device is in `Disconnected` or `Disabled` state, then the underlying transport layer has been disposed. You should dispose of the existing `DeviceClient` instance and then initialize a new client (initializing a new `DeviceClient` instance without disposing the previously used instance will cause them to fight for the same connection resources).
