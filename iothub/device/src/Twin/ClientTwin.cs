@@ -14,11 +14,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
-        protected internal ClientTwin()
-        {
-        }
-
-        internal ClientTwin(DesiredPropertyCollection requestsFromService, ReportedPropertyCollection reportedByClient)
+        protected internal ClientTwin(DesiredPropertyCollection requestsFromService, ReportedPropertyCollection reportedByClient)
         {
             RequestsFromService = requestsFromService;
             ReportedByClient = reportedByClient;

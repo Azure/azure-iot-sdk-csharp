@@ -15,10 +15,17 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of this class.
         /// </summary>
         public ReportedPropertyCollection()
+            : this(new Dictionary<string, object>())
         {
         }
 
-        internal ReportedPropertyCollection(Dictionary<string, object> reportedProperties)
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
+        protected internal ReportedPropertyCollection(Dictionary<string, object> reportedProperties)
             : base(reportedProperties)
         {
         }

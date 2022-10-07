@@ -7,18 +7,29 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    ///
+    /// The collection of twin properties.
     /// </summary>
+    /// <remarks>
+    /// This abstract class is inherited by <see cref="ReportedPropertyCollection"/> to represent the collection of twin properties reported by the client.
+    /// This abstract class is inherited by <see cref="DesiredPropertyCollection"/> to represent the collection of desired property update requests received from service.
+    /// </remarks>
     public abstract class PropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {
         private const string VersionName = "$version";
 
-        private protected PropertyCollection()
-        {
-        }
+        // Visibility of this type is restricted to this class or types derived from this class within our assembly.
+        private protected readonly Dictionary<string, object> _properties = new();
 
-        internal PropertyCollection(Dictionary<string, object> properties)
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
+        protected internal PropertyCollection(Dictionary<string, object> properties)
         {
+            Argument.AssertNotNull(properties, nameof(properties));
+
             // The version information should not be a part of the enumerable ProperyCollection, but rather should be
             // accessible through its dedicated accessor.
             bool versionPresent = properties.TryGetValue(VersionName, out object version);
@@ -45,14 +56,12 @@ namespace Microsoft.Azure.Devices.Client
         /// The version of the client twin properties.
         /// </summary>
         /// <value>A <see cref="long"/> that is used to identify the version of the client twin properties.</value>
-        public long Version { get; private set; }
+        public long Version { get; private protected set; }
 
         /// <summary>
-        ///
+        /// The payload convention that defines a specific serializer as well as a specific content encoding for the payload.
         /// </summary>
-        protected readonly Dictionary<string, object> _properties = new();
-
-        internal PayloadConvention PayloadConvention { get; set; }
+        protected internal PayloadConvention PayloadConvention { get; set; }
 
         /// <summary>
         /// Gets the value associated with the <paramref name="propertyKey"/> in the reported property collection.
