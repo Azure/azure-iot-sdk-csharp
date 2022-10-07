@@ -17,18 +17,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ExponentialBackoffRetryPolicy_DoesNotUnderflowDelay()
         {
             // arrange
-            const uint MaxRetryAttempts = 50;
+            const uint MaxRetryAttempts = 70;
 
-            var exponentialBackoff = new ExponentialBackoffRetryPolicy(MaxRetryAttempts, TimeSpan.FromSeconds(30), false);
+            var exponentialBackoff = new ExponentialBackoffRetryPolicy(MaxRetryAttempts, TimeSpan.FromDays(365), false);
             TimeSpan previousDelay = TimeSpan.Zero;
 
-            for (uint i = 0; i < MaxRetryAttempts; i++)
+            for (uint retryCount = 1; retryCount < MaxRetryAttempts; retryCount++)
             {
                 // act
-                exponentialBackoff.ShouldRetry(i, new IotHubClientException("", true), out TimeSpan delay).Should().BeTrue();
+                exponentialBackoff.ShouldRetry(retryCount, new IotHubClientException("", true), out TimeSpan delay).Should().BeTrue();
 
                 // assert
-                Console.WriteLine($"{i}: {delay}");
+                Console.WriteLine($"{retryCount}: {delay}");
                 delay.Should().BeGreaterOrEqualTo(previousDelay, "Exponential backoff should never recommend a negative delay or one less than the previous.");
 
                 previousDelay = delay;

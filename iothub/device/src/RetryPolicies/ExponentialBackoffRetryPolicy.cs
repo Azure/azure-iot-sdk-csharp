@@ -14,8 +14,13 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class ExponentialBackoffRetryPolicy : RetryPolicyBase
     {
-        private const uint MaxExponent = 30; // Avoid integer overlow (max of 30) and clamp max wait to just over 1 hour (2^30 = ~12.43 days).
-        private static readonly TimeSpan s_minDelay = TimeSpan.FromMilliseconds(100);
+        // If we start with an exponent of 1 to calculate the number of millisecond delay, it starts too low and takes too long to get over 1 second.
+        // So we always add 6 to the retry count to start at 2^7=128 milliseconds, and exceed 1 second delay on retry #4.
+        private const uint MinExponent = 6u;
+
+        // Avoid integer overlow (max of 32) and clamp max delay.
+        private const uint MaxExponent = 32u;
+
         private readonly TimeSpan _maxDelay;
         private readonly bool _useJitter;
 
@@ -48,11 +53,12 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            // Avoid integer overlow and clamp max wait.
-            uint exponent = Math.Min(MaxExponent, currentRetryCount);
+            // Avoid integer overlow and clamp max delay.
+            uint exponent = currentRetryCount + MinExponent;
+            exponent = Math.Min(MaxExponent, exponent);
 
             // 2 to the power of the retry count gives us exponential back-off.
-            double exponentialIntervalMs = Math.Pow(2.0, exponent) + s_minDelay.TotalMilliseconds;
+            double exponentialIntervalMs = Math.Pow(2.0, exponent);
 
             double clampedWaitMs = Math.Min(exponentialIntervalMs, _maxDelay.TotalMilliseconds);
 

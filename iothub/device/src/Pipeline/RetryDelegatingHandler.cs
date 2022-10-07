@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal class RetryDelegatingHandler : DefaultDelegatingHandler
     {
         // RetryCount is used for testing purpose and is equal to MaxValue in prod.
-        private const int RetryMaxCount = int.MaxValue;
+        private const uint RetryMaxCount = uint.MaxValue;
 
         private readonly RetryHandler _internalRetryHandler;
         private IRetryPolicy _retryPolicy;
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
-            _retryPolicy = new ExponentialBackoffRetryPolicy(RetryMaxCount, TimeSpan.FromSeconds(10));
+            _retryPolicy = new ExponentialBackoffRetryPolicy(RetryMaxCount, TimeSpan.FromMinutes(2));
             _internalRetryHandler = new RetryHandler(_retryPolicy);
 
             _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
