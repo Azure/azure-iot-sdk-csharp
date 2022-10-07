@@ -97,13 +97,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: 2 device client instances with the same deviceId={testDevice.Id}.");
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: set device client instance 1 to no retry.");
+            
             var options1 = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
                 RetryPolicy = new NoRetry(),
             };
-            var options2 = new IotHubClientOptions(new IotHubClientAmqpSettings());
-            
             using IotHubDeviceClient deviceClient1 = testDevice.CreateDeviceClient(options1);
+
+            var options2 = new IotHubClientOptions(new IotHubClientAmqpSettings());
             using IotHubDeviceClient deviceClient2 = testDevice.CreateDeviceClient(options2);
 
             var deviceDisconnected = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -111,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var connectionStatusChangeDevice1 = new Dictionary<ConnectionStatus, int>();
             void ConnectionStatusChangeHandler1(ConnectionStatusInfo connectionStatusInfo)
             {
-                if (connectionStatusInfo.Status == ConnectionStatus.Disconnected) 
+                if (connectionStatusInfo.Status == ConnectionStatus.Disconnected)
                 {
                     deviceDisconnected.TrySetResult(true);
                 }
@@ -133,34 +134,22 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");
             await deviceClient1.OpenAsync().ConfigureAwait(false);
-            var response = new Client.DirectMethodResponse(200);
-
-            await deviceClient1
-                .SetDirectMethodCallbackAsync(
-                    (methodRequest) => Task.FromResult(response))
-                .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 2 calling OpenAsync...");
             await deviceClient2.OpenAsync().ConfigureAwait(false);
-            await deviceClient2
-                .SetDirectMethodCallbackAsync(
-                    (methodRequest) => Task.FromResult(response))
-                .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: waiting device client instance 1 to be kicked off...");
-
             await deviceDisconnected.Task.ConfigureAwait(false);
 
-            var lastConnectionStatusDevice1 = deviceClient1.ConnectionStatusInfo.Status;
-            lastConnectionStatusDevice1.Should().Be(ConnectionStatus.Disconnected, $"Excpected device 1 to be {ConnectionStatus.Disconnected} but was {lastConnectionStatusDevice1}.");
+            deviceClient1.ConnectionStatusInfo.Status.Should().Be(ConnectionStatus.Disconnected, $"Excpected device 1 to be {ConnectionStatus.Disconnected}.");
             connectionStatusChangeDevice1.Should().NotContainKey(ConnectionStatus.DisconnectedRetrying, $"Shouldn't get {ConnectionStatus.DisconnectedRetrying} status change.");
             int connected = connectionStatusChangeDevice1[ConnectionStatus.Connected];
-            connected.Should().Be(1, $"Should get {ConnectionStatus.Connected} once but got it {connected} times.");
+            connected.Should().Be(1, $"Should get {ConnectionStatus.Connected} once.");
             int disconnected = connectionStatusChangeDevice1[ConnectionStatus.Disconnected];
-            disconnected.Should().Be(1, $"Should get {ConnectionStatus.Disconnected} once but got it {disconnected} times.");
+            disconnected.Should().Be(1, $"Should get {ConnectionStatus.Disconnected} once.");
 
             var lastConnectionStatusDevice2 = deviceClient2.ConnectionStatusInfo.Status;
-            lastConnectionStatusDevice2.Should().Be(ConnectionStatus.Connected, $"Expected device 2 to be {ConnectionStatus.Connected} but was {lastConnectionStatusDevice2}.");
+            lastConnectionStatusDevice2.Should().Be(ConnectionStatus.Connected, $"Expected device 2 to be {ConnectionStatus.Connected}.");
         }
     }
 }
