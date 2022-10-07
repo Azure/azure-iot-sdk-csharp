@@ -7,25 +7,32 @@ using Microsoft.Azure.Devices.Client.Utilities;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Authentication method that uses a shared access policy key.
+    /// Authentication method that uses shared access policies.
     /// </summary>
-    public sealed class DeviceAuthenticationWithSharedAccessPolicyKey : IAuthenticationMethod
+    /// <remarks>
+    /// The device/module connection string includes the SharedAccessKeyName and SharedAccessKey together.
+    /// A use case is to use the service shared access policy with a "Device Connect" permission for the connection string.
+    /// </remarks>
+    public sealed class ClientAuthenticationWithSharedAccessPolicy : IAuthenticationMethod
     {
         private string _deviceId;
-        private string _policyName;
+        private string _moduleId;
+        private string _keyName;
         private string _key;
 
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        /// <param name="deviceId">Device identifier.</param>
-        /// <param name="policyName">Name of the shared access policy to use.</param>
+        /// <param name="keyName">Name of the shared access policy to use.</param>
         /// <param name="key">Key associated with the shared access policy.</param>
-        public DeviceAuthenticationWithSharedAccessPolicyKey(string deviceId, string policyName, string key)
+        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="moduleId">Module identifier.</param>
+        public ClientAuthenticationWithSharedAccessPolicy(string keyName, string key, string deviceId, string moduleId = default)
         {
-            SetDeviceId(deviceId);
             SetKey(key);
-            SetPolicyName(policyName);
+            SetKeyName(keyName);
+            SetDeviceId(deviceId);
+            SetModuleId(moduleId);
         }
 
         /// <summary>
@@ -35,6 +42,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             get => _deviceId;
             set => SetDeviceId(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the module identifier.
+        /// </summary>
+        public string ModuleId
+        {
+            get => _moduleId;
+            set => SetModuleId(value);
         }
 
         /// <summary>
@@ -49,10 +65,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Name of the shared access policy.
         /// </summary>
-        public string PolicyName
+        /// <remarks>
+        /// A sample of device connection string in this case is "HostName=[Host Name];DeviceId=[Device Name];SharedAccessKey=[Device Key];SharedAccessKeyName=[Key Name]".
+        /// This property is for the field "SharedAccessKeyName".
+        /// </remarks>
+        public string KeyName
         {
-            get => _policyName;
-            set => SetPolicyName(value);
+            get => _keyName;
+            set => SetKeyName(value);
         }
 
         /// <summary>
@@ -66,8 +86,9 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
             iotHubConnectionCredentials.SharedAccessKey = Key;
-            iotHubConnectionCredentials.SharedAccessKeyName = PolicyName;
+            iotHubConnectionCredentials.SharedAccessKeyName = KeyName;
             iotHubConnectionCredentials.SharedAccessSignature = null;
 
             return iotHubConnectionCredentials;
@@ -81,6 +102,18 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             _deviceId = deviceId;
+        }
+
+        private void SetModuleId(string moduleId)
+        {
+            // The module Id is optional so we only check whether it is whitespace or not here.
+            if (moduleId != null
+                && moduleId.IsNullOrWhiteSpace())
+            {
+                throw new InvalidOperationException("Module Id cannot be white space.");
+            }
+
+            _moduleId = moduleId;
         }
 
         private void SetKey(string key)
@@ -98,14 +131,14 @@ namespace Microsoft.Azure.Devices.Client
             _key = key;
         }
 
-        private void SetPolicyName(string policyName)
+        private void SetKeyName(string keyName)
         {
-            if (policyName.IsNullOrWhiteSpace())
+            if (keyName.IsNullOrWhiteSpace())
             {
-                throw new InvalidOperationException("Policy name cannot be null or white space.");
+                throw new InvalidOperationException("Shared access key name cannot be null or white space.");
             }
 
-            _policyName = policyName;
+            _keyName = keyName;
         }
     }
 }
