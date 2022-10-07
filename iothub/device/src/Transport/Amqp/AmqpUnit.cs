@@ -883,7 +883,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                AmqpIotOutcome amqpIotOutcome;
+                AmqpIotOutcome amqpIotOutcome = null;
                 switch (amqpTwinMessageType)
                 {
                     case AmqpTwinMessageType.Get:
@@ -901,6 +901,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         amqpIotOutcome?.ThrowIfNotAccepted();
                         break;
                 }
+
+                amqpIotOutcome?.ThrowIfNotAccepted();
             }
             finally
             {
