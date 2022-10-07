@@ -28,7 +28,7 @@ dotnet --list-sdks
 #Load functions used to check what, if any, e2e tests should be run
 . .\vsts\determine_tests_to_run.ps1
 
-$runTestCmd = ".\build.ps1 -clean -build -configuration DEBUG -framework $($env:FRAMEWORK) -noBuildBeforeTesting"
+$runTestCmd = ".\build.ps1 -clean -build -configuration DEBUG -framework $($env:FRAMEWORK)"
 if (IsPullRequestBuild)
 {
 	Write-Host "Pull request build detected, will run pr tests"

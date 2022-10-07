@@ -479,7 +479,7 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
-                   # Environment variables for IoT Hub E2E tests
+          # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
           IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
           IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
