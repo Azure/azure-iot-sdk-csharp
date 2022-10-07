@@ -888,17 +888,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 {
                     case AmqpTwinMessageType.Get:
                         amqpIotOutcome = await _twinSendingLink.SendTwinGetMessageAsync(correlationId, cancellationToken).ConfigureAwait(false);
-                        amqpIotOutcome?.ThrowIfNotAccepted();
                         break;
 
                     case AmqpTwinMessageType.Patch:
                         amqpIotOutcome = await _twinSendingLink.SendTwinPatchMessageAsync(correlationId, reportedProperties, cancellationToken).ConfigureAwait(false);
-                        amqpIotOutcome?.ThrowIfNotAccepted();
                         break;
 
                     case AmqpTwinMessageType.Put:
                         amqpIotOutcome = await _twinSendingLink.SubscribeToDesiredPropertiesAsync(correlationId, cancellationToken).ConfigureAwait(false);
-                        amqpIotOutcome?.ThrowIfNotAccepted();
                         break;
                 }
 
