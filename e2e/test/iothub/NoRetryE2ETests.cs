@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -102,9 +104,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             using IotHubDeviceClient deviceClient1 = testDevice.CreateDeviceClient(options1);
             using IotHubDeviceClient deviceClient2 = testDevice.CreateDeviceClient(options2);
 
+            var deviceDisconnected = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             var connectionStatusChangeDevice1 = new Dictionary<ConnectionStatus, int>();
             deviceClient1.SetConnectionStatusChangeCallback((connectionStatusInfo) =>
             {
+                if (connectionStatusInfo.Status == ConnectionStatus.Disconnected) 
+                {
+                    deviceDisconnected.TrySetResult(true);
+                }
+
                 connectionStatusChangeDevice1.TryGetValue(connectionStatusInfo.Status, out int count);
                 count++;
                 connectionStatusChangeDevice1[connectionStatusInfo.Status] = count;
@@ -135,16 +144,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: waiting device client instance 1 to be kicked off...");
-            var sw = Stopwatch.StartNew();
-            while (sw.Elapsed < TimeSpan.FromMinutes(1))
-            {
-                if (connectionStatusChangeDevice1.ContainsKey(ConnectionStatus.Disconnected))
-                {
-                    break;
-                }
-                await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
-            }
-            sw.Reset();
+
+            await deviceDisconnected.Task.ConfigureAwait(false);
 
             var lastConnectionStatusDevice1 = deviceClient1.ConnectionStatusInfo.Status;
             lastConnectionStatusDevice1.Should().Be(ConnectionStatus.Disconnected, $"Excpected device 1 to be {ConnectionStatus.Disconnected} but was {lastConnectionStatusDevice1}.");
