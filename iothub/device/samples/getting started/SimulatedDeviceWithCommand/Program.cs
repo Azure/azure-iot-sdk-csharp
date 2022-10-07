@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     /// <summary>
     /// This sample illustrates the very basics of a device app sending telemetry and receiving a command.
     /// For a more comprehensive device app sample, please see
-    /// <see href="https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample"/>.
+    /// <see href="https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample"/>.
     /// </summary>
     /// <param name="args">
     /// Run with `--help` to see a list of required and optional parameters.
