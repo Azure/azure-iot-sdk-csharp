@@ -45,12 +45,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var exponentialBackoff = new ExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.FromDays(30), false);
             TimeSpan previousDelay = TimeSpan.Zero;
-
+            uint exponent = retryCount + 6; // starts at 7
             // act
             exponentialBackoff.ShouldRetry(retryCount, new IotHubClientException("", true), out TimeSpan delay);
 
             // assert
-            delay.TotalMilliseconds.Should().BeApproximately(Math.Pow(2, retryCount), 100);
+            delay.TotalMilliseconds.Should().BeApproximately(Math.Pow(2, exponent), 100);
         }
     }
 }

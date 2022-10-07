@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client
         protected TimeSpan UpdateWithJitter(double baseTimeMs)
         {
             // Don't calculate jitter if the value is very small
-            if (baseTimeMs < 10)
+            if (baseTimeMs < 50)
             {
                 return TimeSpan.FromMilliseconds(baseTimeMs);
             }

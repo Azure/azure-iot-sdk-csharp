@@ -78,7 +78,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [DataRow(0u)]
         [DataRow(1u)]
         [DataRow(10u)]
-        public void RetryPolicyBase_UpdateWithJitter_IgnoresAtThresholdOf10(double baseTimeMs)
+        [DataRow(49u)]
+        public void RetryPolicyBase_UpdateWithJitter_IgnoresAtThresholdOf50(double baseTimeMs)
         {
             // arrange
             var retryPolicy = new TestRetryPolicy(0);
