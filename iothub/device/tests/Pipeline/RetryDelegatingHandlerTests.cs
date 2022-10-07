@@ -359,9 +359,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private class TestRetryPolicy : IRetryPolicy
         {
-            public int Counter { get; private set; }
+            public uint Counter { get; private set; }
 
-            public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+            public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
                 Counter++;
                 lastException.Should().BeOfType(typeof(IotHubClientException));

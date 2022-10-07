@@ -13,8 +13,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
     /// </summary>
     internal class CustomRetryPolicy : IRetryPolicy
     {
-        private const int MaxRetryCount = int.MaxValue;
-        private const int MaxExponent = 22; // Avoid integer overlow (max of 30) and clamp max wait to just over 1 hour (2^22 = 1.16 hours).
+        private const uint MaxRetryCount = uint.MaxValue;
+        private const uint MaxExponent = 22; // Avoid integer overlow (max of 30) and clamp max wait to just over 1 hour (2^22 = 1.16 hours).
 
         private readonly Random _rng = new();
         private readonly object _randLock = new();
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger = logger;
         }
 
-        public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+        public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
             retryInterval = TimeSpan.Zero;
             _logger.LogInformation($"Retry requested #{currentRetryCount} exception [{lastException.GetType()}: {lastException.Message}].");
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
 
                 // Avoid integer overlow and clamp max wait.
-                int exponent = Math.Min(MaxExponent, currentRetryCount);
+                uint exponent = Math.Min(MaxExponent, currentRetryCount);
 
                 // 2 to the power of the retry count gives us exponential back-off.
                 // Because jitter could be negative, protect the result with absolute value.

@@ -15,7 +15,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // RetryCount is used for testing purpose and is equal to MaxValue in prod.
         private const int RetryMaxCount = int.MaxValue;
 
-        private RetryPolicy _internalRetryPolicy;
+        private readonly RetryHandler _internalRetryHandler;
+        private IRetryPolicy _retryPolicy;
 
         private bool _isOpen;
         private SemaphoreSlim _handlerSemaphore = new(1, 1);
@@ -29,38 +30,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
 
-        public RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
+        internal RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
-            IRetryPolicy defaultRetryStrategy = new ExponentialBackoff(
-                retryCount: RetryMaxCount,
-                minBackoff: TimeSpan.FromMilliseconds(100),
-                maxBackoff: TimeSpan.FromSeconds(10),
-                deltaBackoff: TimeSpan.FromMilliseconds(100));
+            _retryPolicy = new ExponentialBackoffRetryPolicy(RetryMaxCount, TimeSpan.FromSeconds(10));
+            _internalRetryHandler = new RetryHandler(_retryPolicy);
 
-            _internalRetryPolicy = new RetryPolicy(new TransientErrorStrategy(), new RetryStrategyAdapter(defaultRetryStrategy));
             _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
+                Logging.Associate(this, _internalRetryHandler, nameof(SetRetryPolicy));
         }
 
-        private class TransientErrorStrategy : ITransientErrorDetectionStrategy
+        internal virtual void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
-            public bool IsTransient(Exception ex)
-            {
-                return ex is IotHubClientException exception && exception.IsTransient;
-            }
-        }
-
-        public virtual void SetRetryPolicy(IRetryPolicy retryPolicy)
-        {
-            _internalRetryPolicy = new RetryPolicy(
-                new TransientErrorStrategy(),
-                new RetryStrategyAdapter(retryPolicy));
+            _retryPolicy = retryPolicy;
+            _internalRetryHandler.SetRetryPolicy(_retryPolicy);
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
+                Logging.Associate(this, _internalRetryHandler, nameof(SetRetryPolicy));
         }
 
         public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
@@ -70,13 +58,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
                         },
+                        null,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -94,13 +83,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
                         },
+                        null,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -118,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -142,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -178,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -214,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -248,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -282,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -316,7 +306,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryPolicy
+                await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -350,7 +340,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                return await _internalRetryPolicy
+                return await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -374,7 +364,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                return await _internalRetryPolicy
+                return await _internalRetryHandler
                     .RunWithRetryAsync(
                         async () =>
                         {
@@ -501,7 +491,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             var connectionStatusInfo = new ConnectionStatusInfo();
 
-            await _internalRetryPolicy
+            await _internalRetryHandler
                 .RunWithRetryAsync(
                     async () =>
                     {
@@ -568,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // This is used to ensure that when NoRetry() policy is enabled, we should not be retrying.
-                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubClientException(IotHubClientErrorCode.NetworkErrors), out TimeSpan delay))
+                if (!_retryPolicy.ShouldRetry(0, new IotHubClientException(IotHubClientErrorCode.NetworkErrors), out TimeSpan delay))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
@@ -589,7 +579,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;
 
                 // This will recover to the status before the disconnect.
-                await _internalRetryPolicy.RunWithRetryAsync(async () =>
+                await _internalRetryHandler.RunWithRetryAsync(async () =>
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));

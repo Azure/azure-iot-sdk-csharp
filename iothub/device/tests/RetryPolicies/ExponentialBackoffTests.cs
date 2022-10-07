@@ -2,33 +2,33 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
+    [TestCategory("IoTHub")]
     public class ExponentialBackoffTests
     {
-        private const int MAX_RETRY_ATTEMPTS = 5000;
 
         [TestMethod]
-        [TestCategory("Unit")]
         public void ExponentialBackoffDoesNotUnderflow()
         {
-            var exponentialBackoff = new ExponentialBackoffRetryStrategy(
-                MAX_RETRY_ATTEMPTS,
-                RetryStrategy.DefaultMinBackoff,
-                RetryStrategy.DefaultMaxBackoff,
-                RetryStrategy.DefaultClientBackoff);
-            ShouldRetry shouldRetry = exponentialBackoff.GetShouldRetry();
-            for (int i = 1; i < MAX_RETRY_ATTEMPTS; i++)
-            {
-                shouldRetry(i, new Exception(), out TimeSpan delay);
+            // arrange
+            const uint MaxRetryAttempts = 50;
 
-                if (delay.TotalSeconds <= 0)
-                {
-                    Assert.Fail("Exponential backoff should never recommend a negative delay");
-                }
+            var exponentialBackoff = new ExponentialBackoffRetryPolicy(MaxRetryAttempts, TimeSpan.FromSeconds(30));
+
+            for (uint i = 0; i < MaxRetryAttempts; i++)
+            {
+                // act
+                exponentialBackoff.ShouldRetry(i, new IotHubClientException("", true), out TimeSpan delay).Should().BeTrue();
+
+                // assert
+                Console.WriteLine($"{i}: {delay}");
+                delay.Should().BeGreaterOrEqualTo(TimeSpan.Zero, "Exponential backoff should never recommend a negative delay");
             }
         }
     }
