@@ -115,7 +115,6 @@ namespace Microsoft.Azure.Devices.Client
         /// the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="iotHubConnectionCredentials"/> is null.</exception>
         public virtual void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
         {
