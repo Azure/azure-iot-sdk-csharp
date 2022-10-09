@@ -26,17 +26,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
-        protected internal PropertyCollection(Dictionary<string, object> properties)
+        /// <param name="properties">The properies that will be set to this collection. These can be either client reported properties or
+        /// property update requests received from service.</param>
+        /// <param name="responseFromService">A flag that indicates if this property collection was received from service or if it was user-constructed.</param>
+        protected internal PropertyCollection(Dictionary<string, object> properties, bool responseFromService = false)
         {
             Argument.AssertNotNull(properties, nameof(properties));
 
-            // The version information should not be a part of the enumerable ProperyCollection, but rather should be
-            // accessible through its dedicated accessor.
-            bool versionPresent = properties.TryGetValue(VersionName, out object version);
+            // A property collection reecived from service, i.e. a response of GetTwinAsync() call or a desired property update
+            // notification will have the version field populated. A user constructed property collection is not expected
+            // to have the version field populated.
+            if (responseFromService)
+            {
+                // The version information should not be a part of the enumerable ProperyCollection, but rather should be
+                // accessible through its dedicated accessor.
+                bool versionPresent = properties.TryGetValue(VersionName, out object version);
 
-            Version = versionPresent && ObjectConversionHelper.TryCastNumericTo(version, out long longVersion)
-                ? longVersion
-                : throw new IotHubClientException("Properties document either missing version number or not formatted as expected. Contact service with logs.", false);
+                Version = versionPresent && ObjectConversionHelper.TryCastNumericTo(version, out long longVersion)
+                    ? longVersion
+                    : throw new IotHubClientException("Properties document either missing version number or not formatted as expected. Contact service with logs.", false);
+            }
 
             foreach (KeyValuePair<string, object> property in properties)
             {

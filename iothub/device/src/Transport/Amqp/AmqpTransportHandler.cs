@@ -363,7 +363,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         PayloadConvention = _payloadConvention,
                     };
 
-                    var twinReportedProperties = new ReportedPropertyCollection(clientTwinProperties.Reported)
+                    var twinReportedProperties = new ReportedPropertyCollection(clientTwinProperties.Reported, true)
                     {
                         PayloadConvention = _payloadConvention,
                     };

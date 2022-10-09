@@ -944,7 +944,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
-            
+
             string patch = _payloadConvention.PayloadEncoder.ContentEncoding.GetString(receivedEventArgs.ApplicationMessage.Payload);
             Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(patch);
             var desiredPropertyPatch = new DesiredPropertyCollection(desiredPropertyPatchDictionary)
@@ -998,7 +998,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 PayloadConvention = _payloadConvention,
                             };
 
-                            var twinReportedProperties = new ReportedPropertyCollection(clientTwinProperties.Reported)
+                            var twinReportedProperties = new ReportedPropertyCollection(clientTwinProperties.Reported, true)
                             {
                                 PayloadConvention = _payloadConvention,
                             };
