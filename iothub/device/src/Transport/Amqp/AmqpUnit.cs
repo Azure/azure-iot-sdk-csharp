@@ -243,6 +243,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(Cleanup));
 
+            _amqpIotSession.Closed -= OnSessionDisconnected;
             _amqpIotSession?.SafeClose();
             _amqpAuthenticationRefresher?.StopLoop();
 
@@ -372,6 +373,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (_eventReceiverLinkDisconnected != null)
             {
                 _messageReceivingLink.Closed -= _eventReceiverLinkDisconnected;
+                if (_eventReceivingLink != null)
+                {
+                    _eventReceivingLink.Closed -= _eventReceiverLinkDisconnected;
+                }
             }
 
             try
