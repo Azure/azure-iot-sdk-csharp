@@ -703,6 +703,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (!_isDisposed)
                 {
                     base.Dispose(disposing);
+
+                    _isOpen = false;
+
                     if (disposing)
                     {
                         _handleDisconnectCts?.Cancel();
