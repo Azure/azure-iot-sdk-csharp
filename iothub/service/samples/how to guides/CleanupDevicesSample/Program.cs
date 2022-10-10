@@ -34,30 +34,17 @@ namespace Microsoft.Azure.Devices.Samples
                 });
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
-            var deleteDevicesWithPrefix = ConvertCsvFileToList(parameters.PathToDevicePrefixForDeletion);
+            var saveDevicesWithPrefix = new List<string> { "Save_" };
 
             var blobServiceClient = new BlobServiceClient(parameters.StorageAccountConnectionString);
             string blobContainerName = $"cleanupdevice{Guid.NewGuid()}";
             BlobContainerClient blobContainerClient = await blobServiceClient.CreateBlobContainerAsync(blobContainerName);
 
-            var sample = new CleanupDevicesSample(registryManager, blobContainerClient, deleteDevicesWithPrefix);
+            var sample = new CleanupDevicesSample(registryManager, blobContainerClient, saveDevicesWithPrefix);
             await sample.RunCleanUpAsync();
 
             Console.WriteLine("Done.");
             return 0;
-        }
-
-        private static List<string> ConvertCsvFileToList(string filePath)
-        {
-            var deleteDeviceWithPrefix = new List<string>();
-            string[] lines = File.ReadAllLines(filePath);
-            foreach (string line in lines)
-            {
-                string[] words = line.Split(',');
-                deleteDeviceWithPrefix.AddRange(words);
-            }
-
-            return deleteDeviceWithPrefix;
         }
     }
 }

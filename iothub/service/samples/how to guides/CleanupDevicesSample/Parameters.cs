@@ -23,11 +23,5 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Required = true,
             HelpText = "The connection string for the Storage account where the device identities will be exported to and imported from.")]
         public string StorageAccountConnectionString { get; set; }
-
-        [Option(
-            "PathToDevicePrefixForDeletion",
-            Required = true,
-            HelpText = "The path to the file which contains the prefixes of the devices that are to be deleted.")]
-        public string PathToDevicePrefixForDeletion { get; set; }
     }
 }
