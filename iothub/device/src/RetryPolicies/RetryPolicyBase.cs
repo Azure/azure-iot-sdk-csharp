@@ -33,10 +33,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             retryDelay = TimeSpan.Zero;
 
-            return lastException is IotHubClientException hubEx
-                    && hubEx.IsTransient
-                && MaxRetries == 0
-                || currentRetryCount < MaxRetries;
+            return (lastException is IotHubClientException hubEx
+                    && hubEx.IsTransient)
+                && (MaxRetries == 0
+                || currentRetryCount < MaxRetries);
         }
 
         /// <summary>

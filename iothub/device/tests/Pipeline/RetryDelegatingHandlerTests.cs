@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryTransientErrorThrownAfterNumberOfRetriesThrows()
+        public async Task OperationCanceledExceptionThrownAfterNumberOfRetriesThrows()
         {
             // arrange
             using var cts = new CancellationTokenSource(100);
@@ -257,11 +257,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             // act and assert
-            var exception = await sut
-                .OpenAsync(cts.Token)
-                .ExpectedAsync<IotHubClientException>()
+            Func<Task> open = () => sut.OpenAsync(cts.Token);
+
+            var result = await open.Should()
+                .ThrowAsync<OperationCanceledException>()
                 .ConfigureAwait(false);
-            exception.Message.Should().Be(TestExceptionMessage);
         }
 
         [TestMethod]
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             // act and assert
-            await sut.OpenAsync(cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.OpenAsync(cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
 
             // act and assert
-            await sut.SendEventAsync(Arg.Any<OutgoingMessage>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.SendEventAsync(Arg.Any<OutgoingMessage>(), cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
 
             // act
-            await sut.SendEventAsync(new List<OutgoingMessage>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.SendEventAsync(new List<OutgoingMessage>(), cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
 
             // assert
             await nextHandlerMock.Received(0).SendEventAsync(new List<OutgoingMessage>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
