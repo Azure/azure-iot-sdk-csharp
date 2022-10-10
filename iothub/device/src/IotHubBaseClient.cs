@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// This client can be re-opened after it has been closed, but cannot be re-opened after it has
-        /// been disposed. Subscriptions to cloud to device messages/twin/methods are not persisted when
+        /// been disposed. Subscriptions to cloud to device messages/twin/methods do not persist when
         /// re-opening a client.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -378,7 +378,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// The instance can be re-opened after closing and before disposing. However, subscriptions
-        /// to cloud to device messages/twin/methods are not persisted when re-opening a client.
+        /// to cloud to device messages/twin/methods do not persist when re-opening a client.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
