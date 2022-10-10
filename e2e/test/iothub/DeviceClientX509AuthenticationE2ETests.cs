@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException__MqttWs()
+        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_MqttWs()
         {
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
         }
@@ -165,10 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     X509FindType.FindByThumbprint,
                     certificate.Thumbprint,
                     false);
-                if (results.Count == 0)
-                {
-                    Assert.Fail($"{certificate.SubjectName} was not found");
-                }
+                results.Count.Should().Be(0, $"{certificate.SubjectName} was not found");
             }
 
             store?.Dispose();
@@ -221,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
                 Assert.Fail("Should throw UnauthorizedException but didn't.");
             }
