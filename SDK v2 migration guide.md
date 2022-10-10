@@ -61,7 +61,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - The device and module clients now have a property (e.g., `IotHubDeviceClient.ConnectionStatusInfo`)with the latest connection status information on it, eliminating the need for a connection status callback method to cache the latest values.
 - Remote certificate validation is no natively longer supported for AMQP web socket connections. Supprted workaround is to provide a client web socket instance in the client options.
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
-- The client can now be re-opened after it has been closed. It cannot be re-opened after it has been disposed, though.
+- The client can now be re-opened after it has been closed. It cannot be re-opened after it has been disposed, though. Also, subscriptions do not carry over when the client is re-opened.
 
 #### ModuleClient
 
@@ -77,7 +77,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 #### Notable additions
 
-- The client can now be re-opened after it has been closed. It cannot be re-opened after it has been disposed, though.
+- The client can now be re-opened after it has been closed. It cannot be re-opened after it has been disposed, though. Also, subscriptions do not carry over when the client is re-opened.
 
 
 ### IoT hub service client
