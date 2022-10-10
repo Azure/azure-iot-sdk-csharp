@@ -219,7 +219,7 @@ $intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
 $intermediateCert2PfxPath = "$PSScriptRoot/intermediateCert2.pfx"
 $verificationCertPath = "$PSScriptRoot/verification.cer";
 
-$iotHubX509DeviceCertCommonName = "iothubx509device1";
+$iotHubX509DeviceCertCommonName = "Save_iothubx509device1";
 $iotHubX509DevicePfxPath = "$PSScriptRoot/IotHubX509Device.pfx";
 $iotHubX509CertChainDeviceCommonName = "Save_iothubx509chaindevice1";
 $iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";

@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices
                     .CreateAsync<T>(_originalQuery, queryOptionsClone, cancellationToken)
                     .ConfigureAwait(false);
                 CurrentPage = response.CurrentPage;
-                _items = response.CurrentPage.GetEnumerator();
+                _items = CurrentPage.GetEnumerator();
                 _items.MoveNext();
                 Current = _items.Current;
                 ContinuationToken = response.ContinuationToken;
