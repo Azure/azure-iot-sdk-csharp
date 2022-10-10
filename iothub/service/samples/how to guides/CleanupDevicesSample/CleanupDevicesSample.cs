@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
@@ -22,27 +23,20 @@ namespace Microsoft.Azure.Devices.Samples
     /// </summary>
     public class CleanupDevicesSample
     {
-        private static readonly string ImportExportDevicesFileName = $"delete-devices-{Guid.NewGuid()}.txt";
+        private static readonly string s_importExportDevicesFileName  = $"delete-devices-{Guid.NewGuid()}.txt";
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_maxJobDuration = TimeSpan.FromHours(4);
 
-        private static readonly IReadOnlyList<JobStatus> s_completedJobs = new[]
-        {
-            JobStatus.Completed,
-            JobStatus.Failed,
-            JobStatus.Cancelled,
-        };
-
         private readonly RegistryManager _registryManager;
         private readonly BlobContainerClient _blobContainerClient;
-        private readonly List<string> _deleteDevicesWithPrefix;
+        private readonly List<string> _saveDevicesWithPrefix;
 
-        public CleanupDevicesSample(RegistryManager rm, BlobContainerClient sc, List<string> deleteDevicesWithPrefix)
+        public CleanupDevicesSample(RegistryManager rm, BlobContainerClient sc, List<string> saveDevicesWithPrefix)
         {
             _registryManager = rm ?? throw new ArgumentNullException(nameof(rm));
             _blobContainerClient = sc ?? throw new ArgumentNullException(nameof(sc));
-            Console.WriteLine($"Delete devices with prefixes: {JsonConvert.SerializeObject(deleteDevicesWithPrefix)}");
-            _deleteDevicesWithPrefix = deleteDevicesWithPrefix;
+            Console.WriteLine($"Delete devices with prefixes: {JsonConvert.SerializeObject(saveDevicesWithPrefix)}");
+            _saveDevicesWithPrefix = saveDevicesWithPrefix;
         }
 
         public async Task RunCleanUpAsync()
@@ -51,10 +45,10 @@ namespace Microsoft.Azure.Devices.Samples
             int count = await PrintDeviceCountAsync();
 
             // Filter the devices that should be deleted (based on their prefix) and delete them.
-            await CleanupDevices(count);
+            await CleanupDevicesAsync(count);
         }
 
-        private async Task CleanupDevices(int deviceCount)
+        private async Task CleanupDevicesAsync(int deviceCount)
         {
             Console.WriteLine($"Using storage container {_blobContainerClient.Name} for importing device delete requests.");
 
@@ -71,7 +65,7 @@ namespace Microsoft.Azure.Devices.Samples
                     using Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(devicesToBeDeleted);
 
                     // Retrieve the SAS Uri that will be used to grant access to the storage containers.
-                    BlobClient blobClient = _blobContainerClient.GetBlobClient(ImportExportDevicesFileName);
+                    BlobClient blobClient = _blobContainerClient.GetBlobClient(s_importExportDevicesFileName );
                     var uploadResult = await blobClient.UploadAsync(devicesFile, overwrite: true);
                     string storageAccountSasUri = GetStorageAccountSasUriForCleanupJob(_blobContainerClient).ToString();
 
@@ -80,7 +74,7 @@ namespace Microsoft.Azure.Devices.Samples
                         .CreateForImportJob(
                             inputBlobContainerUri: storageAccountSasUri,
                             outputBlobContainerUri: storageAccountSasUri,
-                            inputBlobName: ImportExportDevicesFileName,
+                            inputBlobName: s_importExportDevicesFileName ,
                             storageAuthenticationType: StorageAuthenticationType.KeyBased);
 
                     JobProperties importDevicesToBeDeletedJob = null;
@@ -108,7 +102,7 @@ namespace Microsoft.Azure.Devices.Samples
                         && jobTimer.Elapsed < s_maxJobDuration)
                     {
                         importDevicesToBeDeletedJob = await _registryManager.GetJobAsync(importDevicesToBeDeletedJob.JobId);
-                        if (s_completedJobs.Contains(importDevicesToBeDeletedJob.Status))
+                        if (importDevicesToBeDeletedJob.IsFinished)
                         {
                             // Job has finished executing.
                             Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status}.");
@@ -127,7 +121,7 @@ namespace Microsoft.Azure.Devices.Samples
                 }
                 finally
                 {
-                    if (!String.IsNullOrWhiteSpace(currentJobId))
+                    if (!string.IsNullOrWhiteSpace(currentJobId))
                     {
                         Console.WriteLine($"Cancelling job {currentJobId}");
                         await _registryManager.CancelJobAsync(currentJobId);
@@ -157,7 +151,7 @@ namespace Microsoft.Azure.Devices.Samples
                 queryResultText = queryResult.First();
                 var resultObject = JObject.Parse(queryResultText);
                 deviceCount = resultObject.Value<int>("numberOfDevices");
-                Console.WriteLine($"Total # of devices in the hub: \n{deviceCount}");
+                Console.WriteLine($"Total # of devices in the hub: {deviceCount:N0}.");
             }
             catch (Exception ex)
             {
@@ -171,7 +165,26 @@ namespace Microsoft.Azure.Devices.Samples
         {
             var devicesToDelete = new List<ExportImportDevice>(maxCount);
 
-            const string queryText = "select deviceId FROM devices";
+            Console.WriteLine($"Querying devices to find devices to delete based on their name and the provided allow list.");
+
+            var queryTextSb = new StringBuilder("select deviceId from devices");
+            if (_saveDevicesWithPrefix.Any())
+            {
+                queryTextSb.Append(" where");
+                for (int i = 0; i < _saveDevicesWithPrefix.Count; i++)
+                {
+                    // only prepend an "and" after the first where clause
+                    if (i != 0)
+                    {
+                        queryTextSb.Append(" and");
+                    }
+
+                    queryTextSb.Append($" not startswith(deviceId, '{_saveDevicesWithPrefix[i]}')");
+                }
+            }
+            string queryText = queryTextSb.ToString();
+            Console.WriteLine($"Using query: {queryText}");
+
             IQuery devicesQuery = _registryManager.CreateQuery(queryText);
             while (devicesQuery.HasMoreResults)
             {
@@ -180,13 +193,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     var resultObject = JObject.Parse(result);
                     string deviceId = resultObject.Value<string>("deviceId");
-                    foreach (string prefix in _deleteDevicesWithPrefix)
-                    {
-                        if (deviceId.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            devicesToDelete.Add(new ExportImportDevice(new Device(deviceId), ImportMode.Delete));
-                        }
-                    }
+                    devicesToDelete.Add(new ExportImportDevice(new Device(deviceId), ImportMode.Delete));
                 }
             }
 
@@ -201,7 +208,7 @@ namespace Microsoft.Azure.Devices.Samples
                 | BlobContainerSasPermissions.Read
                 | BlobContainerSasPermissions.Delete;
 
-            var sasBuilder = new BlobSasBuilder(sasPermissions, DateTimeOffset.UtcNow.AddHours(1))
+            var sasBuilder = new BlobSasBuilder(sasPermissions, DateTimeOffset.UtcNow.AddHours(12))
             {
                 BlobContainerName = blobContainerClient.Name,
             };

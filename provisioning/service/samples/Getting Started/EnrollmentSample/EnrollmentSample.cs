@@ -36,17 +36,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
             await CreateIndividualEnrollmentTpmAsync();
             await UpdateIndividualEnrollmentAsync();
-            await DeleteIndividualEnrollmentAsync();          
+            await DeleteIndividualEnrollmentAsync();
         }
 
         public async Task QueryIndividualEnrollmentsAsync()
         {
-            Console.WriteLine("\nCreating a query for enrollments...");
+            Console.WriteLine("Creating a query for enrollments...");
             var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
             using Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification);
             while (query.HasNext())
             {
-                Console.WriteLine("\nQuerying the next enrollments...");
+                Console.WriteLine("Querying the next enrollments...");
                 QueryResult queryResult = await query.NextAsync();
                 Console.WriteLine(queryResult);
             }
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task CreateIndividualEnrollmentTpmAsync()
         {
-            Console.WriteLine("\nCreating a new individualEnrollment...");
+            Console.WriteLine("Creating a new individualEnrollment...");
             Attestation attestation = new TpmAttestation(TpmEndorsementKey);
             var individualEnrollment = new IndividualEnrollment(
                 RegistrationId,
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     })
             };
 
-            Console.WriteLine("\nAdding new individualEnrollment...");
+            Console.WriteLine("Adding new individualEnrollment...");
             IndividualEnrollment individualEnrollmentResult =
                 await _provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
             Console.WriteLine(individualEnrollmentResult);
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task<IndividualEnrollment> GetIndividualEnrollmentInfoAsync()
         {
-            Console.WriteLine("\nGetting the individualEnrollment information...");
+            Console.WriteLine("Getting the individualEnrollment information...");
             IndividualEnrollment getResult =
                 await _provisioningServiceClient.GetIndividualEnrollmentAsync(RegistrationId);
             Console.WriteLine(getResult);
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task DeleteIndividualEnrollmentAsync()
         {
-            Console.WriteLine("\nDeleting the individualEnrollment...");
+            Console.WriteLine("Deleting the individualEnrollment...");
             await _provisioningServiceClient.DeleteIndividualEnrollmentAsync(RegistrationId);
         }
     }
