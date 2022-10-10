@@ -64,6 +64,49 @@ namespace Microsoft.Azure.Devices.Client
             return BuildSignature(KeyName, Key, Target, TimeToLive);
         }
 
+        internal static string BuildSignature(string audience, string signature, string expiry)
+        {
+            // Example returned string:
+            // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
+
+            var buffer = new StringBuilder();
+            buffer.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "{0} {1}={2}&{3}={4}&{5}={6}",
+                SharedAccessSignatureConstants.SharedAccessSignature,
+                SharedAccessSignatureConstants.AudienceFieldName,
+                audience,
+                SharedAccessSignatureConstants.SignatureFieldName,
+                WebUtility.UrlEncode(signature),
+                SharedAccessSignatureConstants.ExpiryFieldName,
+                WebUtility.UrlEncode(expiry));
+
+            return buffer.ToString();
+        }
+
+        internal static string BuildExpiresOn(TimeSpan timeToLive, DateTime startTime = default)
+        {
+            DateTime expiresOn = startTime == default
+                ? DateTime.UtcNow.Add(timeToLive)
+                : startTime.Add(timeToLive);
+
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            long seconds = Convert.ToInt64(secondsFromBaseTime.TotalSeconds, CultureInfo.InvariantCulture);
+            return Convert.ToString(seconds, CultureInfo.InvariantCulture);
+        }
+
+        internal static string BuildAudience(string iotHub, string deviceId, string moduleId)
+        {
+            // DeviceId and ModuleId need to be double encoded.
+            string audience = WebUtility.UrlEncode(
+                "{0}/devices/{1}/modules/{2}".FormatInvariant(
+                    iotHub,
+                    WebUtility.UrlEncode(deviceId),
+                    WebUtility.UrlEncode(moduleId)));
+
+            return audience;
+        }
+
         private string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
@@ -88,9 +131,12 @@ namespace Microsoft.Azure.Devices.Client
                 CultureInfo.InvariantCulture,
                 "{0} {1}={2}&{3}={4}&{5}={6}",
                 SharedAccessSignatureConstants.SharedAccessSignature,
-                SharedAccessSignatureConstants.AudienceFieldName, audience,
-                SharedAccessSignatureConstants.SignatureFieldName, WebUtility.UrlEncode(signature),
-                SharedAccessSignatureConstants.ExpiryFieldName, WebUtility.UrlEncode(expiresOn));
+                SharedAccessSignatureConstants.AudienceFieldName,
+                audience,
+                SharedAccessSignatureConstants.SignatureFieldName,
+                WebUtility.UrlEncode(signature),
+                SharedAccessSignatureConstants.ExpiryFieldName,
+                WebUtility.UrlEncode(expiresOn));
 
             if (!keyName.IsNullOrWhiteSpace())
             {
@@ -99,14 +145,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return buffer.ToString();
-        }
-
-        private static string BuildExpiresOn(TimeSpan timeToLive)
-        {
-            DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
-            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
-            long seconds = Convert.ToInt64(secondsFromBaseTime.TotalSeconds, CultureInfo.InvariantCulture);
-            return Convert.ToString(seconds, CultureInfo.InvariantCulture);
         }
 
         /// <summary>

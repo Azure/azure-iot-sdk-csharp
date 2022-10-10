@@ -40,12 +40,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
         {
             DateTime startTime = DateTime.UtcNow;
-            string audience = SasTokenBuilder.BuildAudience(iotHub, DeviceId, ModuleId);
-            string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, suggestedTimeToLive);
+            string audience = SharedAccessSignatureBuilder.BuildAudience(iotHub, DeviceId, ModuleId);
+            string expiresOn = SharedAccessSignatureBuilder.BuildExpiresOn(suggestedTimeToLive, startTime);
             string data = string.Join("\n", new string[] { audience, expiresOn });
             string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data).ConfigureAwait(false);
 
-            return SasTokenBuilder.BuildSasToken(audience, signature, expiresOn);
+            return SharedAccessSignatureBuilder.BuildSignature(audience, signature, expiresOn);
         }
     }
 }

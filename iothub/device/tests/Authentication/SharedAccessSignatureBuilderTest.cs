@@ -7,19 +7,19 @@ using System.Net;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class SasTokenBuilderTest
+    public class SharedAccessSignatureBuilderTest
     {
         [TestMethod]
         public void TestBuildExpiry_ShouldReturnExpireOn()
         {
             var startTime = new DateTime(2018, 1, 1);
-            TimeSpan timeToLive = TimeSpan.FromMinutes(60);
+            var timeToLive = TimeSpan.FromMinutes(60);
             long seconds = 1514768400;
-            string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, timeToLive);
+            string expiresOn = SharedAccessSignatureBuilder.BuildExpiresOn(timeToLive, startTime);
 
             Assert.AreEqual(seconds.ToString(), expiresOn);
         }
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             string deviceId = "device1";
             string iotHub = "iothub.test";
             string moduleId = "module1";
-            string builtAudience = SasTokenBuilder.BuildAudience(iotHub, deviceId, moduleId);
+            string builtAudience = SharedAccessSignatureBuilder.BuildAudience(iotHub, deviceId, moduleId);
 
             Assert.AreEqual(audience, builtAudience);
         }
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
             string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-            string sasTokenString = SasTokenBuilder.BuildSasToken(audience, signature, expiry);
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(audience, signature, expiry);
 
             SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasTokenString);
 
