@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             if (ShouldClientBeInitialized())
             {
-                // Allow a single thread to dispose and initialize the client instance.
+                // Allow a single thread to close and re-open the client instance.
                 await s_initSemaphore.WaitAsync(cancellationToken);
                 try
                 {
@@ -115,10 +115,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 await s_deviceClient.CloseAsync(cancellationToken);
                             }
                             catch (IotHubClientException) { } // if the previous token is now invalid, this call may fail
-                            s_deviceClient.Dispose();
+                        }
+                        else
+                        {
+                            s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         }
 
-                        s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         s_deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandlerAsync;
                         s_deviceClient.SetRetryPolicy(_customRetryPolicy);
                         _logger.LogDebug("Initialized the client instance.");
