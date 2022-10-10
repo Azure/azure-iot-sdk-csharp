@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using CommandLine;
 using Microsoft.Azure.Devices.Client.Samples;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -34,30 +33,17 @@ namespace Microsoft.Azure.Devices.Samples
                 });
 
             using var hubClient = new IotHubServiceClient(parameters.HubConnectionString);
-            var deleteDevicesWithPrefix = ConvertCsvFileToList(parameters.PathToDevicePrefixForDeletion);
+            var saveDevicesWithPrefix = new List<string> { "Save_" };
 
             var blobServiceClient = new BlobServiceClient(parameters.StorageAccountConnectionString);
             string blobContainerName = $"cleanupdevice{Guid.NewGuid()}";
             BlobContainerClient blobContainerClient = await blobServiceClient.CreateBlobContainerAsync(blobContainerName);
 
-            var sample = new CleanupDevicesSample(hubClient, blobContainerClient, deleteDevicesWithPrefix);
+            var sample = new CleanupDevicesSample(hubClient, blobContainerClient, saveDevicesWithPrefix);
             await sample.RunCleanUpAsync();
 
             Console.WriteLine("Done.");
             return 0;
-        }
-
-        private static List<string> ConvertCsvFileToList(string filePath)
-        {
-            var deleteDeviceWithPrefix = new List<string>();
-            string[] lines = File.ReadAllLines(filePath);
-            foreach (string line in lines)
-            {
-                string[] words = line.Split(',');
-                deleteDeviceWithPrefix.AddRange(words);
-            }
-
-            return deleteDeviceWithPrefix;
         }
     }
 }
