@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
         private readonly JobType? _jobType;
         private readonly JobStatus? _jobStatus;
         private readonly int? _defaultPageSize;
-        private readonly IEnumerator<T> _items;
+        private IEnumerator<T> _items;
 
         internal QueryResponse(
             QueryClient client,
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices
                     .CreateAsync<T>(_originalQuery, queryOptionsClone, cancellationToken)
                     .ConfigureAwait(false);
                 CurrentPage = response.CurrentPage;
-                _items.Reset();
+                _items = response.CurrentPage.GetEnumerator();
                 _items.MoveNext();
                 Current = _items.Current;
                 ContinuationToken = response.ContinuationToken;
