@@ -245,6 +245,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
         }
 
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_Method_OpenCloseOpenDeviceUnsubscribes_MqttTcp()
+        {
+            await OpenCloseOpenThenSendMethodAndRespondAsync(new IotHubClientMqttSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_Method_OpenCloseOpenDeviceReceivesMethodAndResponse_AmqpTcp()
+        {
+            await OpenCloseOpenThenSendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+        }
+
         public static async Task ServiceSendMethodAndVerifyNotReceivedAsync(
             string deviceId,
             string methodName,
@@ -352,8 +366,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         Payload = s_deviceResponsePayload,
                     };
 
-                        return Task.FromResult(response);
-                    })
+                    return Task.FromResult(response);
+                })
                 .ConfigureAwait(false);
 
             await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
@@ -424,10 +438,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             methodCallReceived.TrySetException(ex);
                         }
 
-                    var response = new Client.DirectMethodResponse(200)
-                    {
-                        Payload = s_deviceResponsePayload,
-                    };
+                        var response = new Client.DirectMethodResponse(200)
+                        {
+                            Payload = s_deviceResponsePayload,
+                        };
 
                         return Task.FromResult(response);
                     }
@@ -488,6 +502,38 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 responseTimeout,
                 serviceClientTransportSettings);
 
+            await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task OpenCloseOpenThenSendMethodAndRespondAsync(
+            IotHubClientTransportSettings transportSettings,
+            Func<IotHubDeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
+            TimeSpan responseTimeout = default,
+            IotHubServiceClientOptions serviceClientTransportSettings = default)
+        {
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            // Close and re-open the client under test.
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
+
+            Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
+                testDevice.Id,
+                MethodName,
+                s_deviceResponsePayload,
+                s_serviceRequestPayload,
+                Logger,
+                responseTimeout,
+                serviceClientTransportSettings);
+
+            // The device should still be able to receive direct methods even though it was re-opened.
             await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);

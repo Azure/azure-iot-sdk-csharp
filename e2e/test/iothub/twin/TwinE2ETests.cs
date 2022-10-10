@@ -344,6 +344,46 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Mqtt()
+        {
+            await Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(
+                    new IotHubClientMqttSettings())
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Amqp()
+        {
+            await Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(
+                    new IotHubClientAmqpSettings())
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Mqtt()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpenAsync(
+                    new IotHubClientMqttSettings(),
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    s_listOfPropertyValues)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Amqp()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpenAsync(
+                    new IotHubClientAmqpSettings(),
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    s_listOfPropertyValues)
+                .ConfigureAwait(false);
+        }
+
         [DataTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -417,6 +457,59 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             dynamic actualProp = completeTwin.Properties.Reported[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
             Assert.AreEqual(completeTwin.Properties.Reported.Version, newTwinVersion);
+        }
+
+        private async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(IotHubClientTransportSettings transportSettings)
+        {
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            // Close and re-open the client under test.
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            // The client should still be able to send reported properties even though it was re-opened.
+            await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
+        }
+
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpenAsync(
+            IotHubClientTransportSettings transportSettings,
+            Func<IotHubDeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
+        {
+            string propName = Guid.NewGuid().ToString();
+
+            Logger.Trace($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
+
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            // Close and re-open the client under test.
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue, Logger).ConfigureAwait(false);
+
+            // The client should still be able to receive desired properties even though it was re-opened.
+            await Task.WhenAll(
+                RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                updateReceivedTask).ConfigureAwait(false);
+
+            // Validate the updated twin from the device-client
+            Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            dynamic actual = deviceTwin.Properties.Desired[propName];
+            Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
+
+            // Validate the updated twin from the service-client
+            Twin completeTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            dynamic actualProp = completeTwin.Properties.Desired[propName];
+            Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(IotHubDeviceClient deviceClient, string expectedPropName, object expectedPropValue, MsTestLogger logger)
