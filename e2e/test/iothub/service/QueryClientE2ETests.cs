@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -111,6 +112,84 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             thirdQueriedTwin.DeviceId.Should().NotBe(secondQueriedTwin.DeviceId);
 
             secondPageEnumerator.MoveNext().Should().BeFalse();
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task TwinQuery_IterateByItemAcrossPages()
+        {
+            // arrange
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+
+            string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
+
+            // For this test, we want the query logic to have to fetch multiple pages of results. To force
+            // that, set the page size to 1 when there are 3 total results to be queried.
+            QueryOptions queryOptions = new QueryOptions
+            {
+                PageSize = 1
+            };
+
+            // act
+
+            await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3);
+
+            QueryResponse<Twin> twinQuery = await serviceClient.Query.CreateAsync<Twin>(queryText, queryOptions);
+
+            // assert
+            List<string> returnedTwinDeviceIds = new();
+            while (await twinQuery.MoveNextAsync())
+            {
+                Twin queriedTwin = twinQuery.Current;
+                returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
+            }
+
+            List<string> expectedDeviceIds = new List<string>() { testDevice1.Id, testDevice2.Id, testDevice3.Id };
+            returnedTwinDeviceIds.Count.Should().Be(3);
+            returnedTwinDeviceIds.Should().Contain(expectedDeviceIds);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task TwinQuery_IterateByItemWorksWithinPage()
+        {
+            // arrange
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+
+            string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
+
+            // For this test, we want the query logic to only fetch one page of results. To force
+            // that, set the page size to 3 when there are 3 total results to be queried.
+            QueryOptions queryOptions = new QueryOptions
+            {
+                PageSize = 3
+            };
+
+            // act
+
+            await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3);
+
+            QueryResponse<Twin> twinQuery = await serviceClient.Query.CreateAsync<Twin>(queryText, queryOptions);
+
+            // assert
+            List<string> returnedTwinDeviceIds = new();
+            while (await twinQuery.MoveNextAsync())
+            {
+                Twin queriedTwin = twinQuery.Current;
+                returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
+            }
+
+            List<string> expectedDeviceIds = new List<string>() { testDevice1.Id, testDevice2.Id, testDevice3.Id };
+            returnedTwinDeviceIds.Count.Should().Be(3);
+            returnedTwinDeviceIds.Should().Contain(expectedDeviceIds);
         }
 
         [LoggedTestMethod]

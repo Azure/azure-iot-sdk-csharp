@@ -16,11 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class RetryOperationHelper
     {
         // A conservative, basic retry policy that should be fine for most scenarios.
-        public static IRetryPolicy DefaultRetryPolicy = new ExponentialBackoff(
-            retryCount: 5,
-            minBackoff: TimeSpan.FromSeconds(2),
-            maxBackoff: TimeSpan.FromSeconds(10),
-            deltaBackoff: TimeSpan.FromMilliseconds(100));
+        public static IRetryPolicy DefaultRetryPolicy = new ExponentialBackoffRetryPolicy(5, TimeSpan.FromSeconds(10));
 
         /// <summary>
         /// Retry an async operation based on the retry strategy supplied.
@@ -40,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             MsTestLogger logger,
             CancellationToken cancellationToken = default)
         {
-            int counter = 0;
+            uint counter = 0;
             bool shouldRetry;
             do
             {
@@ -86,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             MsTestLogger logger,
             CancellationToken cancellationToken = default)
         {
-            int counter = 0;
+            uint counter = 0;
             bool shouldRetry;
             do
             {

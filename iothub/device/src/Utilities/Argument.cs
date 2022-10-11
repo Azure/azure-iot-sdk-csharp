@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
                         new object[]
                         {
                             argumentName,
-                            ceilingValue
+                            ceilingValue,
                         }));
             }
         }

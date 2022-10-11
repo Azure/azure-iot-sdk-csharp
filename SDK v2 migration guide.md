@@ -40,6 +40,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | `DeviceClient` | `IotHubDeviceClient` |
 | `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
 | `MessageResponse` | `MessageAcknowledgement` |
+| `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
 
 #### Other notable breaking changes
 
@@ -55,12 +56,14 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - The file upload method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
 - Cloud-to-device messages can be received by calling `SetMessageHandlerAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
 - Several callback handler set methods and definitions have changed, losing the `userContext` parameter.
+- The exponential back-off retry policy has updated parameters and logic.
 
 #### Notable additions
 
 - The device and module clients now have a property (e.g., `IotHubDeviceClient.ConnectionStatusInfo`)with the latest connection status information on it, eliminating the need for a connection status callback method to cache the latest values.
 - Remote certificate validation is no natively longer supported for AMQP web socket connections. Supprted workaround is to provide a client web socket instance in the client options.
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
+- The library now includes IncrementalDelayRetryStrategy and FixedDelayRetryStrategy.
 - The client can now be re-opened after it has been closed. It cannot be re-opened after it has been disposed, though. Also, subscriptions do not carry over when the client is re-opened.
 
 #### ModuleClient

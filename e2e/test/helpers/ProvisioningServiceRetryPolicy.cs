@@ -11,17 +11,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class ProvisioningServiceRetryPolicy : IRetryPolicy
     {
         private const string RetryAfterKey = "Retry-After";
-        private const int MaxRetryCount = 5;
+        private const uint MaxRetryCount = 5;
 
         private static readonly TimeSpan s_defaultRetryInterval = TimeSpan.FromSeconds(5);
 
-        private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
-            retryCount: MaxRetryCount,
-            minBackoff: s_defaultRetryInterval,
-            maxBackoff: TimeSpan.FromSeconds(10),
-            deltaBackoff: TimeSpan.FromMilliseconds(100));
+        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(10));
 
-        public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+        public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
             retryInterval = TimeSpan.Zero;
 
@@ -44,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             }
             else if ((int)provisioningException.StatusCode > 500 && (int)provisioningException.StatusCode < 600)
             {
-                return s_exponentialBackoffRetryStrategy.ShouldRetry(currentRetryCount, lastException, out retryInterval);
+                return s_retryPolicy.ShouldRetry(currentRetryCount, lastException, out retryInterval);
             }
 
             return false;
