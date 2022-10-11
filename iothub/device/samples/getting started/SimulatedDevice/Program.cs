@@ -8,6 +8,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -86,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.OpenAsync(ct);
                     // Send the telemetry message
                     await deviceClient.SendEventAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {telemetryDataPoint}");
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
 
                     await Task.Delay(1000, ct);
                 }

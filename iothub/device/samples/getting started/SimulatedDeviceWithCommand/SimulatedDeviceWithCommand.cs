@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         private readonly TimeSpan? _maxRunTime;
         private readonly IotHubDeviceClient _deviceClient;
-        private static TimeSpan s_telemetryInterval;
+        private static TimeSpan s_telemetryInterval = TimeSpan.FromSeconds(1); // Seconds;
 
         public SimulatedDeviceWithCommand(IotHubDeviceClient deviceClient, TimeSpan? maxRunTime)
         {
@@ -47,10 +48,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Handle the direct method call.
         private Task<DirectMethodResponse> SetTelemetryInterval(DirectMethodRequest methodRequest)
         {
-            string data = methodRequest.GetPayloadAsJsonString();
-
             // Check the payload is a single integer value.
-            if (int.TryParse(data, out int telemetryIntervalInSeconds))
+            if (methodRequest.TryGetPayload<int>(out int telemetryIntervalInSeconds))
             {
                 s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalInSeconds);
 
@@ -97,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     // Send the telemetry message.
                     await _deviceClient.SendEventAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {telemetryDataPoint}");
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
 
                     await Task.Delay(s_telemetryInterval, ct);
                 }
