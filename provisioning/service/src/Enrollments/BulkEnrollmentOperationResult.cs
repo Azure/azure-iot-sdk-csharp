@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// This error is returned as a result of the
-    ///     <see cref="IndividualEnrollmentsClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment}, CancellationToken)"/>.
+    ///     <see cref="IndividualEnrollmentsClient.RunBulkOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment}, CancellationToken)"/>.
     ///
     /// The provisioning service provides general bulk result in the isSuccessful, and a individual error result
     ///     for each enrollment in the bulk.

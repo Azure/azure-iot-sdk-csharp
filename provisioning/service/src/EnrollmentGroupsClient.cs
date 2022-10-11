@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// If the client failed to send the request or service was not able to execute the bulk operation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public async Task<BulkEnrollmentOperationResult> RunBulkEnrollmentOperationAsync(
+        public async Task<BulkEnrollmentOperationResult> RunBulkOperationAsync(
             BulkOperationMode bulkOperationMode,
             IEnumerable<EnrollmentGroup> enrollmentGroups,
             CancellationToken cancellationToken = default)
@@ -187,14 +187,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Create an enrollment group query.
         /// </summary>
         /// <remarks>
-        /// This method will create a new enrollment group query on Device Provisioning Service and return it as
-        /// a <see cref="Query"/> iterator.
+        /// The service expects a SQL-like query such as
         ///
-        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
         /// <c>"SELECT * FROM enrollments"</c>.
         ///
-        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
-        /// number of items per iteration can be specified by the pageSize.
+        /// For each iteration, the query will return a page of results. The maximum number of
+        /// items per page can be specified by the pageSize parameter.
         /// </remarks>
         /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be null.</param>
         /// <param name="pageSize">The int with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>

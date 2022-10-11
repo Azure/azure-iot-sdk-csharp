@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
             Console.WriteLine("\nRunning the bulk operation to create the individualEnrollments...");
             BulkEnrollmentOperationResult bulkEnrollmentOperationResult =
-                await _provisioningServiceClient.IndividualEnrollments.RunBulkEnrollmentOperationAsync(BulkOperationMode.Create, individualEnrollments);
+                await _provisioningServiceClient.IndividualEnrollments.RunBulkOperationAsync(BulkOperationMode.Create, individualEnrollments);
             Console.WriteLine("\nResult of the Create bulk enrollment.");
             Console.WriteLine(bulkEnrollmentOperationResult);
 
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nDeleting the set of individualEnrollments...");
             BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient.IndividualEnrollments
-                .RunBulkEnrollmentOperationAsync(BulkOperationMode.Delete, individualEnrollments);
+                .RunBulkOperationAsync(BulkOperationMode.Delete, individualEnrollments);
             Console.WriteLine(bulkEnrollmentOperationResult);
         }
 

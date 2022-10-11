@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Creates a query that lists the registration states of devices in a given enrollment group.
         /// </summary>
-        /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be null.</param>
+        /// <param name="query">The SQL query.</param>
         /// <param name="enrollmentGroupId">The enrollment group Id to query.</param>
         /// <param name="pageSize">The int with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
