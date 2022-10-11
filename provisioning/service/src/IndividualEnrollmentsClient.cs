@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using Newtonsoft.Json;
 using System.Globalization;
 using System.Net.Http;
 using System.Net;
+using System.Threading.Tasks;
+using System.Threading;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -176,14 +176,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             };
 
             ContractApiResponse contractApiResponse = await _contractApiHttp
-                            .RequestAsync(
-                                HttpMethod.Post,
-                                GetEnrollmentUri(),
-                                null,
-                                JsonConvert.SerializeObject(bulkOperation),
-                                null,
-                                cancellationToken)
-                            .ConfigureAwait(false);
+                .RequestAsync(
+                    HttpMethod.Post,
+                    GetEnrollmentUri(),
+                    null,
+                    JsonConvert.SerializeObject(bulkOperation),
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
         }

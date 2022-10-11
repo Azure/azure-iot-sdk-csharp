@@ -5,9 +5,9 @@ using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Net;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -80,6 +80,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Task DeleteAsync(string registrationId, CancellationToken cancellationToken = default)
         {
+            Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
+
             return DeleteAsync(new DeviceRegistrationState(registrationId), cancellationToken);
         }
 

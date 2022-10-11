@@ -2,13 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
+using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
 using Newtonsoft.Json;
-using System.Globalization;
-using System.Net;
-using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -185,14 +185,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             };
 
             ContractApiResponse contractApiResponse = await _contractApiHttp
-                            .RequestAsync(
-                                HttpMethod.Post,
-                                GetEnrollmentUri(),
-                                null,
-                                JsonConvert.SerializeObject(bulkOperation),
-                                null,
-                                cancellationToken)
-                            .ConfigureAwait(false);
+                .RequestAsync(
+                    HttpMethod.Post,
+                    GetEnrollmentUri(),
+                    null,
+                    JsonConvert.SerializeObject(bulkOperation),
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
         }
