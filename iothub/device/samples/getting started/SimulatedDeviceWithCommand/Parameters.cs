@@ -13,43 +13,38 @@ namespace Microsoft.Azure.Devices.Client.Samples
     };
 
     /// <summary>
-    /// Parameters for the application.
+    /// Command line parameters for the SimulatedDeviceWithCommand sample
     /// </summary>
     internal class Parameters
     {
         [Option(
             'c',
-            "PrimaryConnectionString",
+            "DeviceConnectionString",
             Required = true,
-            HelpText = "The primary connection string for the device to simulate.")]
-        public string PrimaryConnectionString { get; set; }
-
-        [Option(
-            "ReadTheFile",
-            Required = false,
-            Default = false,
-            HelpText = "If this is false, it will submit messages to the IoT hub. If this is true, it will read one of the output files and convert it to ASCII.")]
-        public bool ReadTheFile { get; set; } = false;
-
-        [Option(
-            "FilePath",
-            Required = false,
-            HelpText = "If this is false, it will submit messages to the IoT hub. If this is true, it will read one of the output files and convert it to ASCII.")]
-        public string FilePath { get; set; }
+             HelpText = "The IoT hub device connection string. This is available under the 'Devices' in the Azure portal." +
+            "\nDefaults to value of environment variable IOTHUB_DEVICE_CONNECTION_STRING.")]
+        public string DeviceConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONNECTION_STRING");
 
         [Option(
             't',
-            "Transport",
+            "TransportType",
             Default = Transport.Mqtt,
             Required = false,
-            HelpText = "The transport to use for the connection.")]
+            HelpText = "The transport (except HTTP) to use to communicate with the IoT hub. Possible values are Mqtt are Amqp.")]
         public Transport Transport { get; set; }
 
         [Option(
-            "TransportProtocol",
-            Default = IotHubClientTransportProtocol.Tcp,
-            HelpText = "The transport to use to communicate with the device provisioning instance.")]
+           "TransportProtocol",
+           Default = IotHubClientTransportProtocol.Tcp,
+           HelpText = "The transport to use to communicate with the device client.")]
         public IotHubClientTransportProtocol TransportProtocol { get; set; }
+
+        [Option(
+            'r',
+            "Application running time (in seconds)",
+            Required = false,
+            HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
+        public double? ApplicationRunningTime { get; set; }
 
         internal IotHubClientTransportSettings GetHubTransportSettings()
         {

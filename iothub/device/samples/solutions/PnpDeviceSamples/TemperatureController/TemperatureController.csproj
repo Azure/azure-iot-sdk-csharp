@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.19.2" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="2.0.0-preview001" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="2.0.0-preview001" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
