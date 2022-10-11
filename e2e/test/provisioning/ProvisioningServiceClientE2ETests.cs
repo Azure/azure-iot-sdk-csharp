@@ -213,7 +213,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null, Logger);
+                if (individualEnrollment != null)
+                {
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null, Logger);
+                }
             }
         }
 
@@ -268,7 +271,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, null, enrollmentGroup.EnrollmentGroupId, Logger);
+                if (enrollmentGroup != null)
+                {
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, null, enrollmentGroup.EnrollmentGroupId, Logger);
+                }
             }
         }
 
@@ -365,7 +371,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null, Logger);
+                if (individualEnrollment != null)
+                {
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null, Logger);
+                }
             }
         }
 
@@ -437,7 +446,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
                 finally
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.EnrollmentGroupId, Logger).ConfigureAwait(false);
+                    if (enrollmentGroup != null)
+                    {
+                        await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.EnrollmentGroupId, Logger).ConfigureAwait(false);
+                    }
                 }
             }
         }
@@ -602,7 +614,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Cleanup of enrollment failed due to {ex}.");
+                logger.Trace($"Cleanup of enrollment failed due to {ex}.");
             }
         }
 
