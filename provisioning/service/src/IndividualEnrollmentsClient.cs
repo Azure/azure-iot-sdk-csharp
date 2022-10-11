@@ -54,6 +54,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNull(individualEnrollment, nameof(individualEnrollment));
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             ContractApiResponse contractApiResponse = await _contractApiHttp
                 .RequestAsync(
                     HttpMethod.Put,
@@ -80,6 +82,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public async Task<IndividualEnrollment> GetAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             ContractApiResponse contractApiResponse = await _contractApiHttp
                 .RequestAsync(
@@ -126,6 +130,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNull(individualEnrollment, nameof(individualEnrollment));
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             await _contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
@@ -160,12 +166,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(individualEnrollments, nameof(individualEnrollments));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var bulkOperation = new IndividualEnrollmentBulkOperation
+            {
+                Mode = bulkOperationMode,
+                Enrollments = individualEnrollments,
+            };
+
             ContractApiResponse contractApiResponse = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Post,
                                 GetEnrollmentUri(),
                                 null,
-                                BulkEnrollmentOperation.ToJson(bulkOperationMode, individualEnrollments),
+                                JsonConvert.SerializeObject(bulkOperation),
                                 null,
                                 cancellationToken)
                             .ConfigureAwait(false);
@@ -214,6 +229,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public async Task<AttestationMechanism> GetAttestationAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             ContractApiResponse contractApiResponse = await _contractApiHttp
                 .RequestAsync(

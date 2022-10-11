@@ -52,6 +52,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             ContractApiResponse contractApiResponse = await _contractApiHttp
                 .RequestAsync(
                     HttpMethod.Get,
@@ -94,6 +96,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public async Task DeleteAsync(DeviceRegistrationState deviceRegistrationState, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(deviceRegistrationState, nameof(deviceRegistrationState));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             await _contractApiHttp
                 .RequestAsync(

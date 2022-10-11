@@ -62,6 +62,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNull(enrollmentGroup, nameof(enrollmentGroup));
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             ContractApiResponse contractApiResponse = await _contractApiHttp
                 .RequestAsync(
                     HttpMethod.Put,
@@ -91,6 +93,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             ContractApiResponse contractApiResponse = await _contractApiHttp
                 .RequestAsync(
                     HttpMethod.Get,
@@ -118,7 +122,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Task DeleteAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
-
             return DeleteAsync(new EnrollmentGroup(enrollmentGroupId, null), cancellationToken);
         }
 
@@ -135,6 +138,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public async Task DeleteAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(enrollmentGroup, nameof(enrollmentGroup));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             await _contractApiHttp
                 .RequestAsync(
@@ -170,12 +175,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(enrollmentGroups, nameof(enrollmentGroups));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var bulkOperation = new EnrollmentGroupBulkOperation
+            {
+                Mode = bulkOperationMode,
+                Enrollments = enrollmentGroups,
+            };
+
             ContractApiResponse contractApiResponse = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Post,
                                 GetEnrollmentUri(),
                                 null,
-                                BulkEnrollmentOperation.ToJson(bulkOperationMode, enrollmentGroups),
+                                JsonConvert.SerializeObject(bulkOperation),
                                 null,
                                 cancellationToken)
                             .ConfigureAwait(false);
@@ -223,6 +237,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public async Task<AttestationMechanism> GetAttestationAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             ContractApiResponse contractApiResponse = await _contractApiHttp
                 .RequestAsync(

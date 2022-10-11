@@ -21,8 +21,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void BulkEnrollmentOperationToJsonThrowsOnInvalidParameters()
         {
             // arrange - act - assert
-            TestAssert.Throws<ArgumentException>(() => BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, null));
-            TestAssert.Throws<ArgumentException>(() => BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, new List<IndividualEnrollment>()));
+            TestAssert.Throws<ArgumentException>(() => EnrollmentGroupBulkOperation.ToJson(BulkOperationMode.Create, null));
+            TestAssert.Throws<ArgumentException>(() => EnrollmentGroupBulkOperation.ToJson(BulkOperationMode.Create, new List<IndividualEnrollment>()));
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            string bulkJson = BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, s_individualEnrollments);
+            string bulkJson = EnrollmentGroupBulkOperation.ToJson(BulkOperationMode.Create, s_individualEnrollments);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, bulkJson);
