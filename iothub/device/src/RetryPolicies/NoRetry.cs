@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Info(
                     this,
-                    $"NOTE: A no-retry policy has been enabled; the client will not perform any retries on disconnection.",
+                    $"NOTE: A no-retry policy has been enabled; the client will not perform any retries on error.",
                     nameof(NoRetry));
         }
 
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="lastException">The last exception.</param>
         /// <param name="retryInterval">The retry interval.</param>
         /// <returns>Whether or not to retry</returns>
-        public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+        public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
             retryInterval = TimeSpan.Zero;
             return false;

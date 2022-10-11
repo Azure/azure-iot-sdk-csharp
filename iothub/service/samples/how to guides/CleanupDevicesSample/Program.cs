@@ -39,8 +39,15 @@ namespace Microsoft.Azure.Devices.Samples
             string blobContainerName = $"cleanupdevice{Guid.NewGuid()}";
             BlobContainerClient blobContainerClient = await blobServiceClient.CreateBlobContainerAsync(blobContainerName);
 
-            var sample = new CleanupDevicesSample(hubClient, blobContainerClient, saveDevicesWithPrefix);
-            await sample.RunCleanUpAsync();
+            try
+            {
+                var sample = new CleanupDevicesSample(hubClient, blobContainerClient, saveDevicesWithPrefix);
+                await sample.RunCleanUpAsync();
+            }
+            finally
+            {
+                await blobContainerClient.DeleteAsync();
+            }
 
             Console.WriteLine("Done.");
             return 0;

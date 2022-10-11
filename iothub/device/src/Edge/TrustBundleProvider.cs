@@ -15,14 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
 {
     internal class TrustBundleProvider : ITrustBundleProvider
     {
-        private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy = new ErrorDetectionStrategy();
-
-        private static readonly RetryStrategy s_transientRetryStrategy =
-            new ExponentialBackoffRetryStrategy(
-                retryCount: 3,
-                minBackoff: TimeSpan.FromSeconds(2),
-                maxBackoff: TimeSpan.FromSeconds(30),
-                deltaBackoff: TimeSpan.FromSeconds(3));
+        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 
         public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion)
         {
@@ -47,7 +40,6 @@ namespace Microsoft.Azure.Devices.Client.Edge
             {
                 throw new HttpHsmComunicationException(
                     $"Error calling GetTrustBundleWithRetry: {ex.Response ?? string.Empty}", ex.StatusCode, ex);
-
             }
         }
 
@@ -55,9 +47,11 @@ namespace Microsoft.Azure.Devices.Client.Edge
             HttpHsmClient hsmHttpClient,
             string apiVersion)
         {
-            var transientRetryPolicy = new RetryPolicy(s_transientErrorDetectionStrategy, s_transientRetryStrategy);
+            var transientRetryPolicy = new RetryHandler(s_retryPolicy);
             return await transientRetryPolicy
-                .RunWithRetryAsync(() => hsmHttpClient.TrustBundleAsync(apiVersion))
+                .RunWithRetryAsync(
+                    () => hsmHttpClient.TrustBundleAsync(apiVersion),
+                    (Exception ex) => ex is SwaggerException se && se.StatusCode >= 500)
                 .ConfigureAwait(false);
         }
 
@@ -79,11 +73,6 @@ namespace Microsoft.Azure.Devices.Client.Edge
                .Select(c => Encoding.UTF8.GetBytes(c))
                .Select(c => new X509Certificate2(c))
                .ToList();
-        }
-
-        private class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
-        {
-            public bool IsTransient(Exception ex) => ex is SwaggerException se && se.StatusCode >= 500;
         }
     }
 }
