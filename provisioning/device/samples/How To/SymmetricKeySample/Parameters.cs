@@ -12,18 +12,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
     internal class Parameters
     {
         [Option(
-            's',
+            'i',
             "IdScope",
             Required = true,
             HelpText = "The Id Scope of the DPS instance")]
         public string IdScope { get; set; }
 
         [Option(
-            'i',
-            "Id",
+            'r',
+            "RegistrationId",
             Required = true,
-            HelpText = "The registration Id when using individual enrollment, or the desired device Id when using group enrollment.")]
-        public string Id { get; set; }
+            HelpText = "The registration Id")]
+        public string RegistrationId { get; set; }
 
         [Option(
             'p',
@@ -31,13 +31,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             Required = true,
             HelpText = "The primary key of the individual enrollment or the derived primary key of the group enrollment. See the ComputeDerivedSymmetricKeySample for how to generate the derived key.")]
         public string PrimaryKey { get; set; }
-
-        [Option(
-            'e',
-            "EnrollmentType",
-            Default = EnrollmentType.Individual,
-            HelpText = "The type of enrollment: Individual or Group")]
-        public EnrollmentType EnrollmentType { get; set; }
 
         [Option(
             'g',
