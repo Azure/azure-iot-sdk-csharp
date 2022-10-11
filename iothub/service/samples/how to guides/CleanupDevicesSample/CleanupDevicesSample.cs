@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Storage.Blobs;
-using Azure.Storage.Sas;
-using Microsoft.Azure.Devices.Common.Exceptions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,6 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -23,7 +23,9 @@ namespace Microsoft.Azure.Devices.Samples
     /// </summary>
     public class CleanupDevicesSample
     {
-        private static readonly string s_importExportDevicesFileName  = $"delete-devices-{Guid.NewGuid()}.txt";
+        private const string ImportErrorsLog = "importErrors.log";
+
+        private static readonly string s_importExportDevicesFileName = $"delete-devices-{Guid.NewGuid()}.txt";
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_maxJobDuration = TimeSpan.FromHours(4);
 
@@ -65,7 +67,7 @@ namespace Microsoft.Azure.Devices.Samples
                     using Stream devicesFile = ImportExportDevicesHelpers.BuildDevicesStream(devicesToBeDeleted);
 
                     // Retrieve the SAS Uri that will be used to grant access to the storage containers.
-                    BlobClient blobClient = _blobContainerClient.GetBlobClient(s_importExportDevicesFileName );
+                    BlobClient blobClient = _blobContainerClient.GetBlobClient(s_importExportDevicesFileName);
                     var uploadResult = await blobClient.UploadAsync(devicesFile, overwrite: true);
                     string storageAccountSasUri = GetStorageAccountSasUriForCleanupJob(_blobContainerClient).ToString();
 
@@ -74,7 +76,7 @@ namespace Microsoft.Azure.Devices.Samples
                         .CreateForImportJob(
                             inputBlobContainerUri: storageAccountSasUri,
                             outputBlobContainerUri: storageAccountSasUri,
-                            inputBlobName: s_importExportDevicesFileName ,
+                            inputBlobName: s_importExportDevicesFileName,
                             storageAuthenticationType: StorageAuthenticationType.KeyBased);
 
                     JobProperties importDevicesToBeDeletedJob = null;
@@ -110,9 +112,11 @@ namespace Microsoft.Azure.Devices.Samples
                             break;
                         }
 
-                        Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status} after {jobTimer.Elapsed}.");
+                        Console.WriteLine($"\tJob {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status} after {jobTimer.Elapsed}.");
                         await Task.Delay(s_waitDuration);
                     }
+
+                    await DiscoverAndReportErrorsAsync();
 
                     if (importDevicesToBeDeletedJob?.Status != JobStatus.Completed)
                     {
@@ -123,7 +127,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     if (!string.IsNullOrWhiteSpace(currentJobId))
                     {
-                        Console.WriteLine($"Cancelling job {currentJobId}");
+                        Console.WriteLine($"Cancelling job {currentJobId}...");
                         await _registryManager.CancelJobAsync(currentJobId);
                     }
                 }
@@ -133,6 +137,38 @@ namespace Microsoft.Azure.Devices.Samples
             await _blobContainerClient.DeleteAsync();
             Console.WriteLine($"Storage container {_blobContainerClient.Name} deleted.");
         }
+
+        private async Task DiscoverAndReportErrorsAsync()
+        {
+            Console.WriteLine("Looking for any errors reported from import...");
+            try
+            {
+                BlobClient importErrorsBlobClient = _blobContainerClient.GetBlobClient(ImportErrorsLog);
+
+                var content = await importErrorsBlobClient.DownloadContentAsync();
+                string errorContent = content.Value.Content.ToString();
+                string[] errors = errorContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                Console.WriteLine($"Found {errors.Length} errors reported:");
+                foreach (string error in errors)
+                {
+                    try
+                    {
+                        ImportError importError = JsonConvert.DeserializeObject<ImportError>(error);
+                        Console.WriteLine($"\tImport error for {importError.DeviceId} of code {importError.ErrorCode} with status: '{importError.ErrorStatus}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to deserialize an import error due to [{ex.Message}].");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to review errors due to [{ex.Message}].");
+            }
+        }
+
 
         private async Task<int> PrintDeviceCountAsync()
         {
