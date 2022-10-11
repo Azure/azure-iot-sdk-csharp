@@ -459,14 +459,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             try
             {
                 auth = await CreateAuthenticationProviderFromNameAsync(
-                   attestationType,
-                   enrollmentType,
-                   groupId,
-                   reprovisionPolicy,
-                   allocationPolicy,
-                   customAllocationDefinition,
-                   iotHubsToStartAt)
-               .ConfigureAwait(false);
+                       attestationType,
+                       enrollmentType,
+                       groupId,
+                       reprovisionPolicy,
+                       allocationPolicy,
+                       customAllocationDefinition,
+                       iotHubsToStartAt)
+                   .ConfigureAwait(false);
 
                 //Check basic provisioning
                 if (ImplementsWebProxy(transportSettings) && setCustomProxy)
@@ -726,7 +726,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             if (provisioningAuth is AuthenticationProviderX509 x509Auth)
             {
-                using X509Certificate2 cert = x509Auth.GetAuthenticationCertificate();
+                X509Certificate2 cert = x509Auth.GetAuthenticationCertificate();
                 auth = new ClientAuthenticationWithX509Certificate(cert, deviceId);
             }
             else
