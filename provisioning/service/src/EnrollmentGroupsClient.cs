@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This API provide the means to do a single operation over multiple enrollment groups. A valid operation
         /// is determined by <see cref="BulkOperationMode"/>, and can be 'create', 'update', 'updateIfMatchETag', or 'delete'.
         /// </remarks>
-        /// <param name="bulkOperationMode">The <see cref="BulkOperationMode"/> that defines the single operation to do over the enrollment groupd. It cannot be null.</param>
+        /// <param name="bulkOperationMode">The <see cref="BulkOperationMode"/> that defines the single operation to do over the enrollment group. It cannot be null. </param>
         /// <param name="enrollmentGroups">The collection of <see cref="EnrollmentGroup"/> that contains the description of each enrollment group. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A <see cref="BulkEnrollmentOperationResult"/> object with the result of operation for each enrollment.</returns>
