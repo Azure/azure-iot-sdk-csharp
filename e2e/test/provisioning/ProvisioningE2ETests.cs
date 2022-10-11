@@ -736,7 +736,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     : _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             }
 
-            bool shouldCleanupEnrollment = groupId == null || groupId == TestConfiguration.Provisioning.X509GroupEnrollmentName;
+            bool shouldCleanupEnrollment = groupId == null || groupId != TestConfiguration.Provisioning.X509GroupEnrollmentName;
 
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
