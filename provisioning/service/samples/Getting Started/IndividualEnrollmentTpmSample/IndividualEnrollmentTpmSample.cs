@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task QueryIndividualEnrollmentsAsync()
         {
             Console.WriteLine("Creating a query for enrollments...");
-            Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery("SELECT * FROM enrollments");
+            Query query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
             while (query.HasNext())
             {
                 Console.WriteLine("Querying the next page of enrollments...");
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             };
 
             IndividualEnrollment individualEnrollmentResult =
-                await _provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
+                await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
             Console.WriteLine($"Successfully created the individual enrollment '{individualEnrollmentResult.RegistrationId}'.");
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("Getting the individualEnrollment information...");
             IndividualEnrollment getResult =
-                await _provisioningServiceClient.GetIndividualEnrollmentAsync(_registrationId);
+                await _provisioningServiceClient.IndividualEnrollments.GetAsync(_registrationId);
 
             return getResult;
         }
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
             Console.WriteLine($"Updating desired properties and capabilities of the individual enrollment '{individualEnrollment.RegistrationId}'...");
             IndividualEnrollment individualEnrollmentResult =
-                await _provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
+                await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
             Console.WriteLine($"Updated initial device twin state is {individualEnrollmentResult.InitialTwinState}.");
             Console.WriteLine($"Updated IoT Edge device to '{individualEnrollmentResult.Capabilities.IotEdge}'.");
             Console.WriteLine($"Successfully updated the individual enrollment '{_registrationId}'.");
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task DeleteIndividualEnrollmentAsync()
         {
             Console.WriteLine($"Deleting the individual enrollment '{_registrationId}'...");
-            await _provisioningServiceClient.DeleteIndividualEnrollmentAsync(_registrationId);
+            await _provisioningServiceClient.IndividualEnrollments.DeleteAsync(_registrationId);
             Console.WriteLine($"Successfully deleted the individual enrollment '{_registrationId}'.");
         }
     }

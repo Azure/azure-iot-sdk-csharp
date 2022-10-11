@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// This error is returned as a result of the
-    ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, System.Collections.Generic.IEnumerable{IndividualEnrollment}, CancellationToken)"/>
+    ///     <see cref="IndividualEnrollmentsClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, System.Collections.Generic.IEnumerable{IndividualEnrollment}, CancellationToken)"/>
     ///     as part of the <see cref="BulkEnrollmentOperationResult"/>.
     /// </remarks>
     /// <example>

@@ -12,14 +12,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     {
         // Maximum number of elements per query - DPS has a limit of 10.
         private const int QueryPageSize = 10;
+
         private readonly ProvisioningServiceClient _provisioningServiceClient;
         private static int s_individualEnrollmentsDeleted;
         private static int s_enrollmentGroupsDeleted;
+
         private readonly List<string> _individualEnrollmentsToBeRetained = new()
         {
             "Save_iothubx509device1",
             "Save_SymmetricKeySampleIndividualEnrollment"
         };
+
         private readonly List<string> _groupEnrollmentsToBeRetained = new()
         {
             "Save_group-certificate-x509",
@@ -44,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task QueryAndDeleteIndividualEnrollmentsAsync()
         {
             Console.WriteLine("Creating a query for enrollments...");
-            Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery("SELECT * FROM enrollments", QueryPageSize);
+            Query query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments", QueryPageSize);
             while (query.HasNext())
             {
                 Console.WriteLine("Querying the next enrollments...");
@@ -72,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task QueryAndDeleteEnrollmentGroupsAsync()
         {
             Console.WriteLine("Creating a query for enrollment groups...");
-            Query query = _provisioningServiceClient.CreateEnrollmentGroupQuery("SELECT * FROM enrollmentGroups", QueryPageSize);
+            Query query = _provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups", QueryPageSize);
             while (query.HasNext())
             {
                 Console.WriteLine("Querying the next enrollment groups...");
@@ -84,7 +87,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     {
                         Console.WriteLine($"Enrollment group to be deleted: {enrollment.EnrollmentGroupId}");
                         s_enrollmentGroupsDeleted++;
-                        await _provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollment.EnrollmentGroupId);
+                        await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(enrollment.EnrollmentGroupId);
                     }
                 }
             }
@@ -93,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task DeleteBulkIndividualEnrollmentsAsync(List<IndividualEnrollment> individualEnrollments)
         {
             Console.WriteLine("Deleting the set of individualEnrollments...");
-            BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient
+            BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient.IndividualEnrollments
                 .RunBulkEnrollmentOperationAsync(BulkOperationMode.Delete, individualEnrollments);
             Console.WriteLine(bulkEnrollmentOperationResult);
         }

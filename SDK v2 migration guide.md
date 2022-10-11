@@ -188,6 +188,20 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 |:---|:---|
 | `ProvisioningServiceClient.CreateFromConnectionString(...)` | `new ProvisioningServiceClient()` |
 | `QuerySpecification` | Type removed from public API. Methods take the parameters directly. |
+| `ProvisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment, ...)` | `ProvisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(IndividualEnrollment, ...)` |
+| `ProvisioningServiceClient.GetIndividualEnrollmentAsync(IndividualEnrollment, ...)` | `ProvisioningServiceClient.IndividualEnrollments.GetAsync(IndividualEnrollment, ...)` |
+| `ProvisioningServiceClient.DeleteIndividualEnrollmentAsync(...)` | `ProvisioningServiceClient.IndividualEnrollments.DeleteAsync(...)` |
+| `ProvisioningServiceClient.GetIndividualEnrollmentAttestationAsync(...)` | `ProvisioningServiceClient.IndividualEnrollments.GetAttestationAsync(...)` |
+| `ProvisioningServiceClient.CreateIndividualEnrollmentQuery(...)` | `ProvisioningServiceClient.IndividualEnrollments.CreateQuery(...)` |
+| `ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(...)` | `ProvisioningServiceClient.IndividualEnrollments.RunBulkEnrollmentOperationAsync(...)` |
+| `ProvisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroup, ...)` | `ProvisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(EnrollmentGroup, ...)` |
+| `ProvisioningServiceClient.GetEnrollmentGroupAsync(EnrollmentGroup, ...)` | `ProvisioningServiceClient.EnrollmentGroups.GetAsync(EnrollmentGroup, ...)` |
+| `ProvisioningServiceClient.DeleteEnrollmentGroupAsync(...)` | `ProvisioningServiceClient.EnrollmentGroups.DeleteAsync(...)` |
+| `ProvisioningServiceClient.GetEnrollmentGroupAttestationAsync(...)` | `ProvisioningServiceClient.EnrollmentGroups.GetAttestationAsync(...)` |
+| `ProvisioningServiceClient.CreateEnrollmentGroupQuery(...)` | `ProvisioningServiceClient.EnrollmentGroups.CreateQuery(...)` |
+| `ProvisioningServiceClient.GetDeviceRegistrationStateAsync(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.GetAsync(...)` |
+| `ProvisioningServiceClient.DeleteDeviceRegistrationStateAsync(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.DeleteAsync(...)` |
+| `ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(...)` |
 
 #### Other notable breaking changes
 

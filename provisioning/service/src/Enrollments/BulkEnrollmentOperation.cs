@@ -14,13 +14,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// It is an internal class that creates a JSON for the bulk operations over the IndividualEnrollment. To use bulk operations, please use
-    /// the external API <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment}, CancellationToken)"/>.
+    /// the external API <see cref="IndividualEnrollmentsClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment}, CancellationToken)"/>.
     ///
     /// The following JSON is an example of the result of this serializer.
     /// </remarks>
     internal static class BulkEnrollmentOperation
     {
-        private sealed class BulkOperation
+        private sealed class IndividualEnrollmentBulkOperation
         {
             /// <summary>
             /// Operation mode
@@ -33,6 +33,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /// </summary>
             [JsonProperty(PropertyName = "enrollments", Required = Required.Always)]
             public IEnumerable<IndividualEnrollment> Enrollments { get; set; }
+        }
+
+        private sealed class EnrollmentGroupBulkOperation
+        {
+            /// <summary>
+            /// Operation mode
+            /// </summary>
+            [JsonProperty(PropertyName = "mode", Required = Required.Always)]
+            public BulkOperationMode Mode { get; set; }
+
+            /// <summary>
+            /// Enrollments for bulk operation
+            /// </summary>
+            [JsonProperty(PropertyName = "enrollmentGroups", Required = Required.Always)]
+            public IEnumerable<EnrollmentGroup> Enrollments { get; set; }
         }
 
         /// <summary>
@@ -49,17 +64,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The string with the content of this class.</returns>
         /// <exception cref="ArgumentNullException">If the <paramref name="individualEnrollments"/> is null.</exception>
         /// <exception cref="ArgumentException">If the <paramref name="individualEnrollments"/> is an empty collection.</exception>
-        public static string ToJson(BulkOperationMode mode, IEnumerable<IndividualEnrollment> individualEnrollments)
+        internal static string ToJson(BulkOperationMode mode, IEnumerable<IndividualEnrollment> individualEnrollments)
         {
             if (!(individualEnrollments ?? throw new ArgumentNullException(nameof(individualEnrollments))).Any())
             {
                 throw new ArgumentException("The collection is null or empty.", nameof(individualEnrollments));
             }
 
-            var bulkOperation = new BulkOperation
+            var bulkOperation = new IndividualEnrollmentBulkOperation
             {
                 Mode = mode,
                 Enrollments = individualEnrollments,
+            };
+            return JsonConvert.SerializeObject(bulkOperation);
+        }
+
+        internal static string ToJson(BulkOperationMode mode, IEnumerable<EnrollmentGroup> enrollmentGroups)
+        {
+            if (!(enrollmentGroups ?? throw new ArgumentNullException(nameof(enrollmentGroups))).Any())
+            {
+                throw new ArgumentException("The collection is null or empty.", nameof(enrollmentGroups));
+            }
+
+            var bulkOperation = new EnrollmentGroupBulkOperation
+            {
+                Mode = mode,
+                Enrollments = enrollmentGroups,
             };
             return JsonConvert.SerializeObject(bulkOperation);
         }

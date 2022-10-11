@@ -1348,7 +1348,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         .RetryOperationsAsync(
                             async () =>
                             {
-                                await dpsClient.DeleteIndividualEnrollmentAsync(authProvider.GetRegistrationId()).ConfigureAwait(false);
+                                await dpsClient.IndividualEnrollments.DeleteAsync(authProvider.GetRegistrationId()).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
@@ -1362,7 +1362,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         .RetryOperationsAsync(
                             async () =>
                             {
-                                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                                await dpsClient.EnrollmentGroups.DeleteAsync(groupId).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,

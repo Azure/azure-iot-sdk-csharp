@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(
                 TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
-            Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
+            Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery(
                 "SELECT * FROM enrollmentGroups");
 
             Func<Task> act = async () => await q.NextAsync();
