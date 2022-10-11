@@ -736,6 +736,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     : _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             }
 
+            bool shouldCleanupEnrollment = groupId == null || groupId == TestConfiguration.Provisioning.X509GroupEnrollmentName;
+
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
@@ -801,15 +803,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                if (attestationType == AttestationMechanismType.X509
-                    && enrollmentType == EnrollmentType.Group)
-                {
-                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
-                }
-                else
+                if (shouldCleanupEnrollment)
                 {
                     Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
                     await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
+                }
+                else
+                {
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
 
                 if (authMethod is AuthenticationProviderX509 x509Auth)
@@ -891,8 +892,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 ApiVersion = "2019-03-31",
             };
 
+
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
-            AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
+            AuthenticationProvider auth = null;
+
+            try
+            {
+                auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -902,58 +908,56 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     iotHubsToProvisionTo)
                 .ConfigureAwait(false);
 
-            // Check basic provisioning
-            if (ImplementsWebProxy(transportSettings) && setCustomProxy)
-            {
-                clientOptions.TransportSettings.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
-            }
-
-            var provClient = new ProvisioningDeviceClient(
-                s_globalDeviceEndpoint,
-                TestConfiguration.Provisioning.IdScope,
-                auth,
-                clientOptions);
-            using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
-
-            // Test registering with valid additional data payload
-            DeviceRegistrationResult result = await provClient
-                .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
-                .ConfigureAwait(false);
-            ValidateDeviceRegistrationResult(true, result);
-            Assert.AreEqual(expectedDestinationHub, result.AssignedHub);
-
-            // Test registering without additional data
-            result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-            ValidateDeviceRegistrationResult(false, result);
-
-            try
-            {
-                if (attestationType == AttestationMechanismType.X509
-                    && enrollmentType == EnrollmentType.Group)
+                // Check basic provisioning
+                if (ImplementsWebProxy(transportSettings) && setCustomProxy)
                 {
-                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
-                }
-                else
-                {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
+                    clientOptions.TransportSettings.Proxy = proxyServerAddress == null
+                        ? null
+                        : new WebProxy(s_proxyServerAddress);
                 }
 
-                if (auth is AuthenticationProviderX509 x509Auth)
-                {
-                    X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
-                    deviceCertificate?.Dispose();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
+                var provClient = new ProvisioningDeviceClient(
+                    s_globalDeviceEndpoint,
+                    TestConfiguration.Provisioning.IdScope,
+                    auth,
+                    clientOptions);
+                using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
+
+                // Test registering with valid additional data payload
+                DeviceRegistrationResult result = await provClient
+                    .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
+                    .ConfigureAwait(false);
+                ValidateDeviceRegistrationResult(true, result);
+                result.AssignedHub.Should().Be(expectedDestinationHub);
+
+                // Test registering without additional data
+                result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                ValidateDeviceRegistrationResult(false, result);
             }
             finally
             {
-                if (auth is IDisposable disposableAuth)
+                try
                 {
-                    disposableAuth?.Dispose();
+                    if (auth != null)
+                    {
+                        Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
+                        await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
+                    }
+
+                    if (auth is AuthenticationProviderX509 x509Auth)
+                    {
+                        X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
+                        deviceCertificate?.Dispose();
+                    }
+
+                    if (auth is IDisposable disposableAuth)
+                    {
+                        disposableAuth?.Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
                 }
             }
         }
@@ -965,33 +969,36 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId)
         {
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
-            AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
-                    attestationType,
-                    enrollmentType,
-                    groupId,
-                    null,
-                    AllocationPolicy.Hashed,
-                    null,
-                    null)
-            .ConfigureAwait(false);
-
-            var provClient = new ProvisioningDeviceClient(
-                s_globalDeviceEndpoint,
-                InvalidIdScope,
-                auth,
-                clientOptions);
-
-            using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+            AuthenticationProvider auth = null;
 
             try
             {
+                auth = await CreateAuthProviderFromNameAsync(
+                        attestationType,
+                        enrollmentType,
+                        groupId,
+                        null,
+                        AllocationPolicy.Hashed,
+                        null,
+                        null)
+                    .ConfigureAwait(false);
+
+                var provClient = new ProvisioningDeviceClient(
+                    s_globalDeviceEndpoint,
+                    InvalidIdScope,
+                    auth,
+                    clientOptions);
+
+                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
                 var exception = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
                 Logger.Trace($"Exception: {exception}");
             }
             finally
             {
-                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                if (auth == null
+                    || attestationType == AttestationMechanismType.X509
+                    && enrollmentType == EnrollmentType.Group)
                 {
                     Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
@@ -1021,28 +1028,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = "")
         {
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
-            AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
-                    attestationType,
-                    enrollmentType,
-                    groupId,
-                    null,
-                    AllocationPolicy.Hashed,
-                    null,
-                    null)
-                .ConfigureAwait(false);
-
-            var provClient = new ProvisioningDeviceClient(
-                InvalidGlobalAddress,
-                TestConfiguration.Provisioning.IdScope,
-                auth,
-                clientOptions);
-
-            using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
-
-            Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
+            AuthenticationProvider auth = null;
 
             try
             {
+                auth = await CreateAuthProviderFromNameAsync(
+                        attestationType,
+                        enrollmentType,
+                        groupId,
+                        null,
+                        AllocationPolicy.Hashed,
+                        null,
+                        null)
+                    .ConfigureAwait(false);
+
+                var provClient = new ProvisioningDeviceClient(
+                    InvalidGlobalAddress,
+                    TestConfiguration.Provisioning.IdScope,
+                    auth,
+                    clientOptions);
+
+                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+
+                Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
+
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
                 var exception = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
 
@@ -1050,7 +1059,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                if (auth == null
+                    || attestationType == AttestationMechanismType.X509
+                    && enrollmentType == EnrollmentType.Group)
                 {
                     Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
