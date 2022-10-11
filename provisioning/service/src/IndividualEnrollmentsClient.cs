@@ -42,11 +42,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Creates or updates an individual enrollment.
+        /// Create or update an individual enrollment.
         /// </summary>
-        /// <param name="individualEnrollment">The individual enrollment object.</param>
+        /// <param name="individualEnrollment">The individual enrollment to create or update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>An individual enrollment</returns>
+        /// <returns>The created or updated individual enrollment.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="individualEnrollment"/> is null.</exception>
         /// <exception cref="DeviceProvisioningServiceException">If the service was not able to create or update the enrollment.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -68,11 +68,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Gets the individual enrollment object.
+        /// Gets an individual enrollment by Id.
         /// </summary>
         /// <param name="registrationId">The registration Id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The enrollment.</returns>
+        /// <returns>The retrieved enrollment.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">If the service was not able to get the enrollment.</exception>
@@ -95,15 +95,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Delete the individual enrollment information.
+        /// Delete an individual enrollment.
         /// </summary>
-        /// <remarks>
-        /// This method will remove the individualEnrollment from the Device Provisioning Service using the
-        /// provided registrationId. It will delete the enrollment regardless the eTag.
-        ///
-        /// Note that delete the enrollment will not remove the Device itself from the IotHub.
-        /// </remarks>
-        /// <param name="registrationId">The string that identifies the individualEnrollment. It cannot be null or empty.</param>
+        /// <param name="registrationId">The Id of the individual enrollment to delete.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
@@ -119,9 +113,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Deletes an individual enrollment.
+        /// Delete an individual enrollment.
         /// </summary>
-        /// <param name="individualEnrollment">The individual enrollment.</param>
+        /// <param name="individualEnrollment">The individual enrollment to delete.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="individualEnrollment"/> is null.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
@@ -144,7 +138,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Create, update or delete a set of individual Device Enrollments.
+        /// Create, update or delete a set of individual enrollment groups.
         /// </summary>
         /// <remarks>
         /// This API provide the means to do a single operation over multiple individualEnrollments. A valid operation
@@ -153,7 +147,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="bulkOperationMode">The <see cref="BulkOperationMode"/> that defines the single operation to do over the individualEnrollments. It cannot be null.</param>
         /// <param name="individualEnrollments">The collection of <see cref="IndividualEnrollment"/> that contains the description of each individualEnrollment. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A <see cref="BulkEnrollmentOperationResult"/> object with the result of operation for each enrollment.</returns>
+        /// <returns>An object with the result of each operation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="individualEnrollments"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="individualEnrollments"/> is an empty collection.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
@@ -180,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Factory to create a individualEnrollment query.
+        /// Create an individual enrollment query.
         /// </summary>
         /// <remarks>
         /// This method will create a new individualEnrollment query for Device Provisioning Service and return it
@@ -195,7 +189,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="query">The SQL query. It cannot be null.</param>
         /// <param name="pageSize">The int with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <returns>The iterable set of query results.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="query"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> is less than zero.</exception>
@@ -208,9 +202,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Retrieve the attestation information for an individual enrollment.
+        /// Get an individual enrollment's attestation information.
         /// </summary>
-        /// <param name="registrationId">The registration Id of the individual enrollment to retrieve the attestation information of. This may not be null or empty.</param>
+        /// <param name="registrationId">The registration Id of the individual enrollment.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="AttestationMechanism"/> of the individual enrollment associated with the provided <paramref name="registrationId"/>.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>

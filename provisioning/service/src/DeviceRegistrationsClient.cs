@@ -37,30 +37,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Retrieve the registration status information.
+        /// Get the device registration state.
         /// </summary>
-        /// <remarks>
-        /// This method will return the DeviceRegistrationState for the provided id. It will retrieve
-        /// the correspondent DeviceRegistrationState from the Device Provisioning Service, and return it in the
-        /// <see cref="DeviceRegistrationState"/> object.
-        /// </remarks>
-        /// <param name="id">The string that identifies the DeviceRegistrationState. It cannot be null or empty.</param>
+        /// <param name="registrationId">The Id of the registration to get the state of.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the DeviceRegistrationState in the Provisioning Device Service.</returns>
-        /// <exception cref="ArgumentNullException">If the provided <paramref name="id"/> is null.</exception>
-        /// <exception cref="ArgumentException">If the provided <paramref name="id"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
-        /// If the service was not able to retrieve the registration state for the provided <paramref name="id"/>.
+        /// If the service was not able to retrieve the registration state for the provided <paramref name="registrationId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public async Task<DeviceRegistrationState> GetAsync(string id, CancellationToken cancellationToken = default)
+        public async Task<DeviceRegistrationState> GetAsync(string registrationId, CancellationToken cancellationToken = default)
         {
-            Argument.AssertNotNullOrWhiteSpace(id, nameof(id));
+            Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
 
             ContractApiResponse contractApiResponse = await _contractApiHttp
                 .RequestAsync(
                     HttpMethod.Get,
-                    GetDeviceRegistrationStatusUri(id),
+                    GetDeviceRegistrationStatusUri(registrationId),
                     null,
                     null,
                     null,
@@ -71,36 +66,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Delete the registration status information.
+        /// Delete the device registration.
         /// </summary>
-        /// <remarks>
-        /// This method will remove the DeviceRegistrationState from the Device Provisioning Service using the
-        /// provided id. It will delete the registration status regardless the eTag.
-        /// </remarks>
-        /// <param name="id">The string that identifies the DeviceRegistrationState. It cannot be null or empty.</param>
+        /// <param name="registrationId">The Id of the device registration to delete.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentNullException">If the provided <paramref name="id"/> is null.</exception>
-        /// <exception cref="ArgumentException">If the provided <paramref name="id"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
-        /// If the service was not able to delete the registration state for the provided <paramref name="id"/>.
+        /// If the service was not able to delete the registration state for the provided <paramref name="registrationId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(string registrationId, CancellationToken cancellationToken = default)
         {
-            return DeleteAsync(new DeviceRegistrationState(id), cancellationToken);
+            return DeleteAsync(new DeviceRegistrationState(registrationId), cancellationToken);
         }
 
         /// <summary>
-        /// Delete the registration status information.
+        /// Delete the device registration.
         /// </summary>
-        /// <remarks>
-        /// This method will remove the DeviceRegistrationState from the Device Provisioning Service using the
-        /// provided <see cref="DeviceRegistrationState"/> information. The Device Provisioning Service will care about the
-        /// id and the eTag on the DeviceRegistrationState. If you want to delete the DeviceRegistrationState regardless the
-        /// eTag, you can use the <see cref="DeleteAsync(string, CancellationToken)"/> passing only the id.
-        /// </remarks>
-        /// <param name="deviceRegistrationState">The <see cref="DeviceRegistrationState"/> that identifies the DeviceRegistrationState.
-        /// It cannot be null.</param>
+        /// <param name="deviceRegistrationState">The device registration to delete.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="deviceRegistrationState"/> is null.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
@@ -123,13 +107,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Creates a device registration state query.
+        /// Creates a query that lists the registration states of devices in a given enrollment group.
         /// </summary>
         /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be null.</param>
         /// <param name="enrollmentGroupId">The enrollment group Id to query.</param>
         /// <param name="pageSize">The int with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <returns>The iterable set of query results.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="query"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>

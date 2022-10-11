@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class EnrollmentGroupsClient
     {
         private const string ServiceName = "enrollmentGroups";
+        private const string EnrollmentsUriFormat = "{0}?{1}";
         private const string EnrollmentIdUriFormat = "{0}/{1}?{2}";
         private const string EnrollmentAttestationName = "attestationmechanism";
         private const string EnrollmentAttestationUriFormat = "{0}/{1}/{2}?{3}";
@@ -41,23 +42,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Create or update an enrollment group record.
+        /// Create or update an enrollment group.
         /// </summary>
         /// <remarks>
         /// This API creates a new enrollment group or update a existed one. All enrollment group in the Device
         /// Provisioning Service contains a unique identifier called enrollmentGroupId. If this API is called
         /// with an enrollmentGroupId that already exists, it will replace the existed enrollment group information
         /// by the new one. On the other hand, if the enrollmentGroupId does not exit, it will be created.
-        ///
-        /// To use the Device Provisioning Service API, you must include the follow package on your application.
-        /// <code>
-        /// // Include the following using to use the Device Provisioning Service APIs.
-        /// using Microsoft.Azure.Devices.Provisioning.Service;
-        /// </code>
         /// </remarks>
-        /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> object that describes the enrollment group that will be created of updated.</param>
+        /// <param name="enrollmentGroup">The enrollment group to create or update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
+        /// <returns>The created or updated enrollment group.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroup"/> is null.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
         /// If the service was not able to create or update the enrollment.
@@ -81,16 +76,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Retrieve the enrollment group information.
+        /// Get an enrollment group by its Id.
         /// </summary>
-        /// <remarks>
-        /// This method will return the enrollment group information for the provided enrollmentGroupId. It will retrieve
-        /// the correspondent enrollment group from the Device Provisioning Service, and return it in the
-        /// <see cref="EnrollmentGroup"/> object.
-        /// </remarks>
-        /// <param name="enrollmentGroupId">The string that identifies the enrollmentGroup. It cannot be null or empty.</param>
+        /// <param name="enrollmentGroupId">The Id of the enrollmentGroup.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="EnrollmentGroup"/> with the content of the enrollment group in the Provisioning Device Service.</returns>
+        /// <returns>The retrieved enrollment group.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
@@ -115,14 +105,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Delete the enrollment group information.
+        /// Delete an enrollment group.
         /// </summary>
-        /// <remarks>
-        /// This method will remove the enrollment group from the Device Provisioning Service using the
-        /// provided enrollmentGroupId. It will delete the enrollment group regardless the eTag.
-        ///
-        /// Note that delete the enrollment group will not remove the devices itself from the IoT hub.
-        /// </remarks>
         /// <param name="enrollmentGroupId">The string that identifies the enrollmentGroup. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
@@ -141,15 +125,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Delete the enrollment group information.
         /// </summary>
-        /// <remarks>
-        /// This method will remove the enrollment group from the Device Provisioning Service using the
-        /// provided <see cref="EnrollmentGroup"/> information. The Device Provisioning Service will care about the
-        /// enrollmentGroupId and the eTag on the enrollmentGroup. If you want to delete the enrollment regardless the
-        /// eTag, you can set the eTag="*" into the enrollmentGroup, or use the <see cref="DeleteAsync(string, CancellationToken)"/>.
-        /// passing only the enrollmentGroupId.
-        ///
-        /// Note that delete the enrollment group will not remove the Devices itself from the IotHub.
-        /// </remarks>
         /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> that identifies the enrollmentGroup. It cannot be null.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroup"/> is null.</exception>
@@ -182,7 +157,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="bulkOperationMode">The <see cref="BulkOperationMode"/> that defines the single operation to do over the enrollment group. It cannot be null. </param>
         /// <param name="enrollmentGroups">The collection of <see cref="EnrollmentGroup"/> that contains the description of each enrollment group. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A <see cref="BulkEnrollmentOperationResult"/> object with the result of operation for each enrollment.</returns>
+        /// <returns>An object with the result of each operation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroups"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroups"/> is an empty collection.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
@@ -198,7 +173,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ContractApiResponse contractApiResponse = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Post,
-                                ServiceName,
+                                GetEnrollmentUri(),
                                 null,
                                 BulkEnrollmentOperation.ToJson(bulkOperationMode, enrollmentGroups),
                                 null,
@@ -209,7 +184,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Factory to create an enrollment group query.
+        /// Create an enrollment group query.
         /// </summary>
         /// <remarks>
         /// This method will create a new enrollment group query on Device Provisioning Service and return it as
@@ -224,7 +199,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be null.</param>
         /// <param name="pageSize">The int with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <returns>The iterable set of query results.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="query"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>
@@ -236,11 +211,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Retrieve the enrollment group attestation information.
+        /// Get an enrollment group's attestation information.
         /// </summary>
-        /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
+        /// <param name="enrollmentGroupId">The Id of the enrollment group.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The <see cref="AttestationMechanism"/> associated with the provided <paramref name="enrollmentGroupId"/>.</returns>
+        /// <returns>The attestation mechanism of the enrollment group.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>
         /// <exception cref="DeviceProvisioningServiceException">
@@ -264,8 +239,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
         }
 
-        private static Uri GetEnrollmentUri(string enrollmentGroupId)
+        private static Uri GetEnrollmentUri(string enrollmentGroupId = "")
         {
+            if (string.IsNullOrWhiteSpace(enrollmentGroupId))
+            {
+                return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentsUriFormat, ServiceName, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            }
+
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
             return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentIdUriFormat, ServiceName, enrollmentGroupId, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }

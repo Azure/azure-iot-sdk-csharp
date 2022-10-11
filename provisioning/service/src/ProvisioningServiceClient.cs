@@ -19,16 +19,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private readonly IContractApiHttp _contractApiHttp;
 
         /// <summary>
-        /// Create a new instance of the ProvisioningServiceClient that exposes
-        /// the API to the Device Provisioning Service.
+        /// Create a new instance of this client.
         /// </summary>
         /// <remarks>
-        /// The Device Provisioning Service Client is created based on a Provisioning Connection string.
-        /// Once you create a Device Provisioning Service on Azure, you can get the connection string on the Azure portal.
+        /// This client is created using the connection string for your Device Provisioning Service instance.
         /// </remarks>
         /// <param name="connectionString">The connection string of the Device Provisioning Service.</param>
-        /// <param name="options"> The options that allow configuration of the provisioning service client instance during initialization.</param>
-        /// <returns>The ProvisioningServiceClient with the new instance of this object.</returns>
+        /// <param name="options">The optional client settings.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="connectionString"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="connectionString"/> is empty or white space.</exception>
         /// <exception cref="FormatException">If the provided <paramref name="connectionString"/> has incorrect value for host name.</exception>
