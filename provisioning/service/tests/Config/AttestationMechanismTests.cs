@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        public void AttestationMechanismConstructorJSONSucceedForX509()
+        public void AttestationMechanismConstructorJsonSucceedForX509()
         {
             // arrange
             AttestationMechanism attestationMechanism = JsonConvert.DeserializeObject<AttestationMechanism>(SampleX509AttestationJson);
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        public void AttestationMechanismConstructorJSONSucceedOnSymmetricKeyType()
+        public void AttestationMechanismConstructorJsonSucceedOnSymmetricKeyType()
         {
             // arrange
             string samplePrimaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("000000000000000000"));

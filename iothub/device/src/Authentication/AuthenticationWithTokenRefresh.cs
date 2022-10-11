@@ -115,9 +115,8 @@ namespace Microsoft.Azure.Devices.Client
         /// the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="iotHubConnectionCredentials"/> is null.</exception>
-        public virtual IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
+        public virtual void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
@@ -126,8 +125,6 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SharedAccessKeyName = null;
             iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
             iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
-
-            return iotHubConnectionCredentials;
         }
 
         /// <summary>

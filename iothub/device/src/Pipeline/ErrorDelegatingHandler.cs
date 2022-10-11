@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     else if (IsNetworkExceptionChain(ex))
                     {
-                        throw new IotHubClientException("Transient network error occurred, please retry.", IotHubClientErrorCode.NetworkErrors, ex);
+                        throw new IotHubClientException("Transient network error occurred; please retry.", IotHubClientErrorCode.NetworkErrors, ex);
                     }
                     else
                     {

@@ -60,13 +60,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
-        public override IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
+        public override void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            iotHubConnectionCredentials = base.Populate(iotHubConnectionCredentials);
+            base.Populate(ref iotHubConnectionCredentials);
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.ModuleId = ModuleId;
-            return iotHubConnectionCredentials;
         }
     }
 }

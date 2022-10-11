@@ -41,7 +41,8 @@ namespace Microsoft.Azure.Devices.Client
             HostName = gatewayHostName ?? iotHubHostName;
 
             AuthenticationMethod = authenticationMethod;
-            AuthenticationMethod.Populate(this);
+            IotHubConnectionCredentials iotHubConnectionCredentials = this;
+            AuthenticationMethod.Populate(ref iotHubConnectionCredentials);
             SetAuthenticationModel();
             SetTokenRefresherIfApplicable();
 
