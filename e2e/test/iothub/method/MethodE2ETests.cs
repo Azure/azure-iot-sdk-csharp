@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -247,14 +248,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_Method_OpenCloseOpenDeviceUnsubscribes_MqttTcp()
+        public async Task Method_OpenCloseOpenDeviceReceivesDirectMethods_MqttTcp()
         {
-            await OpenCloseOpenThenSendMethodAndRespondAsync(new IotHubClientMqttSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await OpenCloseOpenThenSendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task Method_Method_OpenCloseOpenDeviceReceivesMethodAndResponse_AmqpTcp()
+        public async Task Method_OpenCloseOpenDeviceReceivesDirectMethods_AmqpTcp()
         {
             await OpenCloseOpenThenSendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
@@ -533,8 +534,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 responseTimeout,
                 serviceClientTransportSettings);
 
+            Task testTimeoutTask = Task.Delay(TimeSpan.FromSeconds(20));
+
             // The device should still be able to receive direct methods even though it was re-opened.
-            await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
+            Task testTask = Task.WhenAll(serviceSendTask, methodReceivedTask);
+
+            Task completedTask = await Task.WhenAny(testTask, testTimeoutTask).ConfigureAwait(false);
+
+            if (completedTask == testTimeoutTask)
+            {
+                using (new AssertionScope())
+                {
+                    serviceSendTask.IsCompleted.Should().BeTrue("Time out waiting for the service client to get the direct method response.");
+                    methodReceivedTask.IsCompleted.Should().BeTrue("Timed out waiting on the device to receive the expected direct method.");
+                }
+            }
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
