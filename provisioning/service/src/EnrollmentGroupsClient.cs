@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This method will remove the enrollment group from the Device Provisioning Service using the
         /// provided enrollmentGroupId. It will delete the enrollment group regardless the eTag.
         ///
-        /// Note that delete the enrollment group will not remove the Devices itself from the IotHub.
+        /// Note that delete the enrollment group will not remove the devices itself from the IoT hub.
         /// </remarks>
         /// <param name="enrollmentGroupId">The string that identifies the enrollmentGroup. It cannot be null or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
