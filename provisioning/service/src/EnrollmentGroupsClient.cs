@@ -8,6 +8,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using System.Globalization;
 using System.Net;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -54,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// using Microsoft.Azure.Devices.Provisioning.Service;
         /// </code>
         /// </remarks>
-        /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
+        /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> object that describes the enrollment group that will be created of updated.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroup"/> is null.</exception>
@@ -169,6 +170,42 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     enrollmentGroup.ETag,
                     cancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Create, update or delete a set of enrollment groups.
+        /// </summary>
+        /// <remarks>
+        /// This API provide the means to do a single operation over multiple enrollment groups. A valid operation
+        /// is determined by <see cref="BulkOperationMode"/>, and can be 'create', 'update', 'updateIfMatchETag', or 'delete'.
+        /// </remarks>
+        /// <param name="bulkOperationMode">The <see cref="BulkOperationMode"/> that defines the single operation to do over the enrollment groupd. It cannot be null.</param>
+        /// <param name="enrollmentGroups">The collection of <see cref="EnrollmentGroup"/> that contains the description of each enrollment group. It cannot be null or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="BulkEnrollmentOperationResult"/> object with the result of operation for each enrollment.</returns>
+        /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroups"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroups"/> is an empty collection.</exception>
+        /// <exception cref="DeviceProvisioningServiceException">
+        /// If the client failed to send the request or service was not able to execute the bulk operation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        public async Task<BulkEnrollmentOperationResult> RunBulkEnrollmentOperationAsync(
+            BulkOperationMode bulkOperationMode,
+            IEnumerable<EnrollmentGroup> enrollmentGroups,
+            CancellationToken cancellationToken = default)
+        {
+            Argument.AssertNotNullOrEmpty(enrollmentGroups, nameof(enrollmentGroups));
+            ContractApiResponse contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Post,
+                                ServiceName,
+                                null,
+                                BulkEnrollmentOperation.ToJson(bulkOperationMode, enrollmentGroups),
+                                null,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+
+            return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
         }
 
         /// <summary>
