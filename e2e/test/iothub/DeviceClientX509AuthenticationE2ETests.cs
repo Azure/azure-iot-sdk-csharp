@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     X509FindType.FindByThumbprint,
                     certificate.Thumbprint,
                     false);
-                results.Count.Should().Be(0, $"{certificate.SubjectName} was not found");
+                results.Count.Should().NotBe(0, $"{certificate.SubjectName} was not found");
             }
 
             store?.Dispose();
