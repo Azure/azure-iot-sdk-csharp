@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="DeviceRegistrationStatesClient.CreateQuery(string, string, int, CancellationToken)">RegistrationStatus</see>
+    ///         <see cref="DeviceRegistrationStatesClient.CreateEnrollmentGroupQuery(string, string, int, CancellationToken)">RegistrationStatus</see>
     ///         </description>
     ///     </item>
     /// </list>
