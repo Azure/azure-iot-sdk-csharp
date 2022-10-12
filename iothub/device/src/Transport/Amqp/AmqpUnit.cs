@@ -234,7 +234,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, nameof(CloseAsync));
-
             }
         }
 
@@ -243,8 +242,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(Cleanup));
 
-            _amqpIotSession.Closed -= OnSessionDisconnected;
-            _amqpIotSession?.SafeClose();
+            if (_amqpIotSession != null)
+            {
+                _amqpIotSession.Closed -= OnSessionDisconnected;
+                _amqpIotSession.SafeClose();
+            }
             _amqpAuthenticationRefresher?.StopLoop();
 
             if (!IsPooled())
