@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Client
 {
     // Implementing SAS Token refresh based on a SharedAccessKey (SAK).
-    internal class ClientAuthenticationWithSakRefresh : ClientAuthenticationWithTokenRefresh
+    internal class ClientAuthenticationWithSakRefresh : AuthenticationWithTokenRefresh
     {
         private readonly string _sharedAccessKey;
         private readonly string _sharedAccessKeyName;

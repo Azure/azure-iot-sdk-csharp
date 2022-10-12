@@ -61,16 +61,16 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessKey);
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessKeyName);
             Assert.IsNotNull(iotHubConnectionCredentials.SharedAccessSignature);
-            Assert.IsTrue(iotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithToken);
+            Assert.IsTrue(iotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithSharedAccessSignature);
 
 
             //Act
             iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new ClientAuthenticationWithToken("SharedAccessSignature sr=iot-edge-1003.private.azure-devices-int.net%2Fdevices%2FAngelodTest%2Fmodules%2FAngeloModule&sig=dGVzdFN0cmluZzY=&se=4102358400", "Device1", "Module1"),
+                new ClientAuthenticationWithSharedAccessSignature("SharedAccessSignature sr=iot-edge-1003.private.azure-devices-int.net%2Fdevices%2FAngelodTest%2Fmodules%2FAngeloModule&sig=dGVzdFN0cmluZzY=&se=4102358400", "Device1", "Module1"),
                 fakeHostName);
 
             //Assert
-            Assert.IsTrue(iotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithToken);
+            Assert.IsTrue(iotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithSharedAccessSignature);
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessKey);
             Assert.AreEqual("SharedAccessSignature sr=iot-edge-1003.private.azure-devices-int.net%2Fdevices%2FAngelodTest%2Fmodules%2FAngeloModule&sig=dGVzdFN0cmluZzY=&se=4102358400", iotHubConnectionCredentials.SharedAccessSignature);
             Assert.AreEqual("Device1", iotHubConnectionCredentials.DeviceId);

@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {
-                return new ClientAuthenticationWithToken(
+                return new ClientAuthenticationWithSharedAccessSignature(
                     iotHubConnectionString.SharedAccessSignature,
                     iotHubConnectionString.DeviceId,
                     iotHubConnectionString.ModuleId);

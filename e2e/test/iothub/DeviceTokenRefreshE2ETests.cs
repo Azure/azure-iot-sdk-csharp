@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Target = $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}",
             };
 
-            var auth = new ClientAuthenticationWithToken(builder.ToSignature(), deviceId);
+            var auth = new ClientAuthenticationWithSharedAccessSignature(builder.ToSignature(), deviceId);
 
             using var deviceClient = new IotHubDeviceClient(iotHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
             Logger.Trace($"{deviceId}: Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
@@ -273,7 +273,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private class TestTokenRefresher : ClientAuthenticationWithTokenRefresh
+        private class TestTokenRefresher : AuthenticationWithTokenRefresh
         {
             private readonly string _key;
             private readonly IotHubClientTransportSettings _transportSettings;

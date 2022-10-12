@@ -1362,7 +1362,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             act.Should().Throw<OperationCanceledException>();
         }
 
-        private class TestDeviceAuthenticationWithTokenRefresh : ClientAuthenticationWithTokenRefresh
+        private class TestDeviceAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
         {
             // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
             public TestDeviceAuthenticationWithTokenRefresh(TimeSpan ttl, int refreshBuffer)

@@ -24,6 +24,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
+        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="moduleId">Module Identifier.</param>
         /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
         /// The default value is 1 hour.
@@ -31,13 +33,31 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="timeBufferPercentage">
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has <see cref="DefaultSasRenewalBufferPercentage"/> percent or less of its lifespan left.
-        ///</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
-        /// <paramref name="timeBufferPercentage"/> is outside the range 0-100.</exception>
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="deviceId"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown when <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if <paramref name="timeBufferPercentage"/> is outside the range 0-100.
+        /// </exception>
         public AuthenticationWithTokenRefresh(
+            string deviceId,
+            string moduleId = default,
             TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default)
         {
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            DeviceId = deviceId;
+
+            if (moduleId != null
+                && moduleId.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentException("Module Id cannot be white space.");
+            }
+
+            ModuleId = moduleId;
+
             if (suggestedTimeToLive < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
@@ -60,6 +80,16 @@ namespace Microsoft.Azure.Devices.Client
             Debug.Assert(IsExpiring);
             UpdateTimeBufferSeconds(_suggestedTimeToLive.TotalSeconds);
         }
+
+        /// <summary>
+        /// Gets the device Id.
+        /// </summary>
+        public string DeviceId { get; private set; }
+
+        /// <summary>
+        /// Gets the module Id.
+        /// </summary>
+        public string ModuleId { get; private set; }
 
         /// <summary>
         /// Gets a snapshot of the UTC token expiry time.
@@ -125,6 +155,8 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SharedAccessKeyName = null;
             iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
             iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
         }
 
         /// <summary>

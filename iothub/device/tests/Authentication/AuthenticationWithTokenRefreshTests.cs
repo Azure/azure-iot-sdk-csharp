@@ -129,6 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private class TestImplementation : AuthenticationWithTokenRefresh
         {
+            private const string DefaultDeviceId = "TestDeviceId";
             private const int DefaultBufferPercentage = 15;
             private static readonly TimeSpan DefaultTimeToLiveSeconds = TimeSpan.FromHours(1);
 
@@ -144,12 +145,12 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             public int ActualTimeToLive { get; set; } = 0;
 
-            public TestImplementation() : base(DefaultTimeToLiveSeconds, DefaultBufferPercentage)
+            public TestImplementation() : base(DefaultDeviceId, null, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
             {
             }
 
             public TestImplementation(TimeSpan suggestedTimeToLive, int timeBufferPercentage)
-                : base(suggestedTimeToLive, timeBufferPercentage)
+                : base(DefaultDeviceId, null, suggestedTimeToLive, timeBufferPercentage)
             {
             }
 
