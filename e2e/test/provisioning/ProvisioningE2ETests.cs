@@ -19,6 +19,7 @@ using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Tpm2Lib;
 using static Microsoft.Azure.Devices.E2ETests.Provisioning.ProvisioningServiceClientE2ETests;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
@@ -660,6 +661,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
             }
 
+            bool shouldCleanupEnrollment = groupId == null || groupId != TestConfiguration.Provisioning.X509GroupEnrollmentName;
+
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType);
             using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
                     attestationType,
@@ -727,14 +730,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
-                {
-                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
-                }
-                else
+                if (shouldCleanupEnrollment)
                 {
                     Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
                     await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId, Logger).ConfigureAwait(false);
+                }
+                else
+                {
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
 
                 if (security is SecurityProviderX509 x509Security)
@@ -782,26 +785,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId)
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
-            using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
-                    attestationType,
-                    enrollmentType,
-                    groupId,
-                    null,
-                    AllocationPolicy.Hashed,
-                    null,
-                    null)
-            .ConfigureAwait(false);
-
-            var provClient = ProvisioningDeviceClient.Create(
-                s_globalDeviceEndpoint,
-                InvalidIdScope,
-                security,
-                transport);
-
-            using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+            SecurityProvider security = null;
 
             try
             {
+                security = await CreateSecurityProviderFromNameAsync(
+                        attestationType,
+                        enrollmentType,
+                        groupId,
+                        null,
+                        AllocationPolicy.Hashed,
+                        null,
+                        null)
+                .ConfigureAwait(false);
+
+                var provClient = ProvisioningDeviceClient.Create(
+                    s_globalDeviceEndpoint,
+                    InvalidIdScope,
+                    security,
+                    transport);
+
+                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+
                 ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
 
@@ -809,7 +814,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                if (security == null
+                    || attestationType == AttestationMechanismType.X509
+                    && enrollmentType == EnrollmentType.Group)
                 {
                     Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
@@ -834,28 +841,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = "")
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
-            using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
-                        attestationType,
-                        enrollmentType,
-                        groupId,
-                        null,
-                        AllocationPolicy.Hashed,
-                        null,
-                        null)
-            .ConfigureAwait(false);
-
-            var provClient = ProvisioningDeviceClient.Create(
-                InvalidGlobalAddress,
-                TestConfiguration.Provisioning.IdScope,
-                security,
-                transport);
-
-            using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
-
-            Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
+            SecurityProvider security = null;
 
             try
             {
+                security = await CreateSecurityProviderFromNameAsync(
+                            attestationType,
+                            enrollmentType,
+                            groupId,
+                            null,
+                            AllocationPolicy.Hashed,
+                            null,
+                            null)
+                .ConfigureAwait(false);
+
+                var provClient = ProvisioningDeviceClient.Create(
+                    InvalidGlobalAddress,
+                    TestConfiguration.Provisioning.IdScope,
+                    security,
+                    transport);
+
+                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+
+                Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
+
                 ProvisioningTransportException exception = await Assert.
                 ThrowsExceptionAsync<ProvisioningTransportException>(() => provClient.RegisterAsync(cts.Token))
                 .ConfigureAwait(false);
@@ -864,7 +873,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                if (security == null
+                    || attestationType == AttestationMechanismType.X509
+                    && enrollmentType == EnrollmentType.Group)
                 {
                     Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
