@@ -87,25 +87,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets or sets the key associated with the device.
+        /// Gets or sets the Base64 formatted shared access key associated with the device.
         /// </summary>
-        [SuppressMessage(
-            "Performance",
-            "CA1819:Properties should not return arrays",
-            Justification = "Cannot change property types on public classes.")]
-        public byte[] Key
+        public string Key
         {
-            get => _key;
-            set => _key = value ?? throw new InvalidOperationException("Shared access key cannot be null.");
-        }
-
-        /// <summary>
-        /// Gets or sets the Base64 formatted key associated with the device.
-        /// </summary>
-        public string KeyAsBase64String
-        {
-            get => Convert.ToBase64String(Key);
-            set => SetKeyFromBase64String(value);
+            get => Convert.ToBase64String(_key);
+            set => SetKeyFromBase64String(value ?? throw new InvalidOperationException("Shared access key cannot be null."));
         }
 
         /// <summary>
@@ -118,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.ModuleId = ModuleId;
-            iotHubConnectionCredentials.SharedAccessKey = KeyAsBase64String;
+            iotHubConnectionCredentials.SharedAccessKey = Key;
             iotHubConnectionCredentials.SharedAccessKeyName = null;
             iotHubConnectionCredentials.SharedAccessSignature = null;
             iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
@@ -153,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client
         private void SetModuleId(string moduleId)
         {
             // The module Id is optional so we only check whether it is whitespace or not here.
-            if (moduleId != null 
+            if (moduleId != null
                 && moduleId.IsNullOrWhiteSpace())
             {
                 throw new InvalidOperationException("Module Id cannot be white space.");
