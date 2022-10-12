@@ -28,6 +28,8 @@ namespace Microsoft.Azure.Devices.Amqp
         private readonly AmqpSessionHandler _workerSession;
         private readonly bool _useWebSocketOnly;
         private readonly IotHubServiceClientOptions _options;
+        private readonly AmqpSettings _amqpSettings;
+        private readonly AmqpTransportInitiator _amqpTransportInitiator;
         private readonly IotHubConnectionProperties _credential;
         private readonly EventHandler _connectionLossHandler;
         private readonly string _linkAddress;
@@ -53,11 +55,34 @@ namespace Microsoft.Azure.Devices.Amqp
             _useWebSocketOnly = protocol == IotHubTransportProtocol.WebSocket;
             _linkAddress = linkAddress;
             _options = options;
+            _amqpSettings = CreateAmqpSettings();
             _connectionLossHandler = connectionLossHandler;
             _cbsSession = new AmqpCbsSessionHandler(_credential, connectionLossHandler);
             _workerSession = new AmqpSessionHandler(linkAddress, connectionLossHandler, messageHandler);
 
             _sendingDeliveryTag = 0;
+
+            if (_useWebSocketOnly)
+            {
+                _transport = CreateClientWebSocketTransport();
+            }
+            else
+            {
+                var tcpTransportSettings = new TcpTransportSettings
+                {
+                    Host = _credential.HostName,
+                    Port = AmqpsConstants.TcpPort,
+                };
+
+                var tlsTranpsortSettings = new TlsTransportSettings(tcpTransportSettings)
+                {
+                    TargetHost = _credential.HostName,
+                    Certificate = null,
+                    CertificateValidationCallback = _options.RemoteCertificateValidationCallback,
+                };
+
+                _amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, tlsTranpsortSettings);
+            }
         }
 
         /// <summary>
@@ -91,32 +116,18 @@ namespace Microsoft.Azure.Devices.Amqp
                     return;
                 }
 
-                AmqpSettings amqpSettings = CreateAmqpSettings();
-
                 if (_useWebSocketOnly)
                 {
-                    _transport = await CreateClientWebSocketTransportAsync(cancellationToken).ConfigureAwait(false);
+                    await ((ClientWebSocketTransport)_transport).OpenWebSocketAsync(cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    var tcpTransportSettings = new TcpTransportSettings
-                    {
-                        Host = _credential.HostName,
-                        Port = AmqpsConstants.TcpPort,
-                    };
-
-                    var tlsTranpsortSettings = new TlsTransportSettings(tcpTransportSettings)
-                    {
-                        TargetHost = _credential.HostName,
-                        Certificate = null,
-                        CertificateValidationCallback = _options.RemoteCertificateValidationCallback,
-                    };
-
-                    var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTranpsortSettings);
-
                     try
                     {
-                        _transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                        if (_transport != null)
+                        {
+                            _transport = await _amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                        }
                     }
                     catch (Exception ex) when (ex is not AuthenticationException)
                     {
@@ -138,7 +149,7 @@ namespace Microsoft.Azure.Devices.Amqp
                     IdleTimeOut = Convert.ToUInt32(_options.AmqpConnectionKeepAlive.TotalMilliseconds)
                 };
 
-                _connection = new AmqpConnection(_transport, amqpSettings, amqpConnectionSettings);
+                _connection = new AmqpConnection(_transport, _amqpSettings, amqpConnectionSettings);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"{nameof(AmqpConnection)} created.", nameof(OpenAsync));
@@ -241,31 +252,26 @@ namespace Microsoft.Azure.Devices.Amqp
             return amqpSettings;
         }
 
-        private async Task<ClientWebSocketTransport> CreateClientWebSocketTransportAsync(CancellationToken cancellationToken)
+        private ClientWebSocketTransport CreateClientWebSocketTransport()
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));
+                Logging.Enter(this, nameof(CreateClientWebSocketTransport));
 
             try
             {
-                var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.WebsocketPort}{AmqpsConstants.UriSuffix}");
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
-
                 ClientWebSocket websocket = CreateClientWebSocket();
 
-                await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
+                var websocketUri = new Uri($"{AmqpsConstants.Scheme}{_credential.HostName}:{AmqpsConstants.WebsocketPort}{AmqpsConstants.UriSuffix}");
 
                 // Dispose the created websocket if it was created by the SDK (because the user didn't provide one)
                 // or if the user did provide a client websocket, but they wanted it not to be disposed.
                 bool disposeWebSocket = _options.DisposeClientWebSocket || _options.ClientWebSocket == null;
-                return new ClientWebSocketTransport(websocket, disposeWebSocket);
+                return new ClientWebSocketTransport(websocket, websocketUri, disposeWebSocket);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));
+                    Logging.Exit(this, nameof(CreateClientWebSocketTransport));
             }
         }
 
@@ -326,9 +332,9 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <inheritdoc/>
         public void Dispose()
         {
-            if (_transport is ClientWebSocketTransport cwst)
+            if (_transport is IDisposable disposableTransport)
             {
-                cwst.Dispose();
+                disposableTransport.Dispose();
             }
 
             _openCloseSemaphore?.Dispose();

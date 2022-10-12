@@ -26,14 +26,16 @@ namespace Microsoft.Azure.Devices
         // Disposables
 
         private readonly ClientWebSocket _webSocket;
+        private readonly Uri _webSocketUri;
         private readonly bool _disposeClientWebSocket;
         private readonly CancellationTokenSource _writeCancellationTokenSource;
         private bool _isDisposed;
 
-        internal ClientWebSocketTransport(ClientWebSocket webSocket, bool disposeClientWebSocket)
+        internal ClientWebSocketTransport(ClientWebSocket webSocket, Uri webSocketUri, bool disposeClientWebSocket)
             : base("clientwebsocket")
         {
             _webSocket = webSocket;
+            _webSocketUri = webSocketUri;
             _disposeClientWebSocket = disposeClientWebSocket;
             _writeCancellationTokenSource = new CancellationTokenSource();
         }
@@ -401,6 +403,14 @@ namespace Microsoft.Azure.Devices
                 TaskScheduler.Default);
 
             return tcs.Task;
+        }
+
+        internal async Task OpenWebSocketAsync(CancellationToken cancellationToken)
+        {
+            if (_webSocket.State != WebSocketState.Open)
+            {
+                await _webSocket.ConnectAsync(_webSocketUri, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 }
