@@ -758,8 +758,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RetryOperationsAsync(
                         async () =>
                         {
-                            retrievedEnrollment = await provisioningServiceClient
-                                .GetIndividualEnrollmentAsync(auth.GetRegistrationId())
+                            retrievedEnrollment = await provisioningServiceClient.IndividualEnrollments
+                                .GetAsync(auth.GetRegistrationId())
                                 .ConfigureAwait(false);
                         },
                         s_provisioningServiceRetryPolicy,
@@ -781,8 +781,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RetryOperationsAsync(
                         async () =>
                         {
-                            updatedEnrollment = await provisioningServiceClient
-                                .CreateOrUpdateIndividualEnrollmentAsync(retrievedEnrollment)
+                            updatedEnrollment = await provisioningServiceClient.IndividualEnrollments
+                                .CreateOrUpdateAsync(retrievedEnrollment)
                                 .ConfigureAwait(false);
                         },
                         s_provisioningServiceRetryPolicy,
@@ -803,7 +803,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RetryOperationsAsync(
                         async () =>
                         {
-                            retrievedEnrollmentGroup = await provisioningServiceClient.GetEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                            retrievedEnrollmentGroup = await provisioningServiceClient.EnrollmentGroups.GetAsync(groupId).ConfigureAwait(false);
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
@@ -824,7 +824,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RetryOperationsAsync(
                         async () =>
                         {
-                            updatedEnrollmentGroup = await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(retrievedEnrollmentGroup).ConfigureAwait(false);
+                            updatedEnrollmentGroup = await provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(retrievedEnrollmentGroup).ConfigureAwait(false);
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,

@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// This object is used to send and receive individualEnrollment information to and from the provisioning service.
     ///
     /// To create or update an Enrollment on the provisioning service you should fill this object and call the
-    /// public API <see cref="ProvisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment, CancellationToken)"/>.
+    /// public API <see cref="IndividualEnrollmentsClient.CreateOrUpdateAsync(IndividualEnrollment, CancellationToken)"/>.
     ///
     /// The minimum information required by the provisioning service is the RegistrationId and the
     /// Attestation.

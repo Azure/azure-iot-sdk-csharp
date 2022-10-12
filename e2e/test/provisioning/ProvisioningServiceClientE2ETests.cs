@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
 
             // act
-            Func<Task> act = async () => await provisioningServiceClient.GetIndividualEnrollmentAsync("invalid-registration-id").ConfigureAwait(false);
+            Func<Task> act = async () => await provisioningServiceClient.IndividualEnrollments.GetAsync("invalid-registration-id").ConfigureAwait(false);
 
             // assert
             var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
 
             // act
-            Func<Task> act = async () => await provisioningServiceClient.GetEnrollmentGroupAsync("invalid-registration-id").ConfigureAwait(false);
+            Func<Task> act = async () => await provisioningServiceClient.EnrollmentGroups.GetAsync("invalid-registration-id").ConfigureAwait(false);
 
             // assert
             var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RetryOperationsAsync(
                         async () =>
                         {
-                            attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
+                            attestationMechanism = await provisioningServiceClient.IndividualEnrollments.GetAttestationAsync(individualEnrollment.RegistrationId);
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RetryOperationsAsync(
                         async () =>
                         {
-                            attestationMechanism = await provisioningServiceClient.GetEnrollmentGroupAttestationAsync(enrollmentGroup.EnrollmentGroupId);
+                            attestationMechanism = await provisioningServiceClient.EnrollmentGroups.GetAttestationAsync(enrollmentGroup.EnrollmentGroupId);
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
@@ -287,7 +287,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
             var queryString = "SELECT * FROM enrollments";
-            Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(queryString);
+            Query query = provisioningServiceClient.IndividualEnrollments.CreateQuery(queryString);
             while (query.HasNext())
             {
                 QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RetryOperationsAsync(
                         async () =>
                         {
-                            individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
+                            individualEnrollmentResult = await provisioningServiceClient.IndividualEnrollments.GetAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         .RetryOperationsAsync(
                             async () =>
                             {
-                                enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                                enrollmentGroupResult = await provisioningServiceClient.EnrollmentGroups.GetAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
@@ -499,8 +499,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        createdEnrollment = await provisioningServiceClient
-                            .CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment)
+                        createdEnrollment = await provisioningServiceClient.IndividualEnrollments
+                            .CreateOrUpdateAsync(individualEnrollment)
                             .ConfigureAwait(false);
                     },
                     s_provisioningServiceRetryPolicy,
@@ -557,7 +557,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                .RetryOperationsAsync(
                    async () =>
                    {
-                       createdEnrollmentGroup = await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(enrollmentGroup).ConfigureAwait(false);
+                       createdEnrollmentGroup = await provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup).ConfigureAwait(false);
                    },
                    s_provisioningServiceRetryPolicy,
                    s_retryableExceptions,
@@ -589,7 +589,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         .RetryOperationsAsync(
                             async () =>
                             {
-                                await dpsClient.DeleteIndividualEnrollmentAsync(registrationId).ConfigureAwait(false);
+                                await dpsClient.IndividualEnrollments.DeleteAsync(registrationId).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
@@ -603,7 +603,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         .RetryOperationsAsync(
                             async () =>
                             {
-                                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                                await dpsClient.EnrollmentGroups.DeleteAsync(groupId).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,

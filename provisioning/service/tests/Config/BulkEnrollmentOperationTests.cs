@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -16,14 +17,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private static readonly IndividualEnrollment s_individualEnrollment1 = new("regid1", new SymmetricKeyAttestation(s_primaryKey, s_secondaryKey));
         private static readonly IndividualEnrollment s_individualEnrollment2 = new("regid2", new SymmetricKeyAttestation(s_primaryKey, s_secondaryKey));
         private static readonly List<IndividualEnrollment> s_individualEnrollments = new() { s_individualEnrollment1, s_individualEnrollment2 };
-
-        [TestMethod]
-        public void BulkEnrollmentOperationToJsonThrowsOnInvalidParameters()
-        {
-            // arrange - act - assert
-            TestAssert.Throws<ArgumentException>(() => BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, null));
-            TestAssert.Throws<ArgumentException>(() => BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, new List<IndividualEnrollment>()));
-        }
 
         [TestMethod]
         public void BulkEnrollmentOperationConstructorSucceed()
@@ -57,7 +50,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            string bulkJson = BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, s_individualEnrollments);
+            IndividualEnrollmentBulkOperation operation = new IndividualEnrollmentBulkOperation()
+            {
+                Mode = BulkOperationMode.Create,
+                Enrollments = s_individualEnrollments,
+            };
+
+            string bulkJson = JsonConvert.SerializeObject(operation);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, bulkJson);
