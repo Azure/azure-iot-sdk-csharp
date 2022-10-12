@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices.Amqp
         private readonly bool _useWebSocketOnly;
         private readonly IotHubServiceClientOptions _options;
         private readonly AmqpSettings _amqpSettings;
-        private readonly AmqpTransportInitiator _amqpTransportInitiator;
         private readonly IotHubConnectionProperties _credential;
         private readonly EventHandler _connectionLossHandler;
         private readonly string _linkAddress;
@@ -39,6 +38,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
         private AmqpConnection _connection;
         private TransportBase _transport;
+        private AmqpTransportInitiator _amqpTransportInitiator;
 
         // The current delivery tag. Increments after each send operation to give a unique value.
         private int _sendingDeliveryTag;
@@ -61,28 +61,6 @@ namespace Microsoft.Azure.Devices.Amqp
             _workerSession = new AmqpSessionHandler(linkAddress, connectionLossHandler, messageHandler);
 
             _sendingDeliveryTag = 0;
-
-            if (_useWebSocketOnly)
-            {
-                _transport = CreateClientWebSocketTransport();
-            }
-            else
-            {
-                var tcpTransportSettings = new TcpTransportSettings
-                {
-                    Host = _credential.HostName,
-                    Port = AmqpsConstants.TcpPort,
-                };
-
-                var tlsTranpsortSettings = new TlsTransportSettings(tcpTransportSettings)
-                {
-                    TargetHost = _credential.HostName,
-                    Certificate = null,
-                    CertificateValidationCallback = _options.RemoteCertificateValidationCallback,
-                };
-
-                _amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, tlsTranpsortSettings);
-            }
         }
 
         /// <summary>
@@ -118,16 +96,29 @@ namespace Microsoft.Azure.Devices.Amqp
 
                 if (_useWebSocketOnly)
                 {
+                    _transport = CreateClientWebSocketTransport();
                     await ((ClientWebSocketTransport)_transport).OpenWebSocketAsync(cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
+                    var tcpTransportSettings = new TcpTransportSettings
+                    {
+                        Host = _credential.HostName,
+                        Port = AmqpsConstants.TcpPort,
+                    };
+
+                    var tlsTranpsortSettings = new TlsTransportSettings(tcpTransportSettings)
+                    {
+                        TargetHost = _credential.HostName,
+                        Certificate = null,
+                        CertificateValidationCallback = _options.RemoteCertificateValidationCallback,
+                    };
+
+                    _amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, tlsTranpsortSettings);
+
                     try
                     {
-                        if (_transport != null)
-                        {
-                            _transport = await _amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
-                        }
+                        _transport = await _amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (ex is not AuthenticationException)
                     {
@@ -191,6 +182,11 @@ namespace Microsoft.Azure.Devices.Amqp
                 if (_connection != null)
                 {
                     await _connection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                if (_transport is IDisposable disposableTransport)
+                {
+                    disposableTransport.Dispose();
                 }
             }
             finally
