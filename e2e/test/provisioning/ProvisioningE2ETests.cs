@@ -846,7 +846,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             string closeHostName = HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString);
 
-            var iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
+            var iotHubsToProvisionTo = new List<string> { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
             string expectedDestinationHub = "";
             if (closeHostName.Length > TestConfiguration.Provisioning.FarAwayIotHubHostName.Length)
             {
@@ -889,9 +889,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var customAllocationDefinition = new CustomAllocationDefinition
             {
                 WebhookUrl = TestConfiguration.Provisioning.CustomAllocationPolicyWebhook,
-                ApiVersion = "2019-03-31",
+                ApiVersion = "2021-10-01",
             };
-
 
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = null;

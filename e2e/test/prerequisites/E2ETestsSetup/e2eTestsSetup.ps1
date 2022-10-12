@@ -43,7 +43,7 @@ param(
 $startTime = (Get-Date)
 
 ########################################################################################################
-# Set error and warning preferences for the script to run
+# Set error and warning preferences for the script to run.
 ########################################################################################################
 
 $ErrorActionPreference = "Stop"
@@ -62,7 +62,7 @@ Write-Host "`EnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
 ###########################################################################
 # Connect-AzureSubscription - gets current Azure context or triggers a 
 # user log in to Azure. Selects the Azure subscription for creation of 
-# the virtual machine
+# the virtual machine.
 ###########################################################################
 
 Function Connect-AzureSubscription()
@@ -150,7 +150,7 @@ if (-not $isAdmin)
 }
 
 #################################################################################################
-# Set required parameters
+# Set required parameters.
 #################################################################################################
 
 $Region = $Region.Replace(' ', '')
@@ -165,7 +165,7 @@ $managedIdentityName = "$ResourceGroup-user-msi"
 $certificateHashAlgorithm = "SHA256"
 
 #################################################################################################
-# Make any special modifications required to generate resources for the DevOps test pipeline
+# Make any special modifications required to generate resources for the DevOps test pipeline.
 #################################################################################################
 
 if ($GenerateResourcesForTestDevOpsPipeline)
@@ -204,8 +204,8 @@ if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 }
 
 ########################################################################################################
-# Generate self-signed certs and to use in DPS and IoT hub
-# New certs will be generated each time you run the script as the script cleans up in the end
+# Generate self-signed certs and to use in DPS and IoT hub.
+# New certs will be generated each time you run the script as the script cleans up in the end.
 ########################################################################################################
 
 $subjectPrefix = "IoT Test";
@@ -224,12 +224,8 @@ $iotHubX509DevicePfxPath = "$PSScriptRoot/IotHubX509Device.pfx";
 $iotHubX509CertChainDeviceCommonName = "Save_iothubx509chaindevice1";
 $iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
 
-$dpsX509GroupEnrollmentDeviceCertCommonName = "xdevice1";
-$dpsX509GroupEnrollmentDevicePfxPath = "$PSScriptRoot/DpsGroupEnrollmentDevice.pfx";
-$dpsGroupX509CertChainPath = "$PSScriptRoot/DpsGroupCertChain.p7b";
-
 ############################################################################################################################
-# Cleanup old certs and files that can cause a conflict
+# Cleanup old certs and files that can cause a conflict.
 ############################################################################################################################
 
 CleanUp-Certs
@@ -317,7 +313,7 @@ Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509Chai
 $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509ChainDevicPfxPath -AsByteStream));
 
 ########################################################################################################
-# Install latest version of az cli
+# Install latest version of az cli.
 ########################################################################################################
 
 if ($InstallDependencies)
@@ -330,7 +326,7 @@ if ($InstallDependencies)
 Check-AzureCliVersion
 
 ########################################################################################################
-# Install chocolatey and docker
+# Install chocolatey and docker.
 ########################################################################################################
 
 if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
@@ -341,7 +337,7 @@ if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
 }
 
 #######################################################################################################
-# Install azure iot extension
+# Install azure iot extension.
 #######################################################################################################
 
 if ($InstallDependencies)
@@ -351,7 +347,7 @@ if ($InstallDependencies)
 }
 
 ######################################################################################################
-# Setup azure context
+# Setup azure context.
 ######################################################################################################
 
 $azureContext = Connect-AzureSubscription
@@ -372,8 +368,7 @@ if ($rgExists -eq "False")
 $resourceGroupId = az group show -n $ResourceGroup --query id --out tsv
 
 #######################################################################################################
-# Invoke-Deployment - Uses the .\.json template to
-# create the necessary resources to run E2E tests.
+# Invoke-Deployment - Uses the .\.json template to create the necessary resources to run E2E tests.
 #######################################################################################################
 
 # Create a unique deployment name
@@ -411,7 +406,7 @@ if ($LastExitCode -ne 0)
 Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), resource group ($ResourceGroup)."
 
 #########################################################################################################
-# Get propreties to setup the config file for Environment variables
+# Get propreties to setup the config file for Environment variables.
 #########################################################################################################
 
 Write-Host "`nGetting generated names and secrets from ARM template output."
@@ -428,7 +423,7 @@ $instrumentationKey = az deployment group show -g $ResourceGroup -n $deploymentN
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
 
 #################################################################################################################################################
-# Configure an AAD app to authenticate Log Analytics Workspace, if specified
+# Configure an AAD app to authenticate Log Analytics Workspace, if specified.
 #################################################################################################################################################
 
 if ($EnableIotHubSecuritySolution)
@@ -471,7 +466,7 @@ $msiResourceId = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/p
 az role assignment create --assignee $msiPrincipalId --role 'Storage Blob Data Contributor' --scope $resourceGroupId --output none
 
 ##################################################################################################################################
-# Granting the IoT hub system identity storage blob contributor access on the resoruce group
+# Granting the IoT hub system identity storage blob contributor access on the resoruce group.
 ##################################################################################################################################
 
 Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
@@ -479,7 +474,7 @@ $systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.
 az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId --output none
 
 ##################################################################################################################################
-# Uploading root CA certificate to IoT hub and verifying
+# Uploading root CA certificate to IoT hub and verifying.
 ##################################################################################################################################
 
 $certExists = az iot hub certificate list -g $ResourceGroup --hub-name $iotHubName --query "value[?name=='$hubUploadCertificateName']" --output tsv
@@ -513,14 +508,14 @@ if ($isVerified -eq 'false')
 }
 
 ##################################################################################################################################
-# Fetch the iothubowner policy details
+# Fetch the iothubowner policy details.
 ##################################################################################################################################
 
 $iothubownerSasPolicy = "iothubowner"
 $iothubownerSasPrimaryKey = az iot hub policy show --hub-name $iotHubName --name $iothubownerSasPolicy --query 'primaryKey'
 
 ##################################################################################################################################
-# Create device in IoT hub that uses a certificate signed by intermediate certificate
+# Create device in IoT hub that uses a certificate signed by intermediate certificate.
 ##################################################################################################################################
 
 $iotHubCertChainDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubX509CertChainDeviceCommonName'].deviceId" --output tsv
@@ -532,7 +527,7 @@ if (-not $iotHubCertChainDevice)
 }
 
 ##################################################################################################################################
-# Uploading certificate to DPS, verifying, and creating enrollment groups
+# Uploading certificate to DPS, verifying, and creating enrollment groups.
 ##################################################################################################################################
 
 $dpsIdScope = az iot dps show -g $ResourceGroup --name $dpsName --query 'properties.idScope' --output tsv
@@ -577,7 +572,7 @@ Write-Host "`nAdding group enrollment $groupEnrollmentId."
 az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $dpsUploadCertificateName --output none
 
 ##################################################################################################################################
-#Enable Azure Security Solutions, if specified
+#Enable Azure Security Solutions, if specified.
 ##################################################################################################################################
 
 if ($EnableIotHubSecuritySolution)
@@ -602,7 +597,7 @@ if ($EnableIotHubSecuritySolution)
 }
 
 ##################################################################################################################################
-# Create the IoT devices and modules that are used by the .NET samples
+# Create the IoT devices and modules that are used by the .NET samples.
 ##################################################################################################################################
 
 if ($GenerateResourcesForSamplesDevOpsPipeline)
@@ -649,7 +644,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
 }
 
 ##################################################################################################################################
-# Create the DPS enrollments that are used by the .NET samples
+# Create the DPS enrollments that are used by the .NET samples.
 ##################################################################################################################################
 
 if ($GenerateResourcesForSamplesDevOpsPipeline)
@@ -668,7 +663,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
 }
 
 ###################################################################################################################################
-# Store all secrets in a KeyVault - Values will be pulled down from here to configure environment variables
+# Store all secrets in a KeyVault - Values will be pulled down from here to configure environment variables.
 ###################################################################################################################################
 
 $dpsEndpoint = "global.azure-devices-provisioning.net"
@@ -765,7 +760,7 @@ foreach ($kvp in $keyvaultKvps.GetEnumerator())
 }
 
 ###################################################################################################################################
-# Run docker containers for proxy
+# Run docker containers for proxy.
 ###################################################################################################################################
 
 if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
@@ -778,7 +773,7 @@ if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
 }
 
 ############################################################################################################################
-# Notify user that openssl is required for running E2E tests
+# Notify user that openssl is required for running E2E tests.
 # openssl is currently unavailable as an official release via Chocolatey, so it is advised to perform a manual install from a secured source.
 ############################################################################################################################
 
