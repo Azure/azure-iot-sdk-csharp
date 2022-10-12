@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task EnumerateRegistrationsInGroupAsync(string queryText, EnrollmentGroup group)
         {
             Console.WriteLine($"\nCreating a query for registrations within group '{group.EnrollmentGroupId}'...");
-            Query registrationQuery = _provisioningServiceClient.DeviceRegistrationStates.CreateQuery(queryText, group.EnrollmentGroupId);
+            Query registrationQuery = _provisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(queryText, group.EnrollmentGroupId);
             Console.WriteLine($"\nQuerying the next registrations within group '{group.EnrollmentGroupId}'...");
             QueryResult registrationQueryResult = await registrationQuery.NextAsync();
         }
