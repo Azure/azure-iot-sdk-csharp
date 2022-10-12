@@ -43,9 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             _provisioningTransportHandler = _options.TransportSettings is ProvisioningClientMqttSettings
                 ? new ProvisioningTransportHandlerMqtt(_options)
-                : _options.TransportSettings is ProvisioningClientAmqpSettings
-                    ? new ProvisioningTransportHandlerAmqp(_options)
-                    : new ProvisioningTransportHandlerHttp(_options);
+                : new ProvisioningTransportHandlerAmqp(_options);
 
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;

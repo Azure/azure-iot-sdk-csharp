@@ -40,6 +40,8 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | `DeviceClient` | `IotHubDeviceClient` |
 | `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
 | `MessageResponse` | `MessageAcknowledgement` |
+| `SetRetryPolicy(...)` | `IoTHubClientOptions.RetryPolicy` |
+| `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
 
 #### Other notable breaking changes
 
@@ -55,12 +57,15 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - The file upload method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
 - Cloud-to-device messages can be received by calling `SetMessageHandlerAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
 - Several callback handler set methods and definitions have changed, losing the `userContext` parameter.
+- The exponential back-off retry policy has updated parameters and logic.
 
 #### Notable additions
 
 - The device and module clients now have a property (e.g., `IotHubDeviceClient.ConnectionStatusInfo`)with the latest connection status information on it, eliminating the need for a connection status callback method to cache the latest values.
 - Remote certificate validation is no natively longer supported for AMQP web socket connections. Supprted workaround is to provide a client web socket instance in the client options.
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
+- The library now includes IncrementalDelayRetryStrategy and FixedDelayRetryStrategy.
+- The client can now be re-opened after it has been closed. It cannot be re-opened after it has been disposed, though. Also, subscriptions do not carry over when the client is re-opened.
 
 #### ModuleClient
 
@@ -73,6 +78,11 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 - See changes to `DeviceClient`.
 - Reduced access levels to classes and methods that were never intended to be public where possible.
+
+#### Notable additions
+
+- The client can now be re-opened after it has been closed. It cannot be re-opened after it has been disposed, though. Also, subscriptions do not carry over when the client is re-opened.
+
 
 ### IoT hub service client
 
@@ -175,6 +185,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - The security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
 - The previous way of providing transport level settings (`ProvisioningTransportHandler`) has been replaced with `ProvisioningClientTransportSettings`.
 - TPM support removed. The library used for TPM operations is broken on Linux and support for it is being shutdown. We'll reconsider how to support HSM.
+- HTTP has been removed as a transport option to keep the provisioning device SDK consistent with IoT hub device SDK.
 
 #### Notable additions
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
@@ -187,6 +198,20 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 |:---|:---|
 | `ProvisioningServiceClient.CreateFromConnectionString(...)` | `new ProvisioningServiceClient()` |
 | `QuerySpecification` | Type removed from public API. Methods take the parameters directly. |
+| `ProvisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment, ...)` | `ProvisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(IndividualEnrollment, ...)` |
+| `ProvisioningServiceClient.GetIndividualEnrollmentAsync(IndividualEnrollment, ...)` | `ProvisioningServiceClient.IndividualEnrollments.GetAsync(IndividualEnrollment, ...)` |
+| `ProvisioningServiceClient.DeleteIndividualEnrollmentAsync(...)` | `ProvisioningServiceClient.IndividualEnrollments.DeleteAsync(...)` |
+| `ProvisioningServiceClient.GetIndividualEnrollmentAttestationAsync(...)` | `ProvisioningServiceClient.IndividualEnrollments.GetAttestationAsync(...)` |
+| `ProvisioningServiceClient.CreateIndividualEnrollmentQuery(...)` | `ProvisioningServiceClient.IndividualEnrollments.CreateQuery(...)` |
+| `ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(...)` | `ProvisioningServiceClient.IndividualEnrollments.RunBulkEnrollmentOperationAsync(...)` |
+| `ProvisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroup, ...)` | `ProvisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(EnrollmentGroup, ...)` |
+| `ProvisioningServiceClient.GetEnrollmentGroupAsync(EnrollmentGroup, ...)` | `ProvisioningServiceClient.EnrollmentGroups.GetAsync(EnrollmentGroup, ...)` |
+| `ProvisioningServiceClient.DeleteEnrollmentGroupAsync(...)` | `ProvisioningServiceClient.EnrollmentGroups.DeleteAsync(...)` |
+| `ProvisioningServiceClient.GetEnrollmentGroupAttestationAsync(...)` | `ProvisioningServiceClient.EnrollmentGroups.GetAttestationAsync(...)` |
+| `ProvisioningServiceClient.CreateEnrollmentGroupQuery(...)` | `ProvisioningServiceClient.EnrollmentGroups.CreateQuery(...)` |
+| `ProvisioningServiceClient.GetDeviceRegistrationStateAsync(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.GetAsync(...)` |
+| `ProvisioningServiceClient.DeleteDeviceRegistrationStateAsync(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.DeleteAsync(...)` |
+| `ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(...)` |
 
 #### Other notable breaking changes
 

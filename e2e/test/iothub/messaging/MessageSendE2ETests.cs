@@ -142,6 +142,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
         }
 
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Message_DeviceOpenCloseOpenSendSingleMessage_Amqp(IotHubClientTransportProtocol protocol)
+        {
+            await OpenCloseOpenThenSendSingleMessage(TestDeviceType.Sasl, new IotHubClientAmqpSettings(protocol)).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Message_DeviceOpenCloseOpenSendSingleMessage_Mqtt(IotHubClientTransportProtocol protocol)
+        {
+            await OpenCloseOpenThenSendSingleMessage(TestDeviceType.Sasl, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
+        }
+
         private async Task Message_DeviceSendSingleLargeMessageAsync(TestDeviceType testDeviceType, IotHubClientTransportSettings transportSettings)
         {
             await SendSingleMessage(testDeviceType, transportSettings, LargeMessageSizeInBytes).ConfigureAwait(false);
@@ -208,6 +226,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             OutgoingMessage testMessage = ComposeD2cTestMessage(Logger, out string _, out string _);
 
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+        }
+
+        private async Task OpenCloseOpenThenSendSingleMessage(TestDeviceType type, IotHubClientTransportSettings transportSettings, int messageSize = 0)
+        {
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, type).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+
+            // Close and re-open the client under test.
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            // The re-opened client under test should still be able to send telemetry.
+            await SendSingleMessageAsync(deviceClient, Logger, messageSize).ConfigureAwait(false);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         public static OutgoingMessage ComposeD2cTestMessage(MsTestLogger logger, out string payload, out string p1Value)

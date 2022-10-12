@@ -22,8 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningClientTransportProtocol Protocol { get; protected set; }
 
         /// <summary>
-        /// The web proxy that will be used to connect to IoT hub using a web socket connection for AMQP, MQTT, or when using the
-        /// HTTP protocol.
+        /// The web proxy that will be used to connect to IoT hub using a web socket connection for AMQP or MQTT protocol.
         /// </summary>
         /// <remarks>
         /// If you wish to bypass OS-specified proxy settings, set this to <see cref="GlobalProxySelection.GetEmptyWebProxy()"/>.
@@ -67,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <remarks>
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// <para>
-        /// This feature is only applicable for HTTP, MQTT over TCP, MQTT over web socket, AMQP
+        /// This feature is only applicable for MQTT over TCP, MQTT over web socket, AMQP
         /// over TCP. AMQP web socket communication does not support this feature. For users who want
         /// this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
         /// instance with the desired callback and other web socket options (e.g., proxy, keep-alive etc..) set.

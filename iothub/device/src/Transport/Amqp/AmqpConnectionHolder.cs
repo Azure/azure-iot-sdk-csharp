@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             AdditionalClientInformation additionalClientInformation,
             IotHubClientAmqpSettings amqpSettings,
             Func<DirectMethodRequest, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
+            Action<AmqpMessage, string, IotHubClientException> twinMessageListener,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {
@@ -72,7 +73,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Enter(this, _amqpIotConnection, nameof(Shutdown));
 
             _amqpAuthenticationRefresher?.StopLoop();
-            _amqpIotConnection?.SafeClose();
+            if (_amqpIotConnection != null)
+            {
+                _amqpIotConnection.Closed -= OnConnectionClosed;
+                _amqpIotConnection.SafeClose();
+            }
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, _amqpIotConnection, nameof(Shutdown));

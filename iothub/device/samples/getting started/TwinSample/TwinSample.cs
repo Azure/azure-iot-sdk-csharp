@@ -30,17 +30,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Cancellation requested; will exit.");
             };
 
+            await _deviceClient.OpenAsync(cts.Token);
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync);
 
             Console.WriteLine("Retrieving twin...");
-            Twin twin = await _deviceClient.GetTwinAsync();
+            ClientTwin twin = await _deviceClient.GetTwinAsync();
 
             Console.WriteLine("\tInitial twin value received:");
-            Console.WriteLine($"\t{twin.ToJson()}");
+            Console.WriteLine($"\tDesired properties: {twin.RequestsFromService.GetSerializedString()}");
+            Console.WriteLine($"\tReported properties: {twin.ReportedByClient.GetSerializedString()}");
 
             Console.WriteLine("Sending sample start time as reported property");
-            TwinCollection reportedProperties = new TwinCollection();
-            reportedProperties["DateTimeLastAppLaunch"] = DateTime.UtcNow;
+            var reportedProperties = new ReportedPropertyCollection
+            {
+                ["DateTimeLastAppLaunch"] = DateTime.UtcNow
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
@@ -58,12 +62,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(null);
         }
 
-        private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties)
+        private async Task OnDesiredPropertyChangedAsync(DesiredPropertyCollection desiredProperties)
         {
-            var reportedProperties = new TwinCollection();
+            var reportedProperties = new ReportedPropertyCollection();
 
             Console.WriteLine("\tDesired properties requested:");
-            Console.WriteLine($"\t{desiredProperties.ToJson()}");
+            Console.WriteLine($"\t{desiredProperties.GetSerializedString()}");
 
             // For the purpose of this sample, we'll blindly accept all twin property write requests.
             foreach (KeyValuePair<string, object> desiredProperty in desiredProperties)

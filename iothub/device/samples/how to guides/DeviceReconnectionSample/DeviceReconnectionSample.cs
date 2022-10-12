@@ -64,6 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _clientOptions = new(parameters.GetHubTransportSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+                RetryPolicy = _customRetryPolicy,
             };
         }
 
@@ -99,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             if (ShouldClientBeInitialized())
             {
-                // Allow a single thread to dispose and initialize the client instance.
+                // Allow a single thread to close and re-open the client instance.
                 await s_initSemaphore.WaitAsync(cancellationToken);
                 try
                 {
@@ -107,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     {
                         _logger.LogDebug($"Attempting to initialize the client instance, current status={s_deviceClient?.ConnectionStatusInfo.Status}");
 
-                        // If the device client instance has been previously initialized, close and dispose it.
+                        // If the device client instance has been previously initialized, close it.
                         if (s_deviceClient != null)
                         {
                             try
@@ -115,12 +116,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 await s_deviceClient.CloseAsync(cancellationToken);
                             }
                             catch (IotHubClientException) { } // if the previous token is now invalid, this call may fail
-                            s_deviceClient.Dispose();
+                        }
+                        else
+                        {
+                            // Otherwise instantiate it for the first time.
+                            s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         }
 
-                        s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         s_deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandlerAsync;
-                        s_deviceClient.SetRetryPolicy(_customRetryPolicy);
                         _logger.LogDebug("Initialized the client instance.");
 
                         // Force connection now.
@@ -146,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // It is not generally a good practice to have async void methods, however, IotHubDeviceClient.ConnectionStatusChangeHandlerAsync() event handler signature
         // has a void return type. As a result, any operation within this block will be executed unmonitored on another thread.
         // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock before attempting to
-        // initialize or dispose the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
+        // initialize or close the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
         private async void ConnectionStatusChangeHandlerAsync(ConnectionStatusInfo connectionInfo)
         {
             ConnectionStatus status = connectionInfo.Status;
@@ -194,29 +197,29 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetTwinAndDetectChangesAsync(CancellationToken cancellationToken)
         {
-            Twin twin = await s_deviceClient.GetTwinAsync(s_appCancellation.Token);
-            _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
+            ClientTwin twin = await s_deviceClient.GetTwinAsync(s_appCancellation.Token);
+            _logger.LogInformation($"Device retrieving twin values: {twin.RequestsFromService.GetSerializedString()}");
 
-            TwinCollection twinCollection = twin.Properties.Desired;
-            long serverDesiredPropertyVersion = twinCollection.Version;
+            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
+            long serverDesiredPropertyVersion = desiredProperties.Version;
 
             // Check if the desired property version is outdated on the local side.
             if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
             {
                 _logger.LogDebug($"The desired property version cached on local is changing from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
-                await HandleTwinUpdateNotificationsAsync(twinCollection);
+                await HandleTwinUpdateNotificationsAsync(desiredProperties);
             }
         }
 
-        private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest)
+        private async Task HandleTwinUpdateNotificationsAsync(DesiredPropertyCollection twinUpdateRequest)
         {
             CancellationToken cancellationToken = s_appCancellation.Token;
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                var reportedProperties = new TwinCollection();
+                var reportedProperties = new ReportedPropertyCollection();
 
-                _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.ToJson()}");
+                _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.GetSerializedString()}");
 
                 // For the purpose of this sample, we'll blindly accept all twin property write requests.
                 foreach (KeyValuePair<string, object> desiredProperty in twinUpdateRequest)

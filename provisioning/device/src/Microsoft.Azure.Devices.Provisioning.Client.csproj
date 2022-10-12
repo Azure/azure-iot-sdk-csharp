@@ -32,7 +32,7 @@
     <PackageIcon>nugetIcon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageTags>Microsoft Azure IoT Provisioning Device Client .NET AMQP MQTT HTTP</PackageTags>
+    <PackageTags>Microsoft Azure IoT Provisioning Device Client .NET AMQP MQTT</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

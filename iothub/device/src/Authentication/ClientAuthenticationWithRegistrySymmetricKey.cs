@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices.Client
 
         private string _deviceId;
         private string _moduleId;
-        private byte[] _key;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -55,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
             }
 
-            SetKeyFromBase64String(key);
+            Key = key;
             SetDeviceId(deviceId);
             SetModuleId(moduleId);
 
@@ -87,60 +86,25 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets or sets the key associated with the device.
+        /// Gets or sets the Base64-formatted shared access key associated with the device.
         /// </summary>
-        [SuppressMessage(
-            "Performance",
-            "CA1819:Properties should not return arrays",
-            Justification = "Cannot change property types on public classes.")]
-        public byte[] Key
-        {
-            get => _key;
-            set => _key = value ?? throw new InvalidOperationException("Shared access key cannot be null.");
-        }
-
-        /// <summary>
-        /// Gets or sets the Base64 formatted key associated with the device.
-        /// </summary>
-        public string KeyAsBase64String
-        {
-            get => Convert.ToBase64String(Key);
-            set => SetKeyFromBase64String(value);
-        }
+        public string Key { get; set; }
 
         /// <summary>
         /// Populates an <see cref="IotHubConnectionCredentials"/> instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
-        public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
+        public void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.ModuleId = ModuleId;
-            iotHubConnectionCredentials.SharedAccessKey = KeyAsBase64String;
+            iotHubConnectionCredentials.SharedAccessKey = Key;
             iotHubConnectionCredentials.SharedAccessKeyName = null;
             iotHubConnectionCredentials.SharedAccessSignature = null;
             iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
             iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
-
-            return iotHubConnectionCredentials;
-        }
-
-        private void SetKeyFromBase64String(string key)
-        {
-            if (key.IsNullOrWhiteSpace())
-            {
-                throw new InvalidOperationException("Shared access key cannot be null or white space.");
-            }
-
-            if (!StringValidationHelper.IsBase64String(key))
-            {
-                throw new InvalidOperationException("Shared access key must be base64 encoded.");
-            }
-
-            _key = Convert.FromBase64String(key);
         }
 
         private void SetDeviceId(string deviceId)
@@ -156,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client
         private void SetModuleId(string moduleId)
         {
             // The module Id is optional so we only check whether it is whitespace or not here.
-            if (moduleId != null 
+            if (moduleId != null
                 && moduleId.IsNullOrWhiteSpace())
             {
                 throw new InvalidOperationException("Module Id cannot be white space.");

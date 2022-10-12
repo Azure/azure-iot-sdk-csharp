@@ -50,6 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(SafeClose));
 
+            _sendingAmqpLink.Closed -= SendingAmqpLinkClosed;
             _sendingAmqpLink.SafeClose();
 
             if (Logging.IsEnabled)
@@ -194,14 +195,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(
             string correlationId,
-            TwinCollection reportedProperties,
+            ReportedPropertyCollection reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(SendTwinPatchMessageAsync));
 
-            string body = JsonConvert.SerializeObject(reportedProperties);
-            var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+            var bodyStream = new MemoryStream(reportedProperties.GetObjectBytes());
 
             using var amqpMessage = AmqpMessage.Create(bodyStream, true);
             amqpMessage.Properties.CorrelationId = correlationId;

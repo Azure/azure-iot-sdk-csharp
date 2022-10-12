@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
 
-        private Func<TwinCollection, Task> _desiredPropertyUpdateCallback;
+        private Func<DesiredPropertyCollection, Task> _desiredPropertyUpdateCallback;
 
         private protected readonly IotHubClientOptions _clientOptions;
 
@@ -43,7 +43,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
-
 
             _clientOptions = iotHubClientOptions != null
                 ? iotHubClientOptions.Clone()
@@ -66,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
                 MessageEventCallback = OnMessageReceivedAsync,
             };
 
-            InnerHandler = pipelineBuilder.Build(PipelineContext);
+            InnerHandler = pipelineBuilder.Build(PipelineContext, _clientOptions.RetryPolicy);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, _clientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
@@ -98,25 +97,13 @@ namespace Microsoft.Azure.Devices.Client
         private protected PipelineContext PipelineContext { get; private set; }
 
         /// <summary>
-        /// Sets the retry policy used in the operation retries.
-        /// The change will take effect after any in-progress operations.
-        /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is
-        /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c></param>
-        public void SetRetryPolicy(IRetryPolicy retryPolicy)
-        {
-            RetryDelegatingHandler retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
-            if (retryDelegatingHandler == null)
-            {
-                throw new NotSupportedException();
-            }
-
-            retryDelegatingHandler.SetRetryPolicy(retryPolicy);
-        }
-
-        /// <summary>
         /// Open the client instance. Must be done before any operation can begin.
         /// </summary>
+        /// <remarks>
+        /// This client can be re-opened after it has been closed, but cannot be re-opened after it has
+        /// been disposed. Subscriptions to cloud to device messages/twin/methods do not persist when
+        /// re-opening a client.
+        /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task OpenAsync(CancellationToken cancellationToken = default)
@@ -296,12 +283,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The twin object for the current client.</returns>
-        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
+        public async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
-            return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
+            return await InnerHandler.GetTwinAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -311,13 +297,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The new version of the updated twin if the update was successful.</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task<long> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken = default)
+        public async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
             cancellationToken.ThrowIfCancellationRequested();
 
-            // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
-            return await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+            reportedProperties.PayloadConvention = _clientOptions.PayloadConvention;
+            return await InnerHandler.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -335,7 +321,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<TwinCollection, Task> callback,
+            Func<DesiredPropertyCollection, Task> callback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -373,7 +359,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Close the client instance.
         /// </summary>
         /// <remarks>
-        /// The instance can be re-opened after closing and before disposing.
+        /// The instance can be re-opened after closing and before disposing. However, subscriptions
+        /// to cloud to device messages/twin/methods do not persist when re-opening a client.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -481,7 +468,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal void OnDesiredStatePatchReceived(TwinCollection patch)
+        internal void OnDesiredStatePatchReceived(DesiredPropertyCollection patch)
         {
             if (_desiredPropertyUpdateCallback == null)
             {
@@ -489,7 +476,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if (Logging.IsEnabled)
-                Logging.Info(this, patch.ToJson(), nameof(OnDesiredStatePatchReceived));
+                Logging.Info(this, patch.GetSerializedString(), nameof(OnDesiredStatePatchReceived));
 
             _ = _desiredPropertyUpdateCallback.Invoke(patch);
         }
@@ -577,7 +564,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 // The SDK should only receive messages when the user sets a listener, so this should never happen.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, "Received a message when no listener was set. Abandoning message.", nameof(OnMessageReceivedAsync));
+                    Logging.Error(this, $"Received a message when no listener was set. Abandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
 
                 return MessageAcknowledgement.Abandon;
             }

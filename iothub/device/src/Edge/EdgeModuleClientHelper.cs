@@ -18,7 +18,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal static class EdgeModuleClientHelper
     {
-        private const string DefaultApiVersion = "2018-06-28";
         private const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
         private const string IotHubHostNameVariableName = "IOTEDGE_IOTHUBHOSTNAME";
         private const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
@@ -63,12 +62,12 @@ namespace Microsoft.Azure.Devices.Client
                 throw new InvalidOperationException($"Unsupported authentication scheme. Supported scheme is {SasTokenAuthScheme}.");
             }
 
-            ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
+            ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, ClientApiVersionHelper.ApiVersionLatest);
 
             // TODO: environment variables need to be added to accept SasTokenTimeToLive and SasTokenRenewalBuffer.
-            // These values can then be passed on to ModuleAuthenticationWithHsm (internal class).
+            // These values can then be passed on to EdgeModuleAuthenticationWithHsm (internal class).
 
-            var authMethod = new ModuleAuthenticationWithHsm(
+            var authMethod = new EdgeModuleAuthenticationWithHsm(
                 signatureProvider,
                 deviceId,
                 moduleId,
@@ -116,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!string.IsNullOrEmpty(gateway))
             {
-                IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
+                IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), ClientApiVersionHelper.ApiVersionLatest).ConfigureAwait(false);
                 certificateValidator = CreateCertificateValidator(certs, options);
             }
 

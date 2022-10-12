@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            Func<TwinCollection, Task> myCallback = (p) => Task.CompletedTask;
+            Func<DesiredPropertyCollection, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            Func<TwinCollection, Task> myCallback = (p) => Task.CompletedTask;
+            Func<DesiredPropertyCollection, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
@@ -60,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            Func<TwinCollection, Task> myCallback = (p) => Task.CompletedTask;
+            Func<DesiredPropertyCollection, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
@@ -87,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinGetAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+                GetTwinAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -97,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            var props = new TwinCollection();
+            var props = new ReportedPropertyCollection();
 
             // act
             await client.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
@@ -105,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinPatchAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+                UpdateReportedPropertiesAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -128,11 +129,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            var myPatch = new TwinCollection();
+            var myPatch = new DesiredPropertyCollection(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
+            {
+                PayloadConvention = DefaultPayloadConvention.Instance,
+            };
 
             int callCount = 0;
-            TwinCollection receivedPatch = null;
-            Func<TwinCollection, Task> myCallback = (p) =>
+            DesiredPropertyCollection receivedPatch = null;
+            Func<DesiredPropertyCollection, Task> myCallback = (p) =>
             {
                 callCount++;
                 receivedPatch = p;

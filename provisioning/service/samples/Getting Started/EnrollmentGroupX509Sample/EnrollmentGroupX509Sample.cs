@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nCreating a query for enrollmentGroups...");
             string queryText = "SELECT * FROM enrollmentGroups";
-            Query query = _provisioningServiceClient.CreateEnrollmentGroupQuery(queryText);
+            Query query = _provisioningServiceClient.EnrollmentGroups.CreateQuery(queryText);
             while (query.HasNext())
             {
                 Console.WriteLine("\nQuerying the next enrollmentGroups...");
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task EnumerateRegistrationsInGroupAsync(string queryText, EnrollmentGroup group)
         {
             Console.WriteLine($"\nCreating a query for registrations within group '{group.EnrollmentGroupId}'...");
-            Query registrationQuery = _provisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(queryText, group.EnrollmentGroupId);
+            Query registrationQuery = _provisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(queryText, group.EnrollmentGroupId);
             Console.WriteLine($"\nQuerying the next registrations within group '{group.EnrollmentGroupId}'...");
             QueryResult registrationQueryResult = await registrationQuery.NextAsync();
         }
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Console.WriteLine(enrollmentGroup);
 
             Console.WriteLine("\nAdding new enrollmentGroup...");
-            EnrollmentGroup enrollmentGroupResult = await _provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(enrollmentGroup);
+            EnrollmentGroup enrollmentGroupResult = await _provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup);
             Console.WriteLine("\nEnrollmentGroup created with success.");
             Console.WriteLine(enrollmentGroupResult);
         }
@@ -70,14 +70,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task GetEnrollmentGroupInfoAsync()
         {
             Console.WriteLine("\nGetting the enrollmentGroup information...");
-            EnrollmentGroup getResult = await _provisioningServiceClient.GetEnrollmentGroupAsync(EnrollmentGroupId);
+            EnrollmentGroup getResult = await _provisioningServiceClient.EnrollmentGroups.GetAsync(EnrollmentGroupId);
             Console.WriteLine(getResult);
         }
 
         public async Task DeleteEnrollmentGroupAsync()
         {
             Console.WriteLine("\nDeleting the enrollmentGroup...");
-            await _provisioningServiceClient.DeleteEnrollmentGroupAsync(EnrollmentGroupId);
+            await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(EnrollmentGroupId);
         }
     }
 }

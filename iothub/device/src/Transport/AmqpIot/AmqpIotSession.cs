@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal void SafeClose()
         {
+            _amqpSession.Closed -= AmqpSessionClosed;
             _amqpSession.SafeClose();
         }
 

@@ -41,7 +41,8 @@ namespace Microsoft.Azure.Devices.Client
             HostName = gatewayHostName ?? iotHubHostName;
 
             AuthenticationMethod = authenticationMethod;
-            AuthenticationMethod.Populate(this);
+            IotHubConnectionCredentials iotHubConnectionCredentials = this;
+            AuthenticationMethod.Populate(ref iotHubConnectionCredentials);
             SetAuthenticationModel();
             SetTokenRefresherIfApplicable();
 
@@ -397,10 +398,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionString.SharedAccessKeyName != null)
             {
-                return new DeviceAuthenticationWithSharedAccessPolicyKey(
-                    iotHubConnectionString.DeviceId,
+                return new ClientAuthenticationWithSharedAccessPolicy(
                     iotHubConnectionString.SharedAccessKeyName,
-                    iotHubConnectionString.SharedAccessKey);
+                    iotHubConnectionString.SharedAccessKey,
+                    iotHubConnectionString.DeviceId,
+                    iotHubConnectionString.ModuleId);
             }
             else if (iotHubConnectionString.SharedAccessKey != null)
             {

@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(
                 TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
-            Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
+            Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery(
                 "SELECT * FROM enrollmentGroups");
 
             Func<Task> act = async () => await q.NextAsync();
@@ -77,21 +77,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
             }
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateHttp_Fails()
-        {
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientHttpSettings());
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
-
-            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
-#if NET472
-                Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#else
-            Assert.IsInstanceOfType(error.And.InnerException.InnerException, typeof(AuthenticationException));
-#endif
         }
 
         [LoggedTestMethod]

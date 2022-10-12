@@ -100,10 +100,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                     try
                     {
-                        bool containsProperty = patch.Contains(expectedPropName);
-                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDevice.Id} to be {expectedPropName} but was: {patch.ToJson()}");
-
-                        string propertyValue = patch[expectedPropName];
+                        bool containsProperty = patch.TryGetValue(expectedPropName, out string propertyValue);
+                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDevice.Id} to be {expectedPropName} but was: {patch.GetSerializedString()}");
                         propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
                     }
                     catch (Exception ex)
