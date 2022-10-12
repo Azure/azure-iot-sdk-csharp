@@ -1124,8 +1124,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (sendReportedPropertiesUpdate)
             {
                 Logger.Trace("DeviceClient updating desired properties.");
-                Client.Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                await iotClient.UpdateReportedPropertiesAsync(new Client.TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
+                ClientTwin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
+                var propertiesToReport = new ReportedPropertyCollection
+                {
+                    [new Guid().ToString()] = new Guid().ToString(),
+                };
+                await iotClient.UpdateReportedPropertiesAsync(propertiesToReport).ConfigureAwait(false);
             }
 
             Logger.Trace("DeviceClient CloseAsync.");

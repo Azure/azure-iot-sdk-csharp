@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             AdditionalClientInformation additionalClientInformation,
             IotHubClientAmqpSettings amqpSettings,
             Func<DirectMethodRequest, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
+            Action<AmqpMessage, string, IotHubClientException> twinMessageListener,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {

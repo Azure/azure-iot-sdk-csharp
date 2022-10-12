@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
 
-        private Func<TwinCollection, Task> _desiredPropertyUpdateCallback;
+        private Func<DesiredPropertyCollection, Task> _desiredPropertyUpdateCallback;
 
         private protected readonly IotHubClientOptions _clientOptions;
 
@@ -295,12 +295,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The twin object for the current client.</returns>
-        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
+        public async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
-            return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
+            return await InnerHandler.GetTwinAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -310,13 +309,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The new version of the updated twin if the update was successful.</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task<long> UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken = default)
+        public async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
             cancellationToken.ThrowIfCancellationRequested();
 
-            // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
-            return await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+            reportedProperties.PayloadConvention = _clientOptions.PayloadConvention;
+            return await InnerHandler.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -334,7 +333,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<TwinCollection, Task> callback,
+            Func<DesiredPropertyCollection, Task> callback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -480,7 +479,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal void OnDesiredStatePatchReceived(TwinCollection patch)
+        internal void OnDesiredStatePatchReceived(DesiredPropertyCollection patch)
         {
             if (_desiredPropertyUpdateCallback == null)
             {
@@ -488,7 +487,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if (Logging.IsEnabled)
-                Logging.Info(this, patch.ToJson(), nameof(OnDesiredStatePatchReceived));
+                Logging.Info(this, patch.GetSerializedString(), nameof(OnDesiredStatePatchReceived));
 
             _ = _desiredPropertyUpdateCallback.Invoke(patch);
         }

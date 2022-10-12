@@ -1,9 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -485,10 +486,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                 ValidateDeviceRegistrationResult(result);
 
-                #pragma warning disable CA2000 // Dispose objects before losing scope
+#pragma warning disable CA2000 // Dispose objects before losing scope
                 // The certificate instance referenced in the ClientAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
                 Client.IAuthenticationMethod authMethod = CreateAuthenticationMethodFromAuthenticationProvider(auth, result.DeviceId);
-                #pragma warning restore CA2000 // Dispose objects before losing scope
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
                 await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, transportProtocolSupportsTwinOperations).ConfigureAwait(false);
 
@@ -497,7 +498,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                 ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
                 await ConfirmDeviceWorksAfterReprovisioningAsync(result, authMethod, transportSettings, reprovisionPolicy, transportProtocolSupportsTwinOperations).ConfigureAwait(false);
-
             }
             finally
             {
@@ -552,27 +552,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (transportProtocolSupportsTwinOperations)
             {
                 Logger.Trace("DeviceClient updating reported property.");
-                Client.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-                await deviceClient.UpdateReportedPropertiesAsync(new Client.TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
+                ClientTwin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                var propertiesToReport = new ReportedPropertyCollection
+                {
+                    [new Guid().ToString()] = new Guid().ToString(),
+                };
+                await deviceClient.UpdateReportedPropertiesAsync(propertiesToReport).ConfigureAwait(false);
             }
 
             Logger.Trace("DeviceClient CloseAsync.");
             await deviceClient.CloseAsync().ConfigureAwait(false);
-        }
-
-        private static async Task ConfirmExpectedDeviceCapabilities(
-            DeviceRegistrationResult result,
-            Client.IAuthenticationMethod auth,
-            DeviceCapabilities capabilities)
-        {
-            if (capabilities != null)
-            {
-                //hardcoding amqp since http does not support twin, but tests that call into this may use http
-                using var deviceClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
-                //Confirm that the device twin reflects what the enrollment dictated
-                Client.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-                twin.Capabilities.IotEdge.Should().Be(capabilities.IsIotEdge);
-            }
         }
 
         private async Task<AuthenticationProvider> CreateAuthenticationProviderFromNameAsync(
@@ -896,7 +885,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // from previous hub's records.
             if (transportProtocolSupportsTwinOperations)
             {
-                Client.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                ClientTwin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
 
                 // Reprovision
                 if (reprovisionPolicy.UpdateHubAssignment)
@@ -908,8 +897,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         // as a part of ConfirmRegisteredDeviceWorks.
                         // On device creation the twin reported property version starts at 1. For this scenario the reported property update
                         // operation should increment the version to 2.
-                        twin.Properties.Reported.Count.Should().Be(1);
-                        twin.Properties.Reported.Version.Should().Be(2);
+                        twin.ReportedByClient.Count().Should().Be(1);
+                        twin.ReportedByClient.Version.Should().Be(2);
                         result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.DeviceDataMigrated);
                     }
                     // Reset to initial configuration
@@ -918,8 +907,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         // The reprovisioned twin should not have an entry for the reprorted property updated previously in the test
                         // as a part of ConfirmRegisteredDeviceWorks.
                         // On device creation the twin reported property version starts at 1.
-                        twin.Properties.Reported.Count.Should().Be(0);
-                        twin.Properties.Reported.Version.Should().Be(1);
+                        twin.ReportedByClient.Count().Should().Be(0);
+                        twin.ReportedByClient.Version.Should().Be(1);
                         result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.DeviceDataReset);
                     }
                 }
@@ -930,8 +919,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     // as a part of ConfirmRegisteredDeviceWorks.
                     // On device creation the twin reported property version starts at 1. For this scenario the reported property update
                     // operation should increment the version to 2.
-                    twin.Properties.Reported.Count.Should().Be(1);
-                    twin.Properties.Reported.Version.Should().Be(2);
+                    twin.ReportedByClient.Count().Should().Be(1);
+                    twin.ReportedByClient.Version.Should().Be(2);
                     result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.InitialAssignment);
                 }
             }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly IotHubClientAmqpSettings _amqpSettings;
 
         private readonly Func<DirectMethodRequest, Task> _onMethodCallback;
-        private readonly Action<Twin, string, TwinCollection, IotHubClientException> _twinMessageListener;
+        private readonly Action<AmqpMessage, string, IotHubClientException> _twinMessageListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _onMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
         private readonly Action _onUnitDisconnected;
@@ -69,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<DirectMethodRequest, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageCallback,
+            Action<AmqpMessage, string, IotHubClientException> twinMessageCallback,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {
@@ -234,7 +235,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, nameof(CloseAsync));
-
             }
         }
 
@@ -872,7 +872,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         internal async Task SendTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
             string correlationId,
-            TwinCollection reportedProperties,
+            ReportedPropertyCollection reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -988,19 +988,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection, IotHubClientException ex = default)
+        private void OnDesiredPropertyReceived(AmqpMessage responseFromService, string correlationId, IotHubClientException ex = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, twin, nameof(OnDesiredPropertyReceived));
+                Logging.Enter(this, responseFromService, nameof(OnDesiredPropertyReceived));
 
             try
             {
-                _twinMessageListener?.Invoke(twin, correlationId, twinCollection, ex);
+                _twinMessageListener?.Invoke(responseFromService, correlationId, ex);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, twin, nameof(OnDesiredPropertyReceived));
+                    Logging.Exit(this, responseFromService, nameof(OnDesiredPropertyReceived));
             }
         }
 

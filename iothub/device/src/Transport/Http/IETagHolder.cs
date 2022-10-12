@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Client.Transport
 {
     /// <summary>
-    /// ETag Holder.
+    /// ETag Holder Interface
     /// </summary>
-    public class ETagHolder : IETagHolder
+    public interface IETagHolder
     {
         /// <summary>
-        /// ETag value.
+        /// ETag value
         /// </summary>
-        public string ETag { get; set; }
+        string ETag { get; set; }
     }
 }

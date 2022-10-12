@@ -331,10 +331,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        public override async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
+                Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));
 
             try
             {
@@ -343,7 +343,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-                            return await base.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
+                            return await base.GetTwinAsync(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
@@ -351,14 +351,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(SendTwinGetAsync));
+                    Logging.Exit(this, cancellationToken, nameof(GetTwinAsync));
             }
         }
 
-        public override async Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+                Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
 
             try
             {
@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-                            return await base.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+                            return await base.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+                    Logging.Exit(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
             }
         }
 
