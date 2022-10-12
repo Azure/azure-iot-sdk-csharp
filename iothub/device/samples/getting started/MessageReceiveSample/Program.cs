@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class Program
     {
         /// <summary>
-        /// A sample to illustrate how to send telemetry messages.
+        /// A sample to illustrate how to receive cloud-to-device messages sent to a device client instance.
         /// </summary>
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.

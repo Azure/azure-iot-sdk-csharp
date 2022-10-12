@@ -7,11 +7,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace SimulatedDevice
+namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
     /// This is the code that sends messages to the IoT Hub for testing the routing as defined
@@ -28,9 +27,9 @@ namespace SimulatedDevice
     ///   * It will read the file, decode the first row in the file, and write it out to a new file
     ///       in ASCII so you can view it.
     /// </summary>
-    internal class Program
+    public class Program
     {
-        private static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             // Parse application parameters
             Parameters parameters = null;
@@ -70,8 +69,12 @@ namespace SimulatedDevice
                 //  This is set in the tutorial that goes with this sample:
                 //  http://docs.microsoft.com/azure/iot-hub/tutorial-routing
 
-                Console.WriteLine("Routing Tutorial: Simulated device\n");
-                using var deviceClient = DeviceClient.CreateFromConnectionString(parameters.PrimaryConnectionString);
+                Console.WriteLine("Routing Tutorial: Simulated device");
+                var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
+
+                using var deviceClient = new IotHubDeviceClient(
+                    parameters.PrimaryConnectionString,
+                    options);
 
                 using var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (sender, eventArgs) =>
@@ -85,17 +88,18 @@ namespace SimulatedDevice
 
                 try
                 {
+                    await deviceClient.OpenAsync(cts.Token);
                     await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
                 }
                 catch (OperationCanceledException) { }
-                await deviceClient.CloseAsync(cts.Token);
+                await deviceClient.CloseAsync();
             }
         }
 
         /// <summary>
         /// Send message to the Iot hub. This generates the object to be sent to the hub in the message.
         /// </summary>
-        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, CancellationToken token)
+        private static async Task SendDeviceToCloudMessagesAsync(IotHubDeviceClient deviceClient, CancellationToken token)
         {
             double minTemperature = 20;
             double minHumidity = 60;
@@ -134,16 +138,7 @@ namespace SimulatedDevice
                     humidity = currentHumidity,
                     pointInfo = infoString
                 };
-                // serialize the telemetry data and convert it to JSON.
-                string telemetryDataString = JsonConvert.SerializeObject(telemetryDataPoint);
-
-                // Encode the serialized object using UTF-8 so it can be parsed by IoT Hub when
-                // processing messaging rules.
-                using var message = new Message(Encoding.UTF8.GetBytes(telemetryDataString))
-                {
-                    ContentEncoding = "utf-8",
-                    ContentType = "application/json",
-                };
+                var message = new OutgoingMessage(telemetryDataPoint);
 
                 // Add one property to the message.
                 message.Properties.Add("level", levelValue);
@@ -154,7 +149,7 @@ namespace SimulatedDevice
                     await deviceClient.SendEventAsync(message, token);
 
                     // Print out the message.
-                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, telemetryDataString);
+                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, JsonConvert.SerializeObject(telemetryDataPoint));
                 }
                 catch (OperationCanceledException) { }
 

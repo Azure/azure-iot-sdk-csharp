@@ -4,6 +4,12 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
+
+    <!--
+    Warning for using pre-release nugets can be ignored since this sample 
+    can't target a main release yet.
+    -->
+    <NoWarn>NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.38.1" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="2.0.0-preview001" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">

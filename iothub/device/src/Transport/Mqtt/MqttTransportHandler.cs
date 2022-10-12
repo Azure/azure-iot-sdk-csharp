@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly MqttQualityOfServiceLevel _receivingQualityOfService;
 
         private readonly Func<DirectMethodRequest, Task> _methodListener;
-        private readonly Action<TwinCollection> _onDesiredStatePatchListener;
+        private readonly Action<DesiredPropertyCollection> _onDesiredStatePatchListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _messageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
@@ -547,7 +547,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        public override async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
         {
             if (!_isSubscribedToTwinResponses)
             {
@@ -621,7 +621,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (!_isSubscribedToTwinResponses)
             {
@@ -632,12 +632,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = Guid.NewGuid().ToString();
             string topic = string.Format(TwinReportedPropertiesPatchTopicFormat, requestId);
 
-            string body = JsonConvert.SerializeObject(reportedProperties);
+            byte[] body = reportedProperties.GetObjectBytes();
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithQualityOfServiceLevel(_publishingQualityOfService)
-                .WithPayload(Encoding.UTF8.GetBytes(body))
+                .WithPayload(body)
                 .Build();
 
             try
@@ -945,10 +945,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
 
-            string patch = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
-            TwinCollection twinCollection = JsonConvert.DeserializeObject<TwinCollection>(patch);
+            string patch = _payloadConvention.PayloadEncoder.ContentEncoding.GetString(receivedEventArgs.ApplicationMessage.Payload);
+            Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(patch);
+            var desiredPropertyPatch = new DesiredPropertyCollection(desiredPropertyPatchDictionary)
+            {
+                PayloadConvention = _payloadConvention,
+            };
 
-            _onDesiredStatePatchListener.Invoke(twinCollection);
+            _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
         }
 
         private void HandleTwinResponse(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
@@ -958,7 +962,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out long version))
             {
-                string payloadString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload ?? new byte[0]);
+                byte[] payloadBytes = receivedEventArgs.ApplicationMessage.Payload ?? Array.Empty<byte>();
 
                 if (_getTwinResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<GetTwinResponse> getTwinCompletion))
                 {
@@ -970,7 +974,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         var getTwinResponse = new GetTwinResponse
                         {
                             Status = status,
-                            Message = payloadString,
+                            Message = Encoding.UTF8.GetString(payloadBytes), // The error message is encoded based on service contract, which is UTF-8.
                         };
 
                         getTwinCompletion.TrySetResult(getTwinResponse);
@@ -979,15 +983,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         try
                         {
-                            var twin = new Twin
+                            // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
+                            // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
+                            // For this reason, we use NewtonSoft Json serializer for this deserialization.
+                            ClientTwinProperties clientTwinProperties = JsonConvert
+                                .DeserializeObject<ClientTwinProperties>(
+                                    _payloadConvention
+                                    .PayloadEncoder
+                                    .ContentEncoding
+                                    .GetString(payloadBytes));
+
+                            var twinDesiredProperties = new DesiredPropertyCollection(clientTwinProperties.Desired)
                             {
-                                Properties = JsonConvert.DeserializeObject<TwinProperties>(payloadString),
+                                PayloadConvention = _payloadConvention,
+                            };
+
+                            var twinReportedProperties = new ReportedPropertyCollection(clientTwinProperties.Reported, true)
+                            {
+                                PayloadConvention = _payloadConvention,
                             };
 
                             var getTwinResponse = new GetTwinResponse
                             {
                                 Status = status,
-                                Twin = twin,
+                                Twin = new ClientTwin(twinDesiredProperties, twinReportedProperties),
                             };
 
                             getTwinCompletion.TrySetResult(getTwinResponse);
@@ -995,7 +1014,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         catch (JsonReaderException ex)
                         {
                             if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{payloadString}'");
+                                Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{Encoding.UTF8.GetString(payloadBytes)}'");
 
                             getTwinCompletion.TrySetException(ex);
                         }
@@ -1011,7 +1030,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         Status = status,
                         Version = version,
-                        Message = payloadString,
+                        Message = Encoding.UTF8.GetString(payloadBytes), // This will only ever contain an error message which is encoded based on service contract (UTF-8).
                     };
 
                     patchTwinCompletion.TrySetResult(patchTwinResponse);

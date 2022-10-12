@@ -197,29 +197,29 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetTwinAndDetectChangesAsync(CancellationToken cancellationToken)
         {
-            Twin twin = await s_deviceClient.GetTwinAsync(s_appCancellation.Token);
-            _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
+            ClientTwin twin = await s_deviceClient.GetTwinAsync(s_appCancellation.Token);
+            _logger.LogInformation($"Device retrieving twin values: {twin.RequestsFromService.GetSerializedString()}");
 
-            TwinCollection twinCollection = twin.Properties.Desired;
-            long serverDesiredPropertyVersion = twinCollection.Version;
+            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
+            long serverDesiredPropertyVersion = desiredProperties.Version;
 
             // Check if the desired property version is outdated on the local side.
             if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
             {
                 _logger.LogDebug($"The desired property version cached on local is changing from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
-                await HandleTwinUpdateNotificationsAsync(twinCollection);
+                await HandleTwinUpdateNotificationsAsync(desiredProperties);
             }
         }
 
-        private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest)
+        private async Task HandleTwinUpdateNotificationsAsync(DesiredPropertyCollection twinUpdateRequest)
         {
             CancellationToken cancellationToken = s_appCancellation.Token;
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                var reportedProperties = new TwinCollection();
+                var reportedProperties = new ReportedPropertyCollection();
 
-                _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.ToJson()}");
+                _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.GetSerializedString()}");
 
                 // For the purpose of this sample, we'll blindly accept all twin property write requests.
                 foreach (KeyValuePair<string, object> desiredProperty in twinUpdateRequest)

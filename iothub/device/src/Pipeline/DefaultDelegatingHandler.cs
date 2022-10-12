@@ -126,16 +126,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.DisableTwinPatchAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        public virtual Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
+            return NextHandler?.GetTwinAsync(cancellationToken) ?? Task.FromResult((ClientTwin)null);
         }
 
-        public virtual Task<long> SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
+        public virtual Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0L);
+            return NextHandler?.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0L);
         }
 
         public virtual bool IsUsable => NextHandler?.IsUsable ?? true;
