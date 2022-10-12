@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private string _deviceId;
         private string _moduleId;
-        private byte[] _key;
+        private string _key;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
             }
 
-            SetKeyFromBase64String(key);
+            SetKey(key);
             SetDeviceId(deviceId);
             SetModuleId(moduleId);
 
@@ -87,12 +87,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets or sets the Base64 formatted shared access key associated with the device.
+        /// Gets or sets the Base64-formatted shared access key associated with the device.
         /// </summary>
         public string Key
         {
-            get => Convert.ToBase64String(_key);
-            set => SetKeyFromBase64String(value ?? throw new InvalidOperationException("Shared access key cannot be null."));
+            get => _key;
+            set => SetKey(value);
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
         }
 
-        private void SetKeyFromBase64String(string key)
+        private void SetKey(string key)
         {
             if (key.IsNullOrWhiteSpace())
             {
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new InvalidOperationException("Shared access key must be base64 encoded.");
             }
 
-            _key = Convert.FromBase64String(key);
+            _key = key;
         }
 
         private void SetDeviceId(string deviceId)
