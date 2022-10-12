@@ -40,6 +40,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 | `DeviceClient` | `IotHubDeviceClient` |
 | `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
 | `MessageResponse` | `MessageAcknowledgement` |
+| `SetRetryPolicy(...)` | `IoTHubClientOptions.RetryPolicy` |
 | `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
 
 #### Other notable breaking changes

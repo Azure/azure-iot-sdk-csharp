@@ -64,6 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _clientOptions = new(parameters.GetHubTransportSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+                RetryPolicy = _customRetryPolicy,
             };
         }
 
@@ -123,7 +124,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         }
 
                         s_deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandlerAsync;
-                        s_deviceClient.SetRetryPolicy(_customRetryPolicy);
                         _logger.LogDebug("Initialized the client instance.");
 
                         // Force connection now.
