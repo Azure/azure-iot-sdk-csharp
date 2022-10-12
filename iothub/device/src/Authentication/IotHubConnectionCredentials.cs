@@ -332,13 +332,11 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Shared access key
-            if (string.IsNullOrWhiteSpace(SharedAccessKey))
+            if (!string.IsNullOrWhiteSpace(SharedAccessKey))
             {
-                throw new FormatException("Shared access key cannot be null or white space.");
+                // Check that the shared access key supplied is a base64 string
+                Convert.FromBase64String(SharedAccessKey);
             }
-
-            // Check that the shared access key supplied is a base64 string
-            Convert.FromBase64String(SharedAccessKey);
 
             // Shared access signature
             if (!string.IsNullOrWhiteSpace(SharedAccessSignature))
