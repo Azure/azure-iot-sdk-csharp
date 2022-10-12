@@ -795,7 +795,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         AllocationPolicy.Hashed,
                         null,
                         null)
-                .ConfigureAwait(false);
+                    .ConfigureAwait(false);
 
                 var provClient = ProvisioningDeviceClient.Create(
                     s_globalDeviceEndpoint,
@@ -844,14 +844,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             try
             {
                 security = await CreateSecurityProviderFromNameAsync(
-                            attestationType,
-                            enrollmentType,
-                            groupId,
-                            null,
-                            AllocationPolicy.Hashed,
-                            null,
-                            null)
-                .ConfigureAwait(false);
+                        attestationType,
+                        enrollmentType,
+                        groupId,
+                        null,
+                        AllocationPolicy.Hashed,
+                        null,
+                        null)
+                    .ConfigureAwait(false);
 
                 var provClient = ProvisioningDeviceClient.Create(
                     InvalidGlobalAddress,

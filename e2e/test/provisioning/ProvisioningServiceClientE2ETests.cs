@@ -232,7 +232,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         AllocationPolicy.Static,
                         null,
                         null,
-                        null);
+                        null)
+                    .ConfigureAwait(false);
 
                 AttestationMechanism attestationMechanism = null;
                 await RetryOperationHelper
