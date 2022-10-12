@@ -239,19 +239,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         null,
                         null,
                         null,
-                        Logger);
+                        Logger)
+                    .ConfigureAwait(false);
 
                 AttestationMechanism attestationMechanism = null;
                 await RetryOperationHelper
-                                .RetryOperationsAsync(
-                                    async () =>
-                                    {
-                                        attestationMechanism = await provisioningServiceClient.GetEnrollmentGroupAttestationAsync(enrollmentGroup.EnrollmentGroupId);
-                                    },
-                                    s_provisioningServiceRetryPolicy,
-                                    s_retryableExceptions,
-                                    Logger)
-                                .ConfigureAwait(false);
+                    .RetryOperationsAsync(
+                        async () =>
+                        {
+                            attestationMechanism = await provisioningServiceClient.GetEnrollmentGroupAttestationAsync(enrollmentGroup.EnrollmentGroupId);
+                        },
+                        s_provisioningServiceRetryPolicy,
+                        s_retryableExceptions,
+                        Logger)
+                    .ConfigureAwait(false);
 
                 if (attestationMechanism == null)
                 {
@@ -339,15 +340,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     IndividualEnrollment individualEnrollmentResult = null;
                     await RetryOperationHelper
-                                    .RetryOperationsAsync(
-                                        async () =>
-                                        {
-                                            individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
-                                        },
-                                        s_provisioningServiceRetryPolicy,
-                                        s_retryableExceptions,
-                                        Logger)
-                                    .ConfigureAwait(false);
+                        .RetryOperationsAsync(
+                            async () =>
+                            {
+                                individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            s_retryableExceptions,
+                            Logger)
+                        .ConfigureAwait(false);
 
                     if (individualEnrollmentResult == null)
                     {
@@ -414,15 +415,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     EnrollmentGroup enrollmentGroupResult = null;
                     await RetryOperationHelper
-                                    .RetryOperationsAsync(
-                                        async () =>
-                                        {
-                                            enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
-                                        },
-                                        s_provisioningServiceRetryPolicy,
-                                        s_retryableExceptions,
-                                        Logger)
-                                    .ConfigureAwait(false);
+                        .RetryOperationsAsync(
+                            async () =>
+                            {
+                                enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            s_retryableExceptions,
+                            Logger)
+                        .ConfigureAwait(false);
 
                     if (enrollmentGroupResult == null)
                     {

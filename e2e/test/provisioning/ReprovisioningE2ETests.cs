@@ -374,8 +374,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 try
                 {
-                    if (
-                        auth == null
+                    if (auth == null
                         && security == null
                         || attestationType == AttestationMechanismType.X509
                         && enrollmentType == EnrollmentType.Group)
