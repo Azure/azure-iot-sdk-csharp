@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private CancellationTokenSource _writeCancellationTokenSource;
         private bool _disposed;
 
-        public ClientWebSocketTransport(ClientWebSocket clientwebSocket, bool disposeClientWebSocket)
+        public ClientWebSocketTransport(ClientWebSocket clientWebSocket, bool disposeClientWebSocket)
             : base("clientwebsocket")
         {
             _webSocket = clientwebSocket;
