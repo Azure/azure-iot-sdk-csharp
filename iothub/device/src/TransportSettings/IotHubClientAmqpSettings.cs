@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
         /// An instance of client web socket to be used when transport protocol is set to web socket.
         /// </summary>
         /// <remarks>
-        /// If not provided, an instance will be created from provided websocket options (e.g., proxy, keep-alive etc..)
+        /// If not provided, an instance will be created from provided web socket options (e.g., proxy, keep-alive etc..)
         /// </remarks>
         public ClientWebSocket ClientWebSocket { get; set; }
 

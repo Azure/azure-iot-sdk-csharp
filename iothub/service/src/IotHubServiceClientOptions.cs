@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices
         /// An instance of client web socket to be used when transport protocol is set to web socket.
         /// </summary>
         /// <remarks>
-        /// If not provided, an instance will be created from provided websocket options (e.g., proxy, keep-alive etc..)
+        /// If not provided, an instance will be created from provided web socket options (e.g., proxy, keep-alive etc..)
         /// <para>
         /// Only used for communications over AMQP, used in <see cref="MessagesClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
         /// and <see cref="FileUploadNotificationProcessorClient"/>.
