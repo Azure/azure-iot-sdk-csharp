@@ -180,7 +180,9 @@ namespace Microsoft.Azure.Devices
                         await _webSocket
                             .SendAsync(
                                 new ArraySegment<byte>(byteBuffer.Buffer, byteBuffer.Offset, byteBuffer.Length),
-                                WebSocketMessageType.Binary, true, _writeCancellationTokenSource.Token)
+                                WebSocketMessageType.Binary,
+                                true,
+                                _writeCancellationTokenSource.Token)
                             .ConfigureAwait(false);
                     }
                 }
