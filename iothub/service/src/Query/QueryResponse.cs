@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Devices
         private readonly JobType? _jobType;
         private readonly JobStatus? _jobStatus;
         private readonly int? _defaultPageSize;
-        private readonly IEnumerator<T> _items;
+        private IEnumerator<T> _items;
 
         internal QueryResponse(
             QueryClient client,
@@ -151,6 +152,7 @@ namespace Microsoft.Azure.Devices
             {
                 // Current page of results still had an item to return to the user.
                 Current = _items.Current;
+                Debug.Assert(_items.Current != null);
                 return true;
             }
 
@@ -173,15 +175,21 @@ namespace Microsoft.Azure.Devices
 
             if (!string.IsNullOrEmpty(_originalQuery))
             {
-                QueryResponse<T> response = await _client.CreateAsync<T>(_originalQuery, queryOptionsClone, cancellationToken);
+                QueryResponse<T> response = await _client
+                    .CreateAsync<T>(_originalQuery, queryOptionsClone, cancellationToken)
+                    .ConfigureAwait(false);
                 CurrentPage = response.CurrentPage;
-                Current = CurrentPage.GetEnumerator().Current;
+                _items = CurrentPage.GetEnumerator();
+                _items.MoveNext();
+                Current = _items.Current;
                 ContinuationToken = response.ContinuationToken;
             }
             else
             {
                 // Job type and job status may still be null here, but that's okay
-                QueryResponse<ScheduledJob> response = await _client.CreateJobsQueryAsync(queryOptionsClone, cancellationToken);
+                QueryResponse<ScheduledJob> response = await _client
+                    .CreateJobsQueryAsync(queryOptionsClone, cancellationToken)
+                    .ConfigureAwait(false);
                 CurrentPage = (IEnumerable<T>)response.CurrentPage;
                 Current = CurrentPage.GetEnumerator().Current;
                 ContinuationToken = response.ContinuationToken;

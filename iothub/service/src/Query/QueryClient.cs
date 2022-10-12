@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices
                     request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
                 }
 
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var page = new QueriedPage<T>(response, responsePayload);

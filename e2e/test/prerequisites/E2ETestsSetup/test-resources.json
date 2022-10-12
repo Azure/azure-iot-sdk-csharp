@@ -221,7 +221,7 @@
         "name": "Standard_LRS",
         "tier": "Standard"
       },
-      "kind": "Storage",
+      "kind": "StorageV2",
       "properties": {
         "supportsHttpsTrafficOnly": true,
         "encryption": {

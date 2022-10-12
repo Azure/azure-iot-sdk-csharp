@@ -18,13 +18,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         private readonly string _apiVersion;
         private readonly Uri _providerUri;
 
-        private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy = new ErrorDetectionStrategy();
-
-        private static readonly RetryStrategy s_transientRetryStrategy = new ExponentialBackoffRetryStrategy(
-            retryCount: 3,
-            minBackoff: TimeSpan.FromSeconds(2),
-            maxBackoff: TimeSpan.FromSeconds(30),
-            deltaBackoff: TimeSpan.FromSeconds(3));
+        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 
         public HttpHsmSignatureProvider(string providerUri, string apiVersion)
         {
@@ -90,15 +84,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             string generationId,
             SignRequest signRequest)
         {
-            var transientRetryPolicy = new RetryPolicy(s_transientErrorDetectionStrategy, s_transientRetryStrategy);
-            return await transientRetryPolicy
-                .RunWithRetryAsync(() => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest))
+            var retryHandler = new RetryHandler(s_retryPolicy);
+            return await retryHandler
+                .RunWithRetryAsync(
+                    () => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest),
+                    (Exception ex) => ex is SwaggerException se && se.StatusCode >= 500)
                 .ConfigureAwait(false);
-        }
-
-        private class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
-        {
-            public bool IsTransient(Exception ex) => ex is SwaggerException se && se.StatusCode >= 500;
         }
     }
 }

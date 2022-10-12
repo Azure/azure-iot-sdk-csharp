@@ -193,14 +193,14 @@ $storageAccountName = "$($ResourceGroup.ToLower())sa"
 $storageAccountName = [regex]::Replace($storageAccountName, "[^a-z0-9]", "")
 if (-not ($storageAccountName -match "^[a-z0-9][a-z0-9]{1,22}[a-z0-9]$"))
 {
-    throw "Storage account name derrived from resource group has illegal characters: $storageAccountName"
+    throw "Storage account name derived from resource group has illegal characters: $storageAccountName"
 }
 
 $keyVaultName = "env-$ResourceGroup-kv";
 $keyVaultName = [regex]::Replace($keyVaultName, "[^a-zA-Z0-9-]", "")
 if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 {
-    throw "Key vault name derrived from resource group has illegal characters: $keyVaultName";
+    throw "Key vault name derived from resource group has illegal characters: $keyVaultName";
 }
 
 ########################################################################################################
@@ -219,9 +219,9 @@ $intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
 $intermediateCert2PfxPath = "$PSScriptRoot/intermediateCert2.pfx"
 $verificationCertPath = "$PSScriptRoot/verification.cer";
 
-$iotHubX509DeviceCertCommonName = "iothubx509device1";
+$iotHubX509DeviceCertCommonName = "Save_iothubx509device1";
 $iotHubX509DevicePfxPath = "$PSScriptRoot/IotHubX509Device.pfx";
-$iotHubX509CertChainDeviceCommonName = "iothubx509chaindevice1";
+$iotHubX509CertChainDeviceCommonName = "Save_iothubx509chaindevice1";
 $iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
 
 $dpsX509GroupEnrollmentDeviceCertCommonName = "xdevice1";
@@ -566,7 +566,7 @@ if ($isVerified -eq 'false')
     az iot dps certificate verify -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName -e $etag --path $verificationCertPath --output none
 }
 
-$groupEnrollmentId = "Group1"
+$groupEnrollmentId = "Save_Group1"
 $groupEnrollmentExists = az iot dps enrollment-group list -g $ResourceGroup --dps-name $dpsName --query "[?enrollmentGroupId=='$groupEnrollmentId'].enrollmentGroupId" --output tsv
 if ($groupEnrollmentExists)
 {
@@ -607,7 +607,7 @@ if ($EnableIotHubSecuritySolution)
 
 if ($GenerateResourcesForSamplesDevOpsPipeline)
 {
-    $iotHubSasBasedDeviceId = "DoNotDeleteDevice1"
+    $iotHubSasBasedDeviceId = "Save_SasDevice1"
     $iotHubSasBasedDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubSasBasedDeviceId'].deviceId" --output tsv
 
     if (-not $iotHubSasBasedDevice)
@@ -617,7 +617,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
     }
     $iotHubSasBasedDeviceConnectionString = az iot hub device-identity connection-string show --device-id $iotHubSasBasedDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
 
-    $iotHubSasBasedModuleId = "DoNotDeleteModule1"
+    $iotHubSasBasedModuleId = "Save_SasModule1"
     $iotHubSasBasedModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --query "[?moduleId=='$iotHubSasBasedModuleId'].moduleId" --output tsv
 
     if (-not $iotHubSasBasedModule)
@@ -627,7 +627,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
     }
     $iotHubSasBasedModuleConnectionString = az iot hub module-identity connection-string show --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
 
-    $thermostatSampleDeviceId = "ThermostatSample_DoNotDelete"
+    $thermostatSampleDeviceId = "Save_ThermostatSample"
     $thermostatSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$thermostatSampleDeviceId'].deviceId" --output tsv
 
     if (-not $thermostatSampleDevice)
@@ -637,7 +637,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
     }
     $thermostatSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $thermostatSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
 
-    $temperatureControllerSampleDeviceId = "TemperatureControllerSample_DoNotDelete"
+    $temperatureControllerSampleDeviceId = "Save_TemperatureControllerSample"
     $temperatureControllerSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$temperatureControllerSampleDeviceId'].deviceId" --output tsv
 
     if (-not $temperatureControllerSampleDevice)
@@ -654,7 +654,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
 
 if ($GenerateResourcesForSamplesDevOpsPipeline)
 {
-    $symmetricKeySampleEnrollmentRegistrationId = "SymmetricKeySampleIndividualEnrollment"
+    $symmetricKeySampleEnrollmentRegistrationId = "Save_SymmetricKeySampleIndividualEnrollment"
     $symmetricKeyEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $dpsName --query "[?deviceId=='$symmetricKeySampleEnrollmentRegistrationId'].deviceId" --output tsv
     if ($symmetricKeyEnrollmentExists)
     {

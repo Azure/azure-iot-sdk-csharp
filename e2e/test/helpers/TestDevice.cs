@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
-using System.Net;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -29,13 +29,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private const int MaxRetryCount = 5;
         private static readonly HashSet<IotHubServiceErrorCode> s_throttlingStatusCodes = new() { IotHubServiceErrorCode.ThrottlingException };
         private static readonly HashSet<IotHubServiceErrorCode> s_retryableStatusCodes = new(s_throttlingStatusCodes) { IotHubServiceErrorCode.DeviceNotFound };
-        private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 
-        private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
-            retryCount: MaxRetryCount,
-            minBackoff: TimeSpan.FromMilliseconds(100),
-            maxBackoff: TimeSpan.FromSeconds(10),
-            deltaBackoff: TimeSpan.FromMilliseconds(100));
+        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(10));
 
         private X509Certificate2 _authCertificate;
 
@@ -108,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     {
                         device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
-                    s_exponentialBackoffRetryStrategy,
+                    s_retryPolicy,
                     s_throttlingStatusCodes,
                     s_logger,
                     CancellationToken.None)
@@ -128,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                                 IotHubServiceErrorCode.DeviceNotFound);
                         }
                     },
-                    s_exponentialBackoffRetryStrategy,
+                    s_retryPolicy,
                     s_retryableStatusCodes,
                     s_logger,
                     CancellationToken.None)
@@ -207,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     {
                         await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
-                    s_exponentialBackoffRetryStrategy,
+                    s_retryPolicy,
                     s_throttlingStatusCodes,
                     s_logger,
                     CancellationToken.None)

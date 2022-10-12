@@ -9,13 +9,12 @@
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
-	
+
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="2.0.0-preview001" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <ProjectReference Include="..\..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
-
 </Project>
