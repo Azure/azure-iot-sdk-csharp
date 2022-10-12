@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (error.Condition.Equals(IotHubSuspended))
             {
-                retException = new("Iothub {0} is suspended".FormatInvariant(message), IotHubClientErrorCode.Suspended);
+                retException = new("IoT hub {0} is suspended".FormatInvariant(message), IotHubClientErrorCode.Suspended);
             }
             else
             {
