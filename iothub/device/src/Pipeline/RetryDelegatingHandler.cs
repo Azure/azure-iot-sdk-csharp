@@ -442,6 +442,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
+            _isOpen = false;
+
             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
@@ -461,7 +463,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
                 _handlerSemaphore?.Release();
-                Dispose(true);
             }
         }
 
@@ -690,6 +691,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (!_isDisposed)
                 {
                     base.Dispose(disposing);
+
+                    _isOpen = false;
+
                     if (disposing)
                     {
                         _handleDisconnectCts?.Cancel();

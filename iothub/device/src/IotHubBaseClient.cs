@@ -116,6 +116,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Open the client instance. Must be done before any operation can begin.
         /// </summary>
+        /// <remarks>
+        /// This client can be re-opened after it has been closed, but cannot be re-opened after it has
+        /// been disposed. Subscriptions to cloud to device messages/twin/methods do not persist when
+        /// re-opening a client.
+        /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task OpenAsync(CancellationToken cancellationToken = default)
@@ -371,7 +376,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Close the client instance.
         /// </summary>
         /// <remarks>
-        /// The instance can be re-opened after closing and before disposing.
+        /// The instance can be re-opened after closing and before disposing. However, subscriptions
+        /// to cloud to device messages/twin/methods do not persist when re-opening a client.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>

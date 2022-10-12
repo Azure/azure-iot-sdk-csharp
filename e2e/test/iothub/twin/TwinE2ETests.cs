@@ -344,6 +344,46 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Mqtt()
+        {
+            await Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(
+                    new IotHubClientMqttSettings())
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Amqp()
+        {
+            await Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(
+                    new IotHubClientAmqpSettings())
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Mqtt()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpenAsync(
+                    new IotHubClientMqttSettings(),
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    s_listOfPropertyValues)
+                .ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Amqp()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpenAsync(
+                    new IotHubClientAmqpSettings(),
+                    SetTwinPropertyUpdateCallbackHandlerAsync,
+                    s_listOfPropertyValues)
+                .ConfigureAwait(false);
+        }
+
         [DataTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -419,6 +459,62 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             object actualProp = completeTwin.Properties.Reported[propName];
             JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
             completeTwin.Properties.Reported.Version.Should().Be(newTwinVersion);
+        }
+
+        private async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(IotHubClientTransportSettings transportSettings)
+        {
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            // Close and re-open the client under test.
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            // The client should still be able to send reported properties even though it was re-opened.
+            await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
+        }
+
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpenAsync<T>(
+            IotHubClientTransportSettings transportSettings,
+            Func<IotHubDeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, T propValue)
+        {
+            string propName = Guid.NewGuid().ToString();
+
+            Logger.Trace($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
+
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            // Close and re-open the client under test.
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue, Logger).ConfigureAwait(false);
+
+            // The client should still be able to receive desired properties even though it was re-opened.
+            await Task.WhenAll(
+                RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                updateReceivedTask).ConfigureAwait(false);
+
+            // Validate the updated twin from the device-client
+            // Validate the updated twin from the device-client
+            ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            bool propertyFound = deviceTwin.RequestsFromService.TryGetValue(propName, out T actual);
+            propertyFound.Should().BeTrue();
+            // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
+            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
+
+            // Validate the updated twin from the service-client
+            Twin completeTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            dynamic actualProp = completeTwin.Properties.Desired[propName];
+            Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync<T>(IotHubDeviceClient deviceClient, string expectedPropName, T expectedPropValue, MsTestLogger logger)

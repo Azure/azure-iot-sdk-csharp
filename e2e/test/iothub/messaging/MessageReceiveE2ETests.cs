@@ -75,6 +75,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task DeviceReceiveMessageAfterOpenCloseOpen_Amqp()
+        {
+            await ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task DeviceReceiveMessageAfterOpenCloseOpen_Mqtt()
+        {
+            await ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
+        }
+
         public static Message ComposeC2dTestMessage(MsTestLogger logger, out string payload, out string p1Value)
         {
             payload = Guid.NewGuid().ToString();
@@ -239,6 +253,43 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient.CloseAsync().ConfigureAwait(false);
             deviceClient.Dispose();
             testDeviceCallbackHandler.Dispose();
+        }
+
+        private async Task ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
+        {
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
+
+            // Close and re-open the client under test.
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+
+            try
+            {
+                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+
+                // Now, set a callback on the device client to receive C2D messages.
+                await deviceHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
+
+                // Now, send a message to the device from the service.
+                Message testMessage = ComposeC2dTestMessage(Logger, out string _, out string _);
+                deviceHandler.ExpectedMessageSentByService = testMessage;
+                await serviceClient.Messages.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
+                Logger.Trace($"Sent C2D message from service, messageId={testMessage.MessageId} - to be received on callback");
+
+                // The message should be received on the callback even though the client was re-opened.
+                using var cts1 = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                await deviceHandler.WaitForReceiveMessageCallbackAsync(cts1.Token).ConfigureAwait(false);
+            }
+            finally
+            {
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         // This test ensures that the SDK does not have this bug again

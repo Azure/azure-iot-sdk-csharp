@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             if (ShouldClientBeInitialized())
             {
-                // Allow a single thread to dispose and initialize the client instance.
+                // Allow a single thread to close and re-open the client instance.
                 await s_initSemaphore.WaitAsync(cancellationToken);
                 try
                 {
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     {
                         _logger.LogDebug($"Attempting to initialize the client instance, current status={s_deviceClient?.ConnectionStatusInfo.Status}");
 
-                        // If the device client instance has been previously initialized, close and dispose it.
+                        // If the device client instance has been previously initialized, close it.
                         if (s_deviceClient != null)
                         {
                             try
@@ -115,10 +115,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 await s_deviceClient.CloseAsync(cancellationToken);
                             }
                             catch (IotHubClientException) { } // if the previous token is now invalid, this call may fail
-                            s_deviceClient.Dispose();
+                        }
+                        else
+                        {
+                            // Otherwise instantiate it for the first time.
+                            s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         }
 
-                        s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         s_deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandlerAsync;
                         s_deviceClient.SetRetryPolicy(_customRetryPolicy);
                         _logger.LogDebug("Initialized the client instance.");
@@ -146,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // It is not generally a good practice to have async void methods, however, IotHubDeviceClient.ConnectionStatusChangeHandlerAsync() event handler signature
         // has a void return type. As a result, any operation within this block will be executed unmonitored on another thread.
         // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock before attempting to
-        // initialize or dispose the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
+        // initialize or close the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
         private async void ConnectionStatusChangeHandlerAsync(ConnectionStatusInfo connectionInfo)
         {
             ConnectionStatus status = connectionInfo.Status;
