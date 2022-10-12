@@ -82,8 +82,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
                 }
-                // System properties can be accessed using their respective accessors, e.g. DeliveryCount.
-                formattedMessage.AppendLine($"\tDelivery count: {receivedMessage.DeliveryCount}");
 
                 Console.WriteLine($"{DateTime.Now}> {formattedMessage}");
             }
