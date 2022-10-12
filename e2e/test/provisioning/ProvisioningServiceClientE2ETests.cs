@@ -172,15 +172,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 AttestationMechanism attestationMechanism = null;
                 await RetryOperationHelper
-                                .RetryOperationsAsync(
-                                    async () =>
-                                    {
-                                        attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
-                                    },
-                                    s_provisioningServiceRetryPolicy,
-                                    s_retryableExceptions,
-                                    Logger)
-                                .ConfigureAwait(false);
+                    .RetryOperationsAsync(
+                        async () =>
+                        {
+                            attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
+                        },
+                        s_provisioningServiceRetryPolicy,
+                        s_retryableExceptions,
+                        Logger)
+                    .ConfigureAwait(false);
 
                 if (attestationMechanism == null)
                 {
