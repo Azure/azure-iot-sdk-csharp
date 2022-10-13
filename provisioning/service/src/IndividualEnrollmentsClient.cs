@@ -113,7 +113,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
 
-            return DeleteAsync(new IndividualEnrollment(registrationId, null), cancellationToken);
+            // Note that we are filling in an empty symmetric key attestation here regardless of what attestation
+            // this enrollment uses. This part of the enrollment object is not part of the service request that
+            // takes place within this overload, so there is no harm in this being the wrong attestation type
+            // and/or having the wrong keys.
+            return DeleteAsync(new IndividualEnrollment(registrationId, new SymmetricKeyAttestation("", "")), cancellationToken);
         }
 
         /// <summary>

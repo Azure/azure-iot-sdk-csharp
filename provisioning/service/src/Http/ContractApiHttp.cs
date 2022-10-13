@@ -191,7 +191,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new DeviceProvisioningServiceException(response.ErrorMessage, response.StatusCode, response.Fields);
             }
 
-            if (response.StatusCode != HttpStatusCode.OK)
+            // Both 200 and 204 indicate a successful operation, so there is no reason to parse the body for an error code
+            if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.NoContent)
             {
                 try
                 {

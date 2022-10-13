@@ -122,7 +122,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Task DeleteAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
-            return DeleteAsync(new EnrollmentGroup(enrollmentGroupId, null), cancellationToken);
+
+            // Note that we are filling in an empty symmetric key attestation here regardless of what attestation
+            // this enrollment uses. This part of the enrollment object is not part of the service request that
+            // takes place within this overload, so there is no harm in this being the wrong attestation type
+            // and/or having the wrong keys.
+            return DeleteAsync(new EnrollmentGroup(enrollmentGroupId, new SymmetricKeyAttestation("", "")), cancellationToken);
         }
 
         /// <summary>
