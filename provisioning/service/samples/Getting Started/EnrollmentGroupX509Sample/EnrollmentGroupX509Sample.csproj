@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -14,16 +14,14 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-
-    <!-- Working around a bug between DotNetty and .NET 5.0+ by specifying the exact version of DotNetty.Common that has the fix -->
-    <PackageReference Include="DotNetty.Common" Version="0.7.4" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+  <!--<ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="2.0.0-preview001" />
-  </ItemGroup>
+  </ItemGroup>-->
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup>
+    <!--Condition="'$(Configuration)' == 'Debug'">-->
     <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
   </ItemGroup>
 
