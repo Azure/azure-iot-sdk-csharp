@@ -111,13 +111,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </example>
         /// <param name="enrollmentGroupId">The string that uniquely identify this enrollmentGroup in the provisioning
         ///     service. It cannot be null or empty.</param>
-        /// <param name="attestation">The <see cref="Attestation"/> object with the attestation mechanism. It cannot be null.</param>
-        /// <exception cref="ArgumentNullException">If one of the provided <paramref name="enrollmentGroupId"/> or <paramref name="attestation"/> is null.</exception>
+        /// <param name="attestation">The <see cref="Attestation"/> object with the attestation mechanism.</param>
+        /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>
         public EnrollmentGroup(string enrollmentGroupId, Attestation attestation)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
-            Argument.AssertNotNull(attestation, nameof(attestation));
             EnrollmentGroupId = enrollmentGroupId;
             Attestation = attestation;
         }
@@ -240,7 +239,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Getter and setter for Attestation.
         /// </summary>
-        /// <exception cref="InvalidOperationException">If the provided attestation is null.</exception>
         [JsonIgnore]
         public Attestation Attestation
         {
@@ -264,7 +262,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     }
                 }
 
-                _attestation = new AttestationMechanism(value);
+                if (value != null)
+                {
+                    _attestation = new AttestationMechanism(value);
+                }
             }
         }
 
