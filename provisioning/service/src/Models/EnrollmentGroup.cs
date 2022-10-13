@@ -245,11 +245,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             get => _attestation.GetAttestation();
             set
             {
-                if (value == null)
-                {
-                    throw new InvalidOperationException($"Value for {nameof(Attestation)} cannot be null.");
-                }
-                else if (value is not X509Attestation && value is not SymmetricKeyAttestation)
+                if (value is not X509Attestation && value is not SymmetricKeyAttestation)
                 {
                     throw new InvalidOperationException("Attestation for enrollmentGroup shall be X509 or symmetric key.");
                 }
