@@ -109,11 +109,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// If the client failed to send the request or service was not able to execute the operation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public Task DeleteAsync(string registrationId, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
 
-            return DeleteAsync(new IndividualEnrollment(registrationId, null), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Delete,
+                    GetEnrollmentUri(registrationId),
+                    null,
+                    null,
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>

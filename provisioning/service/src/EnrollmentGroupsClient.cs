@@ -119,10 +119,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroupId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public Task DeleteAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
-            return DeleteAsync(new EnrollmentGroup(enrollmentGroupId, null), cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Delete,
+                    GetEnrollmentUri(enrollmentGroupId),
+                    null,
+                    null,
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
