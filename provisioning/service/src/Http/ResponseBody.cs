@@ -10,6 +10,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty("errorCode")]
         internal int ErrorCode { get; set; }
 
+        [JsonProperty("code")]
+        internal int Code
+        {
+            get => ErrorCode;
+            set => ErrorCode = value;
+        }
+
         [JsonProperty("trackingId")]
         internal string TrackingId { get; set; }
 
