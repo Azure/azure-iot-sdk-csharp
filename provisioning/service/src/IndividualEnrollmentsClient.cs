@@ -109,15 +109,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// If the client failed to send the request or service was not able to execute the operation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public Task DeleteAsync(string registrationId, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(string registrationId, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
 
-            // Note that we are filling in an empty symmetric key attestation here regardless of what attestation
-            // this enrollment uses. This part of the enrollment object is not part of the service request that
-            // takes place within this overload, so there is no harm in this being the wrong attestation type
-            // and/or having the wrong keys.
-            return DeleteAsync(new IndividualEnrollment(registrationId, new SymmetricKeyAttestation("", "")), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Delete,
+                    GetEnrollmentUri(registrationId),
+                    null,
+                    null,
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
