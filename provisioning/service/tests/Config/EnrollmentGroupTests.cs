@@ -97,7 +97,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void EnrollmentGroupConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
-            _ = TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, null));
             _ = TestAssert.Throws<InvalidOperationException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, _sampleX509ClientAttestation));
             _ = TestAssert.Throws<InvalidOperationException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, _sampleTpmAttestation));
         }

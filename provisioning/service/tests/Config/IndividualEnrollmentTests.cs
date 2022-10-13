@@ -144,7 +144,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void IndividualEnrollmentConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
-            TestAssert.Throws<ArgumentNullException>(() => new IndividualEnrollment(SampleRegistrationId, null));
             TestAssert.Throws<InvalidOperationException>(() => new IndividualEnrollment(SampleRegistrationId, _sampleX509RootAttestation));
         }
 
