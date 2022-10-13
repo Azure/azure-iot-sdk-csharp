@@ -77,10 +77,18 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
-        public void DeviceClientConnectionStringDeviceScopeSharedAccessSignatureCredentialTypeInvalidSharedAccessKeyExceptionTest()
+        [ExpectedException(typeof(FormatException))]
+        public void DeviceClientConnectionStringDeviceScopeSharedAccessSignatureCredentialTypeFormatSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=INVALID;DeviceId=device1";
+            var deviceClient = new IotHubDeviceClient(connectionString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void DeviceClientConnectionStringDeviceScopeSharedAccessSignatureCredentialTypeInvalidSharedAccessKeyExceptionTest()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=;DeviceId=device1";
             var deviceClient = new IotHubDeviceClient(connectionString);
         }
 
