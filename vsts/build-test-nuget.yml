@@ -33,7 +33,7 @@ jobs:
         displayName: 'Copy nuget package files to the artifacts folder'
         inputs:
           SourceFolder: '$(Build.SourcesDirectory)/bin/pkg'
-          Contents: '**/*.*nupkg'
+          Contents: '**/Microsoft.Azure.Devices.*.*nupkg'
           TargetFolder: '$(Build.ArtifactStagingDirectory)/nuget'
         condition: always()
 
