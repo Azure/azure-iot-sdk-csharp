@@ -151,7 +151,7 @@ Function RunSamples($path, $message)
             $sampleRunningTimeInSeconds = 60
 
             # Run the iot-hub\device samples
-            #RunSample 'iothub\device\samples\how to guides\DeviceReconnectionSample' "IoTHub\Device\DeviceReconnectionSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
+            RunSample 'iothub\device\samples\how to guides\DeviceReconnectionSample' "IoTHub\Device\DeviceReconnectionSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"""
             RunSample 'iothub\device\samples\getting started\MessageReceiveSample' "IoTHub\Device\MessageReceiveSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample 'iothub\device\samples\getting started\MethodSample' "IoTHub\Device\MethodSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
@@ -162,8 +162,8 @@ Function RunSamples($path, $message)
             RunSample iothub\device\samples\solutions\PnpDeviceSamples\Thermostat "IoTHub\Device\PnpDeviceSamples\Thermostat" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_THERMOSTAT_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
     
             # Run the iot-hub\service samples
-            $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | Where-Object {$_ -like "DeviceId=*"}).Split("=")[1]
-            $iothubHost = ($Env:IOTHUB_CONNECTION_STRING.Split(';') | Where-Object {$_ -like "HostName=*"}).Split("=")[1]
+            #$deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | Where-Object {$_ -like "DeviceId=*"}).Split("=")[1]
+            #$iothubHost = ($Env:IOTHUB_CONNECTION_STRING.Split(';') | Where-Object {$_ -like "HostName=*"}).Split("=")[1]
     
             RunSample 'iothub\service\samples\how to guides\AutomaticDeviceManagementSample' "IoTHub\Service\AutomaticDeviceManagementSample"
     
