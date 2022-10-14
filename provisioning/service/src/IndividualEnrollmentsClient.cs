@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
 using Newtonsoft.Json;
+using Azure;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -91,7 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     GetEnrollmentUri(registrationId),
                     null,
                     null,
-                    null,
+                    new ETag(),
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -121,7 +122,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     GetEnrollmentUri(registrationId),
                     null,
                     null,
-                    null,
+                    new ETag(),
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -191,7 +192,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     GetEnrollmentUri(),
                     null,
                     JsonConvert.SerializeObject(bulkOperation),
-                    null,
+                    new ETag(),
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -248,7 +249,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     GetEnrollmentAttestationUri(registrationId),
                     null,
                     null,
-                    null,
+                    new ETag(),
                     cancellationToken)
                 .ConfigureAwait(false);
 

@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
 using Newtonsoft.Json;
+using Azure;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -60,7 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     GetDeviceRegistrationStatusUri(registrationId),
                     null,
                     null,
-                    null,
+                    new ETag(),
                     cancellationToken)
                 .ConfigureAwait(false);
 

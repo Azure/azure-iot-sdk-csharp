@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -95,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="requestUri">the rest API <see cref="Uri"/> with for the requested service.</param>
         /// <param name="customHeaders">the optional Dictionary with additional header fields. It can be null.</param>
         /// <param name="body">the string with the message body. It can be null or empty.</param>
-        /// <param name="ifMatch">the optional string with the match condition, normally an eTag. It can be null.</param>
+        /// <param name="eTag">the optional string with the match condition, normally an eTag. It can be null.</param>
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
         /// <exception cref="OperationCanceledException">If the cancellation was requested.</exception>
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Uri requestUri,
             IDictionary<string, string> customHeaders,
             string body,
-            string ifMatch,
+            ETag eTag,
             CancellationToken cancellationToken)
         {
             ContractApiResponse response;
@@ -127,7 +128,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         msg.Headers.Add(header.Key, header.Value);
                     }
                 }
-                InsertIfMatch(msg, ifMatch);
+                
+                if (!string.IsNullOrWhiteSpace(eTag.ToString()))
+                {
+                    string escapedETag = EscapeETag(eTag.ToString());
+                    msg.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag));
+                }
 
                 try
                 {
@@ -217,28 +223,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        private static void InsertIfMatch(HttpRequestMessage requestMessage, string ifMatch)
+        // ETag values other than "*" need to be wrapped in escaped quotes if they are not
+        // already.
+        private static string EscapeETag(string eTag)
         {
-            if (string.IsNullOrWhiteSpace(ifMatch))
+            var escapedETagBuilder = new StringBuilder();
+
+            if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
-                return;
+                escapedETagBuilder.Append('"');
             }
 
-            var quotedIfMatch = new StringBuilder();
+            escapedETagBuilder.Append(eTag);
 
-            if (!ifMatch.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
+            if (!eTag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
-                quotedIfMatch.Append('"');
+                escapedETagBuilder.Append('"');
             }
 
-            quotedIfMatch.Append(ifMatch);
-
-            if (!ifMatch.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-            {
-                quotedIfMatch.Append('"');
-            }
-
-            requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(quotedIfMatch.ToString()));
+            return escapedETagBuilder.ToString();
         }
 
         /// <summary>
