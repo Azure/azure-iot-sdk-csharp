@@ -42,13 +42,10 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Authentication" Version="1.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="2.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Authentication" Version="2.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="2.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="2.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="2.*" />
   </ItemGroup>
 </Project>
