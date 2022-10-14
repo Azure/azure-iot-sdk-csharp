@@ -4,9 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Net.Sockets;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -126,9 +123,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
-        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken = default)
         {

@@ -145,11 +145,11 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IOException(webSocketException.Message, webSocketException);
+                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IOException(httpListenerException.Message, httpListenerException);
+                throw new IotHubClientException(httpListenerException.Message, IotHubClientErrorCode.NetworkErrors, httpListenerException);
             }
             finally
             {

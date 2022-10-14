@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices
         /// Gets the last updated time for this property.
         /// </summary>
         /// <returns>Date-time instance representing the last updated time for this property.</returns>
-        /// <exception cref="System.NullReferenceException">Thrown when the metadata object is null.
+        /// <exception cref="NullReferenceException">Thrown when the metadata object is null.
         /// An example would be when the this class is created with the default constructor.</exception>
         public DateTimeOffset GetLastUpdatedOn()
         {
