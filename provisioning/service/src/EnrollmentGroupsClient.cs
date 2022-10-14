@@ -8,8 +8,8 @@ using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
-using Newtonsoft.Json;
 using Azure;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
