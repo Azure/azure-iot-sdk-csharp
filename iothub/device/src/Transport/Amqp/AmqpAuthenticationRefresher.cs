@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly string _audience;
         private Task _refreshLoop;
         private CancellationTokenSource _loopCancellationTokenSource;
+        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 
         internal AmqpAuthenticationRefresher(IConnectionCredentials connectionCredentials, AmqpIotCbsLink amqpCbsLink)
         {
@@ -120,21 +121,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     try
                     {
-                        refreshesOn = await _amqpIotCbsLink
-                            .SendTokenAsync(
-                                _amqpIotCbsTokenProvider,
-                                _amqpEndpoint,
-                                _audience,
-                                _audience,
-                                s_accessRightsStringArray,
-                                cancellationToken)
-                            .ConfigureAwait(false);
+                        refreshesOn = await SendTokenWithRetryAsync(cancellationToken).ConfigureAwait(false);
                     }
-                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.NetworkErrors)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(this, refreshesOn, $"Refresh token failed {ex}");
-                    }
+
                     catch (OperationCanceledException)
                     {
                         // close gracefully
@@ -149,6 +138,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     waitTime = refreshesOn - DateTime.UtcNow;
                 }
             }
+        }
+
+        private async Task<DateTime> SendTokenWithRetryAsync(CancellationToken cancellationToken)
+        {
+            var retryHandler = new RetryHandler(s_retryPolicy);
+            return await retryHandler.RunWithRetryAsync(() => _amqpIotCbsLink
+                            .SendTokenAsync(
+                                _amqpIotCbsTokenProvider,
+                                _amqpEndpoint,
+                                _audience,
+                                _audience,
+                                s_accessRightsStringArray, cancellationToken), (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors, cancellationToken).ConfigureAwait(false);
         }
 
         private static string CreateAmqpCbsAudience(IConnectionCredentials connectionCredentials)
