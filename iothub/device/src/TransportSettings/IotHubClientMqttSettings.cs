@@ -3,7 +3,6 @@
 
 using System;
 using System.Net.Security;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client
 {
