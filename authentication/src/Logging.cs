@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -12,11 +11,10 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices
 {
-    [SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Conflicts with DotNetty.Common.Internal.Logging")]
     internal sealed partial class Logging : EventSource
     {
         /// <summary>The single event source instance to use for all logging.</summary>
-        public static readonly Logging Log = new Logging();
+        public static readonly Logging Log = new();
 
         #region Metadata
 
