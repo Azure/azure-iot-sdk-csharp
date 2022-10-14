@@ -110,11 +110,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     message.EnqueuedTimeUtc = enqueuedTime;
                 }
 
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.DeliveryCount, out byte deliveryCount))
-                {
-                    message.DeliveryCount = deliveryCount;
-                }
-
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(InputName, out string inputName))
                 {
                     message.InputName = inputName;

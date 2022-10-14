@@ -37,13 +37,6 @@ namespace Microsoft.Azure.Devices
         internal const string To = "to";
 
         /// <summary>
-        /// The number of times a message can transition between the enqueued and invisible states.
-        /// After the maximum number of transitions, the IoT hub sets the state of the message to dead-lettered.
-        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>
-        /// </summary>
-        internal const string DeliveryCount = "iothub-deliverycount";
-
-        /// <summary>
         /// Date and time when the message was received by the server in UTC.
         /// </summary>
         internal const string EnqueuedOn = "iothub-enqueuedtime";

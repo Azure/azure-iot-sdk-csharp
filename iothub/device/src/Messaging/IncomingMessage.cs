@@ -101,15 +101,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Number of times the message has been previously delivered
-        /// </summary>
-        public uint DeliveryCount
-        {
-            get => GetSystemProperty<byte>(MessageSystemPropertyNames.DeliveryCount);
-            protected internal set => SystemProperties[MessageSystemPropertyNames.DeliveryCount] = (byte)value;
-        }
-
-        /// <summary>
         /// Used to specify the schema of the message content.
         /// </summary>
         public string MessageSchema
