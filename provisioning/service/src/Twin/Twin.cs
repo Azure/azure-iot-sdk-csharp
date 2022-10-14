@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -13,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Twin Representation.
     /// </summary>
     [JsonConverter(typeof(TwinJsonConverter))]
-    public class Twin : IETagHolder
+    public class Twin
     {
         /// <summary>
         /// Creates an instance of this class.
@@ -85,7 +86,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Twin's ETag.
         /// </summary>
-        public string ETag { get; set; }
+        [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// Twin's Version.
