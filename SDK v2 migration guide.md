@@ -1,13 +1,13 @@
-# SDK version 2.x migration guide
+# SDK version 2 migration guide
 
-This document outlines the changes made from this library's 1.x releases to its 2.x releases. Since this is
+This document outlines the changes made from this library's 1 releases to its 2 releases. Since this is
 a major version upgrade, there are a number of breaking changes that will affect the ability to compile. Provided here
-are outlines of the notable breaking changes as well as a mapping from version 1.x APIs to version 2.x APIs to aid migrating.
+are outlines of the notable breaking changes as well as a mapping from version 1 APIs to version 2 APIs to aid migrating.
 
 ## Table of contents
 
- - [Why the version 1.x SDK is being replaced](#Why-the-version-1.x-sdk-is-being-replaced)
- - [What will happen to the version 1.x SDK](#What-will-happen-to-the-Version 1.x-sdk)
+ - [Why the version 1 SDK is being replaced](#why-the-version-1-sdk-is-being-replaced)
+ - [What will happen to the version 1 SDK](#What-will-happen-to-the-version-1-sdk)
  - [Migration guide](#migration-guide)
    - [IoT hub device client](#iot-hub-device-client)
    - [IoT hub service client](#iot-hub-service-client)
@@ -16,18 +16,18 @@ are outlines of the notable breaking changes as well as a mapping from version 1
    - [Security provider clients](#security-provider-clients)
  - [Frequently asked questions](#frequently-asked-questions)
 
-## Why the version 1.x SDK is being replaced
+## Why the version 1 SDK is being replaced
 
 There are a number of reasons why the Azure IoT SDK team chose to do a major version revision. Here are a few of the more important reasons:
   - Removing or upgrading several NuGet dependencies (TODO: list).
-  - Consolidate IoT hub service clients and rename to reflect the items or operations they support. Many existing client classes (RegistryManager, ServiceClient, etc.) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
+  - Consolidate IoT hub service clients and rename to reflect the items or operations they support.
+    - Many existing client classes (RegistryManager, ServiceClient, etc.) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
   - Many existing clients had a mix of standard constructors (`new DeviceClient(...)`) and static builder methods (`DeviceClient.CreateFromConnectionString(...)`) that caused some confusion among users. The factory methods have been removed and the addition of constructors in clients enables unit testing.
 
-## What will happen to the version 1.x SDK
+## What will happen to the version 1 SDK
 
-We have released [one final LTS version](TODO:) of the Version 1.x SDK that
-we will support like any other LTS release (security bug fixes, some non-security bug fixes as needed), but users are still encouraged
-to migrate to version 2.x when they have the chance. For more details on LTS releases, see [this document](./readme.md#long-term-support-lts).
+We will have released one final LTS version of the version 1 SDK that we will support like any other LTS release (security bug fixes, some non-security bug fixes as needed),
+but users are still encouraged to migrate to version 2 when they have the chance. For more details on LTS releases, see [this document](./readme.md#long-term-support-lts).
 
 ## Migration guide
 
@@ -35,7 +35,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 #### DeviceClient
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `DeviceClient` | `IotHubDeviceClient` |
 | `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
@@ -58,18 +58,19 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 - Cloud-to-device messages can be received by calling `SetMessageHandlerAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
 - Several callback handler set methods and definitions have changed, losing the `userContext` parameter.
 - The exponential back-off retry policy has updated parameters and logic.
+- Remote certificate validation is no natively longer supported for AMQP web socket connections.
+  - The supported workaround is to provide a client web socket instance in the client options.
 
 #### Notable additions
 
-- The device and module clients now have a property (e.g., `IotHubDeviceClient.ConnectionStatusInfo`)with the latest connection status information on it, eliminating the need for a connection status callback method to cache the latest values.
-- Remote certificate validation is no natively longer supported for AMQP web socket connections. Supprted workaround is to provide a client web socket instance in the client options.
+- The device and module clients now have a property (e.g., `IotHubDeviceClient.ConnectionStatusInfo`) with the latest connection status information on it, eliminating the need for a connection status callback method to cache the latest values.
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
 - The library now includes IncrementalDelayRetryStrategy and FixedDelayRetryStrategy.
 - The client can now be re-opened after it has been closed. It cannot be re-opened after it has been disposed, though. Also, subscriptions do not carry over when the client is re-opened.
 
 #### ModuleClient
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `ModuleClient` | `IotHubModuleClient` |
 | `MessageResponse` | `MessageAcknowledgement` |
@@ -88,7 +89,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 #### RegistryManager
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `RegistryManager` | `IotHubServiceClient`, subclients `Devices`, `Twins`, `Configurations`, etc. |
 | `RegistryManager.AddDeviceAsync(Device, ...)` | `IotHubServiceClient.Devices.CreateAsync(Device, ...)` |
@@ -122,7 +123,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 #### ServiceClient
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `ServiceClient` | `IotHubServiceClient`, subclients `Messages`, `MessageFeedback`, `FileUploadNotifications` |
 | `ServiceClient.SendAsync(...)` | `IotHubServiceClient.Messages.SendAsync(...)` |
@@ -140,13 +141,13 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 #### DeviceMethod
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 |    |    |
 
 #### JobClient
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `JobsClient` | `IotHubServiceClient`, subclients  `ScheduledJobs` |
 | `JobClient.GetJobAsync(...)` | `IotHubServiceClient.ScheduledJobs.GetAsync(...)` |
@@ -159,7 +160,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 #### DigitalTwinClient
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `DigitalTwinClient` | `IotHubServiceClient.DigitalTwins` |
 | `DigitalTwinClient.GetDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.GetAsync(...)` |
@@ -175,7 +176,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 ### DPS device client
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `ProvisioningDeviceClient.Create(...)` | `new ProvisioningDeviceClient(...)` |
 | `ProvisioningDeviceClient` initializer parameter `transportHandler` replaced | `ProvisioningClientOptions` parameter added |
@@ -194,7 +195,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 
 ### DPS service client
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `ProvisioningServiceClient.CreateFromConnectionString(...)` | `new ProvisioningServiceClient()` |
 | `QuerySpecification` | Type removed from public API. Methods take the parameters directly. |
@@ -223,7 +224,7 @@ Breaking changes:
 
   - Microsoft.Azure.Devices.Shared.SecurityProvider* types moved from Microsoft.Azure.Devices.Shared.dll into Microsoft.Azure.Devices.Authentication.dll and renamed.
 
-| Version 1.x API | Equivalent version 2.x API |
+| Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `SecurityProvider` | `AuthenticationProvider` |
 | `SecurityProvider.GetRegistrationID()` | `AuthenticationProvider.GetRegistrationId()` |
@@ -240,17 +241,17 @@ Breaking changes:
 ## Frequently asked questions
 
 Question:
-> What do I gain by upgrading to the 2.x release?
+> What do I gain by upgrading to the 2 release?
 
 Answer:
 > A smaller set of dependencies which makes for a lighter SDK overall, a more concise and clearer API surface, and unit testability.
 
 Question:
-> Will the 1.x releases continue to be supported?
+> Will the 1 releases continue to be supported?
 
 Answer:
-> The long-term support (LTS) releases of the 1.x SDK will continue to have support during their lifespans.
-> Newer features in the services will not be brought into to the v 1.x SDKs. Users are encouraged to upgrade to the 2.x SDK for all the best feature support, stability, and bug fixes.
+> The long-term support (LTS) releases of the 1 SDK will continue to have support during their lifespans.
+> Newer features in the services will not be brought into to the v 1 SDKs. Users are encouraged to upgrade to the 2 SDK for all the best feature support, stability, and bug fixes.
 
 Question:
 > Can I still upload files to Azure Storage using this SDK now that deviceClient.UploadToBlobAsync() has been removed?
@@ -263,11 +264,11 @@ Answer:
 > For an example of how to do file upload after upgrading, see [this sample](./iothub/device/samples/getting%20started/FileUploadSample/).
 
 Question:
-> I was using a deprecated API that was removed in the 2.x upgrade, what should I do?
+> I was using a deprecated API that was removed in the 2 upgrade, what should I do?
 
 Answer:
-> The deprecated API in the 1.x version documents which API you should use instead of the deprecated API. This guide
-also contains a mapping from Version 1.x API to equivalent version 2.x API that should tell you which version 2.x API to use.
+> The deprecated API in the 1 version documents which API you should use instead of the deprecated API. This guide
+also contains a mapping from Version 1 API to equivalent version 2 API that should tell you which version 2 API to use.
 
 Question:
 > After upgrading, some catch handlers no longer work because the API I was using no longer declares that it throws that exception. What exception type should be caught?
@@ -283,7 +284,7 @@ Answer:
 > The SDKs are tested with [this matrix](./supported_platforms.md).
 
 Question:
-> Is the version 2.x library backwards compatible in any way?
+> Is the version 2 library backwards compatible?
 
 Answer:
 > No. Please refer to [Semver rules](https://semver.org/) and see above in the [Migration guide](#migration-guide).
