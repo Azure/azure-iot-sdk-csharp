@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Options that allow configuration of the provisioning device client instance during initialization.
     /// </summary>
-    public class ProvisioningClientOptions
+    public sealed class ProvisioningClientOptions
     {
         /// <summary>
         /// Creates an instances of this class with the default transport settings.
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             set => UserAgentInfo.Extra = value;
         }
 
-        internal virtual ProductInfo UserAgentInfo { get; } = new();
+        internal ProductInfo UserAgentInfo { get; } = new();
 
         internal ProvisioningClientOptions Clone()
         {

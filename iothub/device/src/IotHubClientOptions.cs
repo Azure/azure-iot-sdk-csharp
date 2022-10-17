@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Options that allow configuration of the IoT hub device or module client instance during initialization.
     /// </summary>
-    public class IotHubClientOptions
+    public sealed class IotHubClientOptions
     {
         /// <summary>
         /// Creates an instances of this class with the default transport settings.
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
             set => UserAgentInfo.Extra = value;
         }
 
-        internal virtual ProductInfo UserAgentInfo { get; } = new();
+        internal ProductInfo UserAgentInfo { get; } = new();
 
         internal IotHubClientOptions Clone()
         {
