@@ -43,9 +43,9 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `Message` | `IncomingMessage`, `OutgoingMessage` |
 | `SetRetryPolicy(...)` | `IoTHubClientOptions.RetryPolicy` |
 | `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
-| `Message.CreationTimeUtc` | `OutgoingMessage.CreatedOnUtc` and `IncomingMessage.CreatedOnUtc` |
-| `Message.EnqueuedTimeUtc` | `OutgoingMessage.EnqueuedtimeUtc` and `IncomingMessage.EnqueuedTimeUtc` |
-| `Message.ExpiryTimeUtc` | `OutgoingMessage.ExpiresOnUtc` and `IncomingMessage.ExpiresOnUtc` |
+| `Message.CreationTimeUtc` | `OutgoingMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` |
+| `Message.EnqueuedTimeUtc` | `OutgoingMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` |
+| `Message.ExpiryTimeUtc` | `OutgoingMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
 
 #### Other notable breaking changes
 

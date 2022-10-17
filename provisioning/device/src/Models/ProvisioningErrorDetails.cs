@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public int ErrorCode { get; set; }
 
         /// <summary>
-        /// A unique Id to share with the service team when .
+        /// A unique Id to share with the service team when seeking help with an error.
         /// </summary>
         [JsonProperty(PropertyName = "trackingId")]
         public string TrackingId { get; set; }
