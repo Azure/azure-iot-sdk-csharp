@@ -50,6 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(SafeClose));
 
+            _sendingAmqpLink.Closed -= SendingAmqpLinkClosed;
             _sendingAmqpLink.SafeClose();
 
             if (Logging.IsEnabled)

@@ -420,109 +420,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         #endregion DeviceCapabilities
 
-        #region CustomAllocationDefinition tests
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientAmqpSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Individual,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
-        public async Task DPS_Registration_AmqpWs_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Individual,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Amqp_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientAmqpSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Group,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
-        public async Task DPS_Registration_AmqpWs_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Group,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientMqttSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Individual,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
-        public async Task DPS_Registration_MqttWs_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Individual,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Mqtt_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientMqttSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Group,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_MqttWs_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Group,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        #endregion CustomAllocationDefinition tests
-
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Registration_Mqtt_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
@@ -831,137 +728,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        /// <summary>
-        /// This test flow uses a custom allocation policy to decide which of the two hubs a device should be provisioned to.
-        /// The custom allocation policy has a webhook to an Azure function, and that function will always dictate to provision
-        /// the device to the hub with the longest host name. This test verifies that an enrollment with a custom allocation policy
-        /// pointing to that Azure function will always enroll to the hub with the longest name
-        /// </summary>
-        private async Task ProvisioningDeviceClientCustomAllocationPolicyAsync(
-            IotHubClientTransportSettings transportSettings,
-            AttestationMechanismType attestationType,
-            EnrollmentType enrollmentType,
-            bool setCustomProxy,
-            string customServerProxy = null)
-        {
-            string closeHostName = HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString);
-
-            var iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
-            string expectedDestinationHub = "";
-            if (closeHostName.Length > TestConfiguration.Provisioning.FarAwayIotHubHostName.Length)
-            {
-                expectedDestinationHub = closeHostName;
-            }
-            else if (closeHostName.Length < TestConfiguration.Provisioning.FarAwayIotHubHostName.Length)
-            {
-                expectedDestinationHub = TestConfiguration.Provisioning.FarAwayIotHubHostName;
-            }
-            else
-            {
-                //custom endpoint for this test allocates the device to the hub with the longer hostname. If both hubs
-                // have the same length, then the test is no longer determenistic, as the device could be allocated to either hub
-                Assert.Fail("Configuration failure: far away hub hostname cannot be the same length as the close hub hostname");
-            }
-
-            await ProvisioningDeviceClientProvisioningFlowCustomAllocationAllocateToHubWithLongestHostNameAsync(
-                    transportSettings,
-                    attestationType,
-                    enrollmentType,
-                    setCustomProxy,
-                    iotHubsToProvisionTo,
-                    expectedDestinationHub,
-                    customServerProxy)
-                .ConfigureAwait(false);
-        }
-
-        private async Task ProvisioningDeviceClientProvisioningFlowCustomAllocationAllocateToHubWithLongestHostNameAsync(
-            IotHubClientTransportSettings transportSettings,
-            AttestationMechanismType attestationType,
-            EnrollmentType? enrollmentType,
-            bool setCustomProxy,
-            IList<string> iotHubsToProvisionTo,
-            string expectedDestinationHub,
-            string proxyServerAddress = null)
-        {
-            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
-            string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-
-            var customAllocationDefinition = new CustomAllocationDefinition
-            {
-                WebhookUrl = TestConfiguration.Provisioning.CustomAllocationPolicyWebhook,
-                ApiVersion = "2019-03-31",
-            };
-
-
-            ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
-            AuthenticationProvider auth = null;
-
-            try
-            {
-                auth = await CreateAuthProviderFromNameAsync(
-                    attestationType,
-                    enrollmentType,
-                    groupId,
-                    null,
-                    AllocationPolicy.Custom,
-                    customAllocationDefinition,
-                    iotHubsToProvisionTo)
-                .ConfigureAwait(false);
-
-                // Check basic provisioning
-                if (ImplementsWebProxy(transportSettings) && setCustomProxy)
-                {
-                    clientOptions.TransportSettings.Proxy = proxyServerAddress == null
-                        ? null
-                        : new WebProxy(s_proxyServerAddress);
-                }
-
-                var provClient = new ProvisioningDeviceClient(
-                    s_globalDeviceEndpoint,
-                    TestConfiguration.Provisioning.IdScope,
-                    auth,
-                    clientOptions);
-                using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
-
-                // Test registering with valid additional data payload
-                DeviceRegistrationResult result = await provClient
-                    .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
-                    .ConfigureAwait(false);
-                ValidateDeviceRegistrationResult(true, result);
-                result.AssignedHub.Should().Be(expectedDestinationHub);
-
-                // Test registering without additional data
-                result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                ValidateDeviceRegistrationResult(false, result);
-            }
-            finally
-            {
-                try
-                {
-                    if (auth != null)
-                    {
-                        Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
-                        await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
-                    }
-
-                    if (auth is AuthenticationProviderX509 x509Auth)
-                    {
-                        X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
-                        deviceCertificate?.Dispose();
-                    }
-
-                    if (auth is IDisposable disposableAuth)
-                    {
-                        disposableAuth?.Dispose();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
-                }
-            }
-        }
-
         private async Task ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
             IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
@@ -1231,7 +997,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             throw new NotSupportedException($"Unknown X509 type: '{enrollmentType}'");
                     }
 
-                    return new AuthenticationProviderX509Certificate(certificate, collection);
+                    return new AuthenticationProviderX509(certificate, collection);
 
                 case AttestationMechanismType.SymmetricKey:
                     switch (enrollmentType)
@@ -1363,7 +1129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         .RetryOperationsAsync(
                             async () =>
                             {
-                                await dpsClient.DeleteIndividualEnrollmentAsync(authProvider.GetRegistrationId()).ConfigureAwait(false);
+                                await dpsClient.IndividualEnrollments.DeleteAsync(authProvider.GetRegistrationId()).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
@@ -1377,7 +1143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         .RetryOperationsAsync(
                             async () =>
                             {
-                                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                                await dpsClient.EnrollmentGroups.DeleteAsync(groupId).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,

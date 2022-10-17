@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The configurable options for <see cref="IotHubServiceClient"/> instances.
     /// </summary>
-    public class IotHubServiceClientOptions
+    public sealed class IotHubServiceClientOptions
     {
         /// <summary>
         /// The web proxy that will be used to connect to IoT hub when using the HTTP protocol.

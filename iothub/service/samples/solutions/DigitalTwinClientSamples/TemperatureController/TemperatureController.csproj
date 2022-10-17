@@ -18,11 +18,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+  <!--<ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="Microsoft.Azure.Devices" Version="2.0.0-preview001" />
-  </ItemGroup>
+  </ItemGroup>-->
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup>
+    <!--Condition="'$(Configuration)' == 'Debug'">-->
     <ProjectReference Include="..\..\..\..\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 

@@ -19,8 +19,6 @@ namespace Microsoft.Azure.Devices.Client
 
         internal const string CorrelationId = "correlation-id";
 
-        internal const string DeliveryCount = "iothub-deliverycount";
-
         internal const string UserId = "user-id";
 
         internal const string Operation = "iothub-operation";

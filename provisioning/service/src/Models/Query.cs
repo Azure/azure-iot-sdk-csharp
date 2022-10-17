@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -19,17 +20,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <list type="bullet">
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(string, int, CancellationToken)">IndividualEnrollment</see>
+    ///         <see cref="IndividualEnrollmentsClient.CreateQuery(string, int, CancellationToken)">IndividualEnrollment</see>
     ///     </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(string, int, CancellationToken)">EnrollmentGroup</see>
+    ///         <see cref="EnrollmentGroupsClient.CreateQuery(string, int, CancellationToken)">EnrollmentGroup</see>
     ///         </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(string, string, int, CancellationToken)">RegistrationStatus</see>
+    ///         <see cref="DeviceRegistrationStatesClient.CreateEnrollmentGroupQuery(string, string, int, CancellationToken)">RegistrationStatus</see>
     ///         </description>
     ///     </item>
     /// </list>
@@ -169,7 +170,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     _queryPath,
                     headerParameters,
                     _querySpecificationJson,
-                    null,
+                    new ETag(),
                     _cancellationToken)
                 .ConfigureAwait(false);
 

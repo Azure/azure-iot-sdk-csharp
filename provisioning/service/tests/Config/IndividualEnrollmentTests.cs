@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -21,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private readonly DateTime _sampleCreateDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private readonly DateTime _sampleLastUpdatedDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
-        private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
+        private static ETag SampleEtag = new ETag("00000000-0000-0000-0000-00000000000");
         private readonly DeviceCapabilities _sampleEdgeCapabilityTrue = new() { IotEdge = true };
         private readonly DeviceCapabilities _sampleEdgeCapabilityFalse = new() { IotEdge = false };
 
@@ -144,7 +145,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void IndividualEnrollmentConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
-            TestAssert.Throws<ArgumentNullException>(() => new IndividualEnrollment(SampleRegistrationId, null));
             TestAssert.Throws<InvalidOperationException>(() => new IndividualEnrollment(SampleRegistrationId, _sampleX509RootAttestation));
         }
 
@@ -275,8 +275,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
-            Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
-            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedDateTimeUtc);
+            Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedOnUtc);
+            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedOnUtc);
             Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
             Assert.AreEqual(null, individualEnrollment.Capabilities);
         }
@@ -295,8 +295,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
-            Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
-            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedDateTimeUtc);
+            Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedOnUtc);
+            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedOnUtc);
             Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
             Assert.AreEqual(_sampleEdgeCapabilityTrue.IotEdge, individualEnrollment.Capabilities.IotEdge);
         }
@@ -315,8 +315,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
-            Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
-            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedDateTimeUtc);
+            Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedOnUtc);
+            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedOnUtc);
             Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
             Assert.AreEqual(_sampleEdgeCapabilityFalse.IotEdge, individualEnrollment.Capabilities.IotEdge);
         }

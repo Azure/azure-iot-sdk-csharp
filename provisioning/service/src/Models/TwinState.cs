@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The TwinState can contain one <see cref="TwinCollection"/> of Tags, and one
     /// <see cref="TwinCollection"/> of properties.desired.
     ///
-    /// Each entity in the collections can contain a associated <see cref="Metadata"/>.
+    /// Each entity in the collections can contain a associated <see cref="TwinMetadata"/>.
     ///
     /// These metadata are provided by the Service and contains information about the last
     ///     updated date time, and version.

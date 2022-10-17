@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(
                 TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
-            Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
+            Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery(
                 "SELECT * FROM enrollmentGroups");
 
             Func<Task> act = async () => await q.NextAsync();
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             X509Certificate2Helper.GenerateSelfSignedCertificateFiles(certificateSubject, s_x509CertificatesFolder, Logger);
 
             using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_x509CertificatesFolder);
-            var auth = new AuthenticationProviderX509Certificate(cert);
+            var auth = new AuthenticationProviderX509(cert);
             var provisioningDeviceClient = new ProvisioningDeviceClient(
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",

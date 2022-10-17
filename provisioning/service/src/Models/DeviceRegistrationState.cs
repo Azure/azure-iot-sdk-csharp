@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Azure;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -30,13 +31,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Registration create date time (in UTC).
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? CreatedDateTimeUtc { get; internal set; }
+        public DateTime? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Last updated date time (in UTC).
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? LastUpdatedDateTimeUtc { get; internal set; }
+        public DateTime? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Assigned IoT hub.
@@ -72,6 +73,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Registration status ETag.
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string ETag { get; internal set; }
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        public ETag ETag { get; internal set; }
     }
 }

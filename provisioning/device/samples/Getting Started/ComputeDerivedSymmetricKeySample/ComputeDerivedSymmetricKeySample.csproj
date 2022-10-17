@@ -6,6 +6,7 @@
     <LangVersion>9.0</LangVersion>
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Samples</RootNamespace>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>

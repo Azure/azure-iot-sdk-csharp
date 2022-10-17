@@ -3,14 +3,13 @@
 
 using System;
 using System.Net.Security;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Contains MQTT transport-specific settings for the device and module clients.
     /// </summary>
-    public class IotHubClientMqttSettings : IotHubClientTransportSettings
+    public sealed class IotHubClientMqttSettings : IotHubClientTransportSettings
     {
         /// <summary>
         /// Creates an instance of this class.

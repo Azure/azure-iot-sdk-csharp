@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
                 MessageEventCallback = OnMessageReceivedAsync,
             };
 
-            InnerHandler = pipelineBuilder.Build(PipelineContext);
+            InnerHandler = pipelineBuilder.Build(PipelineContext, _clientOptions.RetryPolicy);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, _clientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
@@ -95,23 +95,6 @@ namespace Microsoft.Azure.Devices.Client
         internal IDelegatingHandler InnerHandler { get; set; }
 
         private protected PipelineContext PipelineContext { get; private set; }
-
-        /// <summary>
-        /// Sets the retry policy used in the operation retries.
-        /// The change will take effect after any in-progress operations.
-        /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is
-        /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c></param>
-        public void SetRetryPolicy(IRetryPolicy retryPolicy)
-        {
-            RetryDelegatingHandler retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
-            if (retryDelegatingHandler == null)
-            {
-                throw new NotSupportedException();
-            }
-
-            retryDelegatingHandler.SetRetryPolicy(retryPolicy);
-        }
 
         /// <summary>
         /// Open the client instance. Must be done before any operation can begin.

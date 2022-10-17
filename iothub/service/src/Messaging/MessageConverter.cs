@@ -35,9 +35,9 @@ namespace Microsoft.Azure.Devices
                 amqpMessage.Properties.To = data.To;
             }
 
-            if (!data.ExpiryTimeUtc.Equals(default))
+            if (!data.ExpiresOnUtc.Equals(default))
             {
-                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc;
+                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiresOnUtc;
             }
 
             if (data.CorrelationId != null)

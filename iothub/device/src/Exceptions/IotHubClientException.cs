@@ -41,35 +41,6 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        protected internal IotHubClientException(string message)
-            : this(message, false)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        protected internal IotHubClientException(string message, bool isTransient)
-            : this(message, isTransient, trackingId: string.Empty)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="errorCode">The specific error code.</param>
-        protected internal IotHubClientException(string message, IotHubClientErrorCode errorCode)
-            : this(message, trackingId: string.Empty, errorCode)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         protected internal IotHubClientException(string message, Exception innerException = null)
             : this(message, false, string.Empty, innerException)

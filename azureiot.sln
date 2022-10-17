@@ -48,9 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		readme.md = readme.md
 		SDK v2 migration guide.md = SDK v2 migration guide.md
 		supported_platforms.md = supported_platforms.md
-		vsts\test-release-nuget.yaml = vsts\test-release-nuget.yaml
 		test.runsettings = test.runsettings
-		vsts\vsts.yaml = vsts\vsts.yaml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Client.UnitTests", "provisioning\device\tests\Microsoft.Azure.Devices.Provisioning.Client.UnitTests.csproj", "{8797C176-398A-4347-B8E9-38FAF5746EC4}"
@@ -174,6 +172,37 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\getting started\RoutingTutorial\SimulatedDevice\SimulatedDevice.csproj", "{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "iothub\service\samples\getting started\ReadD2cMessages\ReadD2cMessages.csproj", "{F4DA6FA4-7655-4116-994B-9B2E3D3522C0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vsts", "vsts", "{CC532097-89B3-4971-97CB-A790573E38DA}"
+	ProjectSection(SolutionItems) = preProject
+		vsts\build-release-artifacts.yml = vsts\build-release-artifacts.yml
+		vsts\build-test-nuget.yml = vsts\build-test-nuget.yml
+		vsts\CredScanSuppressions.json = vsts\CredScanSuppressions.json
+		vsts\determine_tests_to_run.ps1 = vsts\determine_tests_to_run.ps1
+		vsts\gatedBuild.ps1 = vsts\gatedBuild.ps1
+		vsts\horton-e2e-fault-injection.yaml = vsts\horton-e2e-fault-injection.yaml
+		vsts\horton-e2e.yaml = vsts\horton-e2e.yaml
+		vsts\PolicheckExclusionsDB.mdb = vsts\PolicheckExclusionsDB.mdb
+		vsts\releaseTest.ps1 = vsts\releaseTest.ps1
+		vsts\test-release-nuget.yaml = vsts\test-release-nuget.yaml
+		vsts\vsts.yaml = vsts\vsts.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisites", "{1C8A8E21-1EBC-4771-BB17-1E81434168B8}"
+	ProjectSection(SolutionItems) = preProject
+		e2e\test\prerequisites\E2ETestsSetup\e2eTestsSetup.ps1 = e2e\test\prerequisites\E2ETestsSetup\e2eTestsSetup.ps1
+		e2e\test\prerequisites\E2ETestsSetup\generateArmTemplate.ps1 = e2e\test\prerequisites\E2ETestsSetup\generateArmTemplate.ps1
+		e2e\test\prerequisites\E2ETestsSetup\LoadEnvironmentVariablesFromKeyVault.ps1 = e2e\test\prerequisites\E2ETestsSetup\LoadEnvironmentVariablesFromKeyVault.ps1
+		e2e\test\prerequisites\readme.md = e2e\test\prerequisites\readme.md
+		e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep = e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep
+		e2e\test\prerequisites\E2ETestsSetup\test-resources.json = e2e\test\prerequisites\E2ETestsSetup\test-resources.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DpsCustomAllocator", "DpsCustomAllocator", "{FE579E0D-D55A-495E-A758-B611BA8C5C24}"
+	ProjectSection(SolutionItems) = preProject
+		e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\function.proj = e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\function.proj
+		e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\run.csx = e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\run.csx
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -449,6 +478,9 @@ Global
 		{F690C980-97D9-47F2-86C3-1745CB0BE530} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{7DFE6BB7-B2ED-498C-BEC4-414DEE83BD54} = {F690C980-97D9-47F2-86C3-1745CB0BE530}
 		{F4DA6FA4-7655-4116-994B-9B2E3D3522C0} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
+		{CC532097-89B3-4971-97CB-A790573E38DA} = {719D18A7-E943-461B-B777-0AAEC43916F5}
+		{1C8A8E21-1EBC-4771-BB17-1E81434168B8} = {662CE01D-7A7F-48D8-80CE-5DC9C60677E8}
+		{FE579E0D-D55A-495E-A758-B611BA8C5C24} = {1C8A8E21-1EBC-4771-BB17-1E81434168B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

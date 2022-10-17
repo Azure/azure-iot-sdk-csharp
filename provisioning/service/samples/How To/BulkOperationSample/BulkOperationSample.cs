@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly ProvisioningServiceClient _provisioningServiceClient;
         private const string SampleRegistrationId1 = "myvalid-registratioid-csharp-1";
         private const string SampleRegistrationId2 = "myvalid-registratioid-csharp-2";
-        
+
         // Maximum number of elements per query.
         private const int QueryPageSize = 100;
 
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
             Console.WriteLine("\nRunning the bulk operation to create the individualEnrollments...");
             BulkEnrollmentOperationResult bulkEnrollmentOperationResult =
-                await _provisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode.Create, individualEnrollments);
+                await _provisioningServiceClient.IndividualEnrollments.RunBulkOperationAsync(BulkOperationMode.Create, individualEnrollments);
             Console.WriteLine("\nResult of the Create bulk enrollment.");
             Console.WriteLine(bulkEnrollmentOperationResult);
 
@@ -59,17 +59,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             {
                 string registrationId = individualEnrollment.RegistrationId;
                 Console.WriteLine($"\nGetting the {nameof(individualEnrollment)} information for {registrationId}...");
-                IndividualEnrollment getResult = await _provisioningServiceClient
-                    .GetIndividualEnrollmentAsync(registrationId);
+                IndividualEnrollment getResult = await _provisioningServiceClient.IndividualEnrollments
+                    .GetAsync(registrationId);
                 Console.WriteLine(getResult);
             }
         }
-        
+
         public async Task DeleteIndividualEnrollmentsAsync(List<IndividualEnrollment> individualEnrollments)
         {
             Console.WriteLine("\nDeleting the set of individualEnrollments...");
-            BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient
-                .RunBulkEnrollmentOperationAsync(BulkOperationMode.Delete, individualEnrollments);
+            BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient.IndividualEnrollments
+                .RunBulkOperationAsync(BulkOperationMode.Delete, individualEnrollments);
             Console.WriteLine(bulkEnrollmentOperationResult);
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nCreating a query for enrollments...");
 
-            Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery("SELECT * FROM enrollments", QueryPageSize);
+            Query query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments", QueryPageSize);
             while (query.HasNext())
             {
                 Console.WriteLine("\nQuerying the next enrollments...");

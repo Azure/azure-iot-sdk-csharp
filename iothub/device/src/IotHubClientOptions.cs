@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Options that allow configuration of the IoT hub device or module client instance during initialization.
     /// </summary>
-    public class IotHubClientOptions
+    public sealed class IotHubClientOptions
     {
         /// <summary>
         /// Creates an instances of this class with the default transport settings.
@@ -80,6 +80,16 @@ namespace Microsoft.Azure.Devices.Client
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
 
         /// <summary>
+        /// Sets the retry policy used in the operation retries.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to a nearly infinite exponential backoff. If set to null, will use <see cref="NoRetry"/> to perform no retries.
+        /// Can be set to any of the built in retry policies such as <see cref="FixedDelayRetryPolicy"/> or <see cref="IncrementalDelayRetryPolicy"/> 
+        /// or a custom one by inheriting from <see cref="IRetryPolicy"/>.
+        /// </remarks>
+        public IRetryPolicy RetryPolicy { get; set; } = new ExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
+
+        /// <summary>
         /// Specifies additional information that will be appended to the user-agent string that is sent to IoT hub.
         /// </summary>
         public string AdditionalUserAgentInfo
@@ -88,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
             set => UserAgentInfo.Extra = value;
         }
 
-        internal virtual ProductInfo UserAgentInfo { get; } = new();
+        internal ProductInfo UserAgentInfo { get; } = new();
 
         internal IotHubClientOptions Clone()
         {

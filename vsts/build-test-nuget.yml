@@ -33,7 +33,7 @@ jobs:
         displayName: 'Copy nuget package files to the artifacts folder'
         inputs:
           SourceFolder: '$(Build.SourcesDirectory)/bin/pkg'
-          Contents: '**/*.*nupkg'
+          Contents: '**/Microsoft.Azure.Devices.*.*nupkg'
           TargetFolder: '$(Build.ArtifactStagingDirectory)/nuget'
         condition: always()
 
@@ -62,8 +62,6 @@ jobs:
           FRAMEWORK: netcoreapp2.1.30
         .Net Framwork 4.7.2:
           FRAMEWORK: net472
-        .Net Framework 4.5.1:
-          FRAMEWORK: net451
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
@@ -122,11 +120,6 @@ jobs:
           version: 2.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
- 
-#      - script: |
-#          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-#          sn -Vr *,31bf3856ad364e35
-#        displayName: 'Disable strong name validation'
 
       - script: |
           choco install -y squid
@@ -145,8 +138,6 @@ jobs:
           DPS_IDSCOPE: $(DPS-IDSCOPE)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
           DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
           DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
           DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
           # Environment variables for Azure resources used for E2E tests (common)
@@ -418,8 +409,6 @@ jobs:
           DPS_IDSCOPE: $(DPS-IDSCOPE)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
           DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
           DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
           DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
           # Environment variables for Azure resources used for E2E tests (common)

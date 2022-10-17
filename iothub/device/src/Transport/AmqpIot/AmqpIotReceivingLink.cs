@@ -56,6 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal void SafeClose()
         {
+            _receivingAmqpLink.Closed -= ReceivingAmqpLinkClosed;
             _receivingAmqpLink.SafeClose();
         }
 
