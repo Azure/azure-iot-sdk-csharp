@@ -34,7 +34,6 @@ For a more in depth explanation as to why the IoT services are doing this, pleas
 | Microsoft.Azure.Devices.Authentication                | [![NuGet][iothub-auth-release]][iothub-auth-nuget]        |
 | Microsoft.Azure.Devices.Provisioning.Client           | [![NuGet][dps-device-release]][dps-device-nuget]          |
 | Microsoft.Azure.Devices.Provisioning.Service          | [![NuGet][dps-service-release]][dps-service-nuget]        |
-| Microsoft.Azure.Devices.Provisioning.Security.Tpm     | [![NuGet][dps-tpm-release]][dps-tpm-nuget]                |
 | Microsoft.Azure.Devices.DigitalTwin.Client            | N/A                                                       |
 | Microsoft.Azure.Devices.DigitalTwin.Service           | N/A                                                       |
 
@@ -230,8 +229,6 @@ To learn more, review the [privacy statement](https://go.microsoft.com/fwlink/?L
 [dps-device-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Client/
 [dps-service-release]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Provisioning.Service?style=plastic
 [dps-service-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Service/
-[dps-tpm-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Provisioning.Security.Tpm.svg?style=plastic
-[dps-tpm-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Provisioning.Security.Tpm/
 [pnp-device-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.DigitalTwin.Client/
 [pnp-service-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.DigitalTwin.Service/
 [pnp-device-dev-guide]: https://docs.microsoft.com/azure/iot-pnp/concepts-developer-guide-device?pivots=programming-language-csharp
