@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
             set => UserAgentInfo.Extra = value;
         }
 
-        internal virtual ProductInfo UserAgentInfo { get; } = new();
+        internal ProductInfo UserAgentInfo { get; } = new();
 
         internal IotHubClientOptions Clone()
         {

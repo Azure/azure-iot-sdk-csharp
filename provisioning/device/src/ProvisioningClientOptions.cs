@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             set => UserAgentInfo.Extra = value;
         }
 
-        internal virtual ProductInfo UserAgentInfo { get; } = new();
+        internal ProductInfo UserAgentInfo { get; } = new();
 
         internal ProvisioningClientOptions Clone()
         {
