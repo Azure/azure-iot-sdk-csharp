@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
 
                     // Send the telemetry message.
-                    await _deviceClient.SendEventAsync(message, ct);
+                    await _deviceClient.SendTelemetryAsync(message, ct);
                     Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
 
                     await Task.Delay(s_telemetryInterval, ct);

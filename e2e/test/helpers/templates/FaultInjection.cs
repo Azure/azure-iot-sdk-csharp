@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     faultDelay,
                     faultDuration);
 
-                await deviceClient.SendEventAsync(faultInjectionMessage, cts.Token).ConfigureAwait(false);
+                await deviceClient.SendTelemetryAsync(faultInjectionMessage, cts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is IotHubClientException hubEx && hubEx.IsTransient)
             {

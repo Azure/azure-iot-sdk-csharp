@@ -56,20 +56,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// getting/creating/setting/deleting individual enrollments, querying individual enrollments, and getting attestation mechanisms
         /// for particular individual enrollments.
         /// </summary>
-        public IndividualEnrollmentsClient IndividualEnrollments { get; protected set; }
+        public IndividualEnrollmentsClient IndividualEnrollments { get; protected private set; }
 
         /// <summary>
         /// Subclient of <see cref="ProvisioningServiceClient"/> that handles all enrollment group operations including
         /// getting/creating/setting/deleting enrollment groups, querying enrollment groups, and getting attestation mechanisms
         /// for particular enrollment groups.
         /// </summary>
-        public EnrollmentGroupsClient EnrollmentGroups { get; protected set; }
+        public EnrollmentGroupsClient EnrollmentGroups { get; protected private set; }
 
         /// <summary>
         /// Subclient of <see cref="ProvisioningServiceClient"/> that handles all device registration state operations including
         /// getting a device registration state, deleting a device registration state, and querying device registration states.
         /// </summary>
-        public DeviceRegistrationStatesClient DeviceRegistrationStates { get; protected set; }
+        public DeviceRegistrationStatesClient DeviceRegistrationStates { get; protected private set; }
 
         /// <inheritdoc/>
         public void Dispose()

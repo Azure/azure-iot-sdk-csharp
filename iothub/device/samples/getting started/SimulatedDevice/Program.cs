@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     await deviceClient.OpenAsync(ct);
                     // Send the telemetry message
-                    await deviceClient.SendEventAsync(message, ct);
+                    await deviceClient.SendTelemetryAsync(message, ct);
                     Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
 
                     await Task.Delay(1000, ct);

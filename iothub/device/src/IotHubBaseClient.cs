@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The latest connection status information since the last status change.
         /// </summary>
-        public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
+        public ConnectionStatusInfo ConnectionStatusInfo { get; protected private set; } = new();
 
         /// <summary>
         /// The callback to be executed each time connection status change notification is received.
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        public async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryAsync(OutgoingMessage message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
@@ -152,13 +152,14 @@ namespace Microsoft.Azure.Devices.Client
         /// one after the other. The client instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// For more information on IoT Edge module routing for <see cref="IotHubModuleClient"/> see <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// For more information on IoT Edge module routing for <see cref="IotHubModuleClient"/> see
+        /// <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
         /// </remarks>
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SendEventBatchAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryBatchAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
             cancellationToken.ThrowIfCancellationRequested();
@@ -190,12 +191,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetMessageCallbackAsync(
+        public async Task SetIncomingMessageCallbackAsync(
             Func<IncomingMessage, Task<MessageAcknowledgement>> messageCallback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messageCallback, nameof(SetMessageCallbackAsync));
+                Logging.Enter(this, messageCallback, nameof(SetIncomingMessageCallbackAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -225,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client
                 _receiveMessageSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messageCallback, nameof(SetMessageCallbackAsync));
+                    Logging.Exit(this, messageCallback, nameof(SetIncomingMessageCallbackAsync));
             }
         }
 

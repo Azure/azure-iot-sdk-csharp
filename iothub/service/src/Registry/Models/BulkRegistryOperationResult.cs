@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -8,22 +9,18 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Encapsulates the result of a bulk registry operation.
     /// </summary>
-    public sealed class BulkRegistryOperationResult
+    public class BulkRegistryOperationResult
     {
         /// <summary>
         /// Whether or not the operation was successful.
         /// </summary>
         [JsonProperty(PropertyName = "isSuccessful", Required = Required.Always)]
-        public bool IsSuccessful { get; internal set; }
+        public bool IsSuccessful { get; protected internal set; }
 
         /// <summary>
-        /// If the operation was not successful, this contains an array of DeviceRegistryOperationError objects.
+        /// If the operation was not successful, this contains DeviceRegistryOperationError objects.
         /// </summary>
         [JsonProperty(PropertyName = "errors", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Performance",
-            "CA1819:Properties should not return arrays",
-            Justification = "Cannot change property types on public classes.")]
-        public DeviceRegistryOperationError[] Errors { get; internal set; }
+        public IList<DeviceRegistryOperationError> Errors { get; internal set; } = new List<DeviceRegistryOperationError>();
     }
 }

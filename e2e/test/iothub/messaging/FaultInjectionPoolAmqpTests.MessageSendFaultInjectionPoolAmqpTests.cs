@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                await deviceClient.SendEventAsync(testMessage, cts.Token).ConfigureAwait(false);
+                await deviceClient.SendTelemetryAsync(testMessage, cts.Token).ConfigureAwait(false);
             }
 
             await FaultInjectionPoolingOverAmqp

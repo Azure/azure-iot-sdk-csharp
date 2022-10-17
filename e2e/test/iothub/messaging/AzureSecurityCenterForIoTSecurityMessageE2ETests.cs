@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             OutgoingMessage testMessage = ComposeD2CSecurityTestMessage();
-            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
         private async Task SendSingleSecurityMessageModuleAsync(
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
             OutgoingMessage testMessage = ComposeD2CSecurityTestMessage();
-            await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await moduleClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
         protected override void Dispose(bool disposing)

@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{deviceId}: DeviceClient SendEventAsync.");
             var testMessage = new OutgoingMessage("TestMessage");
-            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
 
             Logger.Trace($"{deviceId}: DeviceClient CloseAsync.");
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
             using var cts1 = new CancellationTokenSource(timeout);
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.SendEventAsync(message, cts1.Token).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(message, cts1.Token).ConfigureAwait(false);
 
             // Wait for the Token to expire.
 
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Test that the client is able to send messages
             Logger.Trace($"[{testDevice.Id}]: SendEventAsync (2)");
             using var cts2 = new CancellationTokenSource(timeout);
-            await deviceClient.SendEventAsync(message, cts2.Token).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(message, cts2.Token).ConfigureAwait(false);
         }
 
         private async Task IotHubDeviceClient_TokenIsRefreshed_Internal(IotHubClientTransportSettings transportSettings, TimeSpan ttl)
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
                 Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (1)");
-                await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                await deviceClient.SendTelemetryAsync(message, cts.Token).ConfigureAwait(false);
                 await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (2)");
-                await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                await deviceClient.SendTelemetryAsync(message, cts.Token).ConfigureAwait(false);
                 await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)

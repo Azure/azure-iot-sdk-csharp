@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string primary = "valid-ca-reference-1";
 
             // act
-            var x509CAReferences = new X509CAReferences(primary);
+            var x509CAReferences = new X509CaReferences(primary);
 
             // assert
             Assert.AreEqual(primary, x509CAReferences.Primary);
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = "valid-ca-reference-1";
 
             // act
-            var x509CAReferences = new X509CAReferences(primary, secondary);
+            var x509CAReferences = new X509CaReferences(primary, secondary);
 
             // assert
             Assert.AreEqual(primary, x509CAReferences.Primary);

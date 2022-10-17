@@ -150,8 +150,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // assert
             Assert.IsNotNull(x509CertificateWithInfo.Info);
             Assert.AreEqual(SUBJECT_NAME, x509CertificateWithInfo.Info.SubjectName);
-            Assert.AreEqual(SHA1THUMBPRINT, x509CertificateWithInfo.Info.SHA1Thumbprint);
-            Assert.AreEqual(SHA256THUMBPRINT, x509CertificateWithInfo.Info.SHA256Thumbprint);
+            Assert.AreEqual(SHA1THUMBPRINT, x509CertificateWithInfo.Info.Sha1Thumbprint);
+            Assert.AreEqual(SHA256THUMBPRINT, x509CertificateWithInfo.Info.Sha256Thumbprint);
             Assert.AreEqual(ISSUER_NAME, x509CertificateWithInfo.Info.IssuerName);
             Assert.AreEqual(NOT_BEFORE_UTC, x509CertificateWithInfo.Info.NotBeforeUtc);
             Assert.AreEqual(NOT_AFTER_UTC, x509CertificateWithInfo.Info.NotAfterUtc);

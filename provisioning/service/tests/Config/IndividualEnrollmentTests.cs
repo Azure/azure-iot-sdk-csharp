@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleCAReference = "valid/ca/reference";
         private readonly X509Attestation _sampleX509RootAttestation = X509Attestation.CreateFromRootCertificates(SamplePublicKeyCertificateString);
         private readonly X509Attestation _sampleX509ClientAttestation = X509Attestation.CreateFromClientCertificates(SamplePublicKeyCertificateString);
-        private readonly X509Attestation _sampleX509CAReferenceAttestation = X509Attestation.CreateFromCAReferences(SampleCAReference);
+        private readonly X509Attestation _sampleX509CAReferenceAttestation = X509Attestation.CreateFromCaReferences(SampleCAReference);
 
         private static readonly string s_sampleIndividualEnrollmentJsonBody =
             "   \"registrationId\":\"" + SampleRegistrationId + "\",\n" +
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
-            Assert.AreEqual(SampleCAReference, ((X509Attestation)individualEnrollment.Attestation).CAReferences.Primary);
+            Assert.AreEqual(SampleCAReference, ((X509Attestation)individualEnrollment.Attestation).CaReferences.Primary);
         }
 
         [TestMethod]

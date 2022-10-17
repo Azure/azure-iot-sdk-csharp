@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 ? ComposeD2cTestMessage(logger, out string _, out string _)
                 : ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger, out string _, out string _);
 
-            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
         public static async Task SendBatchMessagesAsync(IotHubDeviceClient deviceClient, MsTestLogger logger)
@@ -218,14 +218,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.SendEventBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
+            await deviceClient.SendTelemetryBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
         }
 
         private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
         {
             OutgoingMessage testMessage = ComposeD2cTestMessage(Logger, out string _, out string _);
 
-            await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await moduleClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
         private async Task OpenCloseOpenThenSendSingleMessage(TestDeviceType type, IotHubClientTransportSettings transportSettings, int messageSize = 0)

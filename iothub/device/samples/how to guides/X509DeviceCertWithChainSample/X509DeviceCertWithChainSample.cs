@@ -39,7 +39,7 @@ namespace X509DeviceCertWithChainSample
             string telemetryPayload = "{{ \"temperature\": 0d }}";
             var message = new OutgoingMessage(telemetryPayload);
 
-            await _deviceClient.SendEventAsync(message);
+            await _deviceClient.SendTelemetryAsync(message);
         }
     }
 }

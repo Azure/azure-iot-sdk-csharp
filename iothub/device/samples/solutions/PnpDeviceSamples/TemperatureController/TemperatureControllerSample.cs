@@ -377,7 +377,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var message = new OutgoingMessage(new Dictionary<string, object> { { workingSetName, workingSet } });
 
-            await _deviceClient.SendEventAsync(message, cancellationToken);
+            await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {{ \"{workingSetName}\": {workingSet} }} in KB.");
         }
 
@@ -416,7 +416,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 ComponentName = componentName,
             };
 
-            await _deviceClient.SendEventAsync(message, cancellationToken);
+            await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature} }} in °C.");
 
             if (_temperatureReadingsDateTimeOffset.ContainsKey(componentName))

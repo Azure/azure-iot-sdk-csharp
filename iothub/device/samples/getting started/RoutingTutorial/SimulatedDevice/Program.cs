@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 try
                 {
                     // Submit the message to the hub.
-                    await deviceClient.SendEventAsync(message, token);
+                    await deviceClient.SendTelemetryAsync(message, token);
 
                     // Print out the message.
                     Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, JsonConvert.SerializeObject(telemetryDataPoint));

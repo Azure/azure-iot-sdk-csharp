@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     new IotHubClientOptions(transportSettings));
             var testMessage = new OutgoingMessage();
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
     }

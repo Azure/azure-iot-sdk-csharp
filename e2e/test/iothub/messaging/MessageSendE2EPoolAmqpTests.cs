@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 OutgoingMessage testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string payload, out string p1Value);
                 Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp

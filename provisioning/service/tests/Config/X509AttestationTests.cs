@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
             Assert.IsNull(attestation.ClientCertificates.Secondary);
             Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
             Assert.IsNotNull(attestation.ClientCertificates.Secondary);
             Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
             Assert.IsNull(attestation.ClientCertificates.Secondary);
             Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
             Assert.IsNull(attestation.ClientCertificates.Secondary);
             Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
             Assert.IsNotNull(attestation.ClientCertificates.Secondary);
             Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.ClientCertificates.Primary);
             Assert.IsNull(attestation.ClientCertificates.Secondary);
             Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         /* SRS_X509_ATTESTATION_21_004: [The factory shall create a new instance of the X509Attestation with the created X509Certificates as the RootCertificates.] */
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.RootCertificates.Primary);
             Assert.IsNull(attestation.RootCertificates.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.RootCertificates.Primary);
             Assert.IsNotNull(attestation.RootCertificates.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.RootCertificates.Primary);
             Assert.IsNull(attestation.RootCertificates.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.RootCertificates.Primary);
             Assert.IsNull(attestation.RootCertificates.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -305,7 +305,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.RootCertificates.Primary);
             Assert.IsNotNull(attestation.RootCertificates.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         [TestMethod]
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(attestation.RootCertificates.Primary);
             Assert.IsNull(attestation.RootCertificates.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CAReferences);
+            Assert.IsNull(attestation.CaReferences);
         }
 
         /* SRS_X509_ATTESTATION_21_005: [The factory shall throws ArgumentException if the primary CA reference is null or empty.] */
@@ -334,8 +334,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondaryStr = null;
 
             // act - assert
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromCAReferences(primaryStr));
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromCAReferences(primaryStr, secondaryStr));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromCaReferences(primaryStr));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromCaReferences(primaryStr, secondaryStr));
         }
 
         /* SRS_X509_ATTESTATION_21_006: [The factory shall create a new instance of the X509Certificates with the provided primary and secondary CA reference.] */
@@ -347,11 +347,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string primary = CA_REFERENCE_STRING;
 
             // act
-            var attestation = X509Attestation.CreateFromCAReferences(primary);
+            var attestation = X509Attestation.CreateFromCaReferences(primary);
 
             // assert
-            Assert.IsNotNull(attestation.CAReferences.Primary);
-            Assert.IsNull(attestation.CAReferences.Secondary);
+            Assert.IsNotNull(attestation.CaReferences.Primary);
+            Assert.IsNull(attestation.CaReferences.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
             Assert.IsNull(attestation.RootCertificates);
         }
@@ -364,11 +364,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = CA_REFERENCE_STRING;
 
             // act
-            var attestation = X509Attestation.CreateFromCAReferences(primary, secondary);
+            var attestation = X509Attestation.CreateFromCaReferences(primary, secondary);
 
             // assert
-            Assert.IsNotNull(attestation.CAReferences.Primary);
-            Assert.IsNotNull(attestation.CAReferences.Secondary);
+            Assert.IsNotNull(attestation.CaReferences.Primary);
+            Assert.IsNotNull(attestation.CaReferences.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
             Assert.IsNull(attestation.RootCertificates);
         }
@@ -381,11 +381,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondary = null;
 
             // act
-            var attestation = X509Attestation.CreateFromCAReferences(primary, secondary);
+            var attestation = X509Attestation.CreateFromCaReferences(primary, secondary);
 
             // assert
-            Assert.IsNotNull(attestation.CAReferences.Primary);
-            Assert.IsNull(attestation.CAReferences.Secondary);
+            Assert.IsNotNull(attestation.CaReferences.Primary);
+            Assert.IsNull(attestation.CaReferences.Secondary);
             Assert.IsNull(attestation.ClientCertificates);
             Assert.IsNull(attestation.RootCertificates);
         }

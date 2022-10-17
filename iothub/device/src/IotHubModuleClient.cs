@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task SendEventAsync(string outputName, OutgoingMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, outputName, message, nameof(SendEventAsync));
+                Logging.Enter(this, outputName, message, nameof(SendTelemetryAsync));
 
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
             Argument.AssertNotNull(message, nameof(message));
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, outputName, message, nameof(SendEventAsync));
+                    Logging.Exit(this, outputName, message, nameof(SendTelemetryAsync));
             }
         }
 
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task SendEventBatchAsync(string outputName, IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, outputName, messages, nameof(SendEventBatchAsync));
+                Logging.Enter(this, outputName, messages, nameof(SendTelemetryBatchAsync));
 
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
 
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, outputName, messages, nameof(SendEventBatchAsync));
+                    Logging.Exit(this, outputName, messages, nameof(SendTelemetryBatchAsync));
             }
         }
 

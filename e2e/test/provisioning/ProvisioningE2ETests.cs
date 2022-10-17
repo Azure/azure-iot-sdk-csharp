@@ -885,7 +885,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Logger.Trace("DeviceClient SendEventAsync.");
 
             var testMessage = new OutgoingMessage("TestMessage");
-            await iotClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await iotClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
 
             if (sendReportedPropertiesUpdate)
             {

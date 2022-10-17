@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.OpenAsync(cts.Token);
 
             // Now subscribe to receive C2D messages through a callback (which isn't supported over HTTP).
-            await _deviceClient.SetMessageCallbackAsync(OnC2dMessageReceivedAsync);
+            await _deviceClient.SetIncomingMessageCallbackAsync(OnC2dMessageReceivedAsync);
             Console.WriteLine($"\n{DateTime.Now}> Subscribed to receive C2D messages over callback.");
 
             // Now wait to receive C2D messages through the callback.
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // Now unsubscibe from receiving the callback.
-            await _deviceClient.SetMessageCallbackAsync(null);
+            await _deviceClient.SetIncomingMessageCallbackAsync(null);
         }
 
         private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(IncomingMessage receivedMessage)
