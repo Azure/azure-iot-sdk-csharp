@@ -119,7 +119,7 @@
   "functions": [],
   "variables": {
     "hubKeysId": "[resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner')]",
-    "dpsKeysId": "[resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DpsName'), 'provisioningserviceowner')]",
+    "dpsKeysId": "[resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DpsName'), 'provisioningserviceowner')]"
   },
   "resources": [
     {
@@ -305,7 +305,7 @@
           {
             "location": "[resourceGroup().location]",
             "connectionString": "[format('HostName={0}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey={1}', parameters('HubName'), listkeys(variables('hubKeysId'), '2020-01-01').primaryKey)]"
-          },
+          }
         ]
       },
       "dependsOn": [
@@ -344,20 +344,6 @@
         "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]",
         "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName'))]"
       ]
-    },
-    {
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-11-01",
-      "name": "[parameters('ServerFarmName')]",
-      "location": "[parameters('WebRegion')]",
-      "kind": "",
-      "properties": {
-        "name": "[parameters('ServerFarmName')]"
-      },
-      "sku": {
-        "Tier": "Dynamic",
-        "Name": "Y1"
-      }
     }
   ],
   "outputs": {
