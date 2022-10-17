@@ -61,7 +61,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (argumentValue > ceilingValue)
             {
-                throw new ArgumentException(
+                throw new ArgumentOutOfRangeException(
+                    argumentName,
+                    argumentValue,
                     string.Format(
                         CultureInfo.CurrentCulture,
                         "ArgumentCannotBeGreaterThanBaseline",
@@ -69,8 +71,7 @@ namespace Microsoft.Azure.Devices.Client
                         {
                             argumentName,
                             ceilingValue,
-                        }),
-                    argumentName);
+                        }));
             }
         }
 
@@ -83,15 +84,16 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (argumentValue < 0)
             {
-                throw new ArgumentException(
+                throw new ArgumentOutOfRangeException(
+                    argumentName,
+                    argumentValue,
                     string.Format(
-                        CultureInfo.CurrentCulture, 
-                        "ArgumentCannotBeNegative", 
+                        CultureInfo.CurrentCulture,
+                        "ArgumentCannotBeNegative",
                         new object[]
-                            {
-                                argumentName
-                            }),
-                    argumentName);
+                        {
+                            argumentName
+                        }));
             }
         }
 

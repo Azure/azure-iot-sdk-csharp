@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             if (path.Length == 0
                 || _encodedPath.Length > NativePathLength)
             {
-                throw new ArgumentException(path, nameof(path));
+                throw new ArgumentOutOfRangeException(nameof(path), path);
             }
         }
     }

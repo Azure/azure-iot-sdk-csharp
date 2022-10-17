@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt
             MqttNetLogLevel.Warning => EventLevel.Warning,
             MqttNetLogLevel.Info => EventLevel.Informational,
             MqttNetLogLevel.Verbose => EventLevel.Verbose,
-            _ => throw new ArgumentException($"Unexpected level value: {mqttNetLevel}", nameof(mqttNetLevel)),
+            _ => throw new ArgumentOutOfRangeException(nameof(mqttNetLevel), $"Unexpected level value: {mqttNetLevel}"),
         };
     }
 }

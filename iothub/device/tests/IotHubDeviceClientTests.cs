@@ -1007,7 +1007,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Action createDeviceClientAuth = () => { new ClientAuthenticationWithConnectionString(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
 
             // assert
-            createDeviceClientAuth.Should().Throw<ArgumentException>();
+            createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [TestMethod]
@@ -1018,7 +1018,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Action createDeviceClientAuth = () => { new ClientAuthenticationWithConnectionString(FakeConnectionString, timeBufferPercentage: 200); };
 
             // assert
-            createDeviceClientAuth.Should().Throw<ArgumentException>();
+            createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [TestMethod]

@@ -225,9 +225,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The iterable set of query results.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="query"/> is null.</exception>
-        /// <exception cref="ArgumentException">
-        /// If the provided <paramref name="query"/> is empty or white space, or <paramref name="pageSize"/> value is less than zero.
-        /// </exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public Query CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
         {
