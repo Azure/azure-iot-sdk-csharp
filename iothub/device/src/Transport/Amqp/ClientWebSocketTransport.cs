@@ -340,13 +340,13 @@ namespace Microsoft.Azure.Devices.Client
 
             if (offset < 0 || offset > buffer.Length || size <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                throw new ArgumentException("The buffer bound is invalid.", nameof(offset));
             }
 
             int remainingBufferSpace = buffer.Length - offset;
             if (size > remainingBufferSpace)
             {
-                throw new ArgumentOutOfRangeException(nameof(size));
+                throw new ArgumentException("The buffer bound is invalid.", nameof(size));
             }
         }
 

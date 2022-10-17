@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException(nameof(propertyName));
+                    throw new ArgumentException("The property name is invalid.", nameof(propertyName));
                 }
             }
             set => TrySetMemberInternal(propertyName, value);

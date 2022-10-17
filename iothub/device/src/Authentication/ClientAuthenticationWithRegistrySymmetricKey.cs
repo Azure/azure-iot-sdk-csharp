@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         ///</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
+        /// <exception cref="ArgumentException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
         /// <paramref name="timeBufferPercentage"/> is outside the range 0-100.</exception>
         public ClientAuthenticationWithRegistrySymmetricKey(
             string key,
@@ -46,12 +46,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (suggestedTimeToLive < TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
+                throw new ArgumentException("The TTL value cannot be negative.", nameof(suggestedTimeToLive));
             }
 
             if (timeBufferPercentage < 0 || timeBufferPercentage > 100)
             {
-                throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
+                throw new ArgumentException("The time buffer percentage cannot be out of the range 0-100.", nameof(timeBufferPercentage));
             }
 
             Key = key;

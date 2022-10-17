@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void AmqpConnectionPoolSettings_UnderMinPoolSize()
         {
             _ = new AmqpConnectionPoolSettings { MaxPoolSize = 0 };
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void AmqpConnectionPoolSettings_OverMaxPoolSize()
         {
             _ = new AmqpConnectionPoolSettings { MaxPoolSize = AmqpConnectionPoolSettings.AbsoluteMaxPoolSize + 1 };

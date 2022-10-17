@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices
                     return value;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(propertyName), $"Unexpected property name '{propertyName}'.");
+                throw new ArgumentException($"Unexpected property name '{propertyName}'.", nameof(propertyName));
             }
             set => TrySetMemberInternal(propertyName, value);
         }

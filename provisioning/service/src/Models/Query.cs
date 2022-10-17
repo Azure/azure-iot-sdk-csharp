@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (pageSize < 0)
             {
-                throw new ArgumentOutOfRangeException($"{nameof(pageSize)} cannot be negative.");
+                throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
             }
 
             _contractApiHttp = contractApiHttp;
