@@ -137,6 +137,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ETag eTag,
             DeviceCapabilities capabilities)
         {
+            if (attestation == null)
+            {
+                throw new DeviceProvisioningServiceException("Service responded with an enrollment without attestation.", HttpStatusCode.BadRequest);
+            }
+
             EnrollmentGroupId = enrollmentGroupId;
             Attestation = attestation.GetAttestation(); // This is the one reason why we can't use an empty constructor here.
             IotHubHostName = iotHubHostName;
