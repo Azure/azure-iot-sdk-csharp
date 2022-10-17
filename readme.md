@@ -31,6 +31,7 @@ For a more in depth explanation as to why the IoT services are doing this, pleas
 | ---                                                   | ---                                                       |
 | Microsoft.Azure.Devices.Client                        | [![NuGet][iothub-device-release]][iothub-device-nuget]    |
 | Microsoft.Azure.Devices                               | [![NuGet][iothub-service-release]][iothub-service-nuget]  |
+| Microsoft.Azure.Devices.Authentication                | [![NuGet][iothub-auth-release]][iothub-auth-nuget]        |
 | Microsoft.Azure.Devices.Shared                        | [![NuGet][iothub-shared-release]][iothub-shared-nuget]    |
 | Microsoft.Azure.Devices.Provisioning.Client           | [![NuGet][dps-device-release]][dps-device-nuget]          |
 | Microsoft.Azure.Devices.Provisioning.Transport.Amqp   | [![NuGet][dps-device-amqp-release]][dps-device-amqp-nuget]|
@@ -226,6 +227,8 @@ To learn more, review the [privacy statement](https://go.microsoft.com/fwlink/?L
 [iothub-device-release]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Client?style=plastic
 [iothub-device-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Client/
 [iothub-service-release]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices?style=plastic
+[iothub-auth-release]: https://img.shields.io/nuget/vpre/Microsoft.Azure.Devices.Authentication?style=plastic
+[iothub-auth-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Authentication
 [iothub-service-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices/
 [iothub-shared-release]: https://img.shields.io/nuget/v/Microsoft.Azure.Devices.Shared.svg?style=plastic
 [iothub-shared-nuget]: https://www.nuget.org/packages/Microsoft.Azure.Devices.Shared/
