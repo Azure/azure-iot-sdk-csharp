@@ -177,17 +177,6 @@ if ($GenerateResourcesForTestDevOpsPipeline)
 # Get Function App contents to pass to deployment
 #################################################################################################
 
-$dpsCustomAllocatorRunCsxPath = Resolve-Path $PSScriptRoot/DpsCustomAllocatorFunctionFiles/run.csx
-$dpsCustomAllocatorProjPath = Resolve-Path $PSScriptRoot/DpsCustomAllocatorFunctionFiles/function.proj
-
-# Read bytes from files
-$dpsCustomAllocatorRunCsxBytes = [System.IO.File]::ReadAllBytes($dpsCustomAllocatorRunCsxPath);
-$dpsCustomAllocatorProjBytes = [System.IO.File]::ReadAllBytes($dpsCustomAllocatorProjPath);
-
-# convert contents to base64 string, which will be decoded in the ARM template to ensure all the characters are interpreted correctly
-$dpsCustomAllocatorRunCsxContent = [System.Convert]::ToBase64String($dpsCustomAllocatorRunCsxBytes);
-$dpsCustomAllocatorProjContent = [System.Convert]::ToBase64String($dpsCustomAllocatorProjBytes);
-
 ## remove any characters that aren't letters or numbers, and then validate
 $storageAccountName = "$($ResourceGroup.ToLower())sa"
 $storageAccountName = [regex]::Replace($storageAccountName, "[^a-z0-9]", "")
@@ -392,8 +381,6 @@ az deployment group create `
     UserObjectId=$userObjectId `
     StorageAccountName=$storageAccountName `
     KeyVaultName=$keyVaultName `
-    DpsCustomAllocatorRunCsxContent=$dpsCustomAllocatorRunCsxContent `
-    DpsCustomAllocatorProjContent=$dpsCustomAllocatorProjContent `
     HubUnitsCount=$iothubUnitsToBeCreated `
     UserAssignedManagedIdentityName=$managedIdentityName `
     EnableIotHubSecuritySolution=$EnableIotHubSecuritySolution
@@ -411,13 +398,10 @@ Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), re
 
 Write-Host "`nGetting generated names and secrets from ARM template output."
 $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
-$farHubHostName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubHostName.value' --output tsv
-$farHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.farHubConnectionString.value' --output tsv
 $dpsName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.dpsName.value' --output tsv
 $dpsConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.dpsConnectionString.value' --output tsv
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
 $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
-$customAllocationPolicyWebhook = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.customAllocationPolicyWebhook.value' --output tsv
 $keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
 $instrumentationKey = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.instrumentationKey.value' --output tsv
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
@@ -688,8 +672,6 @@ $keyvaultKvps = @{
     "DPS-IDSCOPE" = $dpsIdScope;
     "PROVISIONING-CONNECTION-STRING" = $dpsConnectionString;
     "DPS-GLOBALDEVICEENDPOINT" = $dpsEndpoint;
-    "FAR-AWAY-IOTHUB-HOSTNAME" = $farHubHostName;
-    "CUSTOM-ALLOCATION-POLICY-WEBHOOK" = $customAllocationPolicyWebhook;
     "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $GroupCertificatePassword;
     "DPS-X509-GROUP-ENROLLMENT-NAME" = $groupEnrollmentId;
 
@@ -721,7 +703,6 @@ $keyvaultKvps = @{
     # These environment variables are only used in Java
     "IOT-DPS-CONNECTION-STRING" = $dpsConnectionString; # DPS Connection string Environment variable for Java
     "IOT-DPS-ID-SCOPE" = $dpsIdScope; # DPS ID Scope Environment variable for Java
-    "FAR-AWAY-IOTHUB-CONNECTION-STRING" = $farHubConnectionString;
     "IS-BASIC-TIER-HUB" = "false";
 }
 
