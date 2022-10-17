@@ -12,7 +12,7 @@ are outlines of the notable breaking changes as well as a mapping from version 1
    - [IoT hub device client](#iot-hub-device-client)
    - [IoT hub service client](#iot-hub-service-client)
    - [Device Provisioning Service (DPS) device client](#dps-device-client)
-   - [DPS service slient](#dps-service-client)
+   - [DPS service client](#dps-service-client)
    - [Authentication provider client](#authentication-provider-client)
  - [Frequently asked questions](#frequently-asked-questions)
 
