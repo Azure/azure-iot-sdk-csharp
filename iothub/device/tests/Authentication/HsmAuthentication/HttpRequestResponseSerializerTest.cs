@@ -168,7 +168,14 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            await TestAssert.ThrowsAsync<IOException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken));
+
+            // act
+            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken);
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -234,7 +241,14 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             HttpBufferedStream stream = new HttpBufferedStream(memory);
 
             CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            await TestAssert.ThrowsAsync<IOException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken));
+
+            // act
+            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken);
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -280,7 +294,13 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             var memory = new MemoryStream(expected, true);
             var stream = new HttpBufferedStream(memory);
 
-            await TestAssert.ThrowsAsync<IOException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, default));
+            // act
+            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, default);
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]

@@ -138,11 +138,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IOException(webSocketException.Message, webSocketException);
+                throw new DeviceProvisioningClientException(webSocketException.Message, webSocketException, true);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IOException(httpListenerException.Message, httpListenerException);
+                throw new DeviceProvisioningClientException(httpListenerException.Message, httpListenerException, true);
             }
             finally
             {
