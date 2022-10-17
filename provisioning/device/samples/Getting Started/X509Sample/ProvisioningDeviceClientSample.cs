@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         {
             Console.WriteLine($"Loading the certificate...");
             using X509Certificate2 certificate = LoadProvisioningCertificate();
-            var security = new AuthenticationProviderX509Certificate(certificate);
+            var security = new AuthenticationProviderX509(certificate);
 
             Console.WriteLine($"Initializing the device provisioning client...");
 
