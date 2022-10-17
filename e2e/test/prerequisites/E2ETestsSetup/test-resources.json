@@ -23,19 +23,6 @@
         "description": "Signed in user objectId"
       }
     },
-    "DpsCustomAllocatorRunCsxContent": {
-      "type": "string"
-    },
-    "DpsCustomAllocatorProjContent": {
-      "type": "string"
-    },
-    "FarRegion": {
-      "type": "string",
-      "defaultValue": "southeastasia",
-      "metadata": {
-        "description": "The region for the second IoT hub in a DPS that is far away from the test devices."
-      }
-    },
     "WebRegion": {
       "type": "string",
       "defaultValue": "CentralUS",
@@ -64,23 +51,12 @@
         "description": "The IoT hub consumer group name."
       }
     },
-    "FarHubName": {
-      "type": "string",
-      "defaultValue": "[format('{0}-hubfar', resourceGroup().name)]",
-      "metadata": {
-        "description": "The name of the far away IoT hub used by tests."
-      }
-    },
     "DpsName": {
       "type": "string",
       "defaultValue": "[format('{0}-dps', resourceGroup().name)]",
       "metadata": {
         "description": "The name of DPS used by tests."
       }
-    },
-    "DpsCustomAllocatorFunctionName": {
-      "type": "string",
-      "defaultValue": "DpsCustomAllocator"
     },
     "KeyVaultName": {
       "type": "string",
@@ -110,20 +86,6 @@
       "defaultValue": "[format('{0}-ss', resourceGroup().name)]",
       "metadata": {
         "description": "The name of the security solution instance."
-      }
-    },
-    "ServerFarmName": {
-      "type": "string",
-      "defaultValue": "[format('{0}-srv', resourceGroup().name)]",
-      "metadata": {
-        "description": "The name of the server farm to host a function app for DPS custom allocation."
-      }
-    },
-    "WebsiteName": {
-      "type": "string",
-      "defaultValue": "[format('{0}-web', resourceGroup().name)]",
-      "metadata": {
-        "description": "The name of the server farm to host a function app for DPS custom allocation"
       }
     },
     "BlobServiceName": {
@@ -157,9 +119,7 @@
   "functions": [],
   "variables": {
     "hubKeysId": "[resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner')]",
-    "farHubKeysId": "[resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('FarHubName'), 'iothubowner')]",
-    "dpsKeysId": "[resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DpsName'), 'provisioningserviceowner')]",
-    "functionKeysId": "[resourceId('Microsoft.Web/sites/functions', parameters('WebsiteName'), parameters('DpsCustomAllocatorFunctionName'))]"
+    "dpsKeysId": "[resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DpsName'), 'provisioningserviceowner')]"
   },
   "resources": [
     {
@@ -332,17 +292,6 @@
       ]
     },
     {
-      "type": "Microsoft.Devices/IotHubs",
-      "apiVersion": "2020-01-01",
-      "name": "[parameters('FarHubName')]",
-      "location": "[parameters('FarRegion')]",
-      "sku": {
-        "name": "S1",
-        "capacity": 1
-      },
-      "properties": {}
-    },
-    {
       "type": "Microsoft.Devices/provisioningServices",
       "apiVersion": "2017-11-15",
       "name": "[parameters('DpsName')]",
@@ -356,15 +305,10 @@
           {
             "location": "[resourceGroup().location]",
             "connectionString": "[format('HostName={0}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey={1}', parameters('HubName'), listkeys(variables('hubKeysId'), '2020-01-01').primaryKey)]"
-          },
-          {
-            "location": "[parameters('FarRegion')]",
-            "connectionString": "[format('HostName={0}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey={1}', parameters('FarHubName'), listkeys(variables('farHubKeysId'), '2020-01-01').primaryKey)]"
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Devices/IotHubs', parameters('FarHubName'))]",
         "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
       ]
     },
@@ -400,93 +344,6 @@
         "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]",
         "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName'))]"
       ]
-    },
-    {
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-11-01",
-      "name": "[parameters('ServerFarmName')]",
-      "location": "[parameters('WebRegion')]",
-      "kind": "",
-      "properties": {
-        "name": "[parameters('ServerFarmName')]"
-      },
-      "sku": {
-        "Tier": "Dynamic",
-        "Name": "Y1"
-      }
-    },
-    {
-      "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-11-01",
-      "name": "[parameters('WebsiteName')]",
-      "location": "[parameters('WebRegion')]",
-      "kind": "functionapp",
-      "properties": {
-        "name": "[parameters('WebsiteName')]",
-        "siteConfig": {
-          "appSettings": [
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "3.0.14916"
-            },
-            {
-              "name": "FUNCTIONS_V2_COMPATIBILITY_MODE",
-              "value": "true"
-            },
-            {
-              "name": "FUNCTIONS_WORKER_RUNTIME",
-              "value": "dotnet"
-            },
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2019-06-01').keys[0].value)]"
-            },
-            {
-              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2019-06-01').keys[0].value)]"
-            },
-            {
-              "name": "WEBSITE_CONTENTSHARE",
-              "value": "[toLower(parameters('DpsCustomAllocatorFunctionName'))]"
-            }
-          ]
-        },
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarmName'))]"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarmName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Web/sites/functions",
-      "apiVersion": "2018-11-01",
-      "name": "[format('{0}/{1}', parameters('WebsiteName'), parameters('DpsCustomAllocatorFunctionName'))]",
-      "properties": {
-        "config": {
-          "bindings": [
-            {
-              "name": "req",
-              "type": "httpTrigger",
-              "direction": "in",
-              "schedule": "[parameters('DpsCustomAllocatorFunctionName')]"
-            },
-            {
-              "name": "$return",
-              "type": "http",
-              "direction": "out"
-            }
-          ],
-          "disabled": false
-        },
-        "files": {
-          "run.csx": "[base64ToString(parameters('DpsCustomAllocatorRunCsxContent'))]",
-          "function.proj": "[base64ToString(parameters('DpsCustomAllocatorProjContent'))]"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('WebsiteName'))]"
-      ]
     }
   ],
   "outputs": {
@@ -497,14 +354,6 @@
     "hubConnectionString": {
       "type": "string",
       "value": "[format('HostName={0}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey={1}', parameters('HubName'), listkeys(variables('hubKeysId'), '2019-11-04').primaryKey)]"
-    },
-    "farHubHostName": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Devices/IotHubs', parameters('FarHubName'))).hostName]"
-    },
-    "farHubConnectionString": {
-      "type": "string",
-      "value": "[format('HostName={0}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey={1}', parameters('FarHubName'), listkeys(variables('farHubKeysId'), '2019-11-04').primaryKey)]"
     },
     "dpsName": {
       "type": "string",
@@ -521,10 +370,6 @@
     "workspaceId": {
       "type": "string",
       "value": "[if(parameters('EnableIotHubSecuritySolution'), reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId, '')]"
-    },
-    "customAllocationPolicyWebhook": {
-      "type": "string",
-      "value": "[format('https://{0}.azurewebsites.net/api/{1}?code={2}', parameters('WebsiteName'), parameters('DpsCustomAllocatorFunctionName'), listkeys(variables('functionKeysId'), '2019-08-01').default)]"
     },
     "keyVaultName": {
       "type": "string",
