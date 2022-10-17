@@ -34,8 +34,6 @@ For a more in depth explanation as to why the IoT services are doing this, pleas
 | Microsoft.Azure.Devices.Authentication                | [![NuGet][iothub-auth-release]][iothub-auth-nuget]        |
 | Microsoft.Azure.Devices.Provisioning.Client           | [![NuGet][dps-device-release]][dps-device-nuget]          |
 | Microsoft.Azure.Devices.Provisioning.Service          | [![NuGet][dps-service-release]][dps-service-nuget]        |
-| Microsoft.Azure.Devices.DigitalTwin.Client            | N/A                                                       |
-| Microsoft.Azure.Devices.DigitalTwin.Service           | N/A                                                       |
 
 > Note:  
 > 1. In addition to stable builds we also release pre-release builds that contain preview features. You can find details about the preview features released by looking at the [release notes](https://github.com/Azure/azure-iot-sdk-csharp/releases). It is not recommended to take dependency on preview NuGets for production applications as breaking changes can be introduced in preview packages.
