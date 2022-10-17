@@ -7,14 +7,14 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure that represents the message that will be sent to IotHub.
+    /// The data structure that represents the message that will be sent to IoT hub.
     /// </summary>
-    public class OutgoingMessage
+    public class TelemetryMessage
     {
         /// <summary>
         /// Default instantiation with no payload.
         /// </summary>
-        public OutgoingMessage()
+        public TelemetryMessage()
         { }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The payload will be serialized and encoded per <see cref="IotHubClientOptions.PayloadConvention"/>.
         /// </remarks>
         /// <param name="payload">The payload to send.</param>
-        public OutgoingMessage(object payload)
+        public TelemetryMessage(object payload)
         {
             Payload = payload;
         }
@@ -196,9 +196,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A new instance of <see cref="Message"/> with body content defined by <paramref name="payload"/>,
         /// and user/system properties of the cloned <see cref="Message"/> instance.
         /// </returns>
-        public OutgoingMessage CloneWithBody(object payload)
+        public TelemetryMessage CloneWithBody(object payload)
         {
-            var result = new OutgoingMessage(payload);
+            var result = new TelemetryMessage(payload);
 
             foreach (string key in Properties.Keys)
             {

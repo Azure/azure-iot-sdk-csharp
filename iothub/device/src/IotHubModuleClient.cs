@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        public async Task SendEventAsync(string outputName, OutgoingMessage message, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryAsync(string outputName, TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, outputName, message, nameof(SendTelemetryAsync));
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
             Argument.AssertNotNull(message, nameof(message));
 
-            ValidateModuleTransportHandler("SendEventAsync for a named output");
+            ValidateModuleTransportHandler("SendTelemetryAsync for a named output");
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
 
-                await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The task containing the event</returns>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SendEventBatchAsync(string outputName, IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryBatchAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, outputName, messages, nameof(SendTelemetryBatchAsync));
@@ -165,13 +165,13 @@ namespace Microsoft.Azure.Devices.Client
             var messagesList = messages?.ToList();
             Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
 
-            ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
+            ValidateModuleTransportHandler("SendTelemetryBatchAsync for a named output");
 
             try
             {
                 messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
 
-                await InnerHandler.SendEventAsync(messagesList, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.SendTelemetryAsync(messagesList, cancellationToken).ConfigureAwait(false);
             }
             finally
             {

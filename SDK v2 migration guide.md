@@ -38,17 +38,17 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `DeviceClient` | `IotHubDeviceClient` |
-| `DeviceClient.SendEventAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(...)` |
-| `DeviceClient.SendEventBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` |
+| `DeviceClient.SendTelemetryAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(...)` |
+| `DeviceClient.SendTelemetryBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` |
 | `DeviceClient.SetConnectionStatusChangesHandler(...)` | `DeviceClient.ConnectionStatusChangeCallback` |
 | `DeviceClient.SetReceiveMessageHandlerAsync(...)` | `DeviceClient.SetIncomingMessageCallbackAsync(...)` |
 | `MessageResponse` | `MessageAcknowledgement` |
-| `Message` | `IncomingMessage`, `OutgoingMessage` |
+| `Message` | `TelemetryMessage`, `IncomingMessage` |
 | `DeviceClient.SetRetryPolicy(...)` | `IotHubClientOptions.RetryPolicy` |
 | `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
-| `Message.CreationTimeUtc` | `OutgoingMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` |
-| `Message.EnqueuedTimeUtc` | `OutgoingMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` |
-| `Message.ExpiryTimeUtc` | `OutgoingMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
+| `Message.CreationTimeUtc` | `TelemetryMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` |
+| `Message.EnqueuedTimeUtc` | `TelemetryMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` |
+| `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
 
 #### Other notable breaking changes
 

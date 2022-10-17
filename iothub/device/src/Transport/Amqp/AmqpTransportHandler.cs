@@ -153,30 +153,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
+        public override async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
+                Logging.Enter(this, message, cancellationToken, nameof(SendTelemetryAsync));
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                AmqpIotOutcome amqpIotOutcome = await _amqpUnit.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+                AmqpIotOutcome amqpIotOutcome = await _amqpUnit.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
 
                 amqpIotOutcome?.ThrowIfNotAccepted();
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, message, cancellationToken, nameof(SendEventAsync));
+                    Logging.Exit(this, message, cancellationToken, nameof(SendTelemetryAsync));
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
+        public override async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
+                Logging.Enter(this, messages, cancellationToken, nameof(SendTelemetryAsync));
 
             try
             {
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messages, cancellationToken, nameof(SendEventAsync));
+                    Logging.Exit(this, messages, cancellationToken, nameof(SendTelemetryAsync));
             }
         }
 

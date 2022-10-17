@@ -882,9 +882,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
             Logger.Trace("DeviceClient OpenAsync.");
             await iotClient.OpenAsync().ConfigureAwait(false);
-            Logger.Trace("DeviceClient SendEventAsync.");
+            Logger.Trace("DeviceClient SendTelemetryAsync.");
 
-            var testMessage = new OutgoingMessage("TestMessage");
+            var testMessage = new TelemetryMessage("TestMessage");
             await iotClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
 
             if (sendReportedPropertiesUpdate)

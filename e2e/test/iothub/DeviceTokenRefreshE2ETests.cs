@@ -120,8 +120,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Logger.Trace($"{deviceId}: DeviceClient SendEventAsync.");
-            var testMessage = new OutgoingMessage("TestMessage");
+            Logger.Trace($"{deviceId}: DeviceClient SendTelemetryAsync.");
+            var testMessage = new TelemetryMessage("TestMessage");
             await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
 
             Logger.Trace($"{deviceId}: DeviceClient CloseAsync.");
@@ -160,9 +160,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
-            var message = new OutgoingMessage("Hello");
+            var message = new TelemetryMessage("Hello");
 
-            Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
+            Logger.Trace($"[{testDevice.Id}]: SendTelemetryAsync (1)");
             var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
             using var cts1 = new CancellationTokenSource(timeout);
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceDisconnected.WaitAsync(tokenRefreshCts.Token).ConfigureAwait(false);
 
             // Test that the client is able to send messages
-            Logger.Trace($"[{testDevice.Id}]: SendEventAsync (2)");
+            Logger.Trace($"[{testDevice.Id}]: SendTelemetryAsync (2)");
             using var cts2 = new CancellationTokenSource(timeout);
             await deviceClient.SendTelemetryAsync(message, cts2.Token).ConfigureAwait(false);
         }
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
             }
 
-            var message = new OutgoingMessage("Hello");
+            var message = new TelemetryMessage("Hello");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl.TotalSeconds * 10));
             try
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Logger.Trace($"[{DateTime.UtcNow}] OpenAsync");
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
-                Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (1)");
+                Logger.Trace($"[{DateTime.UtcNow}] SendTelemetryAsync (1)");
                 await deviceClient.SendTelemetryAsync(message, cts.Token).ConfigureAwait(false);
                 await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
             }
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (2)");
+                Logger.Trace($"[{DateTime.UtcNow}] SendTelemetryAsync (2)");
                 await deviceClient.SendTelemetryAsync(message, cts.Token).ConfigureAwait(false);
                 await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
             }

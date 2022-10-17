@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     pointInfo = infoString
                 };
 
-                var message = new OutgoingMessage(telemetryDataPoint);
+                var message = new TelemetryMessage(telemetryDataPoint);
 
                 //Add one property to the message.
                 message.Properties.Add("level", levelValue);

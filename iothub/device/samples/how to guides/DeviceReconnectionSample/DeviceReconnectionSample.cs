@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     _logger.LogInformation($"Device sending message {++messageCount} to IoT hub.");
 
-                    OutgoingMessage message = PrepareMessage(messageCount);
+                    TelemetryMessage message = PrepareMessage(messageCount);
                     await s_deviceClient.SendTelemetryAsync(message, cancellationToken);
                     _logger.LogInformation($"Device sent message {messageCount} to IoT hub.");
                 }
@@ -276,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.FromResult(MessageAcknowledgement.Reject);
         }
 
-        private static OutgoingMessage PrepareMessage(int messageId)
+        private static TelemetryMessage PrepareMessage(int messageId)
         {
             const int temperatureThreshold = 30;
 
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             int humidity = s_randomGenerator.Next(60, 80);
             string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
 
-            var eventMessage = new OutgoingMessage(messagePayload)
+            var eventMessage = new TelemetryMessage(messagePayload)
             {
                 MessageId = messageId.ToString(),
             };

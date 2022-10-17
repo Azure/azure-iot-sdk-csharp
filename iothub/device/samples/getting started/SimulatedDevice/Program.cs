@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         temperature = currentTemperature,
                         humidity = currentHumidity,
                     };
-                    var message = new OutgoingMessage(telemetryDataPoint);
+                    var message = new TelemetryMessage(telemetryDataPoint);
 
                     // Add a custom application property to the message.
                     // An IoT hub can filter on these properties without access to the message body.
