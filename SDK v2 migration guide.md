@@ -43,6 +43,9 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `Message` | `IncomingMessage`, `OutgoingMessage` |
 | `SetRetryPolicy(...)` | `IoTHubClientOptions.RetryPolicy` |
 | `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
+| `Message.CreationTimeUtc` | `OutgoingMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` |
+| `Message.EnqueuedTimeUtc` | `OutgoingMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` |
+| `Message.ExpiryTimeUtc` | `OutgoingMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
 
 #### Other notable breaking changes
 
@@ -97,9 +100,20 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `RegistryManager.AddDeviceAsync(Device, ...)` | `IotHubServiceClient.Devices.CreateAsync(Device, ...)` |
 | `RegistryManager.AddDevices2Async(...)` | `IotHubServiceClient.Devices.CreateAsync(IEnumerable<Device>,...)` |
 | `RegistryManager.RemoveDeviceAsync(...)` | `IotHubServiceClient.Devices.DeleteAsync(...)` |
+| `Device.ConnectionStateUpdatedTime` | `Device.ConnectionStateUpdatedOnUtc` |
+| `Device.StatusUpdatedTime` | `Device.StatusUpdatedOnUtc` |
+| `Device.LastActivityTime` | `Device.LastActiveOnUtc` |
 | `Device.Capabilities.IotEdge` | `Device.Capabilities.IsIotEdge` |
+| `Module.ConnectionStateUpdatedTime` | `Module.ConnectionStateUpdatedOnUtc` |
+| `Module.LastActivityTime` | `Module.LastActiveOnUtc` |
 | `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` |
 | `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` |
+| `Twin.StatusUpdatedOn` | `Twin.StatusUpdatedOnUtc` |
+| `Twin.LastActivityOn` | `Twin.LastActiveOnUtc` |
+| `TwinCollection.GetLastUpdatedOn()` | `TwinCollection.GetLastUpdatedOnUtc()` |
+| `TwinCollectionArray.GetLastUpdatedOn()` | `TwinCollectionArray.GetLastUpdatedOnUtc()` |
+| `TwinCollectionValue.GetLastUpdatedOn()` | `TwinCollectionValue.GetLastUpdatedOnUtc()` |
+| `Metadata.LastUpdatedOn` | `TwinMetadata.LastUpdatedOnUtc` |
 | `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.CreateAsync<T>(...)` |
 | `RegistryManager.AddConfigurationAsync(...)` | `IotHubServiceClient.Configurations.CreateAsync(...)` |
 | `RegistryManager.GetConfigurationsAsync(int maxCount)`| `IotHubServiceClient.Configurations.GetAsync(int maxCount)` |
@@ -129,11 +143,14 @@ but users are still encouraged to migrate to version 2 when they have the chance
 |:---|:---|
 | `ServiceClient` | `IotHubServiceClient`, subclients `Messages`, `MessageFeedback`, `FileUploadNotifications` |
 | `ServiceClient.SendAsync(...)` | `IotHubServiceClient.Messages.SendAsync(...)` |
+| `Message.ExpiryTimeUtc` | `Message.ExpiresOnUtc` |
+| `Message.CreationTimeUtc` | `Message.CreatedOnUtc` |
 | `ServiceClient.InvokeDeviceMethodAsync(...)` | `IotHubServiceClient.DirectMethods.InvokeAsync(...)` |
 | `CloudToDeviceMethod` | `DirectMethodRequest` |
 | `CloudToDeviceMethodResult` | `DirectMethodResponse` |
 | `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` |
-| `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor`
+| `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor` |
+
 
 #### Other notable breaking changes
 
@@ -167,6 +184,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `DigitalTwinClient` | `IotHubServiceClient.DigitalTwins` |
 | `DigitalTwinClient.GetDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.GetAsync(...)` |
 | `DigitalTwinClient.UpdateDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
+| `WritableProperty.LastUpdatedOn` | `WritableProperty.LastUpdatedOnUtc` |
 | `UpdateOperationsUtility` | Removed. `Azure.JsonPatchDocument` from Azure.Core package is recommended. |
 
 #### Other notable breaking changes
@@ -183,6 +201,8 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `ProvisioningDeviceClient.Create(...)` | `new ProvisioningDeviceClient(...)` |
 | `ProvisioningDeviceClient` initializer parameter `transportHandler` replaced | `ProvisioningClientOptions` parameter added |
 | `ProvisioningRegistrationAdditionalData` | `RegistrationRequestPayload`|
+| `DeviceRegistrationResult.CreatedDateTimeUtc` | `DeviceRegistrationResult.CreatedOnUtc` |
+| `DeviceRegistrationResult.LastUpdatedDateTimeUtc` | `DeviceRegistrationResult.LastUpdatedOnUtc` |
 
 #### Other notable breaking changes
 
@@ -216,6 +236,18 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `ProvisioningServiceClient.GetDeviceRegistrationStateAsync(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.GetAsync(...)` |
 | `ProvisioningServiceClient.DeleteDeviceRegistrationStateAsync(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.DeleteAsync(...)` |
 | `ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(...)` |
+| `DeviceRegistrationState.CreatedDateTimeUtc` | `DeviceRegistrationState.CreatedOnUtc` |
+| `DeviceRegistrationState.LastUpdatedDateTimeUtc` | `DeviceRegistrationState.LastUpdatedOnUtc` |
+| `EnrollmentGroup.CreatedDateTimeUtc` | `EnrollmentGroup.CreatedOnUtc` |
+| `EnrollmentGroup.LastUpdatedDateTimeUtc` | `EnrollmentGroup.LastUpdatedOnUtc` |
+| `IndividualEnrollment.CreatedDateTimeUtc` | `IndividualEnrollment.CreatedOnUtc` |
+| `IndividualEnrollment.LastUpdatedDateTimeUtc` | `IndividualEnrollment.LastUpdatedOnUtc` |
+| `Twin.StatusUpdatedOn` | `Twin.StatusUpdatedOnUtc` |
+| `Twin.LastActivityOn` | `Twin.LastActiveOnUtc` |
+| `TwinCollection.GetLastUpdatedOn()` | `TwinCollection.GetLastUpdatedOnUtc()` |
+| `TwinCollectionArray.GetLastUpdatedOn()` | `TwinCollectionArray.GetLastUpdatedOnUtc()` |
+| `TwinCollectionValue.GetLastUpdatedOn()` | `TwinCollectionValue.GetLastUpdatedOnUtc()` |
+| `Metadata.LastUpdatedOn` | `TwinMetadata.LastUpdatedOnUtc` |
 
 #### Other notable breaking changes
 

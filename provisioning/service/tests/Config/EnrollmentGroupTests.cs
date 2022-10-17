@@ -141,8 +141,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleIotHubHostName, enrollmentGroup.IotHubHostName);
             Assert.IsNotNull(enrollmentGroup.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, enrollmentGroup.ProvisioningStatus);
-            Assert.AreEqual(_sampleCreateDateTimeUTC, enrollmentGroup.CreatedDateTimeUtc);
-            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, enrollmentGroup.LastUpdatedDateTimeUtc);
+            Assert.AreEqual(_sampleCreateDateTimeUTC, enrollmentGroup.CreatedOnUtc);
+            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, enrollmentGroup.LastUpdatedOnUtc);
             Assert.AreEqual(SampleEtag, enrollmentGroup.ETag);
         }
 

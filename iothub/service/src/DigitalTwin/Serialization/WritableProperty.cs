@@ -48,6 +48,6 @@ namespace Microsoft.Azure.Devices
         /// The time when this property was last updated.
         /// </summary>
         [JsonProperty("lastUpdateTime")]
-        public DateTimeOffset LastUpdatedOn { get; set; }
+        public DateTimeOffset LastUpdatedOnUtc { get; set; }
     }
 }

@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (amqpMessage.Properties.AbsoluteExpiryTime.HasValue)
                 {
-                    message.ExpiryTimeUtc = amqpMessage.Properties.AbsoluteExpiryTime.Value;
+                    message.ExpiresOnUtc = amqpMessage.Properties.AbsoluteExpiryTime.Value;
                 }
 
                 message.CorrelationId = amqpMessage.Properties.CorrelationId?.ToString();
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.EnqueuedTime, out DateTime enqueuedTime))
                 {
-                    message.EnqueuedTimeUtc = enqueuedTime;
+                    message.EnqueuedOnUtc = enqueuedTime;
                 }
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(InputName, out string inputName))
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                                 break;
 
                             case MessageSystemPropertyNames.CreationTimeUtc:
-                                message.CreationTimeUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
+                                message.CreatedOnUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
                                 break;
 
                             default:

@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Samples
             double? currentTargetTemperature = getDigitalTwinResponse.DigitalTwin.TargetTemperature;
             if (currentTargetTemperature != null)
             {
-                DateTimeOffset targetTemperatureDesiredLastUpdateTime = getDigitalTwinResponse.DigitalTwin.Metadata.TargetTemperature.LastUpdatedOn;
+                DateTimeOffset targetTemperatureDesiredLastUpdateTime = getDigitalTwinResponse.DigitalTwin.Metadata.TargetTemperature.LastUpdatedOnUtc;
                 _logger.LogDebug($"The property {targetTemperaturePropertyName} was last updated on " +
                     $"{targetTemperatureDesiredLastUpdateTime.ToLocalTime()} `" +
                     $" with a value of {getDigitalTwinResponse.DigitalTwin.Metadata.TargetTemperature.DesiredValue}.");
