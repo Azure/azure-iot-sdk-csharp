@@ -2,14 +2,14 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 Function IsWindows() 
 {
-	return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
+    return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
 }
 
 if (isWindows) 
 {
-	Write-Host Start ETL logging
-	logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
-	logman start IotTrace
+    Write-Host Start ETL logging
+    logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
+    logman start IotTrace
 }
 
 Write-Host List active docker containers
@@ -26,20 +26,20 @@ Invoke-Expression $runTestCmd
 
 $gateFailed = $LASTEXITCODE
 
-if (isWindows) 
+if (isWindows)
 {
-	Write-Host Stop ETL logging
-	logman stop IotTrace
-	logman delete IotTrace
+    Write-Host Stop ETL logging
+    logman stop IotTrace
+    logman delete IotTrace
 }
 
-if ($gateFailed) 
+if ($gateFailed)
 {
-	Write-Error "Testing was not successful, exiting..."
-	exit 1
+    Write-Error "Testing was not successful, exiting..."
+    exit 1
 }
-else 
+else
 {
-	Write-Host "Testing was successful!"
-	exit 0
+    Write-Host "Testing was successful!"
+    exit 0
 }

@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Transport
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The information provided from IoT hub that can be used with the Azure Storage SDK

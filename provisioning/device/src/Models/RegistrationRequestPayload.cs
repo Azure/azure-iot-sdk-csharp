@@ -4,10 +4,9 @@
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Additional parameters to be passed over registartion instance
+    /// Optional data to be included in the registration request.
     /// </summary>
-    /// <returns>The registration result.</returns>
-    public class ProvisioningRegistrationAdditionalData
+    public class RegistrationRequestPayload
     {
         /// <summary>
         /// Additional (optional) Json Data to be sent to the service 

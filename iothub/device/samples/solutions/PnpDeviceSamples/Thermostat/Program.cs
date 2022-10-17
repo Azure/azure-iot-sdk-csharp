@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 parameters.DpsIdScope,
                 symmetricKeyProvider);
 
-            var pnpPayload = new ProvisioningRegistrationAdditionalData
+            var pnpPayload = new RegistrationRequestPayload
             {
                 JsonData = $"{{ \"modelId\": \"{ModelId}\" }}",
             };

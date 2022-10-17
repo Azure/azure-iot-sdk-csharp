@@ -179,6 +179,7 @@ to migrate to version 2.x when they have the chance. For more details on LTS rel
 |:---|:---|
 | `ProvisioningDeviceClient.Create(...)` | `new ProvisioningDeviceClient(...)` |
 | `ProvisioningDeviceClient` initializer parameter `transportHandler` replaced | `ProvisioningClientOptions` parameter added |
+| `ProvisioningRegistrationAdditionalData` | `RegistrationRequestPayload`|
 
 #### Other notable breaking changes
 
