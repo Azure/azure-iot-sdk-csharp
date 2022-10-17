@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Options that allow configuration of the provisioning device client instance during initialization.
     /// </summary>
-    public class ProvisioningClientOptions
+    public sealed class ProvisioningClientOptions
     {
         /// <summary>
         /// Creates an instances of this class with the default transport settings.
