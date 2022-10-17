@@ -219,7 +219,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 
 - Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
 
-### Authentication provider client
+### Security provider clients
 
 Breaking changes:
 
@@ -230,8 +230,8 @@ Breaking changes:
 | `SecurityProvider` | `AuthenticationProvider` |
 | `SecurityProvider.GetRegistrationID()` | `AuthenticationProvider.GetRegistrationId()` |
 | `SecurityProviderSymmetricKey` | `AuthenticationProviderSymmetricKey` |
-| `SecurityProviderX509` | `AuthenticationProviderX509` |
-| `SecurityProviderX509Certificate` | `AuthenticationProviderX509Certificate` |
+| `SecurityProviderX509Certificate` | `AuthenticationProviderX509` |
+| `SecurityProviderX509` abstract base class | removed |
 | `SecurityProviderTpm` | removed |
 
 #### Other notable breaking changes

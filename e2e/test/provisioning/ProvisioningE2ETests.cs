@@ -1230,7 +1230,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             throw new NotSupportedException($"Unknown X509 type: '{enrollmentType}'");
                     }
 
-                    return new AuthenticationProviderX509Certificate(certificate, collection);
+                    return new AuthenticationProviderX509(certificate, collection);
 
                 case AttestationMechanismType.SymmetricKey:
                     switch (enrollmentType)
