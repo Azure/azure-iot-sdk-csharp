@@ -25,15 +25,6 @@ To prepare for this change, make sure your device's certificate store has both o
 For a more in depth explanation as to why the IoT services are doing this, please see
 [this article](https://techcommunity.microsoft.com/t5/internet-of-things/azure-iot-tls-critical-changes-are-almost-here-and-why-you/ba-p/2393169).
 
-## Build status
-
-Due to security considerations, build logs are not publicly available.
-
-| Service Environment                                                   | Status                                                                                                                                                                                                                                                                                        |
-| ---                                                                   | ---                                                                                                                                                                                                                                                                                           |
-| [Main](https://github.com/Azure/azure-iot-sdk-csharp/tree/main)   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/CSharp%20Prod%20-%20West%20Central%20US?branchName=main)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=44&repositoryFilter=9&branchName=main)      |
-| [Preview](https://github.com/Azure/azure-iot-sdk-csharp/tree/preview) | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/CSharp%20Canary%20-%20Central%20US%20EUAP?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=402&repositoryFilter=9&branchName=preview) |
-
 ## Recommended NuGet packages
 
 | Package Name                                          | Release Version                                           |
@@ -47,8 +38,6 @@ Due to security considerations, build logs are not publicly available.
 | Microsoft.Azure.Devices.Provisioning.Transport.Mqtt   | [![NuGet][dps-device-mqtt-release]][dps-device-mqtt-nuget]|
 | Microsoft.Azure.Devices.Provisioning.Service          | [![NuGet][dps-service-release]][dps-service-nuget]        |
 | Microsoft.Azure.Devices.Provisioning.Security.Tpm     | [![NuGet][dps-tpm-release]][dps-tpm-nuget]                |
-| Microsoft.Azure.Devices.DigitalTwin.Client            | N/A                                                       |
-| Microsoft.Azure.Devices.DigitalTwin.Service           | N/A                                                       |
 
 > Note:  
 > 1. In addition to stable builds we also release pre-release builds that contain preview features. You can find details about the preview features released by looking at the [release notes](https://github.com/Azure/azure-iot-sdk-csharp/releases). It is not recommended to take dependency on preview NuGets for production applications as breaking changes can be introduced in preview packages.
