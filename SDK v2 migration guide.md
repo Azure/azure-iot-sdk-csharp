@@ -12,8 +12,8 @@ are outlines of the notable breaking changes as well as a mapping from version 1
    - [IoT hub device client](#iot-hub-device-client)
    - [IoT hub service client](#iot-hub-service-client)
    - [Device Provisioning Service (DPS) device client](#dps-device-client)
-   - [DPS service slient](#dps-service-client)
-   - [Security provider clients](#security-provider-clients)
+   - [DPS service client](#dps-service-client)
+   - [Security provider client](#authentication-provider-client)
  - [Frequently asked questions](#frequently-asked-questions)
 
 ## Why the version 1 SDK is being replaced
@@ -40,8 +40,12 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `DeviceClient` | `IotHubDeviceClient` |
 | `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
 | `MessageResponse` | `MessageAcknowledgement` |
+| `Message` | `IncomingMessage`, `OutgoingMessage` |
 | `SetRetryPolicy(...)` | `IoTHubClientOptions.RetryPolicy` |
 | `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
+| `Message.CreationTimeUtc` | `OutgoingMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` |
+| `Message.EnqueuedTimeUtc` | `OutgoingMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` |
+| `Message.ExpiryTimeUtc` | `OutgoingMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
 
 #### Other notable breaking changes
 
@@ -74,6 +78,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 |:---|:---|
 | `ModuleClient` | `IotHubModuleClient` |
 | `MessageResponse` | `MessageAcknowledgement` |
+| `Message` | `IncomingMessage`, `OutgoingMessage` |
 
 #### Other notable breaking changes
 
@@ -95,9 +100,20 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `RegistryManager.AddDeviceAsync(Device, ...)` | `IotHubServiceClient.Devices.CreateAsync(Device, ...)` |
 | `RegistryManager.AddDevices2Async(...)` | `IotHubServiceClient.Devices.CreateAsync(IEnumerable<Device>,...)` |
 | `RegistryManager.RemoveDeviceAsync(...)` | `IotHubServiceClient.Devices.DeleteAsync(...)` |
+| `Device.ConnectionStateUpdatedTime` | `Device.ConnectionStateUpdatedOnUtc` |
+| `Device.StatusUpdatedTime` | `Device.StatusUpdatedOnUtc` |
+| `Device.LastActivityTime` | `Device.LastActiveOnUtc` |
 | `Device.Capabilities.IotEdge` | `Device.Capabilities.IsIotEdge` |
+| `Module.ConnectionStateUpdatedTime` | `Module.ConnectionStateUpdatedOnUtc` |
+| `Module.LastActivityTime` | `Module.LastActiveOnUtc` |
 | `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` |
 | `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` |
+| `Twin.StatusUpdatedOn` | `Twin.StatusUpdatedOnUtc` |
+| `Twin.LastActivityOn` | `Twin.LastActiveOnUtc` |
+| `TwinCollection.GetLastUpdatedOn()` | `TwinCollection.GetLastUpdatedOnUtc()` |
+| `TwinCollectionArray.GetLastUpdatedOn()` | `TwinCollectionArray.GetLastUpdatedOnUtc()` |
+| `TwinCollectionValue.GetLastUpdatedOn()` | `TwinCollectionValue.GetLastUpdatedOnUtc()` |
+| `Metadata.LastUpdatedOn` | `TwinMetadata.LastUpdatedOnUtc` |
 | `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.CreateAsync<T>(...)` |
 | `RegistryManager.AddConfigurationAsync(...)` | `IotHubServiceClient.Configurations.CreateAsync(...)` |
 | `RegistryManager.GetConfigurationsAsync(int maxCount)`| `IotHubServiceClient.Configurations.GetAsync(int maxCount)` |
@@ -127,11 +143,14 @@ but users are still encouraged to migrate to version 2 when they have the chance
 |:---|:---|
 | `ServiceClient` | `IotHubServiceClient`, subclients `Messages`, `MessageFeedback`, `FileUploadNotifications` |
 | `ServiceClient.SendAsync(...)` | `IotHubServiceClient.Messages.SendAsync(...)` |
+| `Message.ExpiryTimeUtc` | `Message.ExpiresOnUtc` |
+| `Message.CreationTimeUtc` | `Message.CreatedOnUtc` |
 | `ServiceClient.InvokeDeviceMethodAsync(...)` | `IotHubServiceClient.DirectMethods.InvokeAsync(...)` |
 | `CloudToDeviceMethod` | `DirectMethodRequest` |
 | `CloudToDeviceMethodResult` | `DirectMethodResponse` |
 | `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` |
-| `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor`
+| `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor` |
+
 
 #### Other notable breaking changes
 
@@ -165,6 +184,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `DigitalTwinClient` | `IotHubServiceClient.DigitalTwins` |
 | `DigitalTwinClient.GetDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.GetAsync(...)` |
 | `DigitalTwinClient.UpdateDigitalTwinAsync(...)` | `IotHubServiceClient.DigitalTwins.UpdateAsync(...)` |
+| `WritableProperty.LastUpdatedOn` | `WritableProperty.LastUpdatedOnUtc` |
 | `UpdateOperationsUtility` | Removed. `Azure.JsonPatchDocument` from Azure.Core package is recommended. |
 
 #### Other notable breaking changes
@@ -181,10 +201,12 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `ProvisioningDeviceClient.Create(...)` | `new ProvisioningDeviceClient(...)` |
 | `ProvisioningDeviceClient` initializer parameter `transportHandler` replaced | `ProvisioningClientOptions` parameter added |
 | `ProvisioningRegistrationAdditionalData` | `RegistrationRequestPayload`|
+| `DeviceRegistrationResult.CreatedDateTimeUtc` | `DeviceRegistrationResult.CreatedOnUtc` |
+| `DeviceRegistrationResult.LastUpdatedDateTimeUtc` | `DeviceRegistrationResult.LastUpdatedOnUtc` |
 
 #### Other notable breaking changes
 
-- The security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
+- The security providers that are used in conjunction with this client have changed. See [this section](#authentication-provider-client) for more details.
 - The previous way of providing transport level settings (`ProvisioningTransportHandler`) has been replaced with `ProvisioningClientTransportSettings`.
 - TPM support removed. The library used for TPM operations is broken on Linux and support for it is being shutdown. We'll reconsider how to support HSM.
 - HTTP has been removed as a transport option to keep the provisioning device SDK consistent with IoT hub device SDK.
@@ -214,12 +236,25 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `ProvisioningServiceClient.GetDeviceRegistrationStateAsync(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.GetAsync(...)` |
 | `ProvisioningServiceClient.DeleteDeviceRegistrationStateAsync(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.DeleteAsync(...)` |
 | `ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(...)` |
+| `DeviceRegistrationState.CreatedDateTimeUtc` | `DeviceRegistrationState.CreatedOnUtc` |
+| `DeviceRegistrationState.LastUpdatedDateTimeUtc` | `DeviceRegistrationState.LastUpdatedOnUtc` |
+| `EnrollmentGroup.CreatedDateTimeUtc` | `EnrollmentGroup.CreatedOnUtc` |
+| `EnrollmentGroup.LastUpdatedDateTimeUtc` | `EnrollmentGroup.LastUpdatedOnUtc` |
+| `IndividualEnrollment.CreatedDateTimeUtc` | `IndividualEnrollment.CreatedOnUtc` |
+| `IndividualEnrollment.LastUpdatedDateTimeUtc` | `IndividualEnrollment.LastUpdatedOnUtc` |
+| `Twin.StatusUpdatedOn` | `Twin.StatusUpdatedOnUtc` |
+| `Twin.LastActivityOn` | `Twin.LastActiveOnUtc` |
+| `TwinCollection.GetLastUpdatedOn()` | `TwinCollection.GetLastUpdatedOnUtc()` |
+| `TwinCollectionArray.GetLastUpdatedOn()` | `TwinCollectionArray.GetLastUpdatedOnUtc()` |
+| `TwinCollectionValue.GetLastUpdatedOn()` | `TwinCollectionValue.GetLastUpdatedOnUtc()` |
+| `Metadata.LastUpdatedOn` | `TwinMetadata.LastUpdatedOnUtc` |
 
 #### Other notable breaking changes
 
 - Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
+- ETag fields on the classes `IndividualEnrollment`, `EnrollmentGroup`, and `DeviceRegistrationState` are now taken as the `Azure.ETag` type instead of strings.
 
-### Authentication provider client
+### Security provider clients
 
 Breaking changes:
 
@@ -230,8 +265,8 @@ Breaking changes:
 | `SecurityProvider` | `AuthenticationProvider` |
 | `SecurityProvider.GetRegistrationID()` | `AuthenticationProvider.GetRegistrationId()` |
 | `SecurityProviderSymmetricKey` | `AuthenticationProviderSymmetricKey` |
-| `SecurityProviderX509` | `AuthenticationProviderX509` |
-| `SecurityProviderX509Certificate` | `AuthenticationProviderX509Certificate` |
+| `SecurityProviderX509Certificate` | `AuthenticationProviderX509` |
+| `SecurityProviderX509` abstract base class | removed |
 | `SecurityProviderTpm` | removed |
 
 #### Other notable breaking changes

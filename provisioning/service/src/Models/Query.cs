@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -169,7 +170,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     _queryPath,
                     headerParameters,
                     _querySpecificationJson,
-                    null,
+                    new ETag(),
                     _cancellationToken)
                 .ConfigureAwait(false);
 

@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// [Optional] The time when this message is considered expired.
         /// </summary>
-        public DateTime ExpiryTimeUtc
+        public DateTime ExpiresOnUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
             set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Custom date property set by the originator of the message.
         /// </summary>
-        public DateTime CreationTimeUtc
+        public DateTime CreatedOnUtc
         {
             get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
             set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;

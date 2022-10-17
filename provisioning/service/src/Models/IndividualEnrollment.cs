@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -34,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// provisioning service. Or the content of this class can be filled by a JSON, received from the provisioning
     /// service, as result of a individualEnrollment operation like create, update, or query.
     /// </remarks>
-    public class IndividualEnrollment : IETagHolder
+    public class IndividualEnrollment
     {
         /// <summary>
         /// Creates a new instance of IndividualEnrollment.
@@ -59,24 +60,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Attestation = attestation;
         }
 
-        /// <summary>
-        /// Creates a new instance of IndividualEnrollment using information in a JSON.
-        /// </summary>
-        /// <remarks>
-        /// This constructor creates an instance of the enrollment filling the class with the information
-        /// provided in the JSON. It is used by the SDK to parse enrollment responses from the provisioning service.
-        /// </remarks>
-        /// <param name="registrationId">The string with a unique id for the individualEnrollment. It cannot be null or empty.</param>
-        /// <param name="attestation">The attestation mechanism for the enrollment. It shall be 'X509', 'SymmetricKey', or 'TPM'.</param>
-        /// <param name="deviceId">The string with the device name. This is optional and can be null or empty.</param>
-        /// <param name="iotHubHostName">The string with the target IoTHub name. This is optional and can be null or empty.</param>
-        /// <param name="initialTwinState">The <see cref="TwinState"/> with the initial Twin condition. This is optional and can be null.</param>
-        /// <param name="provisioningStatus">The <see cref="ProvisioningStatus"/> that determine the initial status of the device. This is optional and can be null.</param>
-        /// <param name="createdDateTimeUtc">The DateTime with the date and time that the enrollment was created. This is optional and can be null.</param>
-        /// <param name="lastUpdatedDateTimeUtc">The DateTime with the date and time that the enrollment was updated. This is optional and can be null.</param>
-        /// <param name="eTag">The string with the eTag that identify the correct instance of the enrollment in the service. It cannot be null or empty.</param>
-        /// <param name="capabilities">The <see cref="DeviceCapabilities"/> that identifies the device capabilities. This is optional and can be null.</param>
-        /// <exception cref="DeviceProvisioningServiceException">If the received JSON is invalid.</exception>
+        // This JsonConstructor is used for serialization instead of the usual empty constructor
+        // because one of this object's fields (attestation) doesn't map 1:1 with where that field
+        // is in the JSON the service sends.
         [JsonConstructor]
         internal IndividualEnrollment(
             string registrationId,
@@ -85,33 +71,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string iotHubHostName,
             TwinState initialTwinState,
             ProvisioningStatus? provisioningStatus,
-            DateTime createdDateTimeUtc,
-            DateTime lastUpdatedDateTimeUtc,
-            string eTag,
+            DateTime createdOnUtc,
+            DateTime lastUpdatedOnUtc,
+            ETag eTag,
             DeviceCapabilities capabilities)
         {
             if (attestation == null)
             {
-                throw new DeviceProvisioningServiceException("Service responds an individualEnrollment without attestation.", HttpStatusCode.BadRequest);
+                throw new DeviceProvisioningServiceException("Service responded with an enrollment without attestation.", HttpStatusCode.BadRequest);
             }
 
-            try
-            {
-                RegistrationId = registrationId;
-                DeviceId = deviceId;
-                Attestation = attestation.GetAttestation();
-                IotHubHostName = iotHubHostName;
-                InitialTwinState = initialTwinState;
-                ProvisioningStatus = provisioningStatus;
-                CreatedDateTimeUtc = createdDateTimeUtc;
-                LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
-                ETag = eTag;
-                Capabilities = capabilities;
-            }
-            catch (ArgumentException e)
-            {
-                throw new DeviceProvisioningServiceException(e.Message, HttpStatusCode.BadRequest, e);
-            }
+            RegistrationId = registrationId;
+            DeviceId = deviceId;
+            Attestation = attestation.GetAttestation(); // This is the one reason why we can't use an empty constructor here.
+            IotHubHostName = iotHubHostName;
+            InitialTwinState = initialTwinState;
+            ProvisioningStatus = provisioningStatus;
+            CreatedOnUtc = createdOnUtc;
+            LastUpdatedOnUtc = lastUpdatedOnUtc;
+            ETag = eTag;
+            Capabilities = capabilities;
         }
 
         /// <summary>
@@ -191,19 +170,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The DateTime this resource was created.
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? CreatedDateTimeUtc { get; internal set; }
+        public DateTime? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? LastUpdatedDateTimeUtc { get; internal set; }
+        public DateTime? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Enrollment's ETag.
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string ETag { get; set; }
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// Capabilities of the device.

@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 }
                 else if (propertyName == LastUpdatedName)
                 {
-                    return GetLastUpdated();
+                    return GetLastUpdatedOnUtc();
                 }
                 else if (propertyName == LastUpdatedVersionName)
                 {
@@ -163,9 +163,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the Metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public Metadata GetMetadata()
+        public TwinMetadata GetMetadata()
         {
-            return new Metadata(GetLastUpdated(), GetLastUpdatedVersion());
+            return new TwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
         /// <exception cref="NullReferenceException">Thrown when the TwinCollection metadata is null.
         /// An example would be when the twin collection class is created with the default constructor.</exception>
-        public DateTime GetLastUpdated()
+        public DateTime GetLastUpdatedOnUtc()
         {
             return (DateTime)_metadata[LastUpdatedName];
         }

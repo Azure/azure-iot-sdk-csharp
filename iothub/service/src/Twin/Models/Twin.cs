@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public DateTimeOffset? StatusUpdatedOn { get; internal set; }
+        public DateTimeOffset? StatusUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Corresponding device's connection state.
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public DateTimeOffset? LastActivityOn { get; internal set; }
+        public DateTimeOffset? LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the corresponding device from the cloud.

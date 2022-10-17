@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -105,10 +106,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 writer.WriteValue(twin.StatusReason);
             }
 
-            if (twin.StatusUpdatedTime != null)
+            if (twin.StatusUpdatedOnUtc != null)
             {
                 writer.WritePropertyName(StatusUpdateTimeTag);
-                writer.WriteValue(twin.StatusUpdatedTime);
+                writer.WriteValue(twin.StatusUpdatedOnUtc);
             }
 
             if (twin.ConnectionState != null)
@@ -117,10 +118,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 writer.WriteRawValue(JsonConvert.SerializeObject(twin.ConnectionState, new StringEnumConverter()));
             }
 
-            if (twin.LastActivityTime != null)
+            if (twin.LastActiveOnUtc != null)
             {
                 writer.WritePropertyName(LastActivityTimeTag);
-                writer.WriteValue(twin.LastActivityTime);
+                writer.WriteValue(twin.LastActiveOnUtc);
             }
 
             if (twin.CloudToDeviceMessageCount != null)
@@ -256,7 +257,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         break;
 
                     case ETagJsonTag:
-                        twin.ETag = reader.Value as string;
+                        twin.ETag = new ETag(reader.Value as string);
                         break;
 
                     case TagsJsonTag:
@@ -285,7 +286,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         break;
 
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedTime = ConvertToDateTime(reader.Value);
+                        twin.StatusUpdatedOnUtc = ConvertToDateTime(reader.Value);
                         break;
 
                     case ConnectionStateTag:
@@ -296,7 +297,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         break;
 
                     case LastActivityTimeTag:
-                        twin.LastActivityTime = ConvertToDateTime(reader.Value);
+                        twin.LastActiveOnUtc = ConvertToDateTime(reader.Value);
                         break;
 
                     case CloudToDeviceMessageCountTag:
