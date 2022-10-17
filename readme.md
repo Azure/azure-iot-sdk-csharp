@@ -16,7 +16,7 @@ This repository contains the following:
 - **Microsoft Azure IoT Hub service SDK for C#** to manage your IoT Hub service instance from a back-end .NET application.
 - **Microsoft Azure Provisioning device SDK for C#** to provision devices to Azure IoT Hub with .NET.
 - **Microsoft Azure Provisioning service SDK for C#** to manage your Provisioning service instance from a back-end .NET application.
-- **Microsoft Azure IoT Devices Authentication Providers for C#** to provide Authentication codes for Azure IoT device SDKs.
+- **Microsoft Azure IoT Devices Authentication Providers for C#** to provide authentication classes for provisioning devices and connecting to IoT hub.
 
 ## Critical Upcoming Change Notice
 
