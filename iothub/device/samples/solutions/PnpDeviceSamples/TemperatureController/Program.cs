@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var symmetricKeyProvider = new AuthenticationProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
             var pdc = new ProvisioningDeviceClient(parameters.DpsEndpoint, parameters.DpsIdScope, symmetricKeyProvider);
 
-            var pnpPayload = new ProvisioningRegistrationAdditionalData
+            var pnpPayload = new RegistrationRequestPayload
             {
                 JsonData = PnpConvention.CreateDpsPayload(ModelId),
             };

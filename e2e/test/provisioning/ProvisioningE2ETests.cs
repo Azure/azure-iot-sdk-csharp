@@ -924,7 +924,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 // Test registering with valid additional data payload
                 DeviceRegistrationResult result = await provClient
-                    .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
+                    .RegisterAsync(new RegistrationRequestPayload { JsonData = PayloadJsonData }, cts.Token)
                     .ConfigureAwait(false);
                 ValidateDeviceRegistrationResult(true, result);
                 result.AssignedHub.Should().Be(expectedDestinationHub);

@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public Task<DeviceRegistrationResult> RegisterAsync(ProvisioningRegistrationAdditionalData data, CancellationToken cancellationToken = default)
+        public Task<DeviceRegistrationResult> RegisterAsync(RegistrationRequestPayload data, CancellationToken cancellationToken = default)
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
