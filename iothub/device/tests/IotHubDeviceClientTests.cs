@@ -1038,7 +1038,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
             sasTokenRefresher.Should().BeAssignableTo<ClientAuthenticationWithSakRefresh>();
 
-            // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
+            // The calculation of the sas token expiration will begin once the ClientAuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
             var buffer = TimeSpan.FromSeconds(2);
 
@@ -1069,7 +1069,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
 
-            // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
+            // The calculation of the sas token expiration will begin once the ClientAuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
             var buffer = TimeSpan.FromSeconds(2);
 
@@ -1362,7 +1362,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             act.Should().Throw<OperationCanceledException>();
         }
 
-        private class TestDeviceAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
+        private class TestDeviceAuthenticationWithTokenRefresh : ClientAuthenticationWithTokenRefresh
         {
             // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
             public TestDeviceAuthenticationWithTokenRefresh(TimeSpan ttl, int refreshBuffer)

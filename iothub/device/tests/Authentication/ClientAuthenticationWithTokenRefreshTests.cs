@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             return builder.ToSignature();
         }
 
-        private class TestImplementation : AuthenticationWithTokenRefresh
+        private class TestImplementation : ClientAuthenticationWithTokenRefresh
         {
             private int _callCount = 0;
 

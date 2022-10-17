@@ -86,10 +86,10 @@ namespace Microsoft.Azure.Devices.Client
         int SasTokenRenewalBuffer { get; }
 
         /// <summary>
-        /// The token refresh logic to be used for clients authenticating with either an AuthenticationWithTokenRefresh IAuthenticationMethod mechanism
+        /// The token refresh logic to be used for clients authenticating with either an ClientAuthenticationWithTokenRefresh IAuthenticationMethod mechanism
         /// or through a shared access key value that can be used by the SDK to generate SAS tokens.
         /// </summary>
-        AuthenticationWithTokenRefresh SasTokenRefresher { get; }
+        ClientAuthenticationWithTokenRefresh SasTokenRefresher { get; }
 
         /// <summary>
         /// The authentication method to be used with the IoT hub service.

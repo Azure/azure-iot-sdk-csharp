@@ -273,7 +273,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private class TestTokenRefresher : AuthenticationWithTokenRefresh
+        private class TestTokenRefresher : ClientAuthenticationWithTokenRefresh
         {
             private readonly string _key;
             private readonly IotHubClientTransportSettings _transportSettings;

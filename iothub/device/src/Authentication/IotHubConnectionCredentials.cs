@@ -141,10 +141,10 @@ namespace Microsoft.Azure.Devices.Client
         public int SasTokenRenewalBuffer { get; internal set; }
 
         /// <summary>
-        /// The token refresh logic to be used for clients authenticating with either an AuthenticationWithTokenRefresh IAuthenticationMethod mechanism
+        /// The token refresh logic to be used for clients authenticating with either an ClientAuthenticationWithTokenRefresh IAuthenticationMethod mechanism
         /// or through a shared access key value that can be used by the SDK to generate SAS tokens.
         /// </summary>
-        public AuthenticationWithTokenRefresh SasTokenRefresher { get; private set; }
+        public ClientAuthenticationWithTokenRefresh SasTokenRefresher { get; private set; }
 
         /// <summary>
         /// The authentication method to be used with the IoT hub service.
@@ -250,12 +250,12 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetTokenRefresherIfApplicable()
         {
-            if (AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
+            if (AuthenticationMethod is ClientAuthenticationWithTokenRefresh authWithTokenRefresh)
             {
                 SasTokenRefresher = authWithTokenRefresh;
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithTokenRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
 
                 Debug.Assert(SasTokenRefresher != null);
             }
@@ -290,8 +290,8 @@ namespace Microsoft.Azure.Devices.Client
                 // This assignment resets any previously set SharedAccessSignature value. This is possible in flows where the same authentication method instance
                 // is used to reinitialize the client after close-dispose.
                 // SharedAccessSignature should be set only if it is non-null and the authentication method of the device client is
-                // not of type AuthenticationWithTokenRefresh.
-                // Setting the SAS value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
+                // not of type ClientAuthenticationWithTokenRefresh.
+                // Setting the SAS value for an ClientAuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
                 // This flow can be hit if the same authentication method is always used to initialize the client;
                 // as in, on disposal and reinitialization. This is because the value of the SAS token computed is stored within the authentication method,
                 // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
@@ -348,11 +348,11 @@ namespace Microsoft.Azure.Devices.Client
 
             // Either shared access key, shared access signature or X.509 certificate is required for authenticating the client with IoT hub.
             // These values should be populated in the constructor. The only exception to this scenario is when the authentication method is
-            // AuthenticationWithTokenRefresh, in which case the shared access signature is initially null and is generated on demand during client authentication.
+            // ClientAuthenticationWithTokenRefresh, in which case the shared access signature is initially null and is generated on demand during client authentication.
             if (Certificate == null
                 && SharedAccessKey.IsNullOrWhiteSpace()
                 && SharedAccessSignature.IsNullOrWhiteSpace()
-                && AuthenticationMethod is not AuthenticationWithTokenRefresh)
+                && AuthenticationMethod is not ClientAuthenticationWithTokenRefresh)
             {
                 throw new FormatException(
                         "Should specify either SharedAccessKey, SharedAccessSignature or X.509 certificate for authenticating the client with IoT hub.");

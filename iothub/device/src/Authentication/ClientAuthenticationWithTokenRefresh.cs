@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a shared access signature token and allows for token refresh.
     /// </summary>
-    public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod
+    public abstract class ClientAuthenticationWithTokenRefresh : IAuthenticationMethod
     {
         private const int DefaultSasRenewalBufferPercentage = 15;
         private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if <paramref name="timeBufferPercentage"/> is outside the range 0-100.
         /// </exception>
-        public AuthenticationWithTokenRefresh(
+        public ClientAuthenticationWithTokenRefresh(
             string deviceId,
             string moduleId = default,
             TimeSpan suggestedTimeToLive = default,
