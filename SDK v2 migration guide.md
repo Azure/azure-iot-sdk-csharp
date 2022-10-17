@@ -12,8 +12,8 @@ are outlines of the notable breaking changes as well as a mapping from version 1
    - [IoT hub device client](#iot-hub-device-client)
    - [IoT hub service client](#iot-hub-service-client)
    - [Device Provisioning Service (DPS) device client](#dps-device-client)
-   - [DPS service slient](#dps-service-client)
-   - [Security provider clients](#security-provider-clients)
+   - [DPS service client](#dps-service-client)
+   - [Security provider client](#authentication-provider-client)
  - [Frequently asked questions](#frequently-asked-questions)
 
 ## Why the version 1 SDK is being replaced
@@ -184,7 +184,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 
 #### Other notable breaking changes
 
-- The security providers that are used in conjunction with this client have changed. See [this section](#security-provider-clients) for more details.
+- The security providers that are used in conjunction with this client have changed. See [this section](#authentication-provider-client) for more details.
 - The previous way of providing transport level settings (`ProvisioningTransportHandler`) has been replaced with `ProvisioningClientTransportSettings`.
 - TPM support removed. The library used for TPM operations is broken on Linux and support for it is being shutdown. We'll reconsider how to support HSM.
 - HTTP has been removed as a transport option to keep the provisioning device SDK consistent with IoT hub device SDK.
