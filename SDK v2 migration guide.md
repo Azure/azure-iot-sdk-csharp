@@ -40,6 +40,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `DeviceClient` | `IotHubDeviceClient` |
 | `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
 | `MessageResponse` | `MessageAcknowledgement` |
+| `Message` | `IncomingMessage`, `OutgoingMessage` |
 | `SetRetryPolicy(...)` | `IoTHubClientOptions.RetryPolicy` |
 | `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
 
@@ -74,6 +75,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 |:---|:---|
 | `ModuleClient` | `IotHubModuleClient` |
 | `MessageResponse` | `MessageAcknowledgement` |
+| `Message` | `IncomingMessage`, `OutgoingMessage` |
 
 #### Other notable breaking changes
 
