@@ -108,6 +108,7 @@ Note that you can configure your TLS protocol version and ciphers by following [
 | Retry policies                                                                                                   | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | Retry policy for unsuccessful device-to-cloud messages have three options: no try, exponential backoff with jitter (default) and custom. |
 | Devices multiplexing over single connection                                                                      | :heavy_minus_sign:  | :heavy_minus_sign:  | :heavy_check_mark:  | :heavy_check_mark: | 
 | Connection Pooling - Specifying number of connections                                                            | :heavy_minus_sign:  | :heavy_minus_sign:  | :heavy_check_mark:  | :heavy_check_mark:  |
+| [IoT Plug and Play][pnp-device-dev-guide]                                                                        | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:*  | :heavy_check_mark:*  | IoT Plug and Play lets you build smart devices that advertise their capabilities to Azure IoT applications. IoT Plug and Play devices don't require manual configuration when a customer connects them to IoT Plug and Play-enabled applications. You can read more [here](https://docs.microsoft.com/azure/iot-pnp/overview-iot-plug-and-play). </br> *Note: AMQP support is mainly targeted for Edge-based scenarios. |
 
 ### IoT Hub Service SDK
 
