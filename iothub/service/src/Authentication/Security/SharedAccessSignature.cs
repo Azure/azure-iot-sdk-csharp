@@ -27,7 +27,10 @@ namespace Microsoft.Azure.Devices
 
             if (IsExpired())
             {
-                throw new UnauthorizedAccessException("The specified SAS token is expired");
+                throw new IotHubServiceException(
+                    "The specified SAS token is expired",
+                    HttpStatusCode.Unauthorized,
+                    IotHubServiceErrorCode.IotHubUnauthorizedAccess);
             }
 
             IotHubName = iotHubName;

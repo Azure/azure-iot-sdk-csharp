@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
             ExpiresOn = expiresOn;
             if (IsExpired())
             {
-                throw new UnauthorizedAccessException($"The specified SAS token has already expired - on {expiresOn}.");
+                throw new IotHubClientException($"The specified SAS token has already expired - on {expiresOn}.", IotHubClientErrorCode.Unauthorized);
             }
 
             KeyName = keyName ?? string.Empty;
