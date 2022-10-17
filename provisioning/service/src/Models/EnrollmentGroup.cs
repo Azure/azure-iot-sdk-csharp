@@ -122,11 +122,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Attestation = attestation;
         }
 
-        /// <summary>
-        /// Constructor for serialization purposes only.
-        /// </summary>
-        internal EnrollmentGroup()
+        // This JsonConstructor is used for serialization instead of the usual empty constructor
+        // because one of this object's fields (attestation) doesn't map 1:1 with where that field
+        // is in the JSON the service sends.
+        [JsonConstructor]
+        internal EnrollmentGroup(
+            string enrollmentGroupId,
+            AttestationMechanism attestation,
+            string iotHubHostName,
+            TwinState initialTwinState,
+            ProvisioningStatus? provisioningStatus,
+            DateTime createdDateTimeUtc,
+            DateTime lastUpdatedDateTimeUtc,
+            ETag eTag,
+            DeviceCapabilities capabilities)
         {
+            EnrollmentGroupId = enrollmentGroupId;
+            Attestation = attestation.GetAttestation(); // This is the one reason why we can't use an empty constructor here.
+            IotHubHostName = iotHubHostName;
+            InitialTwinState = initialTwinState;
+            ProvisioningStatus = provisioningStatus;
+            CreatedDateTimeUtc = createdDateTimeUtc;
+            LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
+            ETag = eTag;
+            Capabilities = capabilities;
         }
 
         /// <summary>
