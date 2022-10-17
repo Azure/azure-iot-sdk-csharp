@@ -218,6 +218,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 #### Other notable breaking changes
 
 - Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
+- ETag fields on the classes `IndividualEnrollment`, `EnrollmentGroup`, and `DeviceRegistrationState` are now taken as the `Azure.ETag` type instead of strings.
 
 ### Security provider clients
 

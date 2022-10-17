@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -21,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private readonly DateTime _sampleCreateDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private readonly DateTime _sampleLastUpdatedDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
-        private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
+        private static ETag SampleEtag = new ETag("00000000-0000-0000-0000-00000000000");
         private readonly DeviceCapabilities _sampleEdgeCapabilityTrue = new() { IotEdge = true };
         private readonly DeviceCapabilities _sampleEdgeCapabilityFalse = new() { IotEdge = false };
 
