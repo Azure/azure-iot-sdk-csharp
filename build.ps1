@@ -172,8 +172,8 @@ Function RunSamples($path, $message)
             RunSample 'iothub\service\samples\how to guides\AzureSasCredentialAuthenticationSample' "IoTHub\Service\AzureSasCredentialAuthenticationSample" "-r $iothubHost -d $deviceId -s ""$env:IOT_HUB_SAS_KEY"" -n ""$env:IOT_HUB_SAS_KEY_NAME"""
     
             RunSample 'iothub\service\samples\getting started\EdgeDeploymentSample' "IoTHub\Service\EdgeDeploymentSample"
-            #RunSample 'iothub\service\samples\getting started\JobsSample' "IoTHub\Service\JobsSample"
-            RunSample 'iothub\service\samples\getting started\RegistryManagerSample' "IoTHub\Service\RegistryManagerSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -p ""$env:IOTHUB_X509_DEVICE_PFX_THUMBPRINT"""
+            RunSample 'iothub\service\samples\getting started\JobsSample' "IoTHub\Service\JobsSample"
+            #RunSample 'iothub\service\samples\getting started\RegistryManagerSample' "IoTHub\Service\RegistryManagerSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -p ""$env:IOTHUB_X509_DEVICE_PFX_THUMBPRINT"""
     
             Write-Warning "Using device $deviceId for the RoleBasedAuthenticationSample."
             RunSample 'iothub\service\samples\how to guides\RoleBasedAuthenticationSample' "IoTHub\Service\RoleBasedAuthenticationSample" "-h $iothubHost -d $deviceId --ClientId ""$env:E2E_TEST_AAD_APP_CLIENT_ID"" --TenantId ""$env:MSFT_TENANT_ID"" --ClientSecret ""$env:E2E_TEST_AAD_APP_CLIENT_SECRET"""
