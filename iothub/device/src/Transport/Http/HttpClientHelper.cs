@@ -99,19 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return (T)(object)message;
             }
 
-            T entity = await ReadAsAsync<T>(message.Content, token).ConfigureAwait(false);
-
-            // ETag in the header is considered authoritative
-            if (entity is IETagHolder eTagHolder)
-            {
-                if (message.Headers.ETag != null && !string.IsNullOrWhiteSpace(message.Headers.ETag.Tag))
-                {
-                    // RDBug 3429280:Make the version field of Device object internal
-                    eTagHolder.ETag = message.Headers.ETag.Tag;
-                }
-            }
-
-            return entity;
+            return await ReadAsAsync<T>(message.Content, token).ConfigureAwait(false);
         }
 
         private static void AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)

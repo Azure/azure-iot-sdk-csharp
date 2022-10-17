@@ -924,7 +924,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 // Test registering with valid additional data payload
                 DeviceRegistrationResult result = await provClient
-                    .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
+                    .RegisterAsync(new RegistrationRequestPayload { JsonData = PayloadJsonData }, cts.Token)
                     .ConfigureAwait(false);
                 ValidateDeviceRegistrationResult(true, result);
                 result.AssignedHub.Should().Be(expectedDestinationHub);
@@ -1230,7 +1230,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             throw new NotSupportedException($"Unknown X509 type: '{enrollmentType}'");
                     }
 
-                    return new AuthenticationProviderX509Certificate(certificate, collection);
+                    return new AuthenticationProviderX509(certificate, collection);
 
                 case AttestationMechanismType.SymmetricKey:
                     switch (enrollmentType)

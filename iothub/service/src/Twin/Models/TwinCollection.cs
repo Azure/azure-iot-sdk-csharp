@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices
                 }
                 else if (propertyName == LastUpdatedName)
                 {
-                    return GetLastUpdatedOn();
+                    return GetLastUpdatedOnUtc();
                 }
                 else if (propertyName == LastUpdatedVersionName)
                 {
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Metadata instance representing the metadata for this property.</returns>
         public TwinMetadata GetMetadata()
         {
-            return new TwinMetadata(GetLastUpdatedOn(), GetLastUpdatedVersion());
+            return new TwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Date-time instance representing the last updated time for this property.</returns>
         /// <exception cref="NullReferenceException">Thrown when the metadata object is null.
         /// An example would be when the this class is created with the default constructor.</exception>
-        public DateTimeOffset GetLastUpdatedOn()
+        public DateTimeOffset GetLastUpdatedOnUtc()
         {
             return (DateTime)_metadata[LastUpdatedName];
         }

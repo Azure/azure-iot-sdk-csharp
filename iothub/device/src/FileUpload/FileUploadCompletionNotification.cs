@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Transport
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The request payload to send to IoT hub to notify it when a file upload is completed, whether successful or not.

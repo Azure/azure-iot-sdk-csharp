@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Transport
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The request parameters when getting a file upload SAS URI from IoT hub.

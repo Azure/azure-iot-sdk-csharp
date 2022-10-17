@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The time when this message is considered expired
+        /// The time when this message is considered expired.
         /// </summary>
         public DateTime ExpiresOnUtc
         {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -16,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Uri requestUri,
             IDictionary<string, string> customHeaders,
             string body,
-            string ifMatch,
+            ETag ifMatch,
             CancellationToken cancellationToken);
     }
 }

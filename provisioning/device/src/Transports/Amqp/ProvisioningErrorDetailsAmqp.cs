@@ -9,16 +9,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal class ProvisioningErrorDetailsAmqp : ProvisioningErrorDetails
     {
+        internal const string RetryAfterKey = "Retry-After";
+
         /// <summary>
         /// The time to wait before trying again if this error is transient
         /// </summary>
         internal TimeSpan? RetryAfter { get; set; }
 
-        public const string RetryAfterKey = "Retry-After";
-
-        public static TimeSpan? GetRetryAfterFromApplicationProperties(AmqpMessage amqpResponse, TimeSpan defaultInterval)
+        internal static TimeSpan? GetRetryAfterFromApplicationProperties(AmqpMessage amqpResponse, TimeSpan defaultInterval)
         {
-            if (amqpResponse.ApplicationProperties != null && amqpResponse.ApplicationProperties.Map.TryGetValue(RetryAfterKey, out object retryAfter))
+            if (amqpResponse.ApplicationProperties != null
+                && amqpResponse.ApplicationProperties.Map.TryGetValue(RetryAfterKey, out object retryAfter))
             {
                 if (int.TryParse(retryAfter.ToString(), out int secondsToWait))
                 {
@@ -33,20 +34,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return null;
         }
 
-        public static TimeSpan? GetRetryAfterFromRejection(Rejected rejected, TimeSpan defaultInterval)
+        internal static TimeSpan? GetRetryAfterFromRejection(Rejected rejected, TimeSpan defaultInterval)
         {
-            if (rejected.Error != null && rejected.Error.Info != null)
+            if (rejected.Error?.Info != null
+                && rejected.Error.Info.TryGetValue(RetryAfterKey, out object retryAfter)
+                && int.TryParse(retryAfter.ToString(), out int secondsToWait))
             {
-                if (rejected.Error.Info.TryGetValue(RetryAfterKey, out object retryAfter))
-                {
-                    if (int.TryParse(retryAfter.ToString(), out int secondsToWait))
-                    {
-                        return secondsToWait < defaultInterval.Seconds
-                            ? defaultInterval
-                            : TimeSpan.FromSeconds(secondsToWait);
-                    }
-                }
-
+                return secondsToWait < defaultInterval.Seconds
+                    ? defaultInterval
+                    : TimeSpan.FromSeconds(secondsToWait);
             }
 
             return null;
