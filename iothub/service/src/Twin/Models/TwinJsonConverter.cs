@@ -106,10 +106,10 @@ namespace Microsoft.Azure.Devices
                 writer.WriteValue(twin.StatusReason);
             }
 
-            if (twin.StatusUpdatedOn != null)
+            if (twin.StatusUpdatedOnUtc != null)
             {
                 writer.WritePropertyName(StatusUpdateTimeTag);
-                writer.WriteValue(twin.StatusUpdatedOn);
+                writer.WriteValue(twin.StatusUpdatedOnUtc);
             }
 
             if (twin.ConnectionState != null)
@@ -118,10 +118,10 @@ namespace Microsoft.Azure.Devices
                 writer.WriteRawValue(JsonConvert.SerializeObject(twin.ConnectionState, new StringEnumConverter()));
             }
 
-            if (twin.LastActivityOn != null)
+            if (twin.LastActiveOnUtc != null)
             {
                 writer.WritePropertyName(LastActivityTimeTag);
-                writer.WriteValue(twin.LastActivityOn);
+                writer.WriteValue(twin.LastActiveOnUtc);
             }
 
             if (twin.CloudToDeviceMessageCount != null)
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedOn = ConvertToDateTime(reader.Value);
+                        twin.StatusUpdatedOnUtc = ConvertToDateTime(reader.Value);
                         break;
 
                     case ConnectionStateTag:
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case LastActivityTimeTag:
-                        twin.LastActivityOn = ConvertToDateTime(reader.Value);
+                        twin.LastActiveOnUtc = ConvertToDateTime(reader.Value);
                         break;
 
                     case CloudToDeviceMessageCountTag:

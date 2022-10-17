@@ -13,18 +13,18 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
-        /// <param name="lastUpdatedOn">When a property was last updated.</param>
+        /// <param name="lastUpdatedOnUtc">When a property was last updated.</param>
         /// <param name="lastUpdatedVersion">The version of the property when last updated.</param>
-        public TwinMetadata(DateTimeOffset lastUpdatedOn, long? lastUpdatedVersion)
+        public TwinMetadata(DateTimeOffset lastUpdatedOnUtc, long? lastUpdatedVersion)
         {
-            LastUpdatedOn = lastUpdatedOn;
+            LastUpdatedOnUtc = lastUpdatedOnUtc;
             LastUpdatedVersion = lastUpdatedVersion;
         }
 
         /// <summary>
         /// When a property was last updated.
         /// </summary>
-        public DateTimeOffset LastUpdatedOn { get; set; }
+        public DateTimeOffset LastUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// The version of the property when last updated.

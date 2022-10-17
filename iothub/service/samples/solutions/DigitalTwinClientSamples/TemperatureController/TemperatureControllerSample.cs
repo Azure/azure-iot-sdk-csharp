@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Samples
                 double? currentComponentTargetTemperature = getDigitalTwinResponse.DigitalTwin.Thermostat1.TargetTemperature;
                 if (currentComponentTargetTemperature != null)
                 {
-                    DateTimeOffset targetTemperatureDesiredLastUpdateTime = getDigitalTwinResponse.DigitalTwin.Thermostat1.Metadata.TargetTemperature.LastUpdatedOn;
+                    DateTimeOffset targetTemperatureDesiredLastUpdateTime = getDigitalTwinResponse.DigitalTwin.Thermostat1.Metadata.TargetTemperature.LastUpdatedOnUtc;
                     _logger.LogDebug($"The property {targetTemperaturePropertyName} under component {Thermostat1Component} was last updated on `" +
                         $"{targetTemperatureDesiredLastUpdateTime.ToLocalTime()} `" +
                         $" with a value of {getDigitalTwinResponse.DigitalTwin.Thermostat1.Metadata.TargetTemperature.DesiredValue}.");

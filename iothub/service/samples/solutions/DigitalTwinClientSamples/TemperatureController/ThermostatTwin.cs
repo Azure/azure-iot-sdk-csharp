@@ -30,6 +30,6 @@ namespace Microsoft.Azure.Devices.Samples
     internal class ReportedPropertyMetadata
     {
         [JsonProperty("lastUpdateTime")]
-        public DateTimeOffset LastUpdatedOn { get; set; }
+        public DateTimeOffset LastUpdatedOnUtc { get; set; }
     }
 }
