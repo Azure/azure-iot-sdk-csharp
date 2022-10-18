@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     and you shall parse it by your own.
     ///
     /// The provisioning service query result is composed by 2 system properties and a body. This class exposes
-    ///     it with 3 getters, <see cref="Type"/>, <see cref="Items"/>, and <see cref="ContinuationToken"/>.
+    ///     it with 3 getters, <see cref="QueryType"/>, <see cref="Items"/>, and <see cref="ContinuationToken"/>.
     ///
     /// The system properties are:
     /// <list type="bullet">
@@ -39,19 +39,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class QueryResult
     {
         /// <summary>
-        /// Getter for the query result Type.
+        /// Getter for the query result type.
         /// </summary>
-        public QueryResultType Type { get; private set; }
+        public QueryResultType QueryType { get; protected private set; }
 
         /// <summary>
-        /// Getter for the list of query result Items.
+        /// Getter for the list of query result items.
         /// </summary>
-        public IEnumerable<object> Items { get; private set; }
+        public IEnumerable<object> Items { get; protected private set; }
 
         /// <summary>
-        /// Getter for the query result continuationToken.
+        /// Getter for the query result continuation token.
         /// </summary>
-        public string ContinuationToken { get; private set; }
+        public string ContinuationToken { get; protected private set; }
 
         /// <summary>
         /// CONSTRUCTOR
@@ -65,14 +65,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentNullException">If <paramref name="bodyString"/> is null.</exception>
         /// <exception cref="ArgumentException">If <paramref name="bodyString"/> is empty or white space.</exception>
         ///
-        internal QueryResult(string typeString, string bodyString, string continuationToken)
+        protected internal QueryResult(string typeString, string bodyString, string continuationToken)
         {
-            Type = (QueryResultType)Enum.Parse(typeof(QueryResultType), typeString, true);
+            QueryType = (QueryResultType)Enum.Parse(typeof(QueryResultType), typeString, true);
             ContinuationToken = string.IsNullOrWhiteSpace(continuationToken)
                 ? null
                 : continuationToken;
 
-            if (Type != QueryResultType.Unknown && string.IsNullOrWhiteSpace(bodyString))
+            if (QueryType != QueryResultType.Unknown && string.IsNullOrWhiteSpace(bodyString))
             {
                 if (bodyString == null)
                 {
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException("Invalid query body.", nameof(bodyString));
             }
 
-            switch (Type)
+            switch (QueryType)
             {
                 case QueryResultType.Enrollment:
                     Items = JsonConvert.DeserializeObject<IEnumerable<IndividualEnrollment>>(bodyString);

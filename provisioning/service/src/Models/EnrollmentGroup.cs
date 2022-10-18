@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                 if (value is X509Attestation attestation)
                 {
-                    if (attestation.RootCertificates == null && attestation.CAReferences == null)
+                    if (attestation.RootCertificates == null && attestation.CaReferences == null)
                     {
                         throw new InvalidOperationException("Attestation mechanism does not contain a valid certificate,");
                     }

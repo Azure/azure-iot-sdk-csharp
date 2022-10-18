@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 if (value is X509Attestation attestation)
                 {
                     if ((attestation ?? throw new InvalidOperationException(nameof(value))).ClientCertificates == null
-                        && attestation.CAReferences == null)
+                        && attestation.CaReferences == null)
                     {
                         throw new InvalidOperationException($"Value for {nameof(attestation)} does not contain client certificate or CA reference.");
                     }

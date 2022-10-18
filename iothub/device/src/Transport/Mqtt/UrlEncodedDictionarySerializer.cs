@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// URL encoded serializer for message properties.
     /// </summary>
-    public class UrlEncodedDictionarySerializer
+    internal class UrlEncodedDictionarySerializer
     {
         /// <summary>
         /// The character that separates the name and value of a property.

@@ -48,25 +48,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     it, <see cref="GetPrimaryX509CertificateInfo()"/> and <see cref="GetSecondaryX509CertificateInfo()"/>
     ///     will return the certificate information for the certificates.
     /// </remarks>
-    public sealed class X509Attestation : Attestation
+    public class X509Attestation : Attestation
     {
         /// <summary>
         /// Client certificates.
         /// </summary>
         [JsonProperty(PropertyName = "clientCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        internal X509Certificates ClientCertificates { get; private set; }
+        internal X509Certificates ClientCertificates { get; protected private set; }
 
         /// <summary>
         /// Signing certificates.
         /// </summary>
         [JsonProperty(PropertyName = "signingCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        internal X509Certificates RootCertificates { get; private set; }
+        internal X509Certificates RootCertificates { get; protected private set; }
 
         /// <summary>
         /// Certificates Authority references.
         /// </summary>
         [JsonProperty(PropertyName = "caReferences", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public X509CAReferences CAReferences { get; private set; }
+        public X509CaReferences CaReferences { get; protected private set; }
 
         /// <summary>
         /// Factory from ClientCertificates with primary certificate.
@@ -229,44 +229,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Factory with CAReferences with primary CA references.
+        /// Factory with certficiate authority references with primary and secondary.
         /// </summary>
-        /// <remarks>
-        /// Creates a new instance of the X509Attestation with the primary CA reference.
-        /// </remarks>
-        /// <param name="primary">The string with the primary certificate. It cannot be null or empty.</param>
-        /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentNullException">If the provided <paramref name="primary"/> string is null.</exception>
-        /// <exception cref="ArgumentException">If the provided <paramref name="primary"/> string is empty or white space.</exception>
-        /// <exception cref="CryptographicException">If the provided <paramref name="primary"/> certificate is invalid.</exception>
-        public static X509Attestation CreateFromCAReferences(string primary)
-        {
-            Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
-
-            return new X509Attestation(
-                null, null,
-                new X509CAReferences(primary, null));
-        }
-
-        /// <summary>
-        /// Factory with CAReferences with primary and secondary CA references.
-        /// </summary>
-        /// <remarks>
-        /// Creates a new instance of the X509Attestation with the primary and secondary CA reference.
-        /// </remarks>
         /// <param name="primary">The string with the primary certificate. It cannot be null or empty.</param>
         /// <param name="secondary">The string with the secondary certificate. It can be null or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="primary"/> string is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="primary"/> string is empty or white space.</exception>
         /// <exception cref="CryptographicException">If the one of the provided <paramref name="primary"/> or <paramref name="secondary"/> certificate is invalid.</exception>
-        public static X509Attestation CreateFromCAReferences(string primary, string secondary)
+        public static X509Attestation CreateFromCaReferences(string primary, string secondary = default)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
 
             return new X509Attestation(
-                null, null,
-                new X509CAReferences(primary, secondary));
+                null,
+                null,
+                new X509CaReferences(primary, secondary));
         }
 
         /// <summary>
@@ -290,7 +268,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return RootCertificates.Primary.Info;
             }
 
-            if (CAReferences != null)
+            if (CaReferences != null)
             {
                 return null;
             }
@@ -322,15 +300,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return secondaryCertificate?.Info;
         }
 
+        /// <summary>
+        /// Provided for deserialization and unit testing.
+        /// </summary>
+        /// <param name="clientCertificates">Client certificates.</param>
+        /// <param name="rootCertificates">Root certificates.</param>
+        /// <param name="caReferences">Certificate authority references.</param>
+        /// <exception cref="InvalidOperationException"></exception>
         [JsonConstructor]
-        private X509Attestation(
-            X509Certificates clientCertificates, X509Certificates rootCertificates, X509CAReferences caReferences)
+        private protected X509Attestation(
+            X509Certificates clientCertificates,
+            X509Certificates rootCertificates,
+            X509CaReferences caReferences)
         {
             if (clientCertificates == null
                 && rootCertificates == null
                 && caReferences == null)
             {
-                throw new DeviceProvisioningServiceException("Attestation shall receive one non-null certificate.", HttpStatusCode.BadRequest);
+                throw new InvalidOperationException("Attestation shall receive one non-null certificate.");
             }
 
             if (clientCertificates != null
@@ -339,18 +326,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 || rootCertificates != null
                 && caReferences != null)
             {
-                throw new DeviceProvisioningServiceException("Attestation cannot receive more than one certificate.", HttpStatusCode.BadRequest);
+                throw new InvalidOperationException("Attestation cannot receive more than one certificate.");
             }
 
             try
             {
                 ClientCertificates = clientCertificates;
                 RootCertificates = rootCertificates;
-                CAReferences = caReferences;
+                CaReferences = caReferences;
             }
-            catch (ArgumentException e)
+            catch (ArgumentException ex)
             {
-                throw new DeviceProvisioningServiceException(e);
+                throw new InvalidOperationException(ex.Message, ex);
             }
         }
     }

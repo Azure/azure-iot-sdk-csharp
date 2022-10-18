@@ -84,16 +84,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler.DisableReceiveMessageAsync(cancellationToken);
         }
 
-        public virtual Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
+        public virtual Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendEventAsync(message, cancellationToken) ?? Task.CompletedTask;
+            return NextHandler?.SendTelemetryAsync(message, cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
+        public virtual Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendEventAsync(messages, cancellationToken) ?? Task.CompletedTask;
+            return NextHandler?.SendTelemetryAsync(messages, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)

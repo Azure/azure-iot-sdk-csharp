@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Samples
 
                 var edgeDevices = devices.ToList();
                 BulkRegistryOperationResult createResult = await _serviceClient.Devices.CreateAsync(edgeDevices);
-                if (createResult.Errors.Length > 0)
+                if (createResult.Errors.Count > 0)
                 {
                     foreach (DeviceRegistryOperationError err in createResult.Errors)
                     {

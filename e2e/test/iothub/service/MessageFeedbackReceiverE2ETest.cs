@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     c2dMessageReceived.TrySetResult(true);
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 };
-                await deviceClient.SetMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
+                await deviceClient.SetIncomingMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
                 await Task
                     .WhenAny(

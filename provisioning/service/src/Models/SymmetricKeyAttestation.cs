@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public sealed class SymmetricKeyAttestation : Attestation
     {
         /// <summary>
-        /// Default json constructor
+        /// For deserialization and unit testing.
         /// </summary>
         /// <param name="primaryKey">The primary key to use for attestation</param>
         /// <param name="secondaryKey">The secondary key to use for attestation</param>
@@ -26,12 +26,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the primary key used for attestation.
         /// </summary>
         [JsonProperty(PropertyName = "primaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string PrimaryKey { get; private set; }
+        public string PrimaryKey { get; }
 
         /// <summary>
         /// Gets the secondary key used for attestation.
         /// </summary>
         [JsonProperty(PropertyName = "secondaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string SecondaryKey { get; private set; }
+        public string SecondaryKey { get; }
     }
 }

@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             Assert.IsNotNull(queryResult);
-            Assert.AreEqual(QueryResultType.Enrollment, queryResult.Type);
+            Assert.AreEqual(QueryResultType.Enrollment, queryResult.QueryType);
             IEnumerable<Object> items = queryResult.Items;
             Assert.AreEqual(2, items.Count());
             Assert.IsTrue(items.FirstOrDefault() is IndividualEnrollment);
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             Assert.IsNotNull(queryResult);
-            Assert.AreEqual(QueryResultType.EnrollmentGroup, queryResult.Type);
+            Assert.AreEqual(QueryResultType.EnrollmentGroup, queryResult.QueryType);
             IEnumerable<Object> items = queryResult.Items;
             Assert.AreEqual(2, items.Count());
             Assert.IsTrue(items.FirstOrDefault() is EnrollmentGroup);
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             Assert.IsNotNull(queryResult);
-            Assert.AreEqual(QueryResultType.DeviceRegistration, queryResult.Type);
+            Assert.AreEqual(QueryResultType.DeviceRegistration, queryResult.QueryType);
             IEnumerable<Object> items = queryResult.Items;
             Assert.AreEqual(2, items.Count());
             Assert.IsTrue(items.FirstOrDefault() is DeviceRegistrationState);
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             Assert.IsNotNull(queryResult);
-            Assert.AreEqual(QueryResultType.Unknown, queryResult.Type);
+            Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
             Assert.IsNull(queryResult.Items);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             Assert.IsNotNull(queryResult);
-            Assert.AreEqual(QueryResultType.Unknown, queryResult.Type);
+            Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
             IEnumerable<Object> items = queryResult.Items;
             Assert.AreEqual(3, items.Count());
             Assert.IsTrue(items.FirstOrDefault() is JObject);
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             Assert.IsNotNull(queryResult);
-            Assert.AreEqual(QueryResultType.Unknown, queryResult.Type);
+            Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
             IEnumerable<Object> items = queryResult.Items;
             Assert.AreEqual(3, items.Count());
             Assert.IsTrue(items.FirstOrDefault() is long);
@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             Assert.IsNotNull(queryResult);
-            Assert.AreEqual(QueryResultType.Unknown, queryResult.Type);
+            Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
             IEnumerable<Object> items = queryResult.Items;
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(body, items.FirstOrDefault());

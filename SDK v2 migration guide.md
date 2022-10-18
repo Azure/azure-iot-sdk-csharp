@@ -38,14 +38,17 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `DeviceClient` | `IotHubDeviceClient` |
-| `SetConnectionStatusChangesHandler` | `SetConnectionStatusChangeHandler` |
+| `DeviceClient.SendTelemetryAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(...)` |
+| `DeviceClient.SendTelemetryBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` |
+| `DeviceClient.SetConnectionStatusChangesHandler(...)` | `DeviceClient.ConnectionStatusChangeCallback` |
+| `DeviceClient.SetReceiveMessageHandlerAsync(...)` | `DeviceClient.SetIncomingMessageCallbackAsync(...)` |
 | `MessageResponse` | `MessageAcknowledgement` |
-| `Message` | `IncomingMessage`, `OutgoingMessage` |
-| `SetRetryPolicy(...)` | `IoTHubClientOptions.RetryPolicy` |
+| `Message` | `TelemetryMessage`, `IncomingMessage` |
+| `DeviceClient.SetRetryPolicy(...)` | `IotHubClientOptions.RetryPolicy` |
 | `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` |
-| `Message.CreationTimeUtc` | `OutgoingMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` |
-| `Message.EnqueuedTimeUtc` | `OutgoingMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` |
-| `Message.ExpiryTimeUtc` | `OutgoingMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
+| `Message.CreationTimeUtc` | `TelemetryMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` |
+| `Message.EnqueuedTimeUtc` | `TelemetryMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` |
+| `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
 
 #### Other notable breaking changes
 
@@ -124,6 +127,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `JobProperties.CreateForExportJob(...)` | `new JobProperties(Uri, bool)` |
 | `RegistryManager.GetJobAsync(...)` | `IotHubServiceClient.Devices.GetJobAsync(...)` |
 | `RegistryManager.CancelJobAsync(...)` | `IotHubServiceClient.Devices.CancelJobAsync(...)` |
+| `JobProperties.Type` | `JobProperties.JobType` |
 
 #### Other notable breaking changes
 
@@ -132,6 +136,8 @@ but users are still encouraged to migrate to version 2 when they have the chance
 - `IotHubServiceClient.Query.CreateAsync<T>(...)` is now async.
   - Call `QueryResponse<T>.MoveNextAsync()` in a loop (end when it returns `false`) and access `QueryResponse<T>.Current`.
 - `JobProperties` properties that hold Azure Storage SAS URIs are now of type `System.Uri` instead of `string`.
+- `JobProperties` has been split into several classes with only the necessary properties for the specified operation.
+  - See `ExportJobProperties`, `ImportJobProperties`, and `IotHubJobResponse`.
 
 #### Notable additions
 
@@ -244,6 +250,11 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `IndividualEnrollment.LastUpdatedDateTimeUtc` | `IndividualEnrollment.LastUpdatedOnUtc` |
 | `Twin.StatusUpdatedOn` | `Twin.StatusUpdatedOnUtc` |
 | `Twin.LastActivityOn` | `Twin.LastActiveOnUtc` |
+| `X509Attestation.CreateFromCAReferences(...)` | `X509Attestation.CreateFromCaReferences(...)` |
+| `X509Attestation.CAReferences` | `X509Attestation.CaReferences` |
+| `X509CAReferences` | `X509CaReferences` |
+| `X509CertificateInfo.SHA1Thumbprint` | `X509CertificateInfo.Sha1Thumbprint` |
+| `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` |
 | `TwinCollection.GetLastUpdatedOn()` | `TwinCollection.GetLastUpdatedOnUtc()` |
 | `TwinCollectionArray.GetLastUpdatedOn()` | `TwinCollectionArray.GetLastUpdatedOnUtc()` |
 | `TwinCollectionValue.GetLastUpdatedOn()` | `TwinCollectionValue.GetLastUpdatedOnUtc()` |

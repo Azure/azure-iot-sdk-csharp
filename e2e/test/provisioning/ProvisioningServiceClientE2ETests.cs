@@ -207,8 +207,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
 
                     var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
-                    x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint);
-                    x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint);
+                    x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetPrimaryX509CertificateInfo().Sha1Thumbprint);
+                    x509Attestation.GetSecondaryX509CertificateInfo().Sha1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetSecondaryX509CertificateInfo().Sha1Thumbprint);
                 }
             }
             finally
@@ -261,12 +261,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
 
                     var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
-                    x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint
+                    x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint
                         .Should()
-                        .Be(((X509Attestation)enrollmentGroup.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint);
-                    x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint
+                        .Be(((X509Attestation)enrollmentGroup.Attestation).GetPrimaryX509CertificateInfo().Sha1Thumbprint);
+                    x509Attestation.GetSecondaryX509CertificateInfo().Sha1Thumbprint
                         .Should()
-                        .Be(((X509Attestation)enrollmentGroup.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint);
+                        .Be(((X509Attestation)enrollmentGroup.Attestation).GetSecondaryX509CertificateInfo().Sha1Thumbprint);
                 }
             }
             finally
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             while (query.HasNext())
             {
                 QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
-                Assert.AreEqual(queryResult.Type, QueryResultType.Enrollment);
+                Assert.AreEqual(queryResult.QueryType, QueryResultType.Enrollment);
             }
         }
 

@@ -6,13 +6,13 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Representation of a single Device Provisioning Service X509 Primary and Secondary CA reference.
+    /// Representation of a single Device Provisioning Service X509 primary and secondary certificate authority references.
     /// </summary>
     /// <remarks>
-    /// This class creates a representation of an X509 CA references. It can receive primary and secondary
+    /// This class creates a representation of an X509 certificate authority references. It can receive primary and secondary
     /// CA references.
     ///
-    /// Users must provide the CA reference as a string. This class will encapsulate both in a
+    /// Users must provide the certificate authority reference as a string. This class will encapsulate both in a
     /// single <see cref="X509Attestation"/>.
     /// </remarks>
     /// <example>
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// }
     /// </code>
     /// </example>
-    public class X509CAReferences
+    public class X509CaReferences
     {
         /// <summary>
         /// CONSTRUCTOR
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="primary">the String with the primary CA reference.</param>
         /// <param name="secondary">the String with the secondary CA reference.</param>
         [JsonConstructor]
-        internal X509CAReferences(string primary, string secondary = null)
+        protected internal X509CaReferences(string primary, string secondary = default)
         {
             Primary = primary;
             Secondary = secondary;

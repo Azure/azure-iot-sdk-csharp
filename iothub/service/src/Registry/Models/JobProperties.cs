@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// This value is set by this client depending on which job method is called.
         /// </remarks>
         [JsonProperty(PropertyName = "type", Required = Required.Always)]
-        public JobType Type { get; protected internal set; }
+        public JobType JobType { get; protected internal set; }
 
         /// <summary>
         /// URI to a blob container, used to output the status of the job and the results.

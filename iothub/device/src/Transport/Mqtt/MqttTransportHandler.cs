@@ -349,7 +349,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
+        public override async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -393,14 +393,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
+        public override async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             // Note that this sends all messages at once and then waits for all the acknowledgements. This
             // is the recommended pattern for sending large numbers of messages over an asynchronous
             // protocol like MQTT
-            await Task.WhenAll(messages.Select(x => SendEventAsync(x, cancellationToken))).ConfigureAwait(false);
+            await Task.WhenAll(messages.Select(x => SendTelemetryAsync(x, cancellationToken))).ConfigureAwait(false);
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
@@ -1164,7 +1164,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return property.Value;
         }
 
-        internal static string PopulateMessagePropertiesFromMessage(string topicName, OutgoingMessage message)
+        internal static string PopulateMessagePropertiesFromMessage(string topicName, TelemetryMessage message)
         {
             var systemProperties = new Dictionary<string, string>(message.SystemProperties.Count);
             foreach (KeyValuePair<string, object> property in message.SystemProperties)

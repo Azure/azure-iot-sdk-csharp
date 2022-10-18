@@ -77,13 +77,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return TestSecurityMessageModuleAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        private OutgoingMessage ComposeD2CSecurityTestMessage()
+        private TelemetryMessage ComposeD2CSecurityTestMessage()
         {
             string eventId = Guid.NewGuid().ToString();
             string p1Value = eventId;
             string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
 
-            var message = new OutgoingMessage(payload)
+            var message = new TelemetryMessage(payload)
             {
                 Properties = { ["property1"] = p1Value }
             };
@@ -155,16 +155,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            OutgoingMessage testMessage = ComposeD2CSecurityTestMessage();
-            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            TelemetryMessage testMessage = ComposeD2CSecurityTestMessage();
+            await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
         private async Task SendSingleSecurityMessageModuleAsync(
             IotHubModuleClient moduleClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            OutgoingMessage testMessage = ComposeD2CSecurityTestMessage();
-            await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            TelemetryMessage testMessage = ComposeD2CSecurityTestMessage();
+            await moduleClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
         protected override void Dispose(bool disposing)

@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public static AmqpMessage OutgoingMessageToAmqpMessage(OutgoingMessage message)
+        public static AmqpMessage OutgoingMessageToAmqpMessage(TelemetryMessage message)
         {
             Argument.AssertNotNull(message, nameof(message));
 
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the Message instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, OutgoingMessage data, bool copyUserProperties = true)
+        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, TelemetryMessage data, bool copyUserProperties = true)
         {
             amqpMessage.Properties.MessageId = data.MessageId;
 

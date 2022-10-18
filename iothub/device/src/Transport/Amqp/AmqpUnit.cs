@@ -270,7 +270,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Message
 
-        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, messages, nameof(SendMessagesAsync));
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal async Task<AmqpIotOutcome> SendMessageAsync(OutgoingMessage message, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendMessageAsync(TelemetryMessage message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(SendMessageAsync));
@@ -565,7 +565,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal async Task<AmqpIotOutcome> SendEventsAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendEventsAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, messages, nameof(SendEventsAsync));
@@ -581,10 +581,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal async Task<AmqpIotOutcome> SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, message, nameof(SendEventAsync));
+                Logging.Enter(this, message, nameof(SendTelemetryAsync));
 
             try
             {
@@ -593,7 +593,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, message, nameof(SendEventAsync));
+                    Logging.Exit(this, message, nameof(SendTelemetryAsync));
             }
         }
 
