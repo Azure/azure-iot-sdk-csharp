@@ -40,11 +40,11 @@ There are a number of reasons why the Azure IoT SDK team chose to do a major ver
 
   Many existing client classes (RegistryManager, ServiceClient, etc.) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
 
-  ### Client constructors and mocking
+### Client constructors and mocking
 
   Many existing clients had a mix of standard constructors (`new DeviceClient(...)`) and static builder methods (`DeviceClient.CreateFromConnectionString(...)`) that caused some confusion among users. The factory methods have been removed and the addition of constructors in clients also enables unit test mocking.
 
-  ### Exception handling
+### Exception handling
 
   - Exception handling in the v1 SDK required a wide variety of exception types to be caught. Exception types have been consolidated.
     - Parameter validation may throw the following exceptions.
