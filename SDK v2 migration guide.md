@@ -57,12 +57,12 @@ There are a number of reasons why the Azure IoT SDK team chose to do a major ver
     - `OperationCanceledException` when a cancellation token is signaled.
     - When an operation fails:
       - `IotHubClientException` for device client and `IotHubServiceException` for service client for any exceptions arising from communication attempts with IoT hub.
-        - Based on `IotHubServiceErrorCode` we determine if an exception is transient. Check error code for a specific error in details.
+        - Based on `IotHubServiceErrorCode`, we determine if an exception is transient. Check error code for a specific error in details.
       - `DeviceProvisioningClientException` for provisioning client and `DeviceProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
 
 ### Connection monitoring and client lifetime
-  - Caching the latest connection status information in device client
-  - `RecommendedAction` in connection status handling based on connection status
+  - Caching the latest connection status information in device client.
+  - `RecommendedAction` in connection status handling based on connection status.
 
 ## What will happen to the version 1 SDK
 
