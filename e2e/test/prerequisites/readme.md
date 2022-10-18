@@ -1,5 +1,5 @@
 
-# Azure IoT C# end-to-end test prerequisites
+# Azure IoT .NET end-to-end test prerequisites
 
 The E2E tests require some Azure resources to be set up and configured. Running the [e2eTestsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1) powershell script is a convenient way of getting all the resources setup with the required configuration.
 

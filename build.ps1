@@ -266,7 +266,7 @@ try
         $env:AZURE_IOT_LOCALPACKAGES = ""
         
         # SDK binaries
-        BuildProject . "Azure IoT C# SDK Solution"
+        BuildProject . "Azure IoT .NET SDK Solution"
 
         # Samples
         # TODO: BuildProject <path> "<desc>"

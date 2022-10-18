@@ -18,7 +18,7 @@ The `AmqpTransportHandler` is always the last element of the transport pipeline,
 
 By default, each `DeviceClient`/`ModuleClient` will use a separate TCP/WSS non-pooled connection.
 
-The Azure IoT Device SDK for C# supports high performance scenarios such as [Azure IoT Protocol Gateway](https://github.com/Azure/azure-iot-protocol-gateway) and [Azure IoT Edge](https://github.com/Azure/iotedge). For this, the following features are available:
+The Azure IoT Device SDK for .NET supports high performance scenarios such as [Azure IoT Protocol Gateway](https://github.com/Azure/azure-iot-protocol-gateway) and [Azure IoT Edge](https://github.com/Azure/iotedge). For this, the following features are available:
 - Multiplexing allows multiple IoT identities (devices or modules) to share a single TCP/TLS connection.
 - Connection pooling allows the SDK to automatically load-balance multiple clients on a small number of TCP/TLS connections.
 

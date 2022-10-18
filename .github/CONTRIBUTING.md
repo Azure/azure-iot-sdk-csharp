@@ -14,7 +14,7 @@ We monitor the Github issues section specifically for bugs found with our SDK, h
 
 # File a bug (code or documentation)
 That is definitely something we want to hear about. Please open an issue on github, we'll address it as fast as possible. Typically here's the information we're going to ask for to get started:
-- What SDK are you using (Node, C, C#, Python, Java?)
+- What SDK are you using (Node, C, .NET, Python, Java?)
 - What version of the SDK?
 - Do you have a snippet of code that would help us reproduce the bug?
 - Do you have logs showing what's happening?
@@ -23,7 +23,7 @@ That is definitely something we want to hear about. Please open an issue on gith
 * Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
 * Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”
 * Need Support? Every customer with an active Azure subscription has access to support with guaranteed response time.  Consider submitting a ticket and get assistance from Microsoft support team
-* Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub. This is the repo for C# only. Use the respective repo for (C, Java, .NET, Node.js, Python).
+* Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub. This is the repo for .NET only. Use the respective repo for (C, Java, .NET, Node.js, Python).
 
 ## Contribute documentation
 
@@ -78,7 +78,7 @@ sure your plans and ours are in sync :) Just open an issue on github and tag it 
         3. Run the E2E test suite and ensure that all the tests pass successfully. You can also test against the [CI script](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/jenkins/windows_csharp.cmd) that is used in our gated build system.
 
     e) Samples:
-    Add relevant samples to the [Azure IoT Samples for C# Repo](https://github.com/Azure-Samples/azure-iot-samples-csharp). Make sure to add a supporting readme file demonstrating the steps to run the sample.
+    Add relevant samples to the respective sample directory, such as [Azure IoT hub device samples for .NET](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples). Make sure to add a supporting readme file demonstrating the steps to run the sample.
     
     f) Documentation:
     To make sure that the API documentation can be generated from our code, we follow the following format for class and method signatures:
