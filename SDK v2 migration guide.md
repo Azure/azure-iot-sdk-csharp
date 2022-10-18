@@ -48,7 +48,7 @@ There are a number of reasons why the Azure IoT SDK team chose to do a major ver
 
   - Exception handling in the v1 SDK required a wide variety of exception types to be caught. Exception types have been consolidated.
     - Parameter validation may throw the following exceptions.
-      - `ArgumentException` for basic parameter validation
+      - `ArgumentException` for basic parameter validation.
         - Also, `ArgumentNullException` and `ArgumentOutOfRangeException` inherit from it and provide more specific feedback.
       - `FormatException` when a string parameter format does not match what is expected (e.g., connection string with embedded key/value pairs).
       - `InvalidOperationException`
