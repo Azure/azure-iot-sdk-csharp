@@ -96,7 +96,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 
 | Version 1 API | Equivalent version 2 API |
 |:---|:---|
-| `RegistryManager` | `IotHubServiceClient`, subclients `Devices`, `Twins`, `Configurations`, etc. |
+| `RegistryManager` | `IotHubServiceClient`, `subclients`, `Devices`, `Twins`, `Configurations`, etc. |
 | `RegistryManager.AddDeviceAsync(Device, ...)` | `IotHubServiceClient.Devices.CreateAsync(Device, ...)` |
 | `RegistryManager.AddDevices2Async(...)` | `IotHubServiceClient.Devices.CreateAsync(IEnumerable<Device>,...)` |
 | `RegistryManager.RemoveDeviceAsync(...)` | `IotHubServiceClient.Devices.DeleteAsync(...)` |
