@@ -13,7 +13,7 @@ are outlines of the notable breaking changes as well as a mapping from version 1
    - [IoT hub service client](#iot-hub-service-client)
    - [Device Provisioning Service (DPS) device client](#dps-device-client)
    - [DPS service client](#dps-service-client)
-   - [Security provider client](#authentication-provider-client)
+   - [Security provider client](#security-provider-client)
  - [Frequently asked questions](#frequently-asked-questions)
 
 ## Why the version 1 SDK is being replaced
