@@ -186,14 +186,14 @@ Function RunSamples($path, $message)
     
             # ComputeDerivedSymmetricKeySample uses the supplied group enrollment key to compute the SHA256 based hash of the supplied device Id.
             # For the sake of running this sample on the pipeline, we will only test the hash computation by passing in a base-64 string and a string to be hashed.
-            RunSample 'provisioning\device\samples\getting started\ComputeDerivedSymmetricKeySample' "Provisioning\Device\ComputeDerivedSymmetricKeySample" "-d ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
+            RunSample 'provisioning\device\samples\getting started\ComputeDerivedSymmetricKeySample' "Provisioning\Device\ComputeDerivedSymmetricKeySample" "-r ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
     
-            RunSample 'provisioning\device\samples\how to\SymmetricKeySample' "Provisioning\Device\SymmetricKeySample" "-s ""$env:DPS_IDSCOPE"" -i ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
+            RunSample 'provisioning\device\samples\how to\SymmetricKeySample' "Provisioning\Device\SymmetricKeySample" "-i ""$env:DPS_IDSCOPE"" -r ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
     
             # Run provisioning\service samples
             RunSample 'provisioning\service\samples\how to\BulkOperationSample' "Provisioning\Service\BulkOperationSample"
             RunSample 'provisioning\service\samples\getting started\EnrollmentSample' "Provisioning\Service\EnrollmentSample"
-            
+
             <#
 
             # Run the cleanup again so that identities and enrollments created for the samples are cleaned up.
