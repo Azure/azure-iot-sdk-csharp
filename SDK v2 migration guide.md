@@ -19,25 +19,50 @@ are outlines of the notable breaking changes as well as a mapping from version 1
 ## Why the version 1 SDK is being replaced
 
 There are a number of reasons why the Azure IoT SDK team chose to do a major version revision. Here are a few of the more important reasons:
-  - Removing or upgrading several NuGet dependencies.
-    - Upgraded
-      - Microsoft.Azure.Devices.Client
-      - Microsoft.Azure.Devices
-      - Microsoft.Azure.Devices.Authentication
-      - Microsoft.Azure.Devices.Provisioning.Client
-      - Microsoft.Azure.Devices.Provisioning.Service
-    - Removed
-      - Microsoft.Azure.Devices.Shared
-      - Microsoft.Azure.Devices.Provisioning.Transport.Amqp
-      - Microsoft.Azure.Devices.Provisioning.Transport.Http
-      - Microsoft.Azure.Devices.Provisioning.Transport.Mqtt
-      - Microsoft.Azure.Devices.Provisioning.Security.Tpm
-  - Consolidating IoT hub service clients and renaming to reflect the items or operations they support.
-    - Many existing client classes (RegistryManager, ServiceClient, etc.) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
-  - Many existing clients had a mix of standard constructors (`new DeviceClient(...)`) and static builder methods (`DeviceClient.CreateFromConnectionString(...)`) that caused some confusion among users. The factory methods have been removed and the addition of constructors in clients enables unit testing.
-  - Exception handling.
-    - Exception handling in the v1 SDK required multiple exception types to be caught. This logic has been consolidated to always throw `IotHubClientException` and `IotHubServiceException` for exceptions arising from communication attempts with IoT Hub, `DeviceProvisioningClientException` and `DeviceProvisioningServiceException` for exceptions arising from communication attempts with DPS. Parameter validation will throw `ArgumentException`/`ArgumentNullException`/`FormatException`/`InvalidOperationException`.
-  - `RecommendedAction` in connection status handling.
+
+### Creating, removing, or upgrading several NuGet dependencies.
+
+  - Created
+    - Microsoft.Azure.Devices.Authentication
+  - Upgraded
+    - Microsoft.Azure.Devices (IoT hub service)
+    - Microsoft.Azure.Devices.Client (IoT hub device)
+    - Microsoft.Azure.Devices.Provisioning.Client
+    - Microsoft.Azure.Devices.Provisioning.Service
+  - Removed
+    - Microsoft.Azure.Devices.Shared
+    - Microsoft.Azure.Devices.Provisioning.Transport.Amqp
+    - Microsoft.Azure.Devices.Provisioning.Transport.Http
+    - Microsoft.Azure.Devices.Provisioning.Transport.Mqtt
+    - Microsoft.Azure.Devices.Provisioning.Security.Tpm
+
+### Consolidating IoT hub service clients and renaming to reflect the items or operations they support.
+
+  Many existing client classes (RegistryManager, ServiceClient, etc.) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
+
+  ### Client constructors and mocking
+
+  Many existing clients had a mix of standard constructors (`new DeviceClient(...)`) and static builder methods (`DeviceClient.CreateFromConnectionString(...)`) that caused some confusion among users. The factory methods have been removed and the addition of constructors in clients also enables unit test mocking.
+
+  ### Exception handling
+
+  - Exception handling in the v1 SDK required a wide variety of exception types to be caught. Exception types have been consolidated.
+    - Parameter validation may throw the following exceptions.
+      - `ArgumentException` for basic parameter validation
+        - Also, `ArgumentNullException` and `ArgumentOutOfRangeException` inherit from it and provide more specific feedback.
+      - `FormatException` when a string parameter format does not match what is expected (e.g., connection string with embeded key/value pairs).
+      - `InvalidOperationException`
+        - For example, when calling device client operations before explicility calling `IotHubDeviceClient.OpenAsync()` first.
+        - When some runtime validated user input is invalid in some other way, for example, importing or exporting devices where there is a null value in the list.
+    - `OperationCanceledException` when a cancellation token is signaled.
+    - When an operation fails:
+      - `IotHubClientException` for device client and `IotHubServiceException` for service client for any exceptions arising from communication attempts with IoT hub.
+        - Based on `IotHubServiceErrorCode` we determine if an exception is transient. Check error code for a specific error in details.
+      - `DeviceProvisioningClientException` for provisioning client and `DeviceProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
+
+### Connection monitoring and client lifetime
+  - Caching the latest connection status information in device client
+  - `RecommendedAction` in connection status handling based on connection status
 
 ## What will happen to the version 1 SDK
 
@@ -111,7 +136,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 
 | Version 1 API | Equivalent version 2 API |
 |:---|:---|
-| `RegistryManager` | `IotHubServiceClient`, `subclients`, `Devices`, `Twins`, `Configurations`, etc. |
+| `RegistryManager` | `IotHubServiceClient`, subclients: `Devices`, `Twins`, `Configurations`, etc. |
 | `RegistryManager.AddDeviceAsync(Device, ...)` | `IotHubServiceClient.Devices.CreateAsync(Device, ...)` |
 | `RegistryManager.AddDevices2Async(...)` | `IotHubServiceClient.Devices.CreateAsync(IEnumerable<Device>,...)` |
 | `RegistryManager.RemoveDeviceAsync(...)` | `IotHubServiceClient.Devices.DeleteAsync(...)` |
