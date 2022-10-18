@@ -261,31 +261,16 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (!SharedAccessKey.IsNullOrWhiteSpace())
             {
-                if (ModuleId.IsNullOrWhiteSpace())
-                {
-                    SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
-                        sharedAccessKey: SharedAccessKey,
-                        deviceId: DeviceId,
-                        sharedAccessKeyName: SharedAccessKeyName,
-                        sasTokenTimeToLive: SasTokenTimeToLive,
-                        sasTokenRenewalBuffer: SasTokenRenewalBuffer);
+                SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
+                    SharedAccessKey,
+                    DeviceId,
+                    ModuleId,
+                    SharedAccessKeyName,
+                    SasTokenTimeToLive,
+                    SasTokenRenewalBuffer);
 
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
-                }
-                else
-                {
-                    SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
-                        SharedAccessKey,
-                        DeviceId,
-                        ModuleId,
-                        SharedAccessKeyName,
-                        SasTokenTimeToLive,
-                        SasTokenRenewalBuffer);
-
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
-                }
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
 
                 // This assignment resets any previously set SharedAccessSignature value. This is possible in flows where the same authentication method instance
                 // is used to reinitialize the client after close-dispose.
@@ -329,6 +314,12 @@ namespace Microsoft.Azure.Devices.Client
             if (string.IsNullOrWhiteSpace(DeviceId))
             {
                 throw new FormatException("Device Id cannot be null or white space.");
+            }
+
+            // Module Id
+            if (ModuleId != null && string.IsNullOrWhiteSpace(ModuleId))
+            {
+                throw new FormatException("Module Id cannot be white space.");
             }
 
             // Shared access key
@@ -396,20 +387,13 @@ namespace Microsoft.Azure.Devices.Client
 
         private static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionString iotHubConnectionString)
         {
-            if (iotHubConnectionString.SharedAccessKeyName != null)
-            {
-                return new ClientAuthenticationWithSakRefresh(
-                    iotHubConnectionString.SharedAccessKey,
-                    iotHubConnectionString.DeviceId,
-                    iotHubConnectionString.ModuleId,
-                    iotHubConnectionString.SharedAccessKeyName);
-            }
-            else if (iotHubConnectionString.SharedAccessKey != null)
+            if (iotHubConnectionString.SharedAccessKey != null)
             {
                 return new ClientAuthenticationWithSakRefresh(
                         iotHubConnectionString.SharedAccessKey,
                         iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.ModuleId);
+                        iotHubConnectionString.ModuleId,
+                        iotHubConnectionString.SharedAccessKeyName);
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {

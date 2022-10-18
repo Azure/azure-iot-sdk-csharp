@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         private const int DefaultSasRenewalBufferPercentage = 15;
         private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
         private int _bufferSeconds;
+        private readonly IotHubConnectionString _iotHubConnectionString;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -52,6 +53,60 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             ModuleId = moduleId;
+
+            if (suggestedTimeToLive < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
+            }
+
+            if (timeBufferPercentage < 0 || timeBufferPercentage > 100)
+            {
+                throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
+            }
+
+            SuggestedTimeToLive = suggestedTimeToLive == default
+                ? s_defaultSasTimeToLive
+                : suggestedTimeToLive;
+
+            TimeBufferPercentage = timeBufferPercentage == default
+                ? DefaultSasRenewalBufferPercentage
+                : timeBufferPercentage;
+
+            ExpiresOn = DateTime.UtcNow.AddSeconds(-SuggestedTimeToLive.TotalSeconds);
+            Debug.Assert(IsExpiring);
+            UpdateTimeBufferSeconds(SuggestedTimeToLive.TotalSeconds);
+        }
+
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <param name="connectionString">
+        /// The connection string containing the device Id, optional module Id, shared access key name
+        /// and shared access key to be used for authenticating with IoT hub service.
+        /// </param>
+        /// <param name="suggestedTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionString"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="connectionString"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if <paramref name="timeBufferPercentage"/> is outside the range 0-100.
+        /// </exception>
+        public ClientAuthenticationWithTokenRefresh(
+            string connectionString,
+            TimeSpan suggestedTimeToLive = default,
+            int timeBufferPercentage = default)
+        {
+            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
+
+            _iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
+            DeviceId = _iotHubConnectionString.DeviceId;
+            ModuleId = _iotHubConnectionString.ModuleId;
 
             if (suggestedTimeToLive < TimeSpan.Zero)
             {
@@ -154,10 +209,10 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SharedAccessSignature = Token;
             iotHubConnectionCredentials.SharedAccessKey = null;
             iotHubConnectionCredentials.SharedAccessKeyName = null;
-            iotHubConnectionCredentials.SasTokenTimeToLive = SuggestedTimeToLive;
-            iotHubConnectionCredentials.SasTokenRenewalBuffer = TimeBufferPercentage;
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.ModuleId = ModuleId;
+            iotHubConnectionCredentials.SasTokenTimeToLive = SuggestedTimeToLive;
+            iotHubConnectionCredentials.SasTokenRenewalBuffer = TimeBufferPercentage;
         }
 
         /// <summary>

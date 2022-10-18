@@ -12,6 +12,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ClientAuthenticationWithSakRefresh : ClientAuthenticationWithTokenRefresh
     {
+        private readonly IotHubConnectionString _iotHubConnectionString;
+
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -54,6 +56,39 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             SharedAccessKeyName = sharedAccessKeyName;
+        }
+
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <param name="connectionString">
+        /// The connection string containing the device Id, optional module Id, shared access key name
+        /// and shared access key to be used for authenticating with IoT hub service.
+        /// </param>
+        /// <param name="sasTokenTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="sasTokenRenewalBuffer">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionString"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="connectionString"/> is empty or whitespace.</exception>
+        public ClientAuthenticationWithSakRefresh(
+            string connectionString,
+            TimeSpan sasTokenTimeToLive = default,
+            int sasTokenRenewalBuffer = default)
+            : base(
+                  connectionString,
+                  sasTokenTimeToLive,
+                  sasTokenRenewalBuffer)
+        {
+            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
+
+            _iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
+            SharedAccessKey = _iotHubConnectionString.SharedAccessKey;
+            SharedAccessKeyName = _iotHubConnectionString.SharedAccessKeyName;
         }
 
         /// <summary>

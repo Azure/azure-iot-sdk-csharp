@@ -1004,7 +1004,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             // act
-            Action createDeviceClientAuth = () => { new ClientAuthenticationWithConnectionString(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
+            Action createDeviceClientAuth = () => { new ClientAuthenticationWithSakRefresh(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
 
             // assert
             createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
@@ -1015,7 +1015,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             // act
-            Action createDeviceClientAuth = () => { new ClientAuthenticationWithConnectionString(FakeConnectionString, timeBufferPercentage: 200); };
+            Action createDeviceClientAuth = () => { new ClientAuthenticationWithSakRefresh(FakeConnectionString, sasTokenRenewalBuffer: 200); };
 
             // assert
             createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
@@ -1027,7 +1027,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
             int sasTokenRenewalBuffer = 50;
-            var auth = new ClientAuthenticationWithConnectionString(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
+            var auth = new ClientAuthenticationWithSakRefresh(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
             // act

@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceDisconnected = new SemaphoreSlim(0);
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            var auth = new ClientAuthenticationWithConnectionString(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
+            var auth = new ClientAuthenticationWithSakRefresh(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
 
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             private readonly MsTestLogger _logger;
 
-            public TestTokenRefresher(string deviceId, string key, MsTestLogger logger) : base(deviceId)
+            public TestTokenRefresher(string deviceId, string key, MsTestLogger logger) : base(deviceId: deviceId)
             {
                 _key = key;
                 _logger = logger;
