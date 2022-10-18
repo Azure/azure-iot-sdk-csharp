@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
-                    authScope: ConnectionStringAuthScope.IoTHub)
+                    authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
-                    authScope: ConnectionStringAuthScope.IoTHub)
+                    authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 

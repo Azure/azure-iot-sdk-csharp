@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
     public enum ConnectionStringAuthScope
     {
-        IoTHub,
+        IotHub,
         Device,
     }
 
@@ -121,7 +121,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                             throw new IotHubServiceException(
                                 $"Created device {requestDevice.Id} not yet gettable from IoT hub.",
                                 HttpStatusCode.NotFound,
-                                IotHubServiceErrorCode.DeviceNotFound);
+                                // Using this causes the exception to be retriable, even though a better match would be DeviceNotFound.
+                                IotHubServiceErrorCode.DeviceNotOnline);
                         }
                     },
                     s_retryPolicy,
