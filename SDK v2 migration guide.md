@@ -19,11 +19,25 @@ are outlines of the notable breaking changes as well as a mapping from version 1
 ## Why the version 1 SDK is being replaced
 
 There are a number of reasons why the Azure IoT SDK team chose to do a major version revision. Here are a few of the more important reasons:
-  - Removing or upgrading several NuGet dependencies (TODO: list).
-  - Consolidate IoT hub service clients and rename to reflect the items or operations they support.
+  - Removing or upgrading several NuGet dependencies.
+    - Upgraded
+      - Microsoft.Azure.Devices.Client
+      - Microsoft.Azure.Devices
+      - Microsoft.Azure.Devices.Authentication
+      - Microsoft.Azure.Devices.Provisioning.Client
+      - Microsoft.Azure.Devices.Provisioning.Service
+    - Removed
+      - Microsoft.Azure.Devices.Shared
+      - Microsoft.Azure.Devices.Provisioning.Transport.Amqp
+      - Microsoft.Azure.Devices.Provisioning.Transport.Http
+      - Microsoft.Azure.Devices.Provisioning.Transport.Mqtt
+      - Microsoft.Azure.Devices.Provisioning.Security.Tpm
+
+  - Consolidating IoT hub service clients and renaming to reflect the items or operations they support.
     - Many existing client classes (RegistryManager, ServiceClient, etc.) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
   - Many existing clients had a mix of standard constructors (`new DeviceClient(...)`) and static builder methods (`DeviceClient.CreateFromConnectionString(...)`) that caused some confusion among users. The factory methods have been removed and the addition of constructors in clients enables unit testing.
-
+  - Exception handling. (Exception handling in the v1 SDK required multiple exception types to be caught. This logic has been consolidated to always throw only IotHubClientException for exceptions arising from communication attempts with IoT Hub. Parameter validation will throw ArgumentException/ArgumentNullException/FormatException/InvalidOperationException
+  - RecommendedAction in connection status handling
 ## What will happen to the version 1 SDK
 
 We will have released one final LTS version of the version 1 SDK that we will support like any other LTS release (security bug fixes, some non-security bug fixes as needed),
