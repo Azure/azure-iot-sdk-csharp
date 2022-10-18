@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task ClientAuthenticationWithSakRefresh_WithDevice_SharedAccessKeyConnectionString_HasRefresher()
         {
             IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new ClientAuthenticationWithRegistrySymmetricKey(TestSharedAccessKey, TestDeviceId),
+                new ClientAuthenticationWithSakRefresh(TestSharedAccessKey, TestDeviceId),
                 TestIotHubName);
 
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task ClientAuthenticationWithSakRefresh_WithModule_SharedAccessKeyConnectionString_HasRefresher()
         {
             IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new ClientAuthenticationWithRegistrySymmetricKey(TestSharedAccessKey, TestDeviceId, TestModuleId),
+                new ClientAuthenticationWithSakRefresh(TestSharedAccessKey, TestDeviceId, TestModuleId),
                 TestIotHubName);
 
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);

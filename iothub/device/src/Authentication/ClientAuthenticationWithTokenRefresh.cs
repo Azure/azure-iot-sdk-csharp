@@ -14,12 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const int DefaultSasRenewalBufferPercentage = 15;
         private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
-
-        private readonly TimeSpan _suggestedTimeToLive;
-        private readonly int _timeBufferPercentage;
-
         private int _bufferSeconds;
-        private string _token;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -68,17 +63,17 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
             }
 
-            _suggestedTimeToLive = suggestedTimeToLive == default
+            SuggestedTimeToLive = suggestedTimeToLive == default
                 ? s_defaultSasTimeToLive
                 : suggestedTimeToLive;
 
-            _timeBufferPercentage = timeBufferPercentage == default
+            TimeBufferPercentage = timeBufferPercentage == default
                 ? DefaultSasRenewalBufferPercentage
                 : timeBufferPercentage;
 
-            ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLive.TotalSeconds);
+            ExpiresOn = DateTime.UtcNow.AddSeconds(-SuggestedTimeToLive.TotalSeconds);
             Debug.Assert(IsExpiring);
-            UpdateTimeBufferSeconds(_suggestedTimeToLive.TotalSeconds);
+            UpdateTimeBufferSeconds(SuggestedTimeToLive.TotalSeconds);
         }
 
         /// <summary>
@@ -106,6 +101,12 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
 
+        internal string Token { get; private set; }
+
+        internal TimeSpan SuggestedTimeToLive { get; }
+
+        internal int TimeBufferPercentage { get; }
+
         /// <summary>
         /// Gets a snapshot of the security token associated with the device.
         /// </summary>
@@ -122,14 +123,14 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!IsExpiring)
             {
-                return _token;
+                return Token;
             }
 
-            string token = await SafeCreateNewTokenAsync(iotHub, _suggestedTimeToLive).ConfigureAwait(false);
+            string token = await SafeCreateNewTokenAsync(iotHub, SuggestedTimeToLive).ConfigureAwait(false);
 
             SharedAccessSignature sas = SharedAccessSignatureParser.Parse(token);
 
-            _token = token;
+            Token = token;
             ExpiresOn = sas.ExpiresOn;
 
             UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
@@ -137,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.GenerateToken(this, ExpiresOn);
 
-            return _token;
+            return Token;
         }
 
         /// <summary>
@@ -150,11 +151,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
-            iotHubConnectionCredentials.SharedAccessSignature = _token;
+            iotHubConnectionCredentials.SharedAccessSignature = Token;
             iotHubConnectionCredentials.SharedAccessKey = null;
             iotHubConnectionCredentials.SharedAccessKeyName = null;
-            iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
-            iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
+            iotHubConnectionCredentials.SasTokenTimeToLive = SuggestedTimeToLive;
+            iotHubConnectionCredentials.SasTokenRenewalBuffer = TimeBufferPercentage;
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.ModuleId = ModuleId;
         }
@@ -169,7 +170,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void UpdateTimeBufferSeconds(double ttl)
         {
-            _bufferSeconds = (int)(ttl * ((float)_timeBufferPercentage / 100));
+            _bufferSeconds = (int)(ttl * ((float)TimeBufferPercentage / 100));
         }
     }
 }

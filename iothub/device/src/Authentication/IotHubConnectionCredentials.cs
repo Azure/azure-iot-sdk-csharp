@@ -398,15 +398,15 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionString.SharedAccessKeyName != null)
             {
-                return new ClientAuthenticationWithSharedAccessPolicy(
-                    iotHubConnectionString.SharedAccessKeyName,
+                return new ClientAuthenticationWithSakRefresh(
                     iotHubConnectionString.SharedAccessKey,
                     iotHubConnectionString.DeviceId,
-                    iotHubConnectionString.ModuleId);
+                    iotHubConnectionString.ModuleId,
+                    iotHubConnectionString.SharedAccessKeyName);
             }
             else if (iotHubConnectionString.SharedAccessKey != null)
             {
-                return new ClientAuthenticationWithRegistrySymmetricKey(
+                return new ClientAuthenticationWithSakRefresh(
                         iotHubConnectionString.SharedAccessKey,
                         iotHubConnectionString.DeviceId,
                         iotHubConnectionString.ModuleId);

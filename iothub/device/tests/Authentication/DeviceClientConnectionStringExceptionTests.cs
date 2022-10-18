@@ -4,7 +4,6 @@
 namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 {
     using System;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.Azure.Devices.Client;
 

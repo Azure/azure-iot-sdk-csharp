@@ -7,13 +7,31 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    // Implementing SAS Token refresh based on a SharedAccessKey (SAK).
-    internal class ClientAuthenticationWithSakRefresh : ClientAuthenticationWithTokenRefresh
+    /// <summary>
+    /// Authentication method that implements SAS Token refresh based on a SharedAccessKey (SAK).
+    /// </summary>
+    public class ClientAuthenticationWithSakRefresh : ClientAuthenticationWithTokenRefresh
     {
-        private readonly string _sharedAccessKey;
-        private readonly string _sharedAccessKeyName;
-
-        internal ClientAuthenticationWithSakRefresh(
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <param name="sharedAccessKey">Shared access key value.</param>
+        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="moduleId">Module identifier.</param>
+        /// <param name="sharedAccessKeyName">Shared access key name.</param>
+        /// <param name="sasTokenTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="sasTokenRenewalBuffer">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="sharedAccessKey"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown when <paramref name="sharedAccessKey"/> or <paramref name="sharedAccessKeyName"/> is empty or whitespace.
+        /// </exception>
+        public ClientAuthenticationWithSakRefresh(
             string sharedAccessKey,
             string deviceId,
             string moduleId = default,
@@ -26,8 +44,45 @@ namespace Microsoft.Azure.Devices.Client
                 sasTokenTimeToLive,
                 sasTokenRenewalBuffer)
         {
-            _sharedAccessKey = sharedAccessKey ?? throw new ArgumentNullException(nameof(sharedAccessKey));
-            _sharedAccessKeyName = sharedAccessKeyName;
+            Argument.AssertNotNullOrWhiteSpace(sharedAccessKey, nameof(sharedAccessKey));
+            SharedAccessKey = sharedAccessKey;
+
+            if (sharedAccessKeyName != null
+                && sharedAccessKeyName.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentException("Shared access key name cannot be white space.");
+            }
+
+            SharedAccessKeyName = sharedAccessKeyName;
+        }
+
+        /// <summary>
+        /// Gets the shared access key.
+        /// </summary>
+        public string SharedAccessKey { get; private set; }
+
+        /// <summary>
+        /// Gets the shared access key name.
+        /// </summary>
+        public string SharedAccessKeyName { get; private set; }
+
+        /// <summary>
+        /// Populates an <see cref="IotHubConnectionCredentials"/> instance based on a snapshot of the properties of
+        /// the current instance.
+        /// </summary>
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="iotHubConnectionCredentials"/> is null.</exception>
+        public override void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
+        {
+            Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
+
+            iotHubConnectionCredentials.SharedAccessSignature = Token;
+            iotHubConnectionCredentials.SharedAccessKey = SharedAccessKey;
+            iotHubConnectionCredentials.SharedAccessKeyName = SharedAccessKeyName;
+            iotHubConnectionCredentials.SasTokenTimeToLive = SuggestedTimeToLive;
+            iotHubConnectionCredentials.SasTokenRenewalBuffer = TimeBufferPercentage;
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
         }
 
         ///<inheritdoc/>
@@ -38,11 +93,11 @@ namespace Microsoft.Azure.Devices.Client
 
             var builder = new SharedAccessSignatureBuilder
             {
-                Key = _sharedAccessKey,
+                Key = SharedAccessKey,
                 TimeToLive = suggestedTimeToLive,
             };
 
-            if (_sharedAccessKeyName == null)
+            if (SharedAccessKeyName == null)
             {
                 builder.Target = ModuleId == default
                     ? "{0}/devices/{1}".FormatInvariant(
@@ -55,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else
             {
-                builder.KeyName = _sharedAccessKeyName;
+                builder.KeyName = SharedAccessKeyName;
                 builder.Target = iotHub;
             }
 
