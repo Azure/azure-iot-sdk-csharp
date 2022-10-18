@@ -44,13 +44,11 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     Console.WriteLine($"Created edge device {device.Id}");
                     Twin twin = await _serviceClient.Twins.GetAsync(device.Id);
-                    Console.WriteLine($"\tTwin is {twin.ToJson()}");
+                    Console.WriteLine($"\tTwin is {JsonSerializer.Serialize(twin)}");
 
                     twin.Tags[conditionPropertyName] = conditionPropertyValue;
                     await _serviceClient.Twins.UpdateAsync(device.Id, twin);
-                    Console.WriteLine($"\tUpdated twin to {twin.ToJson()}");
-
-                    Console.WriteLine();
+                    Console.WriteLine($"\tUpdated twin to {JsonSerializer.Serialize(twin)}\n");
                 }
 
                 var baseConfiguration = new Configuration($"{ConfigurationIdPrefix}base-{Guid.NewGuid()}")

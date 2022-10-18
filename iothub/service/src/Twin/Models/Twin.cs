@@ -176,16 +176,6 @@ namespace Microsoft.Azure.Devices
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
 
         /// <summary>
-        /// Gets the Twin as a JSON string.
-        /// </summary>
-        /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
-        /// <returns>JSON string.</returns>
-        public string ToJson(Formatting formatting = Formatting.None)
-        {
-            return JsonConvert.SerializeObject(this, formatting);
-        }
-
-        /// <summary>
         /// For use in serialization.
         /// </summary>
         /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>

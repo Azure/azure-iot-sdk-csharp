@@ -172,15 +172,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
-
-        /// <summary>
-        /// Gets the twin as a JSON string.
-        /// </summary>
-        /// <param name="formatting">Formatting for the output JSON string.</param>
-        /// <returns>JSON string</returns>
-        public string ToJson(Formatting formatting = Formatting.None)
-        {
-            return JsonConvert.SerializeObject(this, formatting);
-        }
     }
 }
