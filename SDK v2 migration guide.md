@@ -36,8 +36,9 @@ There are a number of reasons why the Azure IoT SDK team chose to do a major ver
   - Consolidating IoT hub service clients and renaming to reflect the items or operations they support.
     - Many existing client classes (RegistryManager, ServiceClient, etc.) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
   - Many existing clients had a mix of standard constructors (`new DeviceClient(...)`) and static builder methods (`DeviceClient.CreateFromConnectionString(...)`) that caused some confusion among users. The factory methods have been removed and the addition of constructors in clients enables unit testing.
-  - Exception handling. (Exception handling in the v1 SDK required multiple exception types to be caught. This logic has been consolidated to always throw only IotHubClientException for exceptions arising from communication attempts with IoT Hub. Parameter validation will throw ArgumentException/ArgumentNullException/FormatException/InvalidOperationException
-  - RecommendedAction in connection status handling
+  - Exception handling. (Exception handling in the v1 SDK required multiple exception types to be caught. This logic has been consolidated to always throw only `IotHubClientException` for exceptions arising from communication attempts with IoT Hub. Parameter validation will throw `ArgumentException`/`ArgumentNullException`/`FormatException`/`InvalidOperationException`.
+  - RecommendedAction in connection status handling.
+  
 ## What will happen to the version 1 SDK
 
 We will have released one final LTS version of the version 1 SDK that we will support like any other LTS release (security bug fixes, some non-security bug fixes as needed),
