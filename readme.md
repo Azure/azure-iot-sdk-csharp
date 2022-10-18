@@ -12,11 +12,11 @@ If you need any help migrating your code to try out the new 2.X.X clients, pleas
 
 This repository contains the following:
 
-- **Microsoft Azure IoT Hub device SDK for C#** to connect client devices to Azure IoT Hub with .NET.
-- **Microsoft Azure IoT Hub service SDK for C#** to manage your IoT Hub service instance from a back-end .NET application.
-- **Microsoft Azure Provisioning device SDK for C#** to provision devices to Azure IoT Hub with .NET.
-- **Microsoft Azure Provisioning service SDK for C#** to manage your Provisioning service instance from a back-end .NET application.
-- **Microsoft Azure IoT Devices Authentication Providers for C#** to provide authentication classes for provisioning devices and connecting to IoT hub.
+- **Microsoft Azure IoT Hub device SDK for .NET** to connect client devices to Azure IoT Hub with .NET.
+- **Microsoft Azure IoT Hub service SDK for .NET** to manage your IoT Hub service instance from a back-end .NET application.
+- **Microsoft Azure Provisioning device SDK for .NET** to provision devices to Azure IoT Hub with .NET.
+- **Microsoft Azure Provisioning service SDK for .NET** to manage your Provisioning service instance from a back-end .NET application.
+- **Microsoft Azure IoT Devices Authentication Providers for .NET** to provide authentication classes for provisioning devices and connecting to IoT hub.
 
 ## Critical Upcoming Change Notice
 
@@ -89,7 +89,7 @@ Samples for each of these categories are further separated into three sub-catego
 If you are looking for a good device sample to get started with, please see the [device reconnection sample](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample).
 It shows how to connect a device, handle disconnect events, cases to handle when making calls, and when to re-initialize the `DeviceClient`.
 
-## Contribute to the Azure IoT C# SDK
+## Contribute to the Azure IoT .NET SDK
 
 If you would like to build or change the SDK source code, please follow the [devguide](doc/devguide.md).
 
