@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices
                             ReportedProperties = twin.Properties.Reported,
                         }
                     }
-                }; ;
+                };
 
                 return await BulkDeviceOperationAsync(exportImportDeviceList, cancellationToken).ConfigureAwait(false);
             }

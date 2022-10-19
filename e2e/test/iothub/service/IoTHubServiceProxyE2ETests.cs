@@ -79,9 +79,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var twin = new Twin(JobDeviceId)
             {
-                Tags = new TwinCollection(),
+                Tags = { { JobTestTagName, JobDeviceId } },
             };
-            twin.Tags[JobTestTagName] = JobDeviceId;
 
             int tryCount = 0;
 
