@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client
                 SharedAccessSignatureConstants.SignatureFieldName, WebUtility.UrlEncode(signature),
                 SharedAccessSignatureConstants.ExpiryFieldName, WebUtility.UrlEncode(expiresOn));
 
-            if (!keyName.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(keyName))
             {
                 buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
                     SharedAccessSignatureConstants.KeyNameFieldName, WebUtility.UrlEncode(keyName));

@@ -64,7 +64,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [Ignore]
         [LoggedTestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
             const string JobDeviceId = "JobsSample_Device";
