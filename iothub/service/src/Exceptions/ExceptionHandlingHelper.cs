@@ -29,14 +29,31 @@ namespace Microsoft.Azure.Devices
         internal static async Task<Tuple<string, IotHubServiceErrorCode>> GetErrorCodeAndTrackingIdAsync(HttpResponseMessage response)
         {
             string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            IoTHubExceptionResult exResult = null;
             ResponseMessage responseMessage = null;
 
             try
             {
-                exResult = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseBody);
+                IotHubExceptionResult exResult = JsonConvert.DeserializeObject<IotHubExceptionResult>(responseBody);
+                responseMessage = exResult.Message;
+
+                if (responseMessage != null)
+                {
+                    string trackingId = string.Empty;
+                    if (responseMessage.TrackingId != null)
+                    {
+                        trackingId = responseMessage.TrackingId;
+                    }
+
+                    if (responseMessage.ErrorCode != null)
+                    {
+                        if (int.TryParse(responseMessage.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
+                        {
+                            return Tuple.Create(trackingId, (IotHubServiceErrorCode)errorCodeInt);
+                        }
+                    }
+                }
             }
-            catch (JsonReaderException ex)
+            catch (JsonException ex) when (ex is JsonSerializationException or JsonReaderException)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(
@@ -44,100 +61,78 @@ namespace Microsoft.Azure.Devices
                         $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
             }
 
-            if (exResult != null)
+            try
             {
-                string trackingId = string.Empty;
-                try
+                ResponseMessage2 rs2 = JsonConvert.DeserializeObject<ResponseMessage2>(responseBody);
+                if (rs2.TryParse())
                 {
-                    responseMessage = JsonConvert.DeserializeObject<ResponseMessage>(exResult.Message);
-                    if (responseMessage != null)
-                    {
-                        if (responseMessage.TrackingId != null)
-                        {
-                            trackingId = responseMessage.TrackingId;
-                        }
-
-                        if (responseMessage.ErrorCode != null)
-                        {
-                            if (int.TryParse(responseMessage.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
-                            {
-                                return Tuple.Create(trackingId, (IotHubServiceErrorCode)errorCodeInt);
-                            }
-                        }
-                    }
-                }
-                catch (JsonReaderException ex)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(
-                            nameof(GetErrorCodeAndTrackingIdAsync),
-                            $"Failed to deserialize error message into ResponseMessage: '{ex.Message}'. Message body: '{responseBody}'.");
-                }
-
-                if (responseMessage == null)
-                {
-                    try
-                    {
-                        ResponseMessage2 rs2 = JsonConvert.DeserializeObject<ResponseMessage2>(responseBody);
-                        if (rs2.TryParse())
-                        {
-                            return Tuple.Create(rs2.TrackingId, rs2.ErrorCode);
-                        }
-                    }
-                    catch (JsonReaderException ex)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(
-                                nameof(GetErrorCodeAndTrackingIdAsync),
-                                $"Failed to deserialize error message into ResponseMessage2: '{ex.Message}'. Message body: '{responseBody}'.");
-                    }
+                    return Tuple.Create(rs2.TrackingId, rs2.ErrorCode);
                 }
             }
-
-            // In some scenarios, the error response string is a semicolon delimited string with the service-returned error code
-            // embedded in a string response.
-            const char errorFieldsDelimiter = ';';
-            string[] messageFields = exResult.Message?.Split(errorFieldsDelimiter);
-
-            if (messageFields == null || messageFields.Count() < 2)
+            catch (JsonReaderException ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(
                         nameof(GetErrorCodeAndTrackingIdAsync),
-                        $"Failed to find expected semicolon in error message to find error code." +
-                        $" Message body: '{responseBody}.'");
+                        $"Failed to deserialize error message into ResponseMessage2: '{ex.Message}'. Message body: '{responseBody}'.");
             }
-            else
+
+            try
             {
-                foreach (string messageField in messageFields)
+                IotHubExceptionResult2 exResult = JsonConvert.DeserializeObject<IotHubExceptionResult2>(responseBody);
+
+                // In some scenarios, the error response string is a semicolon delimited string with the service-returned error code
+                // embedded in a string response.
+                const char errorFieldsDelimiter = ';';
+                string[] messageFields = exResult.Message?.Split(errorFieldsDelimiter);
+
+                if (messageFields == null || messageFields.Count() < 2)
                 {
-                    if (messageField.IndexOf(MessageFieldErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (Logging.IsEnabled)
+                        Logging.Error(
+                            nameof(GetErrorCodeAndTrackingIdAsync),
+                            $"Failed to find expected semicolon in error message to find error code." +
+                            $" Message body: '{responseBody}.'");
+                }
+                else
+                {
+                    foreach (string messageField in messageFields)
                     {
-                        const char errorCodeDelimiter = ':';
-
-                        if (messageField.IndexOf(errorCodeDelimiter) < 0)
+                        if (messageField.IndexOf(MessageFieldErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            continue;
-                        }
+                            const char errorCodeDelimiter = ':';
 
-                        string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
+                            if (messageField.IndexOf(errorCodeDelimiter) < 0)
+                            {
+                                continue;
+                            }
 
-                        string returnedErrorCode = errorCodeFields[1];
+                            string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
 
-                        // When the returned error code is numeric, only take the first 6 characters as it contains 6 digits.
-                        if (int.TryParse(returnedErrorCode.Substring(0, 6), out int code))
-                        {
-                            return Tuple.Create(string.Empty, (IotHubServiceErrorCode)code);
-                        }
+                            string returnedErrorCode = errorCodeFields[1];
 
-                        // Otherwise the error code might be a string (e.g., PreconditionFailed) in which case we'll try to
-                        // find the matching IotHubServiceErrorCode enum with that same name.
-                        if (Enum.TryParse(returnedErrorCode, out IotHubServiceErrorCode errorCode))
-                        {
-                            return Tuple.Create(string.Empty, errorCode);
+                            // When the returned error code is numeric, only take the first 6 characters as it contains 6 digits.
+                            if (int.TryParse(returnedErrorCode.Substring(0, 6), out int code))
+                            {
+                                return Tuple.Create(string.Empty, (IotHubServiceErrorCode)code);
+                            }
+
+                            // Otherwise the error code might be a string (e.g., PreconditionFailed) in which case we'll try to
+                            // find the matching IotHubServiceErrorCode enum with that same name.
+                            if (Enum.TryParse(returnedErrorCode, out IotHubServiceErrorCode errorCode))
+                            {
+                                return Tuple.Create(string.Empty, errorCode);
+                            }
                         }
                     }
                 }
+            }
+            catch (JsonReaderException ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(
+                        nameof(GetErrorCodeAndTrackingIdAsync),
+                        $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
             }
 
             if (Logging.IsEnabled)

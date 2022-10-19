@@ -25,17 +25,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            var responseMessage = new ResponseMessage
-            {
-                ErrorCode = "404103",
-                TrackingId = "b575211ff5194d56b18721941e82c3d5",
-                Message = "The operation failed because the requested device isn't online or hasn't registered the direct method callback.",
-                OccurredOnUtc = "2022-09-12T21:59:47.99936Z",
-            };
-            var exceptionResult = new IoTHubExceptionResult
+            var exceptionResult = new IotHubExceptionResult
             {
                 // A read-world message in the response content which includes the numeric error code returned by the hub service.
-                Message = JsonConvert.SerializeObject(responseMessage),
+                Message = new ResponseMessage
+                {
+                    ErrorCode = "404103",
+                    TrackingId = "b575211ff5194d56b18721941e82c3d5",
+                    Message = "The operation failed because the requested device isn't online or hasn't registered the direct method callback.",
+                    OccurredOnUtc = "2022-09-12T21:59:47.99936Z",
+                },
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
@@ -72,7 +71,7 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            var exceptionResult = new IoTHubExceptionResult
+            var exceptionResult = new IotHubExceptionResult2
             {
                 // A read-world message in the response content which includes the non-numeric error code returned by the hub service.
                 Message = "ErrorCode:PreconditionFailed;Precondition failed: Device version did not match, existingVersion:957482805 newVersion:957482804"
@@ -88,38 +87,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task GetExceptionCodeAsync_InvalidContent_InJsonString_UnknownErrorCode()
-        {
-            // arrange
-            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            var exceptionResult = new IoTHubExceptionResult
-            {
-                // Invalid field name of error code in the response content.
-                Message =
-                "{" +
-                    "\"InvalidField\":404103," +
-                    "\"trackingId\":\"b575211ff5194d56b18721941e82c3d5\"," +
-                    "\"message\":\"The operation failed because the requested device isn't online or hasn't registered the direct method callback.\"," +
-                    "\"info\":{}," +
-                    "\"timestampUtc\":\"2022-09-12T21:59:47.99936Z\"" +
-                "}"
-            };
-            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
-
-            // act
-            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
-            IotHubServiceErrorCode errorCode = pair.Item2;
-
-            // assert
-            errorCode.Should().Be(IotHubServiceErrorCode.Unknown);
-        }
-
-        [TestMethod]
         public async Task GetExceptionCodeAsync_InvalidContent_InPlainString_UnknownErrorCode()
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            var exceptionResult = new IoTHubExceptionResult
+            var exceptionResult = new IotHubExceptionResult2
             {
                 // Invalid field name of error code in the response content.
                 Message = "InvalidField:PreconditionFailed;Precondition failed: Device version did not match, existingVersion:957482805 newVersion:957482804"
@@ -139,7 +111,7 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            var exceptionResult = new IoTHubExceptionResult
+            var exceptionResult = new IotHubExceptionResult2
             {
                 Message = ""
             };
