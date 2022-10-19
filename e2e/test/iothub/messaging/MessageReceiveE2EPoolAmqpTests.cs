@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IoTHub)
+                    ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IoTHub)
+                    ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IoTHub)
+                    ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IoTHub)
+                    ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 

@@ -20,18 +20,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
     public enum ConnectionStringAuthScope
     {
-        IoTHub,
+        IotHub,
         Device,
     }
 
     public class TestDevice : IDisposable
     {
-        private const int MaxRetryCount = 5;
+        private const int MaxRetryCount = 20;
         private static readonly HashSet<IotHubServiceErrorCode> s_throttlingStatusCodes = new() { IotHubServiceErrorCode.ThrottlingException };
         private static readonly HashSet<IotHubServiceErrorCode> s_retryableStatusCodes = new(s_throttlingStatusCodes) { IotHubServiceErrorCode.DeviceNotFound };
         private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 
-        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(10));
+        private static readonly IRetryPolicy s_retryPolicy = new IncrementalDelayRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3));
 
         private X509Certificate2 _authCertificate;
 
@@ -115,13 +115,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
+                        try
+                        {
+                            device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
+                        }
+                        catch (IotHubServiceException ex)
+                        {
+                            s_logger.Trace($"Getting device {requestDevice.Id} threw {ex}");
+                            device = null;
+                            throw;
+                        }
+
                         if (device is null)
                         {
+                            s_logger.Trace($"Getting device {requestDevice.Id} returned null");
                             throw new IotHubServiceException(
                                 $"Created device {requestDevice.Id} not yet gettable from IoT hub.",
                                 HttpStatusCode.NotFound,
-                                IotHubServiceErrorCode.DeviceNotFound);
+                                // Using this causes the exception to be retriable, even though a better match would be DeviceNotFound.
+                                IotHubServiceErrorCode.DeviceNotOnline);
                         }
                     },
                     s_retryPolicy,

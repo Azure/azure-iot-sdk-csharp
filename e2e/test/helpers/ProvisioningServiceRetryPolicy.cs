@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private static readonly TimeSpan s_defaultRetryInterval = TimeSpan.FromSeconds(5);
 
-        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(10));
+        private static readonly IRetryPolicy s_retryPolicy = new IncrementalDelayRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3));
 
         public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {

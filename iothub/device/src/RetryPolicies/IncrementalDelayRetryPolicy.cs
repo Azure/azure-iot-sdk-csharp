@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="delayIncrement"></param>
         /// <param name="maxDelay">The maximum amount of time to wait between retries.</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
-        public IncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter)
+        public IncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
             : base(maxRetries)
         {
             Argument.AssertNotNegativeValue(delayIncrement.Ticks, nameof(delayIncrement));

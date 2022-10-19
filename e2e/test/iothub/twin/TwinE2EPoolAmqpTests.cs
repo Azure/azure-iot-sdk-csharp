@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    authScope: ConnectionStringAuthScope.IoTHub)
+                    authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    authScope: ConnectionStringAuthScope.IoTHub)
+                    authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync,
-                    authScope: ConnectionStringAuthScope.IoTHub)
+                    authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync,
-                    authScope: ConnectionStringAuthScope.IoTHub)
+                    authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
 
