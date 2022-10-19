@@ -390,19 +390,6 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
             }
-
-            if (SasTokenTimeToLive > TimeSpan.FromHours(1))
-            {
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"You are using a larger value {SasTokenTimeToLive} than our recommendation 1 hour for the SAS token TTL.");
-            }
-
-            if (SasTokenRenewalBuffer > 85)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"You are using a larger percent of TTL {SasTokenRenewalBuffer} as the token renewal buffer. " +
-                        "Your token will be renewed more frequently.");
-            }
         }
 
         private static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionString iotHubConnectionString)
