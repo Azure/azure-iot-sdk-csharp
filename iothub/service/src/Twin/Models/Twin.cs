@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Configuration properties are read only.
         /// </remarks>
-        public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; } = new Dictionary<string, ConfigurationInfo>();
+        public IDictionary<string, string> Configurations { get; internal set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets the twin capabilities.
