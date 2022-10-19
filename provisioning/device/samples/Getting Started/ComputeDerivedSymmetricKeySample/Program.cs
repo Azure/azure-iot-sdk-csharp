@@ -21,6 +21,7 @@ namespace ComputeDerivedSymmetricKeySample
                 });
 
             var sample = new ComputeDerivedKeySample(parameters);
+            Console.WriteLine("DEBUG STATEMENT: RUNNING SAMPLE");
             sample.RunSample();
 
             return 0;
