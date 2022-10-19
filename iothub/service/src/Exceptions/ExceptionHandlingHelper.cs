@@ -29,10 +29,12 @@ namespace Microsoft.Azure.Devices
         internal static async Task<Tuple<string, IotHubServiceErrorCode>> GetErrorCodeAndTrackingIdAsync(HttpResponseMessage response)
         {
             string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            IoTHubExceptionResult responseContent = null;
+            IoTHubExceptionResult exResult = null;
+            ResponseMessage responseMessage = null;
+
             try
             {
-                responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseBody);
+                exResult = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseBody);
             }
             catch (JsonReaderException ex)
             {
@@ -42,23 +44,22 @@ namespace Microsoft.Azure.Devices
                         $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
             }
 
-            if (responseContent != null)
+            if (exResult != null)
             {
                 string trackingId = string.Empty;
                 try
                 {
-                    var structuredMessageFields = JsonConvert.DeserializeObject<ResponseMessage>(responseContent.Message);
-
-                    if (structuredMessageFields != null)
+                    responseMessage = JsonConvert.DeserializeObject<ResponseMessage>(exResult.Message);
+                    if (responseMessage != null)
                     {
-                        if (structuredMessageFields.TrackingId != null)
+                        if (responseMessage.TrackingId != null)
                         {
-                            trackingId = structuredMessageFields.TrackingId;
+                            trackingId = responseMessage.TrackingId;
                         }
 
-                        if (structuredMessageFields.ErrorCode != null)
+                        if (responseMessage.ErrorCode != null)
                         {
-                            if (int.TryParse(structuredMessageFields.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
+                            if (int.TryParse(responseMessage.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
                             {
                                 return Tuple.Create(trackingId, (IotHubServiceErrorCode)errorCodeInt);
                             }
@@ -70,14 +71,33 @@ namespace Microsoft.Azure.Devices
                     if (Logging.IsEnabled)
                         Logging.Error(
                             nameof(GetErrorCodeAndTrackingIdAsync),
-                            $"Failed to deserialize error message into a dictionary: {ex.Message}. Message body: '{responseBody}.'");
+                            $"Failed to deserialize error message into ResponseMessage: '{ex.Message}'. Message body: '{responseBody}'.");
+                }
+
+                if (responseMessage == null)
+                {
+                    try
+                    {
+                        ResponseMessage2 rs2 = JsonConvert.DeserializeObject<ResponseMessage2>(responseBody);
+                        if (rs2.TryParse())
+                        {
+                            return Tuple.Create(rs2.TrackingId, rs2.ErrorCode);
+                        }
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(
+                                nameof(GetErrorCodeAndTrackingIdAsync),
+                                $"Failed to deserialize error message into ResponseMessage2: '{ex.Message}'. Message body: '{responseBody}'.");
+                    }
                 }
             }
 
             // In some scenarios, the error response string is a semicolon delimited string with the service-returned error code
             // embedded in a string response.
             const char errorFieldsDelimiter = ';';
-            string[] messageFields = responseContent.Message?.Split(errorFieldsDelimiter);
+            string[] messageFields = exResult.Message?.Split(errorFieldsDelimiter);
 
             if (messageFields == null || messageFields.Count() < 2)
             {

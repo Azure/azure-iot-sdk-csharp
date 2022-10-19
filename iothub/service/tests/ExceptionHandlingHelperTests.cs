@@ -50,6 +50,24 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
+        public async Task GetExceptionCodeAsync_StructuredBodyFormat2()
+        {
+            // arrange
+            const string expectedTrackingId = "aeec4c1e4e914a4c9f40fdba7be68fa5-G:0-TimeStamp:10/18/2022 20:50:39";
+            const IotHubServiceErrorCode expectedErrorCode = IotHubServiceErrorCode.DeviceNotFound;
+            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            var exceptionResult = $"{{\"Message\": \"ErrorCode:{expectedErrorCode};E2E_MessageReceiveE2EPoolAmqpTests__3_Sasl_f16d18b2-97dc-4ea5-86f1-a3405ee98939\",\"ExceptionMessage\":\"Tracking ID:{expectedTrackingId}\"}}";
+            httpResponseMessage.Content = new StringContent(exceptionResult);
+
+            // act
+            Tuple<string, IotHubServiceErrorCode> result = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+
+            // assert
+            result.Item1.Should().Be(expectedTrackingId);
+            result.Item2.Should().Be(expectedErrorCode);
+        }
+
+        [TestMethod]
         public async Task GetExceptionCodeAsync_NonNumericErrorCode_InPlainString_ValidErrorCode()
         {
             // arrange
