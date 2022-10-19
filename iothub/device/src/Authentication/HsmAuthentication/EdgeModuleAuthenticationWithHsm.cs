@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             string data = string.Join("\n", new string[] { audience, expiresOn });
             string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data).ConfigureAwait(false);
 
-            return SharedAccessSignatureBuilder.BuildSignature(audience, signature, expiresOn);
+            return SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiresOn);
         }
     }
 }

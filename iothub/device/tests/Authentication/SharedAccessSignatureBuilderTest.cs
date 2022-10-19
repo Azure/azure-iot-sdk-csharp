@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
             string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(audience, signature, expiry);
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiry);
 
             SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasTokenString);
 
