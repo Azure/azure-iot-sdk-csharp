@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             if (twin.Configurations != null)
             {
                 writer.WritePropertyName(ConfigurationsJsonTag);
-                serializer.Serialize(writer, twin.Configurations, typeof(IDictionary<string, ConfigurationInfo>));
+                serializer.Serialize(writer, twin.Configurations, typeof(IDictionary<string, string>));
             }
 
             if (twin.Tags != null && twin.Tags.Count > 0)
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         break;
 
                     case ConfigurationsJsonTag:
-                        twin.Configurations = serializer.Deserialize<Dictionary<string, ConfigurationInfo>>(reader);
+                        twin.Configurations = serializer.Deserialize<Dictionary<string, string>>(reader);
                         break;
 
                     case CapabilitiesJsonTag:

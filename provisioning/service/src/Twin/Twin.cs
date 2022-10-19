@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the twin configuration properties. These are read only
         /// </summary>
-        public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; }
+        public IDictionary<string, string> Configurations { get; internal set; }
 
         /// <summary>
         /// Gets the  twin capabilities. These are read only.
