@@ -35,7 +35,10 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
 
             //Act
             iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new ClientAuthenticationWithSharedAccessKeyRefresh("dGVzdFN0cmluZzM=", "Device1", "Module1"),
+                new ClientAuthenticationWithSharedAccessKeyRefresh(
+                    sharedAccessKey: "dGVzdFN0cmluZzM=",
+                    deviceId: "Device1",
+                    moduleId: "Module1"),
                 fakeHostName);
 
             //Assert

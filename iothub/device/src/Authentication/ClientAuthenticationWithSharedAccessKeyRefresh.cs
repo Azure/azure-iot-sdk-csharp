@@ -18,9 +18,9 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="sharedAccessKey">Shared access key value.</param>
+        /// <param name="sharedAccessKeyName">Shared access key name.</param>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="moduleId">Module identifier.</param>
-        /// <param name="sharedAccessKeyName">Shared access key name.</param>
         /// <param name="sasTokenTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
         /// The default value is 1 hour.
@@ -29,15 +29,17 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         /// </param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="sharedAccessKey"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when <paramref name="sharedAccessKey"/> or <paramref name="sharedAccessKeyName"/> is null.
+        /// </exception>
         /// <exception cref="ArgumentException">
         /// Thrown when <paramref name="sharedAccessKey"/> or <paramref name="sharedAccessKeyName"/> is empty or whitespace.
         /// </exception>
         public ClientAuthenticationWithSharedAccessKeyRefresh(
             string sharedAccessKey,
+            string sharedAccessKeyName,
             string deviceId,
             string moduleId = default,
-            string sharedAccessKeyName = default,
             TimeSpan sasTokenTimeToLive = default,
             int sasTokenRenewalBuffer = default)
             : base(
@@ -49,13 +51,42 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(sharedAccessKey, nameof(sharedAccessKey));
             SharedAccessKey = sharedAccessKey;
 
-            if (sharedAccessKeyName != null
-                && sharedAccessKeyName.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentException("Shared access key name cannot be white space.");
-            }
-
+            Argument.AssertNotNullOrWhiteSpace(sharedAccessKeyName, nameof(sharedAccessKeyName));
             SharedAccessKeyName = sharedAccessKeyName;
+        }
+
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <param name="sharedAccessKey">Shared access key value.</param>
+        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="moduleId">Module identifier.</param>
+        /// <param name="sasTokenTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="sasTokenRenewalBuffer">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="sharedAccessKey"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown when <paramref name="sharedAccessKey"/> is empty or whitespace.
+        /// </exception>
+        public ClientAuthenticationWithSharedAccessKeyRefresh(
+            string sharedAccessKey,
+            string deviceId,
+            string moduleId = default,
+            TimeSpan sasTokenTimeToLive = default,
+            int sasTokenRenewalBuffer = default)
+            : base(
+                deviceId,
+                moduleId,
+                sasTokenTimeToLive,
+                sasTokenRenewalBuffer)
+        {
+            Argument.AssertNotNullOrWhiteSpace(sharedAccessKey, nameof(sharedAccessKey));
+            SharedAccessKey = sharedAccessKey;
         }
 
         /// <summary>

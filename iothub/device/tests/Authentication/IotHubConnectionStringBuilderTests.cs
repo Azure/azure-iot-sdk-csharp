@@ -171,7 +171,10 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamHostNameAuthMethod_SharedAccessKey()
         {
-            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(SharedAccessKey, DeviceId, null, SharedAccessKeyName);
+            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
+                sharedAccessKey: SharedAccessKey,
+                sharedAccessKeyName: SharedAccessKeyName,
+                deviceId: DeviceId);
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(authMethod, HostName);
             iotHubConnectionCredentials.IotHubHostName.Should().Be(HostName);
             iotHubConnectionCredentials.DeviceId.Should().Be(DeviceId);

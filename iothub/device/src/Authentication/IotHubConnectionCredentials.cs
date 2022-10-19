@@ -269,9 +269,9 @@ namespace Microsoft.Azure.Devices.Client
             {
                 SasTokenRefresher = new ClientAuthenticationWithSharedAccessKeyRefresh(
                     SharedAccessKey,
+                    SharedAccessKeyName,
                     DeviceId,
                     ModuleId,
-                    SharedAccessKeyName,
                     SasTokenTimeToLive,
                     SasTokenRenewalBuffer);
 
@@ -396,11 +396,16 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionString.SharedAccessKey != null)
             {
-                return new ClientAuthenticationWithSharedAccessKeyRefresh(
+                return iotHubConnectionString.SharedAccessKeyName != null
+                    ? new ClientAuthenticationWithSharedAccessKeyRefresh(
                         iotHubConnectionString.SharedAccessKey,
+                        iotHubConnectionString.SharedAccessKeyName,
                         iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.ModuleId,
-                        iotHubConnectionString.SharedAccessKeyName);
+                        iotHubConnectionString.ModuleId)
+                    : new ClientAuthenticationWithSharedAccessKeyRefresh(
+                        sharedAccessKey: iotHubConnectionString.SharedAccessKey,
+                        deviceId: iotHubConnectionString.DeviceId,
+                        moduleId: iotHubConnectionString.ModuleId);
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {
