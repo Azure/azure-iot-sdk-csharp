@@ -10,5 +10,9 @@
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.7.2" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.csproj" />
+    <ProjectReference Include="..\..\..\..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
 
+  </ItemGroup>
 </Project>

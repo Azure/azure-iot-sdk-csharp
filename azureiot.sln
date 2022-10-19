@@ -164,8 +164,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmReadWrite", "iothub\devi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvokeDeviceMethod", "iothub\service\samples\getting started\InvokeDeviceMethod\InvokeDeviceMethod.csproj", "{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "iothub\device\samples\getting started\ReadD2cMessages\ReadD2cMessages.csproj", "{0880D280-7EF2-45B2-B9D1-803F441E7DEF}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\getting started\SimulatedDevice\SimulatedDevice.csproj", "{D3C4B21A-D79C-4DF9-919B-466680654C6B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDeviceWithCommand", "iothub\device\samples\getting started\SimulatedDeviceWithCommand\SimulatedDeviceWithCommand.csproj", "{292B1759-B5A2-4A26-BB44-A039488D044F}"
@@ -199,6 +197,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkOperationSample", "provisioning\service\samples\How To\BulkOperationSample\BulkOperationSample.csproj", "{B0C598E4-4133-4055-972F-949F60F8FB83}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupCertificateVerificationSample", "provisioning\service\samples\How To\GroupCertificateVerificationSample\GroupCertificateVerificationSample.csproj", "{A36FF0AB-D2B5-4913-A9CB-67778F3D31F9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "iothub\service\samples\getting started\ReadD2cMessages\ReadD2cMessages.csproj", "{E7D0630E-707F-4509-870F-EE8B5DB6DEB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -385,10 +385,6 @@ Global
 		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0880D280-7EF2-45B2-B9D1-803F441E7DEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0880D280-7EF2-45B2-B9D1-803F441E7DEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0880D280-7EF2-45B2-B9D1-803F441E7DEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0880D280-7EF2-45B2-B9D1-803F441E7DEF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D3C4B21A-D79C-4DF9-919B-466680654C6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D3C4B21A-D79C-4DF9-919B-466680654C6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3C4B21A-D79C-4DF9-919B-466680654C6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -433,6 +429,10 @@ Global
 		{A36FF0AB-D2B5-4913-A9CB-67778F3D31F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A36FF0AB-D2B5-4913-A9CB-67778F3D31F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A36FF0AB-D2B5-4913-A9CB-67778F3D31F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7D0630E-707F-4509-870F-EE8B5DB6DEB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7D0630E-707F-4509-870F-EE8B5DB6DEB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7D0630E-707F-4509-870F-EE8B5DB6DEB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7D0630E-707F-4509-870F-EE8B5DB6DEB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -506,7 +506,6 @@ Global
 		{84818D22-861A-47EA-8005-61426DFB89FB} = {60C4870C-3D21-4F32-ADDD-CDA729C40183}
 		{89D6AEA2-D2C3-4ED8-A4F0-D2C9BD75DCE0} = {60C4870C-3D21-4F32-ADDD-CDA729C40183}
 		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
-		{0880D280-7EF2-45B2-B9D1-803F441E7DEF} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{D3C4B21A-D79C-4DF9-919B-466680654C6B} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{292B1759-B5A2-4A26-BB44-A039488D044F} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{A2D72CEF-7CB6-439D-A875-22DB39899969} = {F75B3567-DCC4-49E9-A3D9-4A56E7557F13}
@@ -524,6 +523,7 @@ Global
 		{E6205B13-D163-4247-80F5-905ACC7F0977} = {696B7E21-9386-496C-83B0-77839B8B9F24}
 		{B0C598E4-4133-4055-972F-949F60F8FB83} = {E6205B13-D163-4247-80F5-905ACC7F0977}
 		{A36FF0AB-D2B5-4913-A9CB-67778F3D31F9} = {E6205B13-D163-4247-80F5-905ACC7F0977}
+		{E7D0630E-707F-4509-870F-EE8B5DB6DEB5} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
