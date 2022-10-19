@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Used in conjunction with DeviceClient.Create()
         /// </summary>
-        public static string IotHubHostName => GetHostName(TestConfiguration.IotHub.ConnectionString);
+        public string IotHubHostName { get; } = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
         /// <summary>
         /// Device Id
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             }
             else
             {
-                deviceClient = new IotHubDeviceClient(TestDevice.IotHubHostName, AuthenticationMethod, options);
+                deviceClient = new IotHubDeviceClient(IotHubHostName, AuthenticationMethod, options);
                 s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod: ID={TestLogger.IdOf(deviceClient)}");
             }
 
