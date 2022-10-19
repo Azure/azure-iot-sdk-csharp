@@ -31,15 +31,15 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             Assert.IsNotNull(iotHubConnectionCredentials.AuthenticationMethod);
             Assert.IsNotNull(iotHubConnectionCredentials.SharedAccessKey);
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessSignature);
-            Assert.IsTrue(iotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithSakRefresh);
+            Assert.IsTrue(iotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithSharedAccessKeyRefresh);
 
             //Act
             iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new ClientAuthenticationWithSakRefresh("dGVzdFN0cmluZzM=", "Device1", "Module1"),
+                new ClientAuthenticationWithSharedAccessKeyRefresh("dGVzdFN0cmluZzM=", "Device1", "Module1"),
                 fakeHostName);
 
             //Assert
-            Assert.IsTrue(iotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithSakRefresh);
+            Assert.IsTrue(iotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithSharedAccessKeyRefresh);
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessSignature);
             Assert.AreEqual("dGVzdFN0cmluZzM=", iotHubConnectionCredentials.SharedAccessKey);
             Assert.AreEqual("Device1", iotHubConnectionCredentials.DeviceId);

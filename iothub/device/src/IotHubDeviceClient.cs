@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="authenticationMethod">
-        /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSakRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>
+        /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSharedAccessKeyRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>
         /// or <see cref="ClientAuthenticationWithX509Certificate"/>.
         /// </param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>

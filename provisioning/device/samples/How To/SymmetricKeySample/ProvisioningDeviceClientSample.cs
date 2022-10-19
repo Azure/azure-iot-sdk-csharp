@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             Console.WriteLine($"Device {result.DeviceId} registered to {result.AssignedHub}.");
 
             Console.WriteLine("Creating symmetric key authentication for IoT Hub...");
-            Devices.Client.IAuthenticationMethod auth = new ClientAuthenticationWithSakRefresh(
+            Devices.Client.IAuthenticationMethod auth = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 security.GetPrimaryKey(),
                 result.DeviceId);
 

@@ -1070,7 +1070,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             else if (provisioningAuth is AuthenticationProviderSymmetricKey symmetricKeyAuth)
             {
-                auth = new ClientAuthenticationWithSakRefresh(symmetricKeyAuth.GetPrimaryKey(), deviceId);
+                auth = new ClientAuthenticationWithSharedAccessKeyRefresh(symmetricKeyAuth.GetPrimaryKey(), deviceId);
             }
             else
             {

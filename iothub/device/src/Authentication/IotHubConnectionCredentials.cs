@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
         /// </summary>
         /// <param name="authenticationMethod">
-        /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSakRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>,
+        /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSharedAccessKeyRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>,
         /// <see cref="ClientAuthenticationWithX509Certificate"/> or <see cref="EdgeModuleAuthenticationWithHsm"/>.
         /// </param>
         /// <param name="iotHubHostName">The fully-qualified DNS host name of IoT hub.</param>
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (!SharedAccessKey.IsNullOrWhiteSpace())
             {
-                SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
+                SasTokenRefresher = new ClientAuthenticationWithSharedAccessKeyRefresh(
                     SharedAccessKey,
                     DeviceId,
                     ModuleId,
@@ -276,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client
                     SasTokenRenewalBuffer);
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSharedAccessKeyRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
 
                 // This assignment resets any previously set SharedAccessSignature value. This is possible in flows where the same authentication method instance
                 // is used to reinitialize the client after close-dispose.
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionString.SharedAccessKey != null)
             {
-                return new ClientAuthenticationWithSakRefresh(
+                return new ClientAuthenticationWithSharedAccessKeyRefresh(
                         iotHubConnectionString.SharedAccessKey,
                         iotHubConnectionString.DeviceId,
                         iotHubConnectionString.ModuleId,

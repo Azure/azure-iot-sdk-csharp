@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that generates shared access signature (SAS) token with refresh, based on a provided shared access key (SAK).
     /// </summary>
-    public class ClientAuthenticationWithSakRefresh : ClientAuthenticationWithTokenRefresh
+    public class ClientAuthenticationWithSharedAccessKeyRefresh : ClientAuthenticationWithTokenRefresh
     {
         private readonly IotHubConnectionString _iotHubConnectionString;
 
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException">
         /// Thrown when <paramref name="sharedAccessKey"/> or <paramref name="sharedAccessKeyName"/> is empty or whitespace.
         /// </exception>
-        public ClientAuthenticationWithSakRefresh(
+        public ClientAuthenticationWithSharedAccessKeyRefresh(
             string sharedAccessKey,
             string deviceId,
             string moduleId = default,
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionString"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="connectionString"/> is empty or whitespace.</exception>
-        public ClientAuthenticationWithSakRefresh(
+        public ClientAuthenticationWithSharedAccessKeyRefresh(
             string connectionString,
             TimeSpan sasTokenTimeToLive = default,
             int sasTokenRenewalBuffer = default)

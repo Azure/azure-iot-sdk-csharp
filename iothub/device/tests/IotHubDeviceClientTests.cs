@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsHostNameAuthMethod_Works()
         {
             string hostName = "acme.azure-devices.net";
-            var authMethod = new ClientAuthenticationWithSakRefresh(
+            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket);
             var options = new IotHubClientOptions(transportSettings);
 
-            var authMethod = new ClientAuthenticationWithSakRefresh(
+            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string gatewayHostName = "gateway.acme.azure-devices.net";
             var options = new IotHubClientOptions(new IotHubClientMqttSettings()) { GatewayHostName = gatewayHostName };
 
-            var authMethod = new ClientAuthenticationWithSakRefresh(
+            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 GatewayHostName = gatewayHostName,
             };
 
-            var authMethod = new ClientAuthenticationWithSakRefresh(
+            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_Params_GatewayAuthMethod_Works()
         {
             string gatewayHostname = "myGatewayDevice";
-            var authMethod = new ClientAuthenticationWithSakRefresh(
+            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string gatewayHostname = "myGatewayDevice";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
-            var authMethod = new ClientAuthenticationWithSakRefresh(
+            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string gatewayHostname = "myGatewayDevice";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
-            var authMethod = new ClientAuthenticationWithSakRefresh(
+            var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 "device1",
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName);
@@ -1004,7 +1004,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             // act
-            Action createDeviceClientAuth = () => { new ClientAuthenticationWithSakRefresh(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
+            Action createDeviceClientAuth = () => { new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
 
             // assert
             createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
@@ -1015,7 +1015,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             // act
-            Action createDeviceClientAuth = () => { new ClientAuthenticationWithSakRefresh(FakeConnectionString, sasTokenRenewalBuffer: 200); };
+            Action createDeviceClientAuth = () => { new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, sasTokenRenewalBuffer: 200); };
 
             // assert
             createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
@@ -1027,7 +1027,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
             int sasTokenRenewalBuffer = 50;
-            var auth = new ClientAuthenticationWithSakRefresh(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
+            var auth = new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
             // act
@@ -1036,7 +1036,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // assert
             var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
-            sasTokenRefresher.Should().BeAssignableTo<ClientAuthenticationWithSakRefresh>();
+            sasTokenRefresher.Should().BeAssignableTo<ClientAuthenticationWithSharedAccessKeyRefresh>();
 
             // The calculation of the sas token expiration will begin once the ClientAuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.

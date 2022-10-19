@@ -178,11 +178,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task ClientAuthenticationWithSakRefresh_WithDevice_SharedAccessKeyConnectionString_HasRefresher()
         {
             IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new ClientAuthenticationWithSakRefresh(TestSharedAccessKey, TestDeviceId),
+                new ClientAuthenticationWithSharedAccessKeyRefresh(TestSharedAccessKey, TestDeviceId),
                 TestIotHubName);
 
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
-            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ClientAuthenticationWithSakRefresh));
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ClientAuthenticationWithSharedAccessKeyRefresh));
 
             var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
@@ -201,11 +201,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task ClientAuthenticationWithSakRefresh_WithModule_SharedAccessKeyConnectionString_HasRefresher()
         {
             IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
-                new ClientAuthenticationWithSakRefresh(TestSharedAccessKey, TestDeviceId, TestModuleId),
+                new ClientAuthenticationWithSharedAccessKeyRefresh(TestSharedAccessKey, TestDeviceId, TestModuleId),
                 TestIotHubName);
 
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
-            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ClientAuthenticationWithSakRefresh));
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ClientAuthenticationWithSharedAccessKeyRefresh));
 
             var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 

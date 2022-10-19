@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceDisconnected = new SemaphoreSlim(0);
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            var auth = new ClientAuthenticationWithSakRefresh(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
+            var auth = new ClientAuthenticationWithSharedAccessKeyRefresh(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
 
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
