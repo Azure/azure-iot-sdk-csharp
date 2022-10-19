@@ -82,15 +82,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the version of the twin collection.
         /// </summary>
-        public long Version
-        {
-            get
-            {
-                return !JObject.TryGetValue(VersionName, out JToken versionToken)
-                    ? default(long)
-                    : (long)versionToken;
-            }
-        }
+        public long Version => !JObject.TryGetValue(VersionName, out JToken versionToken)
+            ? default
+            : (long)versionToken;
 
         /// <summary>
         /// Gets the count of properties in the collection.
@@ -169,14 +163,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Gets the LastUpdated time for this property.
+        /// Gets the time when this property was last updated in UTC.
         /// </summary>
-        /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
-        /// <exception cref="NullReferenceException">Thrown when the TwinCollection metadata is null.
-        /// An example would be when the twin collection class is created with the default constructor.</exception>
-        public DateTime GetLastUpdatedOnUtc()
+        public DateTimeOffset GetLastUpdatedOnUtc()
         {
-            return (DateTime)_metadata[LastUpdatedName];
+            if (_metadata != null
+                && _metadata.TryGetValue(LastUpdatedName, out JToken lastUpdatedName)
+                && (DateTimeOffset)lastUpdatedName is DateTimeOffset lastUpdatedOnUtc)
+            {
+                return lastUpdatedOnUtc;
+            }
+
+            return default;
         }
 
         /// <summary>
