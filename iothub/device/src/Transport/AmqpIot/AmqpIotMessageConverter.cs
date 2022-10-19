@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (!data.ExpiresOnUtc.Equals(default))
             {
-                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiresOnUtc;
+                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiresOnUtc.UtcDateTime;
             }
 
             if (data.CorrelationId != null)

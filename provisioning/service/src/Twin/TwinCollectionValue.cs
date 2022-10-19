@@ -59,9 +59,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the LastUpdated time for this property.
         /// </summary>
         /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
-        public DateTime GetLastUpdatedOnUtc()
+        public DateTimeOffset GetLastUpdatedOnUtc()
         {
-            return (DateTime)_metadata[TwinCollection.LastUpdatedName];
+            return (DateTimeOffset)_metadata[TwinCollection.LastUpdatedName];
         }
 
         /// <summary>

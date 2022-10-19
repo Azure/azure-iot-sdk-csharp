@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Registration create date time (in UTC).
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? CreatedOnUtc { get; protected internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Last updated date time (in UTC).
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? LastUpdatedOnUtc { get; protected internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Assigned IoT hub.

@@ -74,13 +74,13 @@ namespace Microsoft.Azure.Devices
         /// Time when the connection state was last updated.
         /// </summary>
         [JsonProperty(PropertyName = "connectionStateUpdatedTime")]
-        public DateTime ConnectionStateUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset ConnectionStateUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Time when the module was last active.
         /// </summary>
         [JsonProperty(PropertyName = "lastActivityTime")]
-        public DateTime LastActiveOnUtc { get; internal set; }
+        public DateTimeOffset LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the module from the cloud.

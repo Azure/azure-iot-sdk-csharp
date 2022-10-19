@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal sealed class SharedAccessSignature
     {
-        internal SharedAccessSignature(DateTime expiresOn, string keyName, string signature, string encodedAudience)
+        internal SharedAccessSignature(DateTimeOffset expiresOn, string keyName, string signature, string encodedAudience)
         {
             ExpiresOn = expiresOn;
             if (IsExpired())
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
             Audience = WebUtility.UrlDecode(encodedAudience);
         }
 
-        internal DateTime ExpiresOn { get; }
+        internal DateTimeOffset ExpiresOn { get; }
 
         internal string KeyName { get; }
 

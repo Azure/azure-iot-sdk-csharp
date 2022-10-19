@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
     {
         internal SharedAccessSignature(
             string iotHubName,
-            DateTime expiresOn,
+            DateTimeOffset expiresOn,
             string keyName,
             string signature,
             string encodedAudience)
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The date and time the SAS expires.
         /// </summary>
-        internal DateTime ExpiresOn { get; private set; }
+        internal DateTimeOffset ExpiresOn { get; private set; }
 
         /// <summary>
         /// Name of the authorization rule.
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The date and time of expiration.
         /// </summary>
-        internal DateTime ExpiryTime()
+        internal DateTimeOffset ExpiryTime()
         {
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
         }

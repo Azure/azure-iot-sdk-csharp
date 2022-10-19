@@ -76,27 +76,27 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The event creation time when sending one message at a time.
         /// </summary>
-        public DateTime CreatedOnUtc
+        public DateTimeOffset CreatedOnUtc
         {
-            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
+            get => GetSystemProperty<DateTimeOffset>(MessageSystemPropertyNames.CreationTimeUtc);
             protected internal set => SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
         }
 
         /// <summary>
         /// Date and time when the device-to-cloud message was received by the server.
         /// </summary>
-        public DateTime EnqueuedOnUtc
+        public DateTimeOffset EnqueuedOnUtc
         {
-            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
+            get => GetSystemProperty<DateTimeOffset>(MessageSystemPropertyNames.EnqueuedTime);
             protected internal set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
         }
 
         /// <summary>
         /// The time when this message is considered expired.
         /// </summary>
-        public DateTime ExpiresOnUtc
+        public DateTimeOffset ExpiresOnUtc
         {
-            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.ExpiryTimeUtc);
+            get => GetSystemProperty<DateTimeOffset>(MessageSystemPropertyNames.ExpiryTimeUtc);
             protected internal set => SystemProperties[MessageSystemPropertyNames.ExpiryTimeUtc] = value;
         }
 

@@ -64,17 +64,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets a snapshot of the UTC token expiry time.
         /// </summary>
-        public DateTime ExpiresOn { get; private set; }
+        public DateTimeOffset ExpiresOn { get; private set; }
 
         /// <summary>
         /// Gets a snapshot of the UTC token refresh time.
         /// </summary>
-        public DateTime RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
+        public DateTimeOffset RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
 
         /// <summary>
         /// Gets a snapshot expiry state.
         /// </summary>
-        public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
+        public bool IsExpiring => (ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds <= _bufferSeconds;
 
         /// <summary>
         /// Gets a snapshot of the security token associated with the device.
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
             _token = token;
             ExpiresOn = sas.ExpiresOn;
 
-            UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
+            UpdateTimeBufferSeconds((int)(ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds);
 
             if (Logging.IsEnabled)
                 Logging.GenerateToken(this, ExpiresOn);

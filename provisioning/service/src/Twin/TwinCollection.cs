@@ -174,9 +174,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
         /// <exception cref="NullReferenceException">Thrown when the TwinCollection metadata is null.
         /// An example would be when the twin collection class is created with the default constructor.</exception>
-        public DateTime GetLastUpdatedOnUtc()
+        public DateTimeOffset GetLastUpdatedOnUtc()
         {
-            return (DateTime)_metadata[LastUpdatedName];
+            return (DateTimeOffset)_metadata[LastUpdatedName];
         }
 
         /// <summary>
