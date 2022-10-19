@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
-            using IotHubDeviceClient deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, auth, options);
+            using IotHubDeviceClient deviceClient = new IotHubDeviceClient(TestDevice.IotHubHostName, auth, options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
             void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 transportSettings,
                 Logger);
 
-            using var deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
+            using var deviceClient = new IotHubDeviceClient(TestDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             if (transportSettings is IotHubClientMqttSettings
