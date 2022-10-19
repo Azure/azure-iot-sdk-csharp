@@ -180,6 +180,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 - `JobProperties` properties that hold Azure Storage SAS URIs are now of type `System.Uri` instead of `string`.
 - `JobProperties` has been split into several classes with only the necessary properties for the specified operation.
   - See `ExportJobProperties`, `ImportJobProperties`, and `IotHubJobResponse`.
+- Twin.Tags is now of type `IDictionary<string, object>`.
 
 #### Notable additions
 
@@ -306,6 +307,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 
 - Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
 - ETag fields on the classes `IndividualEnrollment`, `EnrollmentGroup`, and `DeviceRegistrationState` are now taken as the `Azure.ETag` type instead of strings.
+- Twin.Tags is now of type `IDictionary<string, object>`.
 
 ### Security provider client
 

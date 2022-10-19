@@ -21,7 +21,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         public Twin()
         {
-            Tags = new TwinCollection();
             Properties = new TwinProperties();
         }
 
@@ -40,7 +39,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="twinProperties"></param>
         public Twin(TwinProperties twinProperties)
         {
-            Tags = new TwinCollection();
             Properties = twinProperties;
         }
 
@@ -64,9 +62,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public string ModuleId { get; set; }
 
         /// <summary>
-        /// Gets and sets the  twin tags.
+        /// Gets and sets the twin tags.
         /// </summary>
-        public TwinCollection Tags { get; set; }
+        public IDictionary<string, object> Tags { get; internal set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets and sets the twin properties.

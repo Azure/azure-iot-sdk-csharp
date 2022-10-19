@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var twin = new Twin(deviceId)
             {
-                Tags = new TwinCollection(@"{ companyId: 1234 }"),
+                Tags = { { "companyId", 1234 } },
             };
 
             var iotEdgeDevice = new Device(deviceId)

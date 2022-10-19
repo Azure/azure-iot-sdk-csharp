@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         {
                             throw new InvalidOperationException("Tags Json not a Dictionary.");
                         }
-                        twin.Tags = new TwinCollection(JToken.ReadFrom(reader) as JObject);
+                        twin.Tags = serializer.Deserialize<Dictionary<string, object>>(reader);
                         break;
 
                     case PropertiesJsonTag:

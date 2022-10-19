@@ -28,8 +28,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             Twin twin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
-
-            twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, false).ConfigureAwait(false);
@@ -39,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
-            Assert.IsTrue(twinUpd.Tags.Contains(tagName), "Twin doesn't contain the tag");
+            Assert.IsTrue(twinUpd.Tags.ContainsKey(tagName), "Twin doesn't contain the tag");
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
@@ -63,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
-            Assert.IsTrue(twinUpd.Tags.Contains(tagName), "Twin doesn't contain the tag");
+            Assert.IsTrue(twinUpd.Tags.ContainsKey(tagName), "Twin doesn't contain the tag");
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
@@ -78,8 +76,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
-
-            twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, false).ConfigureAwait(false);
@@ -90,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.AreEqual(twin.ModuleId, twinUpd.ModuleId, "Module ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
-            Assert.IsTrue(twinUpd.Tags.Contains(tagName), "Twin doesn't contain the tag");
+            Assert.IsTrue(twinUpd.Tags.ContainsKey(tagName), "Twin doesn't contain the tag");
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
@@ -118,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.AreEqual(twin.ModuleId, twinUpd.ModuleId, "Module ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
-            Assert.IsTrue(twinUpd.Tags.Contains(tagName), "Twin doesn't contain the tag");
+            Assert.IsTrue(twinUpd.Tags.ContainsKey(tagName), "Twin doesn't contain the tag");
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
