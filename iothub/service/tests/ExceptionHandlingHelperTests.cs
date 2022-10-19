@@ -49,6 +49,36 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
+        public async Task GetExceptionCodeAsync_MessagePayloadDoubleEscaped()
+        {
+            // arrange
+            const string expectedTrackingId = "95ae23a6a159445681f6a52aebc99ab0-TimeStamp:10/19/2022 16:47:22";
+            const IotHubServiceErrorCode expectedErrorCode = IotHubServiceErrorCode.DeviceNotOnline;
+
+            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            var exceptionResult = new ResponseMessageWrapper
+            {
+                Message = JsonConvert.SerializeObject(new ResponseMessage
+                {
+                    ErrorCode = ((int)expectedErrorCode).ToString(),
+                    TrackingId = expectedTrackingId,
+                    Message = "The operation failed because the requested device isn't online or hasn't registered the direct method callback. To learn more, see https://aka.ms/iothub404103",
+                    OccurredOnUtc = "2022-10-19T16:47:22.0203257Z",
+                })
+            };
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
+
+            // act
+            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            string trackingId = pair.Item1;
+            IotHubServiceErrorCode errorCode = pair.Item2;
+
+            // assert
+            trackingId.Should().Be(expectedTrackingId);
+            errorCode.Should().Be(expectedErrorCode);
+        }
+
+        [TestMethod]
         public async Task GetExceptionCodeAsync_StructuredBodyFormat2()
         {
             // arrange

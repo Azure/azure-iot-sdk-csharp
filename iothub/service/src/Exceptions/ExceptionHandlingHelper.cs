@@ -33,25 +33,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                IotHubExceptionResult exResult = JsonConvert.DeserializeObject<IotHubExceptionResult>(responseBody);
-                responseMessage = exResult.Message;
-
-                if (responseMessage != null)
-                {
-                    string trackingId = string.Empty;
-                    if (responseMessage.TrackingId != null)
-                    {
-                        trackingId = responseMessage.TrackingId;
-                    }
-
-                    if (responseMessage.ErrorCode != null)
-                    {
-                        if (int.TryParse(responseMessage.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
-                        {
-                            return Tuple.Create(trackingId, (IotHubServiceErrorCode)errorCodeInt);
-                        }
-                    }
-                }
+                IotHubExceptionResult result = JsonConvert.DeserializeObject<IotHubExceptionResult>(responseBody);
+                responseMessage = result.Message;
             }
             catch (JsonException ex) when (ex is JsonSerializationException or JsonReaderException)
             {
@@ -59,6 +42,40 @@ namespace Microsoft.Azure.Devices
                     Logging.Error(
                         nameof(GetErrorCodeAndTrackingIdAsync),
                         $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
+            }
+
+            if (responseMessage == null)
+            {
+                try
+                {
+                    // sometimes the message is escaped JSON :(
+                    ResponseMessageWrapper wrapped = JsonConvert.DeserializeObject<ResponseMessageWrapper>(responseBody);
+                    responseMessage = JsonConvert.DeserializeObject<ResponseMessage>(wrapped.Message);
+                }
+                catch (JsonException ex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(
+                            nameof(GetErrorCodeAndTrackingIdAsync),
+                            $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
+                }
+            }
+
+            if (responseMessage != null)
+            {
+                string trackingId = string.Empty;
+                if (responseMessage.TrackingId != null)
+                {
+                    trackingId = responseMessage.TrackingId;
+                }
+
+                if (responseMessage.ErrorCode != null)
+                {
+                    if (int.TryParse(responseMessage.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
+                    {
+                        return Tuple.Create(trackingId, (IotHubServiceErrorCode)errorCodeInt);
+                    }
+                }
             }
 
             try
@@ -77,10 +94,21 @@ namespace Microsoft.Azure.Devices
                         $"Failed to deserialize error message into ResponseMessage2: '{ex.Message}'. Message body: '{responseBody}'.");
             }
 
+            IotHubExceptionResult2 exResult = null;
             try
             {
-                IotHubExceptionResult2 exResult = JsonConvert.DeserializeObject<IotHubExceptionResult2>(responseBody);
+                exResult = JsonConvert.DeserializeObject<IotHubExceptionResult2>(responseBody);
+            }
+            catch (JsonReaderException ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(
+                        nameof(GetErrorCodeAndTrackingIdAsync),
+                        $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
+            }
 
+            if (exResult != null)
+            {
                 // In some scenarios, the error response string is a semicolon delimited string with the service-returned error code
                 // embedded in a string response.
                 const char errorFieldsDelimiter = ';';
@@ -126,13 +154,6 @@ namespace Microsoft.Azure.Devices
                         }
                     }
                 }
-            }
-            catch (JsonReaderException ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(
-                        nameof(GetErrorCodeAndTrackingIdAsync),
-                        $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
             }
 
             if (Logging.IsEnabled)
