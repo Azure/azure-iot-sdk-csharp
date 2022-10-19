@@ -13,7 +13,6 @@ This folder contains simple samples showing how to use the various features of M
 - [Connect with X.509 certificate][d-x509-cert-sample] sample
 - [Plug and Play samples][d-pnp-sample] sample
 - [Xamarin][d-xamarin-sample] sample
-- [Read device-to-cloud messages][d-read-d2c-messages-sample] sample
 - [Simulated device][d-simulated-device-sample] sample
 - [Simulated device with command][d-simulated-device-with-command-sample] sample
 
