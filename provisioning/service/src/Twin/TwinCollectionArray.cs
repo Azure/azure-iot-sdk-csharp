@@ -3,6 +3,7 @@
 
 using System;
 using Newtonsoft.Json.Linq;
+using static Microsoft.Azure.Devices.Provisioning.Service.TwinCollection;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -24,16 +25,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="propertyName">Property Name to lookup.</param>
         /// <returns>Property value, if present</returns>
+        /// <exception cref="InvalidOperationException">When the specified <paramref name="propertyName"/> does not exist in the collection.</exception>
         public dynamic this[string propertyName]
         {
             get
             {
                 return propertyName switch
                 {
-                    TwinCollection.MetadataName => GetMetadata(),
-                    TwinCollection.LastUpdatedName => GetLastUpdatedOnUtc(),
-                    TwinCollection.LastUpdatedVersionName => GetLastUpdatedVersion(),
-                    _ => throw new ArgumentException($"{nameof(TwinCollectionArray)} does not contain a definition for '{propertyName}'."),
+                    MetadataName => GetMetadata(),
+                    LastUpdatedName => GetLastUpdatedOnUtc(),
+                    LastUpdatedVersionName => GetLastUpdatedVersion(),
+                    _ => throw new InvalidOperationException($"{nameof(TwinCollectionArray)} does not contain a definition for '{propertyName}'."),
                 };
             }
         }
@@ -48,12 +50,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Gets the last updated time for this property.
+        /// Gets the time when this property was last updated in UTC.
         /// </summary>
-        /// <returns>DateTime instance representing the last updated time for this property.</returns>
         public DateTimeOffset GetLastUpdatedOnUtc()
         {
-            return (DateTimeOffset)_metadata[TwinCollection.LastUpdatedName];
+            if (_metadata != null
+                && _metadata.TryGetValue(LastUpdatedName, out JToken lastUpdatedName)
+                && (DateTimeOffset)lastUpdatedName is DateTimeOffset lastUpdatedOnUtc)
+            {
+                return lastUpdatedOnUtc;
+            }
+
+            return default;
         }
 
         /// <summary>
@@ -62,7 +70,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>Last updated version if present, null otherwise.</returns>
         public long? GetLastUpdatedVersion()
         {
-            return (long?)_metadata[TwinCollection.LastUpdatedVersionName];
+            return (long?)_metadata?[LastUpdatedVersionName];
         }
     }
 }

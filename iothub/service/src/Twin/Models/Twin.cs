@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="twinProperties">Properties of the twin.</param>
         public Twin(TwinProperties twinProperties)
         {
-            Properties = twinProperties;
+            Properties = twinProperties ?? new();
         }
 
         /// <summary>

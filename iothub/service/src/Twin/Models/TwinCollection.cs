@@ -115,6 +115,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="propertyName">Name of the property to get.</param>
         /// <returns>Value for the given property name.</returns>
+        /// <exception cref="InvalidOperationException">When the specified <paramref name="propertyName"/> does not exist in the collection.</exception>
         public dynamic this[string propertyName]
         {
             get
@@ -136,7 +137,7 @@ namespace Microsoft.Azure.Devices
                     return value;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(propertyName), $"Unexpected property name '{propertyName}'.");
+                throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
             }
             set => TrySetMemberInternal(propertyName, value);
         }
@@ -157,14 +158,18 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the last updated time for this property.
+        /// Gets the last time this property was updated in UTC.
         /// </summary>
-        /// <returns>Date-time instance representing the last updated time for this property.</returns>
-        /// <exception cref="System.NullReferenceException">Thrown when the metadata object is null.
-        /// An example would be when the this class is created with the default constructor.</exception>
         public DateTimeOffset GetLastUpdatedOnUtc()
         {
-            return (DateTime)_metadata[LastUpdatedName];
+            if (_metadata != null
+                && _metadata.TryGetValue(LastUpdatedName, out JToken lastUpdatedName)
+                && (DateTimeOffset)lastUpdatedName is DateTimeOffset lastUpdatedOnUtc)
+            {
+                return lastUpdatedOnUtc;
+            }
+
+            return default;
         }
 
         /// <summary>
@@ -254,7 +259,10 @@ namespace Microsoft.Azure.Devices
 
         private bool TrySetMemberInternal(string propertyName, object value)
         {
-            JToken valueJToken = value == null ? null : JToken.FromObject(value);
+            JToken valueJToken = value == null
+                ? null
+                : JToken.FromObject(value);
+
             if (JObject.TryGetValue(propertyName, out _))
             {
                 JObject[propertyName] = valueJToken;
