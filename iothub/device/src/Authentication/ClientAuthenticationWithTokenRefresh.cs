@@ -46,6 +46,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             DeviceId = deviceId;
 
+            // The module Id is optional so we only check whether it is whitespace or not here.
             if (moduleId != null
                 && moduleId.IsNullOrWhiteSpace())
             {

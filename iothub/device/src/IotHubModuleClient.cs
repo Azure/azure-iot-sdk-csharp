@@ -15,6 +15,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Edge;
+using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
@@ -50,7 +51,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a disposable <c>IotHubModuleClient</c> from the specified parameters.
         /// </summary>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
-        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="authenticationMethod">
+        /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSakRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>,
+        /// <see cref="ClientAuthenticationWithX509Certificate"/> or <see cref="EdgeModuleAuthenticationWithHsm"/>.
+        /// </param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable <c>IotHubModuleClient</c> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id, module Id or <paramref name="authenticationMethod"/> is null.</exception>

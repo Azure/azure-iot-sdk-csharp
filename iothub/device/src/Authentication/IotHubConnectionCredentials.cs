@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.HsmAuthentication;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -21,7 +22,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
         /// </summary>
-        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="authenticationMethod">
+        /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSakRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>,
+        /// <see cref="ClientAuthenticationWithX509Certificate"/> or <see cref="EdgeModuleAuthenticationWithHsm"/>.
+        /// </param>
         /// <param name="iotHubHostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway (optional).</param>
         /// <returns>A new instance of the <c>IotHubConnectionCredentials</c> class with a populated connection string.</returns>
@@ -321,6 +325,7 @@ namespace Microsoft.Azure.Devices.Client
             // Module Id
             if (ModuleId != null && string.IsNullOrWhiteSpace(ModuleId))
             {
+                // A module Id is not required to provide, but if they do it must be a valid string.
                 throw new FormatException("Module Id cannot be white space.");
             }
 
