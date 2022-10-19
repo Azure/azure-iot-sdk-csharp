@@ -177,16 +177,6 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the properties as a JSON string.
-        /// </summary>
-        /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
-        /// <returns>JSON string.</returns>
-        public string ToJson(Formatting formatting = Formatting.None)
-        {
-            return JsonConvert.SerializeObject(JObject, formatting);
-        }
-
-        /// <summary>
         /// Determines whether the specified property is present.
         /// </summary>
         /// <param name="propertyName">The property to locate.</param>
