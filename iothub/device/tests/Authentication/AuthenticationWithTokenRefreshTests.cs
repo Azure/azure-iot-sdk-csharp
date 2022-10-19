@@ -38,13 +38,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime expectedExpiryTime = currentTime.AddSeconds(ttl.TotalSeconds);
             DateTime expectedRefreshTime = expectedExpiryTime.AddSeconds(-((double)buffer / 100) * ttl.TotalSeconds);
 
-            int timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
+            int timeDelta = (int)((refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"ExpiresOn time delta is {timeDelta}");
 
-            timeDelta = (int)((refresher.RefreshesOn - expectedRefreshTime).TotalSeconds);
+            timeDelta = (int)((refresher.RefreshesOnUtc - expectedRefreshTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"RefreshesOn time delta is {timeDelta}");
 
-            TimeSpan delayTime = refresher.RefreshesOn - DateTime.UtcNow + TimeSpan.FromMilliseconds(500);
+            TimeSpan delayTime = refresher.RefreshesOnUtc - DateTime.UtcNow + TimeSpan.FromMilliseconds(500);
 
             // Wait for the expiration time given the time buffer.
             if (delayTime.TotalSeconds > 0)
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await refresher.GetTokenAsync(TestIotHubName);
 
             DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl.TotalSeconds);
-            int timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
+            int timeDelta = (int)((refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"Expiration time delta is {timeDelta}");
 
             // Wait for the token to expire;
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await refresher.GetTokenAsync(TestIotHubName);
 
             expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl.TotalSeconds);
-            timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
+            timeDelta = (int)((refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"Expiration time delta is {timeDelta}");
         }
 

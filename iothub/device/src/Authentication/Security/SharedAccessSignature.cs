@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         internal SharedAccessSignature(DateTimeOffset expiresOn, string keyName, string signature, string encodedAudience)
         {
-            ExpiresOn = expiresOn;
+            ExpiresOnUtc = expiresOn;
             if (IsExpired())
             {
                 throw new UnauthorizedAccessException($"The specified SAS token has already expired - on {expiresOn}.");
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
             Audience = WebUtility.UrlDecode(encodedAudience);
         }
 
-        internal DateTimeOffset ExpiresOn { get; }
+        internal DateTimeOffset ExpiresOnUtc { get; }
 
         internal string KeyName { get; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool IsExpired()
         {
-            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
+            return ExpiresOnUtc + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
     }
 }

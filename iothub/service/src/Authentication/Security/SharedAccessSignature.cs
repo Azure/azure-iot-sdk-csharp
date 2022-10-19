@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(iotHubName));
             }
 
-            ExpiresOn = expiresOn;
+            ExpiresOnUtc = expiresOn;
 
             if (IsExpired())
             {
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The date and time the SAS expires.
         /// </summary>
-        internal DateTimeOffset ExpiresOn { get; private set; }
+        internal DateTimeOffset ExpiresOnUtc { get; private set; }
 
         /// <summary>
         /// Name of the authorization rule.
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal bool IsExpired()
         {
-            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
+            return ExpiresOnUtc + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal DateTimeOffset ExpiryTime()
         {
-            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
+            return ExpiresOnUtc + SharedAccessSignatureConstants.MaxClockSkew;
         }
     }
 }

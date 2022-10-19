@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
                 ? DefaultSasRenewalBufferPercentage
                 : timeBufferPercentage;
 
-            ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLive.TotalSeconds);
+            ExpiresOnUtc = DateTimeOffset.UtcNow.AddSeconds(-_suggestedTimeToLive.TotalSeconds);
             Debug.Assert(IsExpiring);
             UpdateTimeBufferSeconds(_suggestedTimeToLive.TotalSeconds);
         }
@@ -64,17 +64,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets a snapshot of the UTC token expiry time.
         /// </summary>
-        public DateTimeOffset ExpiresOn { get; private set; }
+        public DateTimeOffset ExpiresOnUtc { get; private set; }
 
         /// <summary>
         /// Gets a snapshot of the UTC token refresh time.
         /// </summary>
-        public DateTimeOffset RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
+        public DateTimeOffset RefreshesOnUtc => ExpiresOnUtc.AddSeconds(-_bufferSeconds);
 
         /// <summary>
         /// Gets a snapshot expiry state.
         /// </summary>
-        public bool IsExpiring => (ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds <= _bufferSeconds;
+        public bool IsExpiring => (ExpiresOnUtc - DateTimeOffset.UtcNow).TotalSeconds <= _bufferSeconds;
 
         /// <summary>
         /// Gets a snapshot of the security token associated with the device.
@@ -100,12 +100,12 @@ namespace Microsoft.Azure.Devices.Client
             SharedAccessSignature sas = SharedAccessSignatureParser.Parse(token);
 
             _token = token;
-            ExpiresOn = sas.ExpiresOn;
+            ExpiresOnUtc = sas.ExpiresOnUtc;
 
-            UpdateTimeBufferSeconds((int)(ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds);
+            UpdateTimeBufferSeconds((int)(ExpiresOnUtc - DateTimeOffset.UtcNow).TotalSeconds);
 
             if (Logging.IsEnabled)
-                Logging.GenerateToken(this, ExpiresOn);
+                Logging.GenerateToken(this, ExpiresOnUtc);
 
             return _token;
         }

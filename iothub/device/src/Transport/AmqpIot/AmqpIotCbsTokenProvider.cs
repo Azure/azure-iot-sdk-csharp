@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     tokenValue = await _connectionCredentials.SasTokenRefresher
                         .GetTokenAsync(_connectionCredentials.IotHubHostName)
                         .ConfigureAwait(false);
-                    expiresOn = _connectionCredentials.SasTokenRefresher.RefreshesOn;
+                    expiresOn = _connectionCredentials.SasTokenRefresher.RefreshesOnUtc;
                 }
 
                 return new CbsToken(tokenValue, AmqpIotConstants.IotHubSasTokenType, expiresOn.UtcDateTime);
