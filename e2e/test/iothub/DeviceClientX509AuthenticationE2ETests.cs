@@ -111,8 +111,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
             var auth = new ClientAuthenticationWithX509Certificate(
                 s_chainCertificateWithPrivateKey,
-                TestConfiguration.IotHub.X509ChainDeviceName,
-                chainCertificates: chainCerts);
+                chainCerts,
+                TestConfiguration.IotHub.X509ChainDeviceName);
             using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
@@ -139,8 +139,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
             var auth = new ClientAuthenticationWithX509Certificate(
                 s_chainCertificateWithPrivateKey,
-                TestConfiguration.IotHub.X509ChainDeviceName,
-                chainCertificates: chainCerts);
+                chainCerts,
+                TestConfiguration.IotHub.X509ChainDeviceName);
             using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,

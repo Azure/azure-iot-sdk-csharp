@@ -109,6 +109,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 - The exponential back-off retry policy has updated parameters and logic.
 - Remote certificate validation is no natively longer supported for AMQP web socket connections.
   - The supported workaround is to provide a client web socket instance in the client options.
+- The authentication classes for devices and modules have been consolidated.
 
 #### Notable additions
 
