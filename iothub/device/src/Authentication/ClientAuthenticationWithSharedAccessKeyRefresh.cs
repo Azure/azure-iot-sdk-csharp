@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ClientAuthenticationWithSharedAccessKeyRefresh : ClientAuthenticationWithTokenRefresh
     {
-        private readonly IotHubConnectionString _iotHubConnectionString;
+        private static IotHubConnectionString s_iotHubConnectionString;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -111,15 +111,14 @@ namespace Microsoft.Azure.Devices.Client
             TimeSpan sasTokenTimeToLive = default,
             int sasTokenRenewalBuffer = default)
             : base(
-                  connectionString,
-                  sasTokenTimeToLive,
-                  sasTokenRenewalBuffer)
+                // Calling ParseConnectionString will pass the parsed connection string to s_iotHubConnectionString
+                ParseConnectionString(connectionString).DeviceId,
+                s_iotHubConnectionString.ModuleId,
+                sasTokenTimeToLive,
+                sasTokenRenewalBuffer)
         {
-            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
-
-            _iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
-            SharedAccessKey = _iotHubConnectionString.SharedAccessKey;
-            SharedAccessKeyName = _iotHubConnectionString.SharedAccessKeyName;
+            SharedAccessKey = s_iotHubConnectionString.SharedAccessKey;
+            SharedAccessKeyName = s_iotHubConnectionString.SharedAccessKeyName;
         }
 
         /// <summary>
@@ -184,6 +183,11 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Exit(this, iotHub, suggestedTimeToLive, nameof(SafeCreateNewTokenAsync));
 
             return Task.FromResult(builder.ToSignature());
+        }
+
+        private static IotHubConnectionString ParseConnectionString(string connectionString)
+        {
+            return s_iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
         }
     }
 }
