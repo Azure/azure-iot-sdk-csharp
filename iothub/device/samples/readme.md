@@ -14,6 +14,7 @@ This folder contains simple samples showing how to use the various features of M
 - [Plug and Play samples][d-pnp-sample] sample
 - [Xamarin][d-xamarin-sample] sample
 - [Simulated device][d-simulated-device-sample] sample
+- [Hub routing sample][d-hub-routing-sample] sample
 - [Simulated device with command][d-simulated-device-with-command-sample] sample
 
 ### Prerequisites
@@ -73,3 +74,4 @@ You need to clone the repository or download the sample (the one you want to try
 [lnk-manage-iot-device]: https://github.com/Azure/azure-iot-device-ecosystem/blob/master/setup_iothub.md#create-new-device-in-the-iot-hub-device-identity-registry
 [d-simulated-device-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/SimulatedDevice
 [d-simulated-device-with-command-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/SimulatedDeviceWithCommand
+[d-hub-routing-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/HubRoutingSample
