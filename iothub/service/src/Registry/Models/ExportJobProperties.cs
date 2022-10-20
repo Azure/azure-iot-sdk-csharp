@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="excludeKeysInExport">Whether to include authorization keys in export output.</param>
         public ExportJobProperties(Uri outputBlobContainerUri, bool excludeKeysInExport)
         {
-            Type = JobType.ExportDevices;
+            JobType = JobType.ExportDevices;
             OutputBlobContainerUri = outputBlobContainerUri;
             ExcludeKeysInExport = excludeKeysInExport;
         }

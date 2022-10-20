@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             Assert.AreEqual(WebUtility.UrlDecode(audience), token.Audience);
             Assert.AreEqual(signature, token.Signature);
             Assert.AreEqual(string.Empty, token.KeyName);
-            Assert.AreEqual(SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)), token.ExpiresOn);
+            Assert.AreEqual(SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)), token.ExpiresOnUtc);
         }
     }
 }

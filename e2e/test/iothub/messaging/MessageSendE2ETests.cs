@@ -200,32 +200,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         public static async Task SendSingleMessageAsync(IotHubDeviceClient deviceClient, MsTestLogger logger, int messageSize = 0)
         {
-            OutgoingMessage testMessage = messageSize == 0
+            TelemetryMessage testMessage = messageSize == 0
                 ? ComposeD2cTestMessage(logger, out string _, out string _)
                 : ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger, out string _, out string _);
 
-            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
         public static async Task SendBatchMessagesAsync(IotHubDeviceClient deviceClient, MsTestLogger logger)
         {
-            var messagesToBeSent = new Dictionary<OutgoingMessage, Tuple<string, string>>();
+            var messagesToBeSent = new Dictionary<TelemetryMessage, Tuple<string, string>>();
 
             for (int i = 0; i < MessageBatchCount; i++)
             {
-                OutgoingMessage testMessage = ComposeD2cTestMessage(logger, out string payload, out string p1Value);
+                TelemetryMessage testMessage = ComposeD2cTestMessage(logger, out string payload, out string p1Value);
                 messagesToBeSent.Add(testMessage, Tuple.Create(payload, p1Value));
             }
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.SendEventBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
+            await deviceClient.SendTelemetryBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
         }
 
         private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
         {
-            OutgoingMessage testMessage = ComposeD2cTestMessage(Logger, out string _, out string _);
+            TelemetryMessage testMessage = ComposeD2cTestMessage(Logger, out string _, out string _);
 
-            await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            await moduleClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
         private async Task OpenCloseOpenThenSendSingleMessage(TestDeviceType type, IotHubClientTransportSettings transportSettings, int messageSize = 0)
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        public static OutgoingMessage ComposeD2cTestMessage(MsTestLogger logger, out string payload, out string p1Value)
+        public static TelemetryMessage ComposeD2cTestMessage(MsTestLogger logger, out string payload, out string p1Value)
         {
             string messageId = Guid.NewGuid().ToString();
             payload = Guid.NewGuid().ToString();
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             string userId = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(ComposeD2cTestMessage)}: messageId='{messageId}' userId='{userId}' payload='{payload}' p1Value='{p1Value}'");
-            var message = new OutgoingMessage(payload)
+            var message = new TelemetryMessage(payload)
             {
                 MessageId = messageId,
                 UserId = userId,
@@ -264,14 +264,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return message;
         }
 
-        public static OutgoingMessage ComposeD2cTestMessageOfSpecifiedSize(int messageSize, MsTestLogger logger, out string payload, out string p1Value)
+        public static TelemetryMessage ComposeD2cTestMessageOfSpecifiedSize(int messageSize, MsTestLogger logger, out string payload, out string p1Value)
         {
             string messageId = Guid.NewGuid().ToString();
             payload = $"{Guid.NewGuid()}_{new string('*', messageSize)}";
             p1Value = Guid.NewGuid().ToString();
 
             logger.Trace($"{nameof(ComposeD2cTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
-            var message = new OutgoingMessage(payload)
+            var message = new TelemetryMessage(payload)
             {
                 MessageId = messageId,
             };

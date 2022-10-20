@@ -852,17 +852,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new OutgoingMessage();
-            var messageWithId = new OutgoingMessage
+            var messageWithoutId = new TelemetryMessage();
+            var messageWithId = new TelemetryMessage
             {
                 MessageId = messageId,
             };
-            await deviceClient.SendEventAsync(messageWithoutId).ConfigureAwait(false);
-            await deviceClient.SendEventAsync(messageWithId).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(messageWithoutId).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(messageWithId).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -881,17 +881,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new OutgoingMessage();
-            var messageWithId = new OutgoingMessage
+            var messageWithoutId = new TelemetryMessage();
+            var messageWithId = new TelemetryMessage
             {
                 MessageId = messageId,
             };
-            await deviceClient.SendEventAsync(messageWithoutId).ConfigureAwait(false);
-            await deviceClient.SendEventAsync(messageWithId).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(messageWithoutId).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(messageWithId).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -910,17 +910,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new OutgoingMessage();
-            var messageWithId = new OutgoingMessage
+            var messageWithoutId = new TelemetryMessage();
+            var messageWithId = new TelemetryMessage
             {
                 MessageId = messageId,
             };
-            await deviceClient.SendEventAsync(messageWithoutId).ConfigureAwait(false);
-            await deviceClient.SendEventAsync(messageWithId).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(messageWithoutId).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(messageWithId).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
@@ -935,17 +935,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new OutgoingMessage();
-            var messageWithId = new OutgoingMessage
+            var messageWithoutId = new TelemetryMessage();
+            var messageWithId = new TelemetryMessage
             {
                 MessageId = messageId,
             };
 
-            await deviceClient.SendEventBatchAsync(new List<OutgoingMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -964,17 +964,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new OutgoingMessage();
-            var messageWithId = new OutgoingMessage
+            var messageWithoutId = new TelemetryMessage();
+            var messageWithId = new TelemetryMessage
             {
                 MessageId = messageId,
             };
 
-            await deviceClient.SendEventBatchAsync(new List<OutgoingMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -993,17 +993,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler;
 
             // act
-            var messageWithoutId = new OutgoingMessage();
-            var messageWithId = new OutgoingMessage
+            var messageWithoutId = new TelemetryMessage();
+            var messageWithId = new TelemetryMessage
             {
                 MessageId = messageId,
             };
 
-            await deviceClient.SendEventBatchAsync(new List<OutgoingMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
@@ -1057,11 +1057,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas TTL supplied.
 
             var expectedExpirationTime = startTime.Add(-sasTokenTimeToLive);
-            sasTokenRefresher.ExpiresOn.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
+            sasTokenRefresher.ExpiresOnUtc.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
 
             int expectedBufferSeconds = (int)(sasTokenTimeToLive.TotalSeconds * ((float)sasTokenRenewalBuffer / 100));
             var expectedRefreshTime = expectedExpirationTime.AddSeconds(-expectedBufferSeconds);
-            sasTokenRefresher.RefreshesOn.Should().BeCloseTo(expectedRefreshTime, (int)buffer.TotalMilliseconds);
+            sasTokenRefresher.RefreshesOnUtc.Should().BeCloseTo(expectedRefreshTime, (int)buffer.TotalMilliseconds);
         }
 
         [TestMethod]
@@ -1088,11 +1088,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas TTL supplied.
 
             DateTime expectedExpirationTime = startTime.Add(-sasTokenTimeToLive);
-            sasTokenRefresher.ExpiresOn.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
+            sasTokenRefresher.ExpiresOnUtc.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
 
             int expectedBufferSeconds = (int)(sasTokenTimeToLive.TotalSeconds * ((float)sasTokenRenewalBuffer / 100));
             DateTime expectedRefreshTime = expectedExpirationTime.AddSeconds(-expectedBufferSeconds);
-            sasTokenRefresher.RefreshesOn.Should().BeCloseTo(expectedRefreshTime, (int)buffer.TotalMilliseconds);
+            sasTokenRefresher.RefreshesOnUtc.Should().BeCloseTo(expectedRefreshTime, (int)buffer.TotalMilliseconds);
         }
 
         [TestMethod]
@@ -1136,7 +1136,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_SendEventAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_SendTelemetryAsync_Cancelled_ThrowsOperationCanceledException()
         {
             //arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
@@ -1146,7 +1146,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()))
+                .When(x => x.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
 
             ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
@@ -1160,27 +1160,27 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            Func<Task> act = async () => await deviceClient.SendEventAsync(new OutgoingMessage(), cts.Token);
+            Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new TelemetryMessage(), cts.Token);
 
             // assert
             act.Should().Throw<OperationCanceledException>();
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_SendEventAsync_WithoutExplicitOpenAsync_ThrowsInvalidOperationException()
+        public void IotHubDeviceClient_SendTelemetryAsync_WithoutExplicitOpenAsync_ThrowsInvalidOperationException()
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             // act
-            Func<Task> act = async () => await deviceClient.SendEventAsync(new OutgoingMessage());
+            Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new TelemetryMessage());
 
             // assert
             act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_SendEventAsync_BeforeExplicitOpenAsync_ThrowsInvalidOperationException()
+        public void IotHubDeviceClient_SendTelemetryAsync_BeforeExplicitOpenAsync_ThrowsInvalidOperationException()
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
@@ -1188,7 +1188,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act
             Func<Task> act = async () =>
             {
-                await deviceClient.SendEventAsync(new OutgoingMessage());
+                await deviceClient.SendTelemetryAsync(new TelemetryMessage());
                 await deviceClient.OpenAsync();
             };
 
@@ -1197,7 +1197,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_SendEventAsync_AfterExplicitOpenAsync_DoesNotThrow()
+        public void IotHubDeviceClient_SendTelemetryAsync_AfterExplicitOpenAsync_DoesNotThrow()
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
@@ -1206,7 +1206,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () =>
             {
                 await deviceClient.OpenAsync();
-                await deviceClient.SendEventAsync(new OutgoingMessage());
+                await deviceClient.SendTelemetryAsync(new TelemetryMessage());
             };
 
             // should not throw

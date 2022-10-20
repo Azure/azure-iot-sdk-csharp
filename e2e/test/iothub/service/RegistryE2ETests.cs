@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string _idPrefix = $"{nameof(RegistryE2ETests)}_";
 
         // In particular, this should retry on "module not registered on this device" errors
-        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(IotHubServiceException) };
+        private static readonly HashSet<Type> s_retryableExceptions = new() { typeof(IotHubServiceException) };
 
         [LoggedTestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var twin = new Twin(deviceId)
             {
-                Tags = new TwinCollection(@"{ companyId: 1234 }"),
+                Tags = { { "companyId", 1234 } },
             };
 
             var iotEdgeDevice = new Device(deviceId)

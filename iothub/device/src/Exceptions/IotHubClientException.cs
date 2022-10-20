@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
+using System.ComponentModel;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient { get; }
+        public bool IsTransient { get; protected internal set; }
 
         /// <summary>
         /// The service returned tracking Id associated with this particular error.
@@ -140,6 +140,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

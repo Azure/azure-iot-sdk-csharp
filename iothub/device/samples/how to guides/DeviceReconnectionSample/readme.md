@@ -47,7 +47,7 @@ var eventMessage = new Message(Encoding.UTF8.GetBytes(messagePayload))
     ContentType = "application/json",
 };
 
-await deviceClient.SendEventAsync(message);
+await deviceClient.SendTelemetryAsync(message);
 ```
 
 ### Receive cloud to device telemetry (using the callback) and complete the message:

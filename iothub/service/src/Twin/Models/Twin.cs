@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="twinProperties">Properties of the twin.</param>
         public Twin(TwinProperties twinProperties)
         {
-            Properties = twinProperties;
+            Properties = twinProperties ?? new();
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets and sets the twin tags.
         /// </summary>
-        public TwinCollection Tags { get; set; } = new();
+        public IDictionary<string, object> Tags { get; protected internal set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets and sets the twin properties.
@@ -174,16 +174,6 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
-
-        /// <summary>
-        /// Gets the Twin as a JSON string.
-        /// </summary>
-        /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
-        /// <returns>JSON string.</returns>
-        public string ToJson(Formatting formatting = Formatting.None)
-        {
-            return JsonConvert.SerializeObject(this, formatting);
-        }
 
         /// <summary>
         /// For use in serialization.

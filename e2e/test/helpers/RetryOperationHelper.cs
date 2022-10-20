@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class RetryOperationHelper
     {
         // A conservative, basic retry policy that should be fine for most scenarios.
-        public static IRetryPolicy DefaultRetryPolicy = new ExponentialBackoffRetryPolicy(5, TimeSpan.FromSeconds(10));
+        public static readonly IRetryPolicy DefaultRetryPolicy = new IncrementalDelayRetryPolicy(20, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3));
 
         /// <summary>
         /// Retry an async operation based on the retry strategy supplied.

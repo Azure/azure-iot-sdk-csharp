@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Samples
 
                 var edgeDevices = devices.ToList();
                 BulkRegistryOperationResult createResult = await _serviceClient.Devices.CreateAsync(edgeDevices);
-                if (createResult.Errors.Length > 0)
+                if (createResult.Errors.Count > 0)
                 {
                     foreach (DeviceRegistryOperationError err in createResult.Errors)
                     {
@@ -44,13 +44,11 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     Console.WriteLine($"Created edge device {device.Id}");
                     Twin twin = await _serviceClient.Twins.GetAsync(device.Id);
-                    Console.WriteLine($"\tTwin is {twin.ToJson()}");
+                    Console.WriteLine($"\tTwin is {JsonSerializer.Serialize(twin)}");
 
                     twin.Tags[conditionPropertyName] = conditionPropertyValue;
                     await _serviceClient.Twins.UpdateAsync(device.Id, twin);
-                    Console.WriteLine($"\tUpdated twin to {twin.ToJson()}");
-
-                    Console.WriteLine();
+                    Console.WriteLine($"\tUpdated twin to {JsonSerializer.Serialize(twin)}\n");
                 }
 
                 var baseConfiguration = new Configuration($"{ConfigurationIdPrefix}base-{Guid.NewGuid()}")

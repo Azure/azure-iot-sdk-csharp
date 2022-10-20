@@ -120,9 +120,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Logger.Trace($"{deviceId}: DeviceClient SendEventAsync.");
-            var testMessage = new OutgoingMessage("TestMessage");
-            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            Logger.Trace($"{deviceId}: DeviceClient SendTelemetryAsync.");
+            var testMessage = new TelemetryMessage("TestMessage");
+            await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
 
             Logger.Trace($"{deviceId}: DeviceClient CloseAsync.");
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -160,13 +160,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
-            var message = new OutgoingMessage("Hello");
+            var message = new TelemetryMessage("Hello");
 
-            Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
+            Logger.Trace($"[{testDevice.Id}]: SendTelemetryAsync (1)");
             var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
             using var cts1 = new CancellationTokenSource(timeout);
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.SendEventAsync(message, cts1.Token).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(message, cts1.Token).ConfigureAwait(false);
 
             // Wait for the Token to expire.
 
@@ -177,9 +177,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceDisconnected.WaitAsync(tokenRefreshCts.Token).ConfigureAwait(false);
 
             // Test that the client is able to send messages
-            Logger.Trace($"[{testDevice.Id}]: SendEventAsync (2)");
+            Logger.Trace($"[{testDevice.Id}]: SendTelemetryAsync (2)");
             using var cts2 = new CancellationTokenSource(timeout);
-            await deviceClient.SendEventAsync(message, cts2.Token).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(message, cts2.Token).ConfigureAwait(false);
         }
 
         private async Task IotHubDeviceClient_TokenIsRefreshed_Internal(IotHubClientTransportSettings transportSettings, TimeSpan ttl)
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
             }
 
-            var message = new OutgoingMessage("Hello");
+            var message = new TelemetryMessage("Hello");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl.TotalSeconds * 10));
             try
@@ -227,8 +227,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Logger.Trace($"[{DateTime.UtcNow}] OpenAsync");
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
-                Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (1)");
-                await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                Logger.Trace($"[{DateTime.UtcNow}] SendTelemetryAsync (1)");
+                await deviceClient.SendTelemetryAsync(message, cts.Token).ConfigureAwait(false);
                 await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
@@ -253,8 +253,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                Logger.Trace($"[{DateTime.UtcNow}] SendEventAsync (2)");
-                await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                Logger.Trace($"[{DateTime.UtcNow}] SendTelemetryAsync (2)");
+                await deviceClient.SendTelemetryAsync(message, cts.Token).ConfigureAwait(false);
                 await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)

@@ -75,13 +75,13 @@ namespace Microsoft.Azure.Devices
         /// The creation date and time of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "createdTimeUtc")]
-        public DateTime CreatedOnUtc { get; internal set; }
+        public DateTimeOffset CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The update date and time of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedTimeUtc")]
-        public DateTime LastUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The priority number assigned to the configuration.

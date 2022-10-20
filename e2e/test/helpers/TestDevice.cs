@@ -20,18 +20,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
     public enum ConnectionStringAuthScope
     {
-        IoTHub,
+        IotHub,
         Device,
     }
 
     public class TestDevice : IDisposable
     {
-        private const int MaxRetryCount = 5;
+        private const int MaxRetryCount = 20;
         private static readonly HashSet<IotHubServiceErrorCode> s_throttlingStatusCodes = new() { IotHubServiceErrorCode.ThrottlingException };
-        private static readonly HashSet<IotHubServiceErrorCode> s_retryableStatusCodes = new(s_throttlingStatusCodes) { IotHubServiceErrorCode.DeviceNotFound };
+        private static readonly HashSet<IotHubServiceErrorCode> s_retryableStatusCodes = new(s_throttlingStatusCodes)
+        {
+            IotHubServiceErrorCode.DeviceNotFound,
+            IotHubServiceErrorCode.ModuleNotFound,
+        };
         private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 
-        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(10));
+        private static readonly IRetryPolicy s_retryPolicy = new IncrementalDelayRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3));
 
         private X509Certificate2 _authCertificate;
 
@@ -115,14 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
-                        if (device is null)
-                        {
-                            throw new IotHubServiceException(
-                                $"Created device {requestDevice.Id} not yet gettable from IoT hub.",
-                                HttpStatusCode.NotFound,
-                                IotHubServiceErrorCode.DeviceNotFound);
-                        }
+                        await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                     },
                     s_retryPolicy,
                     s_retryableStatusCodes,
@@ -153,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Used in conjunction with DeviceClient.Create()
         /// </summary>
-        public string IotHubHostName => GetHostName(TestConfiguration.IotHub.ConnectionString);
+        public string IotHubHostName { get; } = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
         /// <summary>
         /// Device Id
@@ -165,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         public Device Device { get; private set; }
 
-        public Client.IAuthenticationMethod AuthenticationMethod { get; private set; }
+        public IAuthenticationMethod AuthenticationMethod { get; private set; }
 
         public IotHubDeviceClient CreateDeviceClient(IotHubClientOptions options = default, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {

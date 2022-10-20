@@ -2,12 +2,12 @@
 
 ## 1. Dev machine prerequisites
 
-Before starting development on the Azure IoT SDK for C# you will need to install a few frameworks and tools. Please follow the instructions within [devbox_setup](devbox_setup.md).
+Before starting development on the Azure IoT SDK for .NET you will need to install a few frameworks and tools. Please follow the instructions within [devbox_setup](devbox_setup.md).
 
 ## 2. Design Guidelines and Coding Style
 
 ### Design
-We are following the [Azure SDK design specification for C#](https://azuresdkspecs.z5.web.core.windows.net/DotNetSpec.html). To preserve backward compatibility, existing code will not change to follow these rules.
+We are following the [Azure SDK design specification for .NET](https://azuresdkspecs.z5.web.core.windows.net/DotNetSpec.html). To preserve backward compatibility, existing code will not change to follow these rules.
 
 #### Using [`IDisposable`](https://docs.microsoft.com/en-us/dotnet/api/system.idisposable?view=net-5.0#implementing-idisposable) types:
 - If the sdk implements `class A` that owns an `IDisposable` resource `X`, then `A` should also be `IDisposable`. In that case, resource `X` can be safely disposed when `class A` is disposed.
@@ -70,9 +70,9 @@ Please see `build -h` for instructions on how to set up a local NuGet source and
 
 ### /doc
 
-Contains development instructions for building and changing the Azure IoT SDK for C#.
+Contains development instructions for building and changing the Azure IoT SDK for .NET.
 
-If you would like to develop an application using the Azure IoT SDK for C# (using pre-built binaries), please follow the dev-guide here: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-sdks 
+If you would like to develop an application using the Azure IoT SDK for .NET (using pre-built binaries), please follow the dev-guide here: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-sdks 
 
 ### Package architecture
 ![packages](https://www.plantuml.com/plantuml/png/0/jLLRRi8m4Fn7oXtyNv4J80G2LLMbI2tG0xZs9bWuSLYlaTAAkpSXK48W9PJWtvsTcNtO7bdYI2xMNi_hQGY9aM6eeYKngH04APCKePIB5O-01KgWiIOaV_pb4FmfR9G0wy-N746omU3PQ0au7B9lhxTjaLbBOVaHcblBve05OA8L97G85UU9JRHniZ1QSfIXdTWnVGQHieHPm9DS7Mi4iuyf2mqoMPgeniQEJCn9YPAyp8zp3nTbNisdFRMuRLUt_uPcespUNfL4_hxOncPKmMUD-TKzujyTO7OIQ-LfpzdaeeITbLk514Ow3Hrqv8gLAhR1rksQ2-I9JGtce7YT_cEPc-Y2DL67T2z4zxkRWt2eAFCNQLmZszCrtTX-VtZb7MZCFOpr7efBQz8Pt-4YTaPOczfVl1SAkrbajxYF5jcjysD4JhQopH16aCZy-_e1 "packages")

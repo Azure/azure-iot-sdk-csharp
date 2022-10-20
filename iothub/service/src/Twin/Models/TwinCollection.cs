@@ -115,6 +115,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="propertyName">Name of the property to get.</param>
         /// <returns>Value for the given property name.</returns>
+        /// <exception cref="InvalidOperationException">When the specified <paramref name="propertyName"/> does not exist in the collection.</exception>
         public dynamic this[string propertyName]
         {
             get
@@ -136,7 +137,7 @@ namespace Microsoft.Azure.Devices
                     return value;
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(propertyName), $"Unexpected property name '{propertyName}'.");
+                throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
             }
             set => TrySetMemberInternal(propertyName, value);
         }
@@ -157,14 +158,18 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the last updated time for this property.
+        /// Gets the last time this property was updated in UTC.
         /// </summary>
-        /// <returns>Date-time instance representing the last updated time for this property.</returns>
-        /// <exception cref="System.NullReferenceException">Thrown when the metadata object is null.
-        /// An example would be when the this class is created with the default constructor.</exception>
         public DateTimeOffset GetLastUpdatedOnUtc()
         {
-            return (DateTime)_metadata[LastUpdatedName];
+            if (_metadata != null
+                && _metadata.TryGetValue(LastUpdatedName, out JToken lastUpdatedName)
+                && (DateTimeOffset)lastUpdatedName is DateTimeOffset lastUpdatedOnUtc)
+            {
+                return lastUpdatedOnUtc;
+            }
+
+            return default;
         }
 
         /// <summary>
@@ -174,16 +179,6 @@ namespace Microsoft.Azure.Devices
         public long? GetLastUpdatedVersion()
         {
             return (long?)_metadata?[LastUpdatedVersionName];
-        }
-
-        /// <summary>
-        /// Gets the properties as a JSON string.
-        /// </summary>
-        /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
-        /// <returns>JSON string.</returns>
-        public string ToJson(Formatting formatting = Formatting.None)
-        {
-            return JsonConvert.SerializeObject(JObject, formatting);
         }
 
         /// <summary>
@@ -226,7 +221,7 @@ namespace Microsoft.Azure.Devices
         ///
         /// For example a <see cref="List{T}"/> would return a <see cref="TwinCollectionArray"/>, with the metadata intact, when used with
         /// a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client. If you need this method to always return a
-        /// <see cref="JToken"/> please see the <see cref="ClearAllMetadata"/> method for more information.
+        /// <see cref="JToken"/> please see the <see cref="ClearMetadata"/> method for more information.
         /// </remarks>
         private bool TryGetMemberInternal(string propertyName, out object result)
         {
@@ -264,7 +259,10 @@ namespace Microsoft.Azure.Devices
 
         private bool TrySetMemberInternal(string propertyName, object value)
         {
-            JToken valueJToken = value == null ? null : JToken.FromObject(value);
+            JToken valueJToken = value == null
+                ? null
+                : JToken.FromObject(value);
+
             if (JObject.TryGetValue(propertyName, out _))
             {
                 JObject[propertyName] = valueJToken;
@@ -286,11 +284,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Clears metadata out of the twin collection.
+        /// Clears all metadata out of the twin collection as well as the base metadata object.
         /// </summary>
         /// <remarks>
-        /// This will only clear the metadata from the twin collection but will not change the base metadata object. This allows you to still use
-        /// methods such as <see cref="GetMetadata"/>. If you need to remove all metadata, please use <see cref="ClearAllMetadata"/>.
+        /// This will remove all metadata from the base metadata object as well as the metadata for the twin collection. 
+        /// This will also clear the underlying metadata object which will affect methods such as
+        /// <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
         /// </remarks>
         public void ClearMetadata()
         {
@@ -298,21 +297,7 @@ namespace Microsoft.Azure.Devices
             TryClearMetadata(LastUpdatedName);
             TryClearMetadata(LastUpdatedVersionName);
             TryClearMetadata(VersionName);
-        }
-
-        /// <summary>
-        /// Clears all metadata out of the twin collection as well as the base metadata object.
-        /// </summary>
-        /// <remarks>
-        /// This will remove all metadata from the base metadata object as well as the metadata for the twin collection. The difference from the
-        /// <see cref="ClearMetadata"/> method is this will also clear the underlying metadata object which will affect methods such as
-        /// <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
-        /// This method would be useful if you are performing any operations that require <see cref="TryGetMemberInternal(string, out object)"/>
-        /// to return a <see cref="JToken"/> regardless of the client you are using.
-        /// </remarks>
-        public void ClearAllMetadata()
-        {
-            ClearMetadata();
+        
             // GitHub Issue: https://github.com/Azure/azure-iot-sdk-csharp/issues/1971
             // When we clear the metadata from the underlying collection we need to also clear
             // the _metadata object so the TryGetMemberInternal will return a JObject instead of a new TwinCollection

@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices
                         {
                             throw new InvalidOperationException("Tags Json not a Dictionary.");
                         }
-                        twin.Tags = new TwinCollection(JToken.ReadFrom(reader) as JObject);
+                        twin.Tags = serializer.Deserialize<Dictionary<string, object>>(reader);
                         break;
 
                     case PropertiesJsonTag:
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices
             return dict;
         }
 
-        private static DateTime? ConvertToDateTime(object obj)
+        private static DateTimeOffset? ConvertToDateTime(object obj)
         {
             if (obj is DateTime time)
             {
@@ -394,11 +394,11 @@ namespace Microsoft.Azure.Devices
             return ParseToDateTime(obj as string);
         }
 
-        private static DateTime? ParseToDateTime(string value)
+        private static DateTimeOffset? ParseToDateTime(string value)
         {
-            return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime)
-                ? dateTime.ToUniversalTime()
-                : (DateTime?)null;
+            return DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset dateTimeOffset)
+                ? dateTimeOffset.UtcDateTime
+                : null;
         }
 
         private static void PopulatePropertiesForTwin(Twin twin, JsonReader reader)

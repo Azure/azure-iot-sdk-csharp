@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Get the complete Uri for the blob that can be uploaded to from this device. This Uri includes credentials, too.
         /// </summary>
         /// <returns>The complete Uri for the blob that can be uploaded to from this device</returns>
-        public Uri GetBlobUri()
+        public virtual Uri GetBlobUri()
         {
             return new Uri(
                 string.Format(

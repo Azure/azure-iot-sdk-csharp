@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json.Linq;
+using static Microsoft.Azure.Devices.TwinCollection;
 
 namespace Microsoft.Azure.Devices
 {
@@ -25,16 +25,17 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="propertyName">Property name to look up.</param>
         /// <returns>Property value, if present.</returns>
+        /// <exception cref="InvalidOperationException">When the specified <paramref name="propertyName"/> does not exist in the collection.</exception>
         public dynamic this[string propertyName]
         {
             get
             {
                 return propertyName switch
                 {
-                    TwinCollection.MetadataName => GetMetadata(),
-                    TwinCollection.LastUpdatedName => GetLastUpdatedOnUtc(),
-                    TwinCollection.LastUpdatedVersionName => GetLastUpdatedVersion(),
-                    _ => throw new RuntimeBinderException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'."),
+                    MetadataName => GetMetadata(),
+                    LastUpdatedName => GetLastUpdatedOnUtc(),
+                    LastUpdatedVersionName => GetLastUpdatedVersion(),
+                    _ => throw new InvalidOperationException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'."),
                 };
             }
         }
@@ -49,12 +50,18 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the last updated time for this property.
+        /// Gets the time when this property was last updated in UTC.
         /// </summary>
-        /// <returns>Date-time instance representing the last updated time for this property.</returns>
         public DateTimeOffset GetLastUpdatedOnUtc()
         {
-            return (DateTimeOffset)_metadata[TwinCollection.LastUpdatedName];
+            if (_metadata != null
+                && _metadata.TryGetValue(LastUpdatedName, out JToken lastUpdatedName)
+                && (DateTimeOffset)lastUpdatedName is DateTimeOffset lastUpdatedOnUtc)
+            {
+                return lastUpdatedOnUtc;
+            }
+
+            return default;
         }
 
         /// <summary>
@@ -63,7 +70,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Last updated version if present, null otherwise.</returns>
         public long? GetLastUpdatedVersion()
         {
-            return (long?)_metadata[TwinCollection.LastUpdatedVersionName];
+            return (long?)_metadata?[LastUpdatedVersionName];
         }
     }
 }

@@ -33,10 +33,8 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
 
             var twin = new Twin(DeviceId)
             {
-                Tags = new TwinCollection()
+                Tags = { { TestTagName, TestTagValue } },
             };
-            twin.Tags[TestTagName] = TestTagValue;
-
 
             // *************************************** Schedule twin job ***************************************
             // Prepare to catch Throttling exception if more than 1 job is already running.

@@ -54,6 +54,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Client.UnitTests", "provisioning\device\tests\Microsoft.Azure.Devices.Provisioning.Client.UnitTests.csproj", "{8797C176-398A-4347-B8E9-38FAF5746EC4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{0F7F505C-CB9A-4CFD-855C-BDB0A9067AD1}"
+	ProjectSection(SolutionItems) = preProject
+		iothub\device\samples\readme.md = iothub\device\samples\readme.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceReconnectionSample", "iothub\device\samples\how to guides\DeviceReconnectionSample\DeviceReconnectionSample.csproj", "{2E45EA2A-06E9-4551-9A1B-179835F47A39}"
 EndProject

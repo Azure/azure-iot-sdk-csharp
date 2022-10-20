@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         $"{nameof(IotHubConnectionCredentials)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
 
                 string tokenValue;
-                DateTime expiresOn;
+                DateTimeOffset expiresOn;
 
                 if (!string.IsNullOrWhiteSpace(_connectionCredentials.SharedAccessSignature))
                 {
@@ -45,10 +45,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     tokenValue = await _connectionCredentials.SasTokenRefresher
                         .GetTokenAsync(_connectionCredentials.IotHubHostName)
                         .ConfigureAwait(false);
-                    expiresOn = _connectionCredentials.SasTokenRefresher.RefreshesOn;
+                    expiresOn = _connectionCredentials.SasTokenRefresher.RefreshesOnUtc;
                 }
 
-                return new CbsToken(tokenValue, AmqpIotConstants.IotHubSasTokenType, expiresOn);
+                return new CbsToken(tokenValue, AmqpIotConstants.IotHubSasTokenType, expiresOn.UtcDateTime);
             }
             finally
             {

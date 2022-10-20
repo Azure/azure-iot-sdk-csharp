@@ -29,15 +29,15 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        public async Task AmqpTransportHandlerSendEventAsyncTokenCancellationRequested()
+        public async Task AmqpTransportHandlerSendTelemetryAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new OutgoingMessage(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryAsync(new TelemetryMessage(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task AmqpTransportHandlerSendEventAsyncMultipleMessagesTokenCancellationRequested()
+        public async Task AmqpTransportHandlerSendTelemetryAsyncMultipleMessagesTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<OutgoingMessage>(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryAsync(new List<TelemetryMessage>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]

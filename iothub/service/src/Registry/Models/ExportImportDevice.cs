@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Azure;
 using Azure.Core.Serialization;
 using Newtonsoft.Json;
@@ -146,7 +148,7 @@ namespace Microsoft.Azure.Devices
         /// The JSON document read and written by the solution back end. The tags are not visible to device apps.
         /// </summary>
         [JsonProperty(PropertyName = "tags", NullValueHandling = NullValueHandling.Ignore)]
-        public TwinCollection Tags { get; set; }
+        public IDictionary<string, object> Tags { get; internal set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The desired and reported properties for the device or module.

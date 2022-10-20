@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
 
                 // You will need to resubscribe to any client callbacks any time the client is initialized.
-                await s_deviceClient.SetMessageCallbackAsync(OnMessageReceivedAsync, cancellationToken);
+                await s_deviceClient.SetIncomingMessageCallbackAsync(OnMessageReceivedAsync, cancellationToken);
                 _logger.LogDebug("The client has subscribed to cloud-to-device messages.");
 
                 await s_deviceClient.SetDesiredPropertyUpdateCallbackAsync(HandleTwinUpdateNotificationsAsync, cancellationToken);
@@ -246,8 +246,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     _logger.LogInformation($"Device sending message {++messageCount} to IoT hub.");
 
-                    OutgoingMessage message = PrepareMessage(messageCount);
-                    await s_deviceClient.SendEventAsync(message, cancellationToken);
+                    TelemetryMessage message = PrepareMessage(messageCount);
+                    await s_deviceClient.SendTelemetryAsync(message, cancellationToken);
                     _logger.LogInformation($"Device sent message {messageCount} to IoT hub.");
                 }
 
@@ -276,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.FromResult(MessageAcknowledgement.Reject);
         }
 
-        private static OutgoingMessage PrepareMessage(int messageId)
+        private static TelemetryMessage PrepareMessage(int messageId)
         {
             const int temperatureThreshold = 30;
 
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             int humidity = s_randomGenerator.Next(60, 80);
             string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
 
-            var eventMessage = new OutgoingMessage(messagePayload)
+            var eventMessage = new TelemetryMessage(messagePayload)
             {
                 MessageId = messageId.ToString(),
             };

@@ -21,7 +21,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         public Twin()
         {
-            Tags = new TwinCollection();
             Properties = new TwinProperties();
         }
 
@@ -40,7 +39,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="twinProperties"></param>
         public Twin(TwinProperties twinProperties)
         {
-            Tags = new TwinCollection();
             Properties = twinProperties;
         }
 
@@ -64,9 +62,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public string ModuleId { get; set; }
 
         /// <summary>
-        /// Gets and sets the  twin tags.
+        /// Gets and sets the twin tags.
         /// </summary>
-        public TwinCollection Tags { get; set; }
+        public IDictionary<string, object> Tags { get; internal set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets and sets the twin properties.
@@ -116,7 +114,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public DateTime? StatusUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? StatusUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Corresponding device's connection state.
@@ -131,7 +129,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public DateTime? LastActiveOnUtc { get; internal set; }
+        public DateTimeOffset? LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the corresponding device from the cloud.
@@ -172,15 +170,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
-
-        /// <summary>
-        /// Gets the twin as a JSON string.
-        /// </summary>
-        /// <param name="formatting">Formatting for the output JSON string.</param>
-        /// <returns>JSON string</returns>
-        public string ToJson(Formatting formatting = Formatting.None)
-        {
-            return JsonConvert.SerializeObject(this, formatting);
-        }
     }
 }

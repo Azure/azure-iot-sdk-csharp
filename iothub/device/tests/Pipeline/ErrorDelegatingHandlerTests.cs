@@ -80,15 +80,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            innerHandler.SendEventAsync(Arg.Any<OutgoingMessage>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
-            await sut.SendEventAsync(new OutgoingMessage(new byte[0]), cancellationToken).ConfigureAwait(false);
+            await sut.SendTelemetryAsync(new TelemetryMessage(new byte[0]), cancellationToken).ConfigureAwait(false);
 
             await innerHandler.Received(1).OpenAsync(cancellationToken).ConfigureAwait(false);
-            await innerHandler.Received(1).SendEventAsync(Arg.Any<OutgoingMessage>(), cancellationToken).ConfigureAwait(false);
+            await innerHandler.Received(1).SendTelemetryAsync(Arg.Any<TelemetryMessage>(), cancellationToken).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -117,21 +117,21 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private static async Task TestExceptionThrown(Type thrownExceptionType, Type expectedExceptionType)
         {
-            var message = new OutgoingMessage(new byte[0]);
+            var message = new TelemetryMessage(new byte[0]);
             var cancellationToken = new CancellationToken();
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
-                di => di.SendEventAsync(message, cancellationToken),
-                di => di.Received(2).SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
+                di => di.SendTelemetryAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
+                di => di.SendTelemetryAsync(message, cancellationToken),
+                di => di.Received(2).SendTelemetryAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             IEnumerable<Message> messages = new[] { new Message(new byte[0]) };
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
-                di => di.SendEventAsync(message, cancellationToken),
-                di => di.Received(2).SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
+                di => di.SendTelemetryAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
+                di => di.SendTelemetryAsync(message, cancellationToken),
+                di => di.Received(2).SendTelemetryAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             await OpenAsync_ExceptionThrownAndThenSucceed_SuccessfullyOpened(

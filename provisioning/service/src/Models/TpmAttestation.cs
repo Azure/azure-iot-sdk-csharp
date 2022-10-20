@@ -13,10 +13,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The provisioning service supports Trusted Platform Module, or TPM, as the device attestation mechanism.
     /// User must provide the Endorsement Key, and can, optionally, provide the Storage Root Key.
     /// </remarks>
-    public sealed class TpmAttestation : Attestation
+    public class TpmAttestation : Attestation
     {
         /// <summary>
-        /// Constructor for serialization.
+        /// Constructor for serialization and unit testing.
         /// </summary>
         /// <remarks>
         /// This function will create a new instance of the TPM attestation
@@ -39,12 +39,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the endorsement key used for attestation.
         /// </summary>
         [JsonProperty(PropertyName = "endorsementKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string EndorsementKey { get; private set; }
+        public string EndorsementKey { get; }
 
         /// <summary>
         /// Gets the storage key used for attestation.
         /// </summary>
         [JsonProperty(PropertyName = "storageRootKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string StorageRootKey { get; private set; }
+        public string StorageRootKey { get; }
     }
 }
