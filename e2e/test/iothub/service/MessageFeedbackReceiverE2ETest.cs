@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
 
             try
             {

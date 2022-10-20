@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string _devicePrefix = $"{nameof(FileUploadE2ETests)}_";
         private static readonly X509Certificate2 s_selfSignedCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Mqtt_x509_NoFileTransportSettingSpecified()
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(new IotHubClientMqttSettings(), new IotHubClientHttpSettings(), smallFileBlobName, true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Amqp_x509_NoFileTransportSettingSpecified()
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(new IotHubClientAmqpSettings(), new IotHubClientHttpSettings(), smallFileBlobName, true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps_ValidCorrelationId()
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps_InvalidCorrelationId()
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: false).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps_x509()
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, useX509auth: true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps_Proxy()
@@ -97,7 +97,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task UploadFileGranularAsync(Stream source, string filename, IotHubClientHttpSettings fileUploadTransportSettings, bool isCorrelationIdValid, bool useX509auth = false)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
-                Logger,
                 _devicePrefix,
                 useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
@@ -160,7 +159,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(
-                    Logger,
                     _devicePrefix,
                     useX509auth
                         ? TestDeviceType.X509

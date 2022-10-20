@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private readonly string DevicePrefix = $"{nameof(MethodFaultInjectionTests)}_";
         private const string MethodName = "MethodE2ETest";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
         {
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
         {
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
         {
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
         {
@@ -231,12 +231,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         ResponseTimeout = TimeSpan.FromMinutes(5),
                     };
 
-                    Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
+                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
                     DirectMethodResponse response = await serviceClient.DirectMethods
-                            .InvokeAsync(deviceName, directMethodRequest)
-                            .ConfigureAwait(false);
+                        .InvokeAsync(deviceName, directMethodRequest)
+                        .ConfigureAwait(false);
 
-                    Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
+                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
                     response.Status.Should().Be(200);
                     JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(deviceResponsePayload));
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 catch (IotHubServiceException ex) when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubServiceErrorCode.DeviceNotFound)
                 {
                     exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
-                    Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: [Tried {attempt} time(s)] ServiceClient exception caught: {ex}.");
+                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: [Tried {attempt} time(s)] ServiceClient exception caught: {ex}.");
                     await Task.Delay(1000).ConfigureAwait(false);
                 }
             }
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload)
                     .ConfigureAwait(false);
@@ -305,8 +305,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     FaultInjection.DefaultFaultDelay, // we want a quick one because we need time to recover
                     InitOperationAsync,
                     TestOperationAsync,
-                    CleanupAsync,
-                    Logger)
+                    CleanupAsync)
                 .ConfigureAwait(false);
         }
     }
