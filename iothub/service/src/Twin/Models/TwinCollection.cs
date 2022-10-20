@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices
         ///
         /// For example a <see cref="List{T}"/> would return a <see cref="TwinCollectionArray"/>, with the metadata intact, when used with
         /// a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client. If you need this method to always return a
-        /// <see cref="JToken"/> please see the <see cref="ClearAllMetadata"/> method for more information.
+        /// <see cref="JToken"/> please see the <see cref="ClearMetadata"/> method for more information.
         /// </remarks>
         private bool TryGetMemberInternal(string propertyName, out object result)
         {
