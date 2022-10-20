@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Represents a collection of properties for <see cref="Twin"/>.
+    /// Represents a collection of properties for device twin.
     /// </summary>
     [SuppressMessage(
         "Microsoft.Design",
