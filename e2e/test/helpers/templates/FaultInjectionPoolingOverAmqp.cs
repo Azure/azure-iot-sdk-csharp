@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -29,8 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
             Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<List<IotHubDeviceClient>, List<TestDeviceCallbackHandler>, Task> cleanupOperation,
-            ConnectionStringAuthScope authScope,
-            MsTestLogger logger)
+            ConnectionStringAuthScope authScope)
         {
             var transportSettings = new IotHubClientAmqpSettings(TransportSettings.Protocol)
             {
@@ -52,16 +50,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             // Initialize the test device client instances.
             // Set the device client connection status change handler.
-            logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)} Initializing device clients for multiplexing test.");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)} Initializing device clients for multiplexing test.");
             for (int i = 0; i < devicesCount; i++)
             {
-                TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
+                TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
                 IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope);
 
-                var amqpConnectionStatusesChange = new AmqpConnectionStatusChange(testDevice.Id, logger);
+                var amqpConnectionStatusesChange = new AmqpConnectionStatusChange(testDevice.Id);
                 deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusesChange.ConnectionStatusChangeHandler;
 
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
+                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
 
                 testDevices.Add(testDevice);
                 deviceClients.Add(deviceClient);
@@ -82,18 +80,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 int countBeforeFaultInjection = amqpConnectionStatuses.First().ConnectionStatusChangeCount;
 
                 // Inject the fault into device 0
-                logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={faultDuration}");
+                VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={faultDuration}");
                 faultInjectionDuration.Start();
                 TelemetryMessage faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, faultDelay, faultDuration);
                 await deviceClients.First().SendTelemetryAsync(faultInjectionMessage).ConfigureAwait(false);
 
-                logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
+                VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
                 await Task.Delay(faultDelay).ConfigureAwait(false);
 
                 // For disconnect type faults, the faulted device should disconnect and all devices should recover.
                 if (FaultInjection.FaultShouldDisconnect(faultType))
                 {
-                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming fault injection has been actived.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming fault injection has been actived.");
                     // Check that service issued the fault to the faulting device [device 0]
                     bool isFaulted = false;
 
@@ -111,10 +109,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     connectionChangeWaitDuration.Reset();
 
                     isFaulted.Should().BeTrue($"The device {testDevices.First().Id} did not get faulted with fault type: {faultType}");
-                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirmed fault injection has been actived.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirmed fault injection has been actived.");
 
                     // Check all devices are back online
-                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming all devices back online.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming all devices back online.");
 
                     connectionChangeWaitDuration.Start();
                     bool isRecovered = false;
@@ -142,12 +140,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         Assert.Fail($"Some devices did not reconnect: {string.Join(", ", unconnectedDevices)}");
                     }
 
-                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirmed all devices back online.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirmed all devices back online.");
 
                     // Perform the test operation for all devices
                     for (int i = 0; i < devicesCount; i++)
                     {
-                        logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device {i}.");
+                        VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device {i}.");
                         operations.Add(testOperation(deviceClients[i], testDevices[i], testDeviceCallbackHandlers[i]));
                     }
                     await Task.WhenAll(operations).ConfigureAwait(false);
@@ -155,13 +153,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 }
                 else
                 {
-                    logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being activated.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multiple times.
                     int counter = 0;
                     var runOperationUnderFaultInjectionDuration = Stopwatch.StartNew();
                     while (runOperationUnderFaultInjectionDuration.Elapsed < FaultInjection.LatencyTimeBuffer)
                     {
-                        logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {counter++}.");
+                        VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {counter++}.");
                         await testOperation(deviceClients[0], testDevices[0], testDeviceCallbackHandlers[0]).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
@@ -185,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     TimeSpan timeToFinishFaultInjection = faultDuration.Subtract(faultInjectionDuration.Elapsed);
                     if (timeToFinishFaultInjection > TimeSpan.Zero)
                     {
-                        logger.Trace($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
+                        VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
                         await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
                     }
                 }

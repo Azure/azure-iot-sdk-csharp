@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private static readonly string s_devicePrefix = $"{nameof(IotHubServiceProxyE2ETests)}_";
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendSingleMessage_WithProxy()
         {
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress),
             };
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
             using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             (Message testMessage, string messageId, string payload, string p1Value) = ComposeTelemetryMessage();
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClientDevices_AddAndRemoveDevice_WithProxy()
         {
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [Ignore]
-        [LoggedTestMethod]
+        [TestMethod]
         [TestCategory("LongRunning")]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 catch (IotHubServiceException ex)
                     when (ex.StatusCode is (HttpStatusCode)429 && ++tryCount < MaxIterationWait)
                 {
-                    Logger.Trace($"ThrottlingException... waiting.");
+                    VerboseTestLogger.WriteLine($"ThrottlingException... waiting.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
                     continue;
                 }
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string payload = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
 
-            Logger.Trace($"{nameof(ComposeTelemetryMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            VerboseTestLogger.WriteLine($"{nameof(ComposeTelemetryMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,

@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     {
         private readonly IotHubDeviceClient _deviceClient;
         private readonly TestDevice _testDevice;
-        private readonly MsTestLogger _logger;
 
         private readonly SemaphoreSlim _methodCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _methodExceptionDispatch;
@@ -28,11 +27,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
         private Message _expectedMessageSentByService;
 
-        public TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, TestDevice testDevice, MsTestLogger logger)
+        public TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, TestDevice testDevice)
         {
             _deviceClient = deviceClient;
             _testDevice = testDevice;
-            _logger = logger;
         }
 
         public string ExpectedTwinPropertyValue
@@ -55,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 {
                     try
                     {
-                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.MethodName} with timeout {request.ResponseTimeout}.");
+                        VerboseTestLogger.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.MethodName} with timeout {request.ResponseTimeout}.");
                         request.MethodName.Should().Be(methodName, "The expected method name should match what was sent from service");
                         request.TryGetPayload(out T actualRequestPayload).Should().BeTrue();
                         actualRequestPayload.Should().BeEquivalentTo(expectedServiceRequestJson, "The expected method data should match what was sent from service");
@@ -68,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     }
                     catch (Exception ex)
                     {
-                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
+                        VerboseTestLogger.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
 
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
 
@@ -96,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch) =>
                 {
-                    _logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback twin: DesiredProperty: {patch}");
+                    VerboseTestLogger.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback twin: DesiredProperty: {patch}");
 
                     try
                     {
@@ -138,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(IncomingMessage message)
         {
-            _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {message.MessageId}.");
+            VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {message.MessageId}.");
 
             try
             {
@@ -150,12 +148,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     Encoding.UTF8.GetBytes(payload).Should().BeEquivalentTo(ExpectedMessageSentByService.Payload);
                 }
 
-                _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
+                VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
                 return Task.FromResult(MessageAcknowledgement.Complete);
             }
             catch (Exception ex)
             {
-                _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
+                VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
                 _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
                 return Task.FromResult(MessageAcknowledgement.Abandon);
             }

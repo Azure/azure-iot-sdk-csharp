@@ -8,13 +8,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class AmqpConnectionStatusChange
     {
         private readonly string _deviceId;
-        private readonly MsTestLogger _logger;
 
-        public AmqpConnectionStatusChange(string deviceId, MsTestLogger logger)
+        public AmqpConnectionStatusChange(string deviceId)
         {
             ConnectionStatusChangeCount = 0;
             _deviceId = deviceId;
-            _logger = logger;
         }
 
         public int ConnectionStatusChangeCount { get; set; }
@@ -22,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
         {
             ConnectionStatusChangeCount++;
-            _logger.Trace($"{nameof(AmqpConnectionStatusChange)}.{nameof(ConnectionStatusChangeHandler)}: {_deviceId}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={ConnectionStatusChangeCount}");
+            VerboseTestLogger.WriteLine($"{nameof(AmqpConnectionStatusChange)}.{nameof(ConnectionStatusChangeHandler)}: {_deviceId}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={ConnectionStatusChangeCount}");
         }
     }
 }
