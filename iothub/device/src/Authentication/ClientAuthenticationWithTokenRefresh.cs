@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client
                 ? DefaultSasRenewalBufferPercentage
                 : timeBufferPercentage;
 
-            ExpiresOn = DateTime.UtcNow.AddSeconds(-SuggestedTimeToLive.TotalSeconds);
+            ExpiresOnUtc = DateTimeOffset.UtcNow.AddSeconds(-SuggestedTimeToLive.TotalSeconds);
             Debug.Assert(IsExpiring);
             UpdateTimeBufferSeconds(SuggestedTimeToLive.TotalSeconds);
         }
@@ -90,17 +90,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets a snapshot of the UTC token expiry time.
         /// </summary>
-        public DateTime ExpiresOn { get; private set; }
+        public DateTimeOffset ExpiresOnUtc { get; private set; }
 
         /// <summary>
         /// Gets a snapshot of the UTC token refresh time.
         /// </summary>
-        public DateTime RefreshesOn => ExpiresOn.AddSeconds(-_bufferSeconds);
+        public DateTimeOffset RefreshesOnUtc => ExpiresOnUtc.AddSeconds(-_bufferSeconds);
 
         /// <summary>
         /// Gets a snapshot expiry state.
         /// </summary>
-        public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
+        public bool IsExpiring => (ExpiresOnUtc - DateTimeOffset.UtcNow).TotalSeconds <= _bufferSeconds;
 
         internal string Token { get; private set; }
 
@@ -132,12 +132,12 @@ namespace Microsoft.Azure.Devices.Client
             SharedAccessSignature sas = SharedAccessSignatureParser.Parse(token);
 
             Token = token;
-            ExpiresOn = sas.ExpiresOn;
+            ExpiresOnUtc = sas.ExpiresOnUtc;
 
-            UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
+            UpdateTimeBufferSeconds((int)(ExpiresOnUtc - DateTimeOffset.UtcNow).TotalSeconds);
 
             if (Logging.IsEnabled)
-                Logging.GenerateToken(this, ExpiresOn);
+                Logging.GenerateToken(this, ExpiresOnUtc);
 
             return Token;
         }

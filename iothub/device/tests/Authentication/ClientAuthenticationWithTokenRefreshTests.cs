@@ -72,10 +72,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(TestDeviceId, refresher.DeviceId);
 
             int timeDelta = (int)((refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds);
-            Assert.IsTrue(Math.Abs(timeDelta) < 3, $"ExpiresOn time delta is {timeDelta}");
+            Assert.IsTrue(Math.Abs(timeDelta) < 3, $"ExpiresOnUtc time delta is {timeDelta}");
 
             timeDelta = (int)((refresher.RefreshesOnUtc - expectedRefreshTime).TotalSeconds);
-            Assert.IsTrue(Math.Abs(timeDelta) < 3, $"RefreshesOn time delta is {timeDelta}");
+            Assert.IsTrue(Math.Abs(timeDelta) < 3, $"RefreshesOnUtc time delta is {timeDelta}");
 
             TimeSpan delayTime = refresher.RefreshesOnUtc - DateTime.UtcNow + TimeSpan.FromMilliseconds(500);
 

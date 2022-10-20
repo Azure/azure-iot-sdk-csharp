@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
 
             // Example string to be signed:
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
-            // <Value for ExpiresOn>
+            // <Value for ExpiresOnUtc>
 
             signature ??= Sign(string.Join("\n", fields), key);
 
