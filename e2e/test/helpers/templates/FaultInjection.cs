@@ -62,10 +62,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string reason,
             TimeSpan faultDelay,
             TimeSpan faultDuration,
-            IotHubDeviceClient deviceClient,
-            MsTestLogger logger)
+            IotHubDeviceClient deviceClient)
         {
-            logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={DefaultFaultDuration}");
+            VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={DefaultFaultDuration}");
 
             try
             {
@@ -80,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             }
             catch (Exception ex) when (ex is IotHubClientException hubEx && hubEx.IsTransient)
             {
-                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
+                VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
                 if (transportSettings is IotHubClientHttpSettings)
@@ -93,11 +92,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // For MQTT, FaultInjection will terminate the connection prior to a PUBACK
                 // which leads to an infinite loop trying to resend the FaultInjection message, which will eventually throw an OperationCanceledException.
                 // We will suppress this exception.
-                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}.{nameof(ActivateFaultInjectionAsync)} over MQTT (suppressed): {ex}");
+                VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}.{nameof(ActivateFaultInjectionAsync)} over MQTT (suppressed): {ex}");
             }
             finally
             {
-                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: Fault injection requested.");
+                VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Fault injection requested.");
             }
         }
 
@@ -113,10 +112,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             TimeSpan faultDuration,
             Func<IotHubDeviceClient, TestDevice, Task> initOperation,
             Func<IotHubDeviceClient, TestDevice, Task> testOperation,
-            Func<Task> cleanupOperation,
-            MsTestLogger logger)
+            Func<Task> cleanupOperation)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
 
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
@@ -125,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
             {
                 connectionStatusChangeCount++;
-                logger.Trace($"{nameof(FaultInjection)}.{nameof(TestErrorInjectionAsync)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={connectionStatusChangeCount}");
+                VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}.{nameof(TestErrorInjectionAsync)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={connectionStatusChangeCount}");
             }
 
             deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
@@ -139,16 +137,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 await initOperation(deviceClient, testDevice).ConfigureAwait(false);
 
                 int countBeforeFaultInjection = connectionStatusChangeCount;
-                logger.Trace($"{nameof(FaultInjection)} Testing fault handling");
+                VerboseTestLogger.WriteLine($"{nameof(FaultInjection)} Testing fault handling");
                 faultInjectionDuration.Start();
-                await ActivateFaultInjectionAsync(transportSettings, faultType, reason, faultDelay, faultDuration, deviceClient, logger).ConfigureAwait(false);
-                logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
+                await ActivateFaultInjectionAsync(transportSettings, faultType, reason, faultDelay, faultDuration, deviceClient).ConfigureAwait(false);
+                VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
                 await Task.Delay(faultDelay).ConfigureAwait(false);
 
                 // For disconnect type faults, the device should disconnect and recover.
                 if (FaultShouldDisconnect(faultType))
                 {
-                    logger.Trace($"{nameof(FaultInjection)}: Confirming fault injection has been activated.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Confirming fault injection has been activated.");
                     // Check that service issued the fault to the faulting device
                     bool isFaulted = false;
 
@@ -166,10 +164,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     connectionChangeWaitDuration.Reset();
 
                     isFaulted.Should().BeTrue($"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
-                    logger.Trace($"{nameof(FaultInjection)}: Confirmed fault injection has been activated.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Confirmed fault injection has been activated.");
 
                     // Check the device is back online
-                    logger.Trace($"{nameof(FaultInjection)}: Confirming device back online.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Confirming device back online.");
 
                     connectionChangeWaitDuration.Start();
                     while (deviceClient.ConnectionStatusInfo.Status != ConnectionStatus.Connected
@@ -181,21 +179,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                     deviceClient.ConnectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected, $"{testDevice.Id} did not reconnect");
 
-                    logger.Trace($"{nameof(FaultInjection)}: Confirmed device back online.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Confirmed device back online.");
 
                     // Perform the test operation.
-                    logger.Trace($"{nameof(FaultInjection)}: Performing test operation for device {testDevice.Id}.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Performing test operation for device {testDevice.Id}.");
                     await testOperation(deviceClient, testDevice).ConfigureAwait(false);
                 }
                 else
                 {
-                    logger.Trace($"{nameof(FaultInjection)}: Performing test operation while fault injection is being activated.");
+                    VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multi times.
                     int counter = 0;
                     var sw = Stopwatch.StartNew();
                     while (sw.Elapsed < LatencyTimeBuffer)
                     {
-                        logger.Trace($"{nameof(FaultInjection)}: Performing test operation for device - Run {counter++}.");
+                        VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Performing test operation for device - Run {counter++}.");
                         await testOperation(deviceClient, testDevice).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
@@ -220,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     TimeSpan timeToFinishFaultInjection = faultDuration.Subtract(faultInjectionDuration.Elapsed);
                     if (timeToFinishFaultInjection > TimeSpan.Zero)
                     {
-                        logger.Trace($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
+                        VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
                         await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
                     }
                 }

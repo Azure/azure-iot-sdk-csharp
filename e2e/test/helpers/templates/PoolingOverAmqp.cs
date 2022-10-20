@@ -24,8 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
-            bool ignoreConnectionStatus,
-            MsTestLogger logger)
+            bool ignoreConnectionStatus)
         {
             transportSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings
             {
@@ -42,18 +41,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             // Arrange
             // Initialize the test device client instances
             // Set the device client connection status change handler
-            logger.Trace($"{nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test");
+            VerboseTestLogger.WriteLine($"{nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test");
             for (int i = 0; i < devicesCount; i++)
             {
                 // Initialize the test device client instances
-                TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
+                TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
                 IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
 
                 // Set the device client connection status change handler
-                var amqpConnectionStatusChange = new AmqpConnectionStatusChange(logger);
+                var amqpConnectionStatusChange = new AmqpConnectionStatusChange();
                 deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusChange.ConnectionStatusChangeHandler;
 
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
+                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
 
                 testDevices.Add(testDevice);
                 deviceClients.Add(deviceClient);
@@ -95,18 +94,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         private class AmqpConnectionStatusChange
         {
-            private readonly MsTestLogger _logger;
-
-            public AmqpConnectionStatusChange(MsTestLogger logger)
+            public AmqpConnectionStatusChange()
             {
                 ConnectionStatusChangeHandlerCount = 0;
-                _logger = logger;
             }
 
             public void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
             {
                 ConnectionStatusChangeHandlerCount++;
-                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangeHandler)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={ConnectionStatusChangeHandlerCount}");
+                VerboseTestLogger.WriteLine($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangeHandler)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={ConnectionStatusChangeHandlerCount}");
             }
 
             public int ConnectionStatusChangeHandlerCount { get; set; }

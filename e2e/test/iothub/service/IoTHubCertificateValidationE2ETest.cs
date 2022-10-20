@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("InvalidServiceCertificate")]
     public class IotHubCertificateValidationE2ETest : E2EMsTestBase
     {
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_QueryDevicesInvalidServiceCertificateHttp_Fails()
         {
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 #endif
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpTcp_Fails()
         {
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 () => TestServiceClientInvalidServiceCertificate(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpWs_Fails()
         {
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await service.Messages.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_ScheduleTwinUpdateInvalidServiceCertificateHttp_Fails()
         {
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 #endif
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 () => TestDeviceClientInvalidServiceCertificate(new IotHubClientAmqpSettings())).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 () => TestDeviceClientInvalidServiceCertificate(new IotHubClientMqttSettings())).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateMqttWs_Fails()
         {

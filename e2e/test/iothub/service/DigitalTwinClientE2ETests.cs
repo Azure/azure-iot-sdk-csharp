@@ -25,12 +25,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string _devicePrefix = $"{nameof(DigitalTwinClientE2ETests)}_";
         private static readonly string s_connectionString = TestConfiguration.IotHub.ConnectionString;
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
         {
             // Create a new test device instance.
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             try
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Set callback handler for receiving root-level twin property updates.
                 await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch) =>
                 {
-                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}.");
+                    VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}.");
                     return Task.FromResult(true);
                 });
 
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetDirectMethodCallbackAsync(
                     (request) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
+                        VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
                         var response = new Client.DirectMethodResponse(404);
 
                         if (request.MethodName == commandName)
@@ -109,12 +109,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithComponentOperationsAsync()
         {
             // Create a new test device instance.
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             try
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Set callback handler for receiving twin property updates.
                 await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch) =>
                 {
-                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}.");
+                    VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}.");
                     return Task.FromResult(true);
                 });
 
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetDirectMethodCallbackAsync(
                     (request) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
+                        VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
                         var response = new Client.DirectMethodResponse(404);
 
                         if (request.MethodName == rootCommandName

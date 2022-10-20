@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private const string MethodName = "MethodE2EPoolAmqpTests";
         private readonly string _devicePrefix = $"{nameof(MethodE2EPoolAmqpTests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
         {
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
         {
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
         {
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
         {
@@ -72,25 +72,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<IotHubDeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
+            Func<IotHubDeviceClient, string, Task<Task>> setDeviceReceiveMethod,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
-                Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
+                VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
+                Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
+                VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 await MethodE2ETests
                     .ServiceSendMethodAndVerifyResponseAsync(
                         testDevice.Id,
                         MethodName,
                         MethodE2ETests.s_deviceResponsePayload,
-                        MethodE2ETests.s_serviceRequestPayload,
-                        Logger)
+                        MethodE2ETests.s_serviceRequestPayload)
                     .ConfigureAwait(false);
             }
 
@@ -104,8 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     TestOperationAsync,
                     null,
                     authScope,
-                    true,
-                    Logger)
+                    true)
                 .ConfigureAwait(false);
         }
     }

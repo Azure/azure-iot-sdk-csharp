@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             string deviceId = $"{idPrefix}-device-{StorageContainer.GetRandomSuffix(4)}";
             string configId = $"{idPrefix}-config-{StorageContainer.GetRandomSuffix(4)}".ToLower(); // Configuration Id characters must be all lower-case.
-            Logger.Trace($"Using Ids {deviceId} and {configId}.");
+            VerboseTestLogger.WriteLine($"Using Ids {deviceId} and {configId}.");
 
             string devicesFileName = $"{idPrefix}-devices-{StorageContainer.GetRandomSuffix(4)}.txt";
             string configsFileName = $"{idPrefix}-configs-{StorageContainer.GetRandomSuffix(4)}.txt";
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 string containerName = StorageContainer.BuildContainerName(nameof(DevicesClient_ImportDevices));
                 using StorageContainer storageContainer = await StorageContainer.GetInstanceAsync(containerName).ConfigureAwait(false);
-                Logger.Trace($"Using devices container {storageContainer.Uri}");
+                VerboseTestLogger.WriteLine($"Using devices container {storageContainer.Uri}");
 
                 Uri containerUri = storageAuthenticationType == StorageAuthenticationType.KeyBased
                     ? storageContainer.SasUri
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     }
                     catch (Exception ex)
                     {
-                        Logger.Trace($"Could not find device/config on iteration {i} due to [{ex.Message}]");
+                        VerboseTestLogger.WriteLine($"Could not find device/config on iteration {i} due to [{ex.Message}]");
                     }
                 }
                 if (device == null)
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up device {deviceId} due to {ex.Message}");
+                    VerboseTestLogger.WriteLine($"Failed to clean up device {deviceId} due to {ex.Message}");
                 }
 
                 try
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up config {configId} due to {ex.Message}");
+                    VerboseTestLogger.WriteLine($"Failed to clean up config {configId} due to {ex.Message}");
                 }
             }
         }
@@ -208,21 +208,21 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     importJobProperties = await serviceClient.Devices.ImportAsync(importJobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(importJobProperties.FailureReason))
                     {
-                        Logger.Trace($"Job failed due to {importJobProperties.FailureReason}");
+                        VerboseTestLogger.WriteLine($"Job failed due to {importJobProperties.FailureReason}");
                     }
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests running jobs.
                 catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
                 {
-                    Logger.Trace($"JobQuotaExceededException... waiting after {sw.Elapsed}.");
+                    VerboseTestLogger.WriteLine($"JobQuotaExceededException... waiting after {sw.Elapsed}.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
                     continue;
                 }
             }
 
             sw.Stop();
-            Logger.Trace($"Job started after {sw.Elapsed}.");
+            VerboseTestLogger.WriteLine($"Job started after {sw.Elapsed}.");
 
             sw.Restart();
             IotHubJobResponse jobResponse;
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 await Task.Delay(1000).ConfigureAwait(false);
                 jobResponse = await serviceClient.Devices.GetJobAsync(importJobProperties.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {jobResponse.JobId} is {jobResponse.Status} after {sw.Elapsed}.");
+                VerboseTestLogger.WriteLine($"Job {jobResponse.JobId} is {jobResponse.Status} after {sw.Elapsed}.");
                 if (jobResponse.IsFinished)
                 {
                     break;

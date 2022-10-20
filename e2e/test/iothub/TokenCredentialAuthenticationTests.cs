@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _devicePrefix = $"{nameof(TokenCredentialAuthenticationTests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_Http_TokenCredentialAuth_Success()
         {
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_TokenCredentialAuth_Success()
         {
@@ -79,12 +79,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string thermostatModelId = "dtmi:com:example:TemperatureController;1";
 
             // Create a device client instance initializing it with the "Thermostat" model.
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_TokenCredentialAuth_Success()
         {

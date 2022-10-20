@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // the service makes it available for redelivery to other open receivers.
         private readonly AcknowledgementType _acknowledgementType = AcknowledgementType.Abandon;
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task UploadFile()
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
             const string filePath = "TestPayload.txt";
             using FileStream fileStreamSource = File.Create(filePath);
