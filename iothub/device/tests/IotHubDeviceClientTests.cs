@@ -51,6 +51,17 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public void DeviceAuthenticationWithX509Certificate_NullCertificateChain_Throws()
+        {
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+            using var cert = new X509Certificate2();
+
+            Action act = () => new ClientAuthenticationWithX509Certificate(cert, chainCertificates: null, "device1");
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceAuthenticationWithX509Certificate_ChainCertsAmqpWs_Throws()
         {
@@ -60,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cert = new X509Certificate2();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "fakeDeviceId", chainCertificates: certs);
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
@@ -77,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cert = new X509Certificate2();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "fakeDeviceId", chainCertificates: certs);
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
@@ -93,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cert = new X509Certificate2();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "fakeDeviceId", chainCertificates: certs);
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
@@ -111,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cert = new X509Certificate2();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "fakeDeviceId", chainCertificates: certs);
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp));
 
             // act

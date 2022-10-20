@@ -22,21 +22,44 @@ namespace Microsoft.Azure.Devices.Client
         /// This class doesn't dispose it since the user might want to reuse it.
         /// </remarks>
         /// <param name="certificate">X.509 certificate.</param>
+        /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="moduleId">Module identifier.</param>
-        /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
-        /// <exception cref="ArgumentException">When <paramref name="certificate"/> is null.</exception>
+        /// <exception cref="ArgumentException">When <paramref name="certificate"/> or <paramref name="chainCertificates"/> is null.</exception>
         public ClientAuthenticationWithX509Certificate(
             X509Certificate2 certificate,
+            X509Certificate2Collection chainCertificates,
             string deviceId,
-            string moduleId = default,
-            X509Certificate2Collection chainCertificates = null)
+            string moduleId = default)
         {
             SetDeviceId(deviceId);
             SetModuleId(moduleId);
             Certificate = certificate
                 ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(certificate));
-            ChainCertificates = chainCertificates;
+            ChainCertificates = chainCertificates
+                ?? throw new ArgumentException("No certificate chain was found.", nameof(chainCertificates));
+        }
+
+        /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <remarks>
+        /// The <paramref name="certificate"/> managed resource should be disposed by the user.
+        /// This class doesn't dispose it since the user might want to reuse it.
+        /// </remarks>
+        /// <param name="certificate">X.509 certificate.</param>
+        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="moduleId">Module identifier.</param>
+        /// <exception cref="ArgumentException">When <paramref name="certificate"/> is null.</exception>
+        public ClientAuthenticationWithX509Certificate(
+            X509Certificate2 certificate,
+            string deviceId,
+            string moduleId = default)
+        {
+            SetDeviceId(deviceId);
+            SetModuleId(moduleId);
+            Certificate = certificate
+                ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(certificate));
         }
 
         /// <summary>
