@@ -33,7 +33,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             Func<Task> asyncOperation,
             IRetryPolicy retryPolicy,
             HashSet<Type> retryableExceptions,
-            MsTestLogger logger,
             CancellationToken cancellationToken = default)
         {
             uint counter = 0;
@@ -49,16 +48,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 catch (Exception ex) when (retryableExceptions.Any(e => e.IsInstanceOfType(ex)))
                 {
                     shouldRetry = retryPolicy.ShouldRetry(++counter, ex, out retryInterval);
-                    logger.Trace($"Attempt {counter}: operation did not succeed: {ex}");
+                    VerboseTestLogger.WriteLine($"Attempt {counter}: operation did not succeed: {ex}");
 
                     if (!shouldRetry)
                     {
-                        logger.Trace($"Encountered an exception that will not be retried - attempt: {counter}; exception: {ex}");
+                        VerboseTestLogger.WriteLine($"Encountered an exception that will not be retried - attempt: {counter}; exception: {ex}");
                         throw;
                     }
                 }
 
-                logger.Trace($"Will retry operation in {retryInterval}.");
+                VerboseTestLogger.WriteLine($"Will retry operation in {retryInterval}.");
                 await Task.Delay(retryInterval, cancellationToken);
             }
             while (shouldRetry && !cancellationToken.IsCancellationRequested);
@@ -79,7 +78,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             Func<Task> asyncOperation,
             IRetryPolicy retryPolicy,
             HashSet<IotHubServiceErrorCode> retryableStatusCodes,
-            MsTestLogger logger,
             CancellationToken cancellationToken = default)
         {
             uint counter = 0;
@@ -95,16 +93,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 catch (Exception ex) when (ex is IotHubServiceException serviceEx && retryableStatusCodes.Contains(serviceEx.ErrorCode))
                 {
                     shouldRetry = retryPolicy.ShouldRetry(++counter, ex, out retryInterval);
-                    logger.Trace($"Attempt {counter}: operation did not succeed: {ex}");
+                    VerboseTestLogger.WriteLine($"Attempt {counter}: operation did not succeed: {ex}");
 
                     if (!shouldRetry)
                     {
-                        logger.Trace($"Encountered an exception that will not be retried - attempt: {counter}; exception: {ex}");
+                        VerboseTestLogger.WriteLine($"Encountered an exception that will not be retried - attempt: {counter}; exception: {ex}");
                         throw;
                     }
                 }
 
-                logger.Trace($"Will retry operation in {retryInterval}.");
+                VerboseTestLogger.WriteLine($"Will retry operation in {retryInterval}.");
                 await Task.Delay(retryInterval, cancellationToken);
             }
             while (shouldRetry && !cancellationToken.IsCancellationRequested);

@@ -26,17 +26,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly HashSet<Type> s_retryableExceptions = new() { typeof(DeviceProvisioningServiceException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
-#pragma warning disable CA1823
-        private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
-#pragma warning restore CA1823
-
         public enum EnrollmentType
         {
             Individual,
             Group,
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_IndividualEnrollments_Query_HttpWithProxy_Ok()
@@ -44,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await ProvisioningServiceClient_IndividualEnrollments_Query_Ok(s_proxyServerAddress).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_SymmetricKey_IndividualEnrollments_Create_HttpWithProxy_Ok()
@@ -52,14 +48,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(s_proxyServerAddress, AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_SymmetricKey_IndividualEnrollments_Create_HttpWithoutProxy_Ok()
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_SymmetricKey_GroupEnrollments_Create_HttpWithProxy_Ok()
@@ -67,14 +63,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await ProvisioningServiceClient_GroupEnrollments_Create_Ok(s_proxyServerAddress, AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_SymmetricKey_GroupEnrollments_Create_Http_Ok()
         {
             await ProvisioningServiceClient_GroupEnrollments_Create_Ok("", AttestationMechanismType.SymmetricKey).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_SymmetricKey_GroupEnrollments_Create_Http_Ok_WithReprovisioningFields()
         {
@@ -92,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 null).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_SymmetricKey_IndividualEnrollment_Create_Http_Ok_WithReprovisioningFields()
         {
@@ -110,21 +106,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 null).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation_SymmetricKey()
         {
             await ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType.SymmetricKey);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation_SymmetricKey()
         {
             await ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType.SymmetricKey);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAsync_Fails()
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
@@ -139,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             error.And.IsTransient.Should().BeFalse();
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_GetEnrollmentGroupAsync_Fails()
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
@@ -172,8 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         AllocationPolicy.Static,
                         null,
                         null,
-                        null,
-                        Logger)
+                        null)
                     .ConfigureAwait(false);
 
                 AttestationMechanism attestationMechanism = null;
@@ -185,7 +180,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
-                        Logger,
                         CancellationToken.None)
                     .ConfigureAwait(false);
 
@@ -215,7 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (individualEnrollment != null)
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null, Logger);
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null);
                 }
             }
         }
@@ -228,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
-                enrollmentGroup = await CreateEnrollmentGroupAsync(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null, Logger);
+                enrollmentGroup = await CreateEnrollmentGroupAsync(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null);
 
                 AttestationMechanism attestationMechanism = null;
                 await RetryOperationHelper
@@ -239,7 +233,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
-                        Logger,
                         CancellationToken.None)
                     .ConfigureAwait(false);
 
@@ -273,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (enrollmentGroup != null)
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, null, enrollmentGroup.EnrollmentGroupId, Logger);
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, null, enrollmentGroup.EnrollmentGroupId);
                 }
             }
         }
@@ -331,8 +324,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         allocationPolicy,
                         customAllocationDefinition,
                         iotHubsToProvisionTo,
-                        null,
-                        Logger).ConfigureAwait(false);
+                        null).ConfigureAwait(false);
 
                 IndividualEnrollment individualEnrollmentResult = null;
                 await RetryOperationHelper
@@ -343,7 +335,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         },
                         s_provisioningServiceRetryPolicy,
                         s_retryableExceptions,
-                        Logger,
                         CancellationToken.None)
                     .ConfigureAwait(false);
 
@@ -373,7 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (individualEnrollment != null)
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null, Logger);
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null);
                 }
             }
         }
@@ -406,8 +397,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             allocationPolicy,
                             customAllocationDefinition,
                             iothubs,
-                            null,
-                            Logger)
+                            null)
                         .ConfigureAwait(false);
 
                     EnrollmentGroup enrollmentGroupResult = null;
@@ -419,7 +409,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
-                            Logger,
                             CancellationToken.None)
                         .ConfigureAwait(false);
 
@@ -448,7 +437,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     if (enrollmentGroup != null)
                     {
-                        await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.EnrollmentGroupId, Logger).ConfigureAwait(false);
+                        await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
                     }
                 }
             }
@@ -463,8 +452,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iotHubsToProvisionTo,
-            Devices.Provisioning.Service.DeviceCapabilities capabilities,
-            MsTestLogger logger)
+            Devices.Provisioning.Service.DeviceCapabilities capabilities)
         {
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
@@ -505,7 +493,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     },
                     s_provisioningServiceRetryPolicy,
                     s_retryableExceptions,
-                    logger,
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -525,8 +512,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            Devices.Provisioning.Service.DeviceCapabilities capabilities,
-            MsTestLogger logger)
+            Devices.Provisioning.Service.DeviceCapabilities capabilities)
         {
             Attestation attestation;
 
@@ -561,7 +547,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                    },
                    s_provisioningServiceRetryPolicy,
                    s_retryableExceptions,
-                   logger,
                    CancellationToken.None)
                .ConfigureAwait(false);
 
@@ -576,8 +561,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static async Task DeleteCreatedEnrollmentAsync(
             EnrollmentType? enrollmentType,
             string registrationId,
-            string groupId,
-            MsTestLogger logger)
+            string groupId)
         {
             using ProvisioningServiceClient dpsClient = CreateProvisioningService();
 
@@ -592,9 +576,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 await dpsClient.IndividualEnrollments.DeleteAsync(registrationId).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
-                            s_retryableExceptions,
-                            logger,
-                            CancellationToken.None)
+                            s_retryableExceptions)
                         .ConfigureAwait(false);
                 }
                 else if (enrollmentType == EnrollmentType.Group)
@@ -606,15 +588,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 await dpsClient.EnrollmentGroups.DeleteAsync(groupId).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
-                            s_retryableExceptions,
-                            logger,
-                            CancellationToken.None)
+                            s_retryableExceptions)
                         .ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
-                logger.Trace($"Cleanup of enrollment failed due to {ex}.");
+                VerboseTestLogger.WriteLine($"Cleanup of enrollment failed due to {ex}.");
             }
         }
 

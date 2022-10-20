@@ -17,14 +17,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string DevicePrefix = $"{nameof(BulkOperationsE2ETests)}_";
         private readonly string ModulePrefix = $"{nameof(BulkOperationsE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Device_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             Twin twin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
@@ -41,14 +41,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2DevicePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             var twin = new Twin(testDevice.Id);
@@ -65,14 +65,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Module_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
@@ -90,14 +90,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2ModulePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var twin = new Twin(testModule.DeviceId)

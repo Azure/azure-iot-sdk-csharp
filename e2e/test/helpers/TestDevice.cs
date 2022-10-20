@@ -39,8 +39,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private X509Certificate2 _authCertificate;
 
-        private static MsTestLogger s_logger;
-
         private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
         {
             Device = device;
@@ -52,9 +50,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         /// <param name="namePrefix">The prefix to apply to your device name</param>
         /// <param name="type">The way the device will authenticate</param>
-        public static async Task<TestDevice> GetTestDeviceAsync(MsTestLogger logger, string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
+        public static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
         {
-            s_logger = logger;
             string prefix = namePrefix + type + "_";
 
             try
@@ -62,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 await s_semaphore.WaitAsync().ConfigureAwait(false);
                 TestDevice ret = await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
 
-                s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
+                VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
                 return ret;
             }
             finally
@@ -77,7 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             // Delete existing devices named this way and create a new one.
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
+            VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             Client.IAuthenticationMethod auth = null;
 
@@ -110,7 +107,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     },
                     s_retryPolicy,
                     s_throttlingStatusCodes,
-                    s_logger,
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -123,7 +119,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     },
                     s_retryPolicy,
                     s_retryableStatusCodes,
-                    s_logger,
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -173,18 +168,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 if (authScope == ConnectionStringAuthScope.Device)
                 {
                     deviceClient = new IotHubDeviceClient(ConnectionString, options);
-                    s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from device connection string: Id={TestLogger.IdOf(deviceClient)}");
+                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from device connection string");
                 }
                 else
                 {
                     deviceClient = new IotHubDeviceClient($"{TestConfiguration.IotHub.ConnectionString};DeviceId={Device.Id}", options);
-                    s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IoTHub connection string: Id={TestLogger.IdOf(deviceClient)}");
+                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IoTHub connection string");
                 }
             }
             else
             {
                 deviceClient = new IotHubDeviceClient(IotHubHostName, AuthenticationMethod, options);
-                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod: ID={TestLogger.IdOf(deviceClient)}");
+                VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod");
             }
 
             return deviceClient;
@@ -202,7 +197,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     },
                     s_retryPolicy,
                     s_throttlingStatusCodes,
-                    s_logger,
                     CancellationToken.None)
                 .ConfigureAwait(false);
         }

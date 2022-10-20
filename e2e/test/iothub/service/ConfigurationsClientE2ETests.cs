@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _idPrefix = $"{nameof(ConfigurationsClientE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationOperations_Work()
         {
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_SetETag_Works()
         {
@@ -150,12 +150,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up configuration due to {ex}");
+                    VerboseTestLogger.WriteLine($"Failed to clean up configuration due to {ex}");
                 }
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_DeleteETag_Works()
         {
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up configuration due to {ex}");
+                    VerboseTestLogger.WriteLine($"Failed to clean up configuration due to {ex}");
                 }
             }
         }

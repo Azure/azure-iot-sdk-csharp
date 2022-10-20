@@ -21,12 +21,12 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private static readonly string _devicePrefix = $"{nameof(NoRetryE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("FaultInjection")]
         public async Task FaultInjection_NoRetry_NoRecovery_OpenAsync()
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
 
             var connectionStatusChange = new Dictionary<ConnectionStatus, int>();
 
@@ -46,10 +46,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
             await FaultInjection
                 .ActivateFaultInjectionAsync(
                     new IotHubClientAmqpSettings(),
@@ -57,13 +57,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
-                    deviceClient,
-                    Logger)
+                    deviceClient)
                 .ConfigureAwait(false);
 
             await Task.Delay(FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: waiting fault injection occurs...");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: waiting fault injection occurs...");
             var sw = Stopwatch.StartNew();
             while (sw.Elapsed < FaultInjection.DefaultFaultDuration)
             {
