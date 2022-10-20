@@ -35,13 +35,13 @@ namespace Microsoft.Azure.Devices
         /// Scheduled job start time in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? CreatedOnUtc { get; internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
         // This private field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
         // as the created time value for this class and expose it either way as CreatedTimeUtc.
         [JsonProperty(PropertyName = "createdTime", NullValueHandling = NullValueHandling.Ignore)]
-        internal DateTime? AlternateCreatedOnUtc
+        internal DateTimeOffset? AlternateCreatedOnUtc
         {
             get => CreatedOnUtc;
             set => CreatedOnUtc = value;
@@ -51,19 +51,19 @@ namespace Microsoft.Azure.Devices
         /// Represents the time the job started processing.
         /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? StartedOnUtc { get; internal set; }
+        public DateTimeOffset? StartedOnUtc { get; internal set; }
 
         /// <summary>
         /// Represents the time the job stopped processing.
         /// </summary>
         [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? EndedOnUtc { get; internal set; }
+        public DateTimeOffset? EndedOnUtc { get; internal set; }
 
         // Some service Jobs APIs use "endTime" as the key for this value and some others use "endTimeUtc".
         // This private field is a workaround that allows us to deserialize either "endTime" or "endTimeUtc"
         // as the created time value for this class and expose it either way as EndTimeUtc.
         [JsonProperty(PropertyName = "endTime")]
-        internal DateTime? AlternateEndedOnUtc
+        internal DateTimeOffset? AlternateEndedOnUtc
         {
             get => EndedOnUtc;
             set => EndedOnUtc = value;

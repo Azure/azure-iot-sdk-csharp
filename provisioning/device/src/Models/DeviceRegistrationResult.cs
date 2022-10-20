@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Registration create date time (in UTC).
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc")]
-        public DateTime? CreatedOnUtc { get; protected internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// The assigned Azure IoT hub.
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The time when the device last refreshed the registration.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc")]
-        public DateTime? LastUpdatedOnUtc { get; protected internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Error code.

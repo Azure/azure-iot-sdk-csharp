@@ -132,8 +132,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string iotHubHostName,
             TwinState initialTwinState,
             ProvisioningStatus? provisioningStatus,
-            DateTime createdOnUtc,
-            DateTime lastUpdatedOnUtc,
+            DateTimeOffset createdOnUtc,
+            DateTimeOffset lastUpdatedOnUtc,
             ETag eTag,
             DeviceCapabilities capabilities)
         {
@@ -241,13 +241,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The DateTime this resource was created.
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? CreatedOnUtc { get; internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? LastUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Enrollment's ETag.

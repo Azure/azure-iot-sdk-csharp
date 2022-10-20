@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Azure.Core.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -79,19 +78,19 @@ namespace Microsoft.Azure.Devices
         /// Time when the connection state was last updated.
         /// </summary>
         [JsonProperty(PropertyName = "connectionStateUpdatedTime")]
-        public DateTime ConnectionStateUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset ConnectionStateUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Time when the status was last updated.
         /// </summary>
         [JsonProperty(PropertyName = "statusUpdatedTime")]
-        public DateTime StatusUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset StatusUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Time when the device was last active.
         /// </summary>
         [JsonProperty(PropertyName = "lastActivityTime")]
-        public DateTime LastActiveOnUtc { get; internal set; }
+        public DateTimeOffset LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the device from the cloud.

@@ -46,13 +46,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The certificate invalidity before date in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "notBeforeUtc")]
-        public DateTime? NotBeforeUtc { get; internal set; }
+        public DateTimeOffset? NotBeforeUtc { get; internal set; }
 
         /// <summary>
         /// The certificate invalidity after date in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "notAfterUtc")]
-        public DateTime? NotAfterUtc { get; internal set; }
+        public DateTimeOffset? NotAfterUtc { get; internal set; }
 
         /// <summary>
         /// The certificate serial number.

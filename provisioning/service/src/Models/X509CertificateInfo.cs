@@ -36,8 +36,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string sha1Thumbprint,
             string sha256Thumbprint,
             string issuerName,
-            DateTime? notBeforeUtc,
-            DateTime? notAfterUtc,
+            DateTimeOffset? notBeforeUtc,
+            DateTimeOffset? notAfterUtc,
             string serialNumber,
             int? version)
         {
@@ -52,8 +52,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Sha1Thumbprint = sha1Thumbprint;
             Sha256Thumbprint = sha256Thumbprint;
             IssuerName = issuerName;
-            NotBeforeUtc = (DateTime)notBeforeUtc;
-            NotAfterUtc = (DateTime)notAfterUtc;
+            NotBeforeUtc = (DateTimeOffset)notBeforeUtc;
+            NotAfterUtc = (DateTimeOffset)notAfterUtc;
             SerialNumber = serialNumber;
             Version = (int)version;
         }
@@ -93,13 +93,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The date on which the certificate becomes valid.
         /// </summary>
         [JsonProperty(PropertyName = "notBeforeUtc")]
-        public DateTime NotBeforeUtc { get; protected private set; }
+        public DateTimeOffset NotBeforeUtc { get; protected private set; }
 
         /// <summary>
         /// The date on which the certificate is no longer valid.
         /// </summary>
         [JsonProperty(PropertyName = "notAfterUtc")]
-        public DateTime NotAfterUtc { get; protected private set; }
+        public DateTimeOffset NotAfterUtc { get; protected private set; }
 
         /// <summary>
         /// The serial number.
