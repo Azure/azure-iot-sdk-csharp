@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,8 +26,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _idPrefix = $"{nameof(RegistryE2ETests)}_";
 
-        // In particular, this should retry on "module not registered on this device" errors
-        private static readonly HashSet<Type> s_retryableExceptions = new() { typeof(IotHubServiceException) };
+        private static readonly HashSet<IotHubServiceErrorCode> s_getRetryableStatusCodes = new()
+        {
+            IotHubServiceErrorCode.DeviceNotFound,
+            IotHubServiceErrorCode.ModuleNotFound,
+        };
+        private static readonly IRetryPolicy s_retryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -432,13 +438,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Module retrievedModule = null;
 
                 await RetryOperationHelper
-                    .RetryOperationsAsync(
+                    .RunWithRetryAsync(
                     async () =>
                     {
                         retrievedModule = await serviceClient.Modules.GetAsync(testDeviceId, testModuleId).ConfigureAwait(false);
                     },
-                    RetryOperationHelper.DefaultRetryPolicy,
-                    s_retryableExceptions)
+                    s_retryPolicy)
                 .ConfigureAwait(false);
 
                 retrievedModule.Should().NotBeNull($"When checking for ETag, got null back for GET on module '{testDeviceId}/{testModuleId}'.");
@@ -634,13 +639,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
 
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
                         module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
                     },
-                    RetryOperationHelper.DefaultRetryPolicy,
-                    s_retryableExceptions)
+                    s_retryPolicy)
                 .ConfigureAwait(false);
 
             try
@@ -703,13 +707,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
 
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
                         module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
                     },
-                    RetryOperationHelper.DefaultRetryPolicy,
-                    s_retryableExceptions)
+                    s_retryPolicy)
                 .ConfigureAwait(false);
 
             try

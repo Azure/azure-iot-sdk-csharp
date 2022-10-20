@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,16 +25,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
     public class TestDevice : IDisposable
     {
-        private const int MaxRetryCount = 20;
-        private static readonly HashSet<IotHubServiceErrorCode> s_throttlingStatusCodes = new() { IotHubServiceErrorCode.ThrottlingException };
-        private static readonly HashSet<IotHubServiceErrorCode> s_retryableStatusCodes = new(s_throttlingStatusCodes)
+        private static readonly SemaphoreSlim s_semaphore = new(1, 1);
+
+        private static readonly IRetryPolicy s_createRetryPolicy = new HubServiceTestRetryPolicy();
+
+        private static readonly HashSet<IotHubServiceErrorCode> s_getRetryableStatusCodes = new()
         {
             IotHubServiceErrorCode.DeviceNotFound,
             IotHubServiceErrorCode.ModuleNotFound,
         };
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1);
-
-        private static readonly IRetryPolicy s_retryPolicy = new IncrementalDelayRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3));
+        private static readonly IRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
 
         private X509Certificate2 _authCertificate;
 
@@ -100,25 +99,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             Device device = null;
 
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
                         device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
-                    s_retryPolicy,
-                    s_throttlingStatusCodes,
+                    s_createRetryPolicy,
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
             // Confirm the device exists in the registry before calling it good to avoid downstream test failures.
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
                         await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                     },
-                    s_retryPolicy,
-                    s_retryableStatusCodes,
+                    s_getRetryPolicy,
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -190,13 +187,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
                         await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
-                    s_retryPolicy,
-                    s_throttlingStatusCodes,
+                    s_getRetryPolicy,
                     CancellationToken.None)
                 .ConfigureAwait(false);
         }
