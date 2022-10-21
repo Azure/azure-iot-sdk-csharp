@@ -196,6 +196,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadD2cMessages", "iothub\s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HubRoutingSample", "iothub\device\samples\how to guides\HubRoutingSample\HubRoutingSample.csproj", "{EAE8A8DC-F686-4B2E-843A-894A6661FC93}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solutions", "solutions", "{42E275C2-22F4-441E-AF3D-8C871B4A614B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BestPracticeSampleX509", "provisioning\device\samples\solutions\BestPracticeSampleX509\BestPracticeSampleX509.csproj", "{9DF7892A-4940-414E-B574-9F1553B9917B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -425,6 +429,10 @@ Global
 		{EAE8A8DC-F686-4B2E-843A-894A6661FC93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAE8A8DC-F686-4B2E-843A-894A6661FC93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAE8A8DC-F686-4B2E-843A-894A6661FC93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DF7892A-4940-414E-B574-9F1553B9917B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DF7892A-4940-414E-B574-9F1553B9917B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DF7892A-4940-414E-B574-9F1553B9917B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DF7892A-4940-414E-B574-9F1553B9917B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -514,6 +522,8 @@ Global
 		{A36FF0AB-D2B5-4913-A9CB-67778F3D31F9} = {E6205B13-D163-4247-80F5-905ACC7F0977}
 		{E7D0630E-707F-4509-870F-EE8B5DB6DEB5} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
 		{EAE8A8DC-F686-4B2E-843A-894A6661FC93} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
+		{42E275C2-22F4-441E-AF3D-8C871B4A614B} = {8F9D9145-B786-4A2C-9A59-E1C33E07F5A2}
+		{9DF7892A-4940-414E-B574-9F1553B9917B} = {42E275C2-22F4-441E-AF3D-8C871B4A614B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

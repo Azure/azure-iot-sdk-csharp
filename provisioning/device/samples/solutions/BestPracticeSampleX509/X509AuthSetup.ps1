@@ -1,0 +1,106 @@
+# Copyright (c) Microsoft. All rights reserved.
+# Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+param(
+    # Local path where the generated certificates will be stored.
+    [Parameter(Mandatory=$true)]
+    [string] $certFolderPath,
+
+    # The password to use for the root certificate.
+    [Parameter(Mandatory=$true)]
+    [securestring] $rootCertPassword,
+
+    # Resource group name of the IoT dps.
+    [Parameter(Mandatory=$true)]
+    [string] $dpsResourceGroup,
+
+    # IoT dps name used for running the sample.
+    [Parameter(Mandatory=$true)]
+    [string] $dpsName,
+
+    # Device Id created to use in sample.
+    [Parameter(Mandatory=$true)]
+    [string] $deviceId
+)
+
+# Check that script is run in admin mode
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+if (-not $isAdmin)
+{
+    throw "This script must be run in administrative mode."
+}
+
+# Setup parameters
+$subjectPrefix = "IoT Test"
+$rootCommonName = "$subjectPrefix Root CA"
+$intermediateCertCommonName = "$subjectPrefix Intermediate CA"
+$dpsCertChainDeviceCommonName = $deviceId
+$certFolder = $certFolderPath
+$dpsCredentials = New-Object System.Management.Automation.PSCredential("Password", $rootCertPassword)
+$resourceGroup = $dpsResourceGroup
+$dpsName = $dpsName
+$certNameToUpload = "rootCA"
+
+# Create root cert
+$rootCertPath = "$certFolder/root.cer"
+Write-Host "Creating $rootCertPath rootCACert"
+$rootCACert = New-SelfSignedCertificate `
+    -DnsName "$rootCommonName" `
+    -KeyUsage CertSign `
+    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2)
+Export-Certificate -cert $rootCACert -FilePath $rootCertPath -Type CERT | Out-Null
+
+# Create intermediate cert
+$intermediateCertPath = "$certFolder/intermediate.cer"
+Write-Host "Creating $intermediateCertPath signed by rootCACert"
+$intermediateCert = New-SelfSignedCertificate `
+    -DnsName "$intermediateCertCommonName" `
+    -KeyUsage CertSign `
+    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2) `
+    -Signer $rootCACert
+Export-Certificate -cert $intermediateCert -FilePath $intermediateCertPath -Type CERT | Out-Null
+
+# Create device cert signed by intermediate Certificate
+$devicePfxPath = "$certFolder/$dpsCertChainDeviceCommonName.pfx"
+Write-Host "Creating $devicePfxPath signed by intermediateCert"
+$deviceCert = New-SelfSignedCertificate `
+    -DnsName "$dpsCertChainDeviceCommonName" `
+    -KeySpec Signature `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2) `
+    -Signer $intermediateCert
+Write-Host "Exporting $dpsCertChainDeviceCommonName.pfx to $devicePfxPath"
+Export-PFXCertificate -cert $deviceCert -filePath $devicePfxPath -password $dpsCredentials.Password | Out-Null
+
+# Upload rootCA certificate to dps
+Write-Host "Uploading $rootCertPath to $dpsName"
+$certExits = az iot dps certificate list -g $resourceGroup --dps-name $dpsName --query "value[?name=='$certNameToUpload']" --output tsv
+if ($certExits)
+{
+    $etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag'
+    az iot dps certificate delete -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --etag $etag
+}
+az iot dps certificate create -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --path $rootCertPath | Out-Null
+
+# Verify rootCA cert in dps
+Write-Host "Verifying possession of rootCACert in $dpsName"
+$etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag'
+$requestedCommonName = az iot dps certificate generate-verification-code -g $resourceGroup --dps-name $dpsName --name $certNameToUpload -e $etag --query 'properties.verificationCode'
+$verificationCertArgs = @{
+    "-DnsName"                       = $requestedCommonName;
+    "-CertStoreLocation"             = "cert:\LocalMachine\My";
+    "-NotAfter"                      = (get-date).AddYears(2);
+    "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
+    "-Signer"                        = $rootCACert;
+}
+$verificationCertPath = "$certFolder/verification.cer"
+$verificationCert = New-SelfSignedCertificate @verificationCertArgs
+Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
+$etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag'
+az iot dps certificate verify -g $resourceGroup --dps-name $dpsName --name $certNameToUpload -e $etag --path $verificationCertPath --output none
+Write-Host "Successfully verified possession of rootCACert in $dpsName"
