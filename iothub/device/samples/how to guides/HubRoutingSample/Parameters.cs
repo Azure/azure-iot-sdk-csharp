@@ -3,7 +3,7 @@
 
 using CommandLine;
 
-namespace SimulatedDevice
+namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
     /// Parameters for the application.
