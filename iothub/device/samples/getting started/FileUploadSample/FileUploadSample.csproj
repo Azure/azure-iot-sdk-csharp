@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\service\src\Microsoft.Azure.Devices.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="TestPayload.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -3,6 +3,7 @@
 
 using CommandLine;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -34,13 +35,43 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Environment.Exit(1);
                 });
 
-            using var deviceClient = DeviceClient.CreateFromConnectionString(
-                parameters.PrimaryConnectionString,
-                parameters.TransportType);
-            var sample = new FileUploadSample(deviceClient);
-            await sample.RunSampleAsync();
+            // If both IoT hub and device connection strings exist, default behavior uses existing device
+            if (parameters.DeviceConnectionString != null)
+            {
+                // run sample like normal
+                using var deviceClient = DeviceClient.CreateFromConnectionString(
+                    parameters.DeviceConnectionString,
+                    parameters.TransportType);
 
-            await deviceClient.CloseAsync();
+                var sample = new FileUploadSample(deviceClient);
+                await sample.RunSampleAsync();
+
+                await deviceClient.CloseAsync();
+            } 
+            else if (parameters.HubConnectionString != null)
+            {
+                // Deploy new device to IoT hub
+                using var registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
+
+                string deviceId = $"FileUploadSample_{Guid.NewGuid()}";
+                var tempDevice = new Device(deviceId);
+                devicesToDelete.Add(tempDevice);
+
+                await registryManager.AddDeviceAsync(tempDevice);
+                using var deviceClient = DeviceClient.CreateFromConnectionString(
+                    parameters.HubConnectionString,
+                    deviceId,
+                    parameters.TransportType);
+
+                var sample = new FileUploadSample(deviceClient);
+                await sample.RunSampleAsync();
+
+                await deviceClient.CloseAsync();
+            }
+            else
+            {
+                throw new ArgumentNullException("Must specify either a device or IoT hub connection string.");
+            }
 
             Console.WriteLine("Done.");
             return 0;

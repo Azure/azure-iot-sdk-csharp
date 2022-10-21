@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string filePath = "TestPayload.txt";
 
             using var fileStreamSource = new FileStream(filePath, FileMode.Open);
-            var fileName = Path.GetFileName(fileStreamSource.Name);
+            string fileName = Path.GetFileName(fileStreamSource.Name);
 
             Console.WriteLine($"Uploading file {fileName}");
 

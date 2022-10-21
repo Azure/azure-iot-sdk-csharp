@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Samples
                 Environment.Exit(1);
             }
 
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
 
             var sample = new EdgeDeploymentSample(registryManager);
             await sample.RunSampleAsync();

@@ -9,10 +9,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         [Option(
             'c',
-            "PrimaryConnectionString",
-            Required = true,
+            "DeviceConnectionString",
+            Required = false,
             HelpText = "The primary connection string for the device to simulate.")]
-        public string PrimaryConnectionString { get; set; }
+        public string DeviceConnectionString { get; set; }
+
+        [Option(
+            'p',
+            "HubConnectionString",
+            Required = false,
+            HelpText = "The primary connection string for the device to simulate.")]
+        public string HubConnectionString { get; set; }
 
         [Option(
             't',
