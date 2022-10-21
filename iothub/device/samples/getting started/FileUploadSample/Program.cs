@@ -43,10 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     parameters.DeviceConnectionString,
                     parameters.TransportType);
 
-                var sample = new FileUploadSample(deviceClient);
-                await sample.RunSampleAsync();
-
-                await deviceClient.CloseAsync();
+                RunSampleAsync(deviceClient);
             } 
             else if (parameters.HubConnectionString != null)
             {
@@ -56,16 +53,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 string deviceId = $"FileUploadSample_{Guid.NewGuid()}";
                 var tempDevice = new Device(deviceId);
 
+                Console.WriteLine($"Creating new device with Id {deviceId}");
                 await registryManager.AddDeviceAsync(tempDevice);
                 using var deviceClient = DeviceClient.CreateFromConnectionString(
                     parameters.HubConnectionString,
                     deviceId,
                     parameters.TransportType);
 
-                var sample = new FileUploadSample(deviceClient);
-                await sample.RunSampleAsync();
+                RunSampleAsync(deviceClient);
 
-                await deviceClient.CloseAsync();
+                // Delete temporary device
+                await registryManager.RemoveDeviceAsync(deviceId);
             }
             else
             {
@@ -74,6 +72,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Console.WriteLine("Done.");
             return 0;
+        }
+
+        public static async void RunSampleAsync(DeviceClient deviceClient)
+        {
+            var sample = new FileUploadSample(deviceClient);
+            await sample.RunSampleAsync();
+
+            await deviceClient.CloseAsync();
         }
     }
 }
