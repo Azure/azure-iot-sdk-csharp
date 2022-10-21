@@ -1212,19 +1212,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private void DisposeTestObjects(SecurityProvider securityProvider, Client.IAuthenticationMethod authenticationMethod)
         {
+            string registrationId = securityProvider.GetRegistrationID();
+
             if (securityProvider is SecurityProviderX509 x509SecurityProvider)
             {
                 X509Certificate2 deviceCertificate = x509SecurityProvider.GetAuthenticationCertificate();
                 deviceCertificate?.Dispose();
 
-                Logger.Trace($"Test certificate created for registration {x509SecurityProvider.GetRegistrationID()} has been disposed.");
+                Logger.Trace($"Test certificate created for registration {registrationId} has been disposed.");
             }
 
             if (authenticationMethod != null && authenticationMethod is IDisposable disposableAuthenticationMethod)
             {
+                Type disposableAuthenticationMethodType = disposableAuthenticationMethod.GetType();
                 disposableAuthenticationMethod?.Dispose();
 
-                Logger.Trace($"IAuthenticationMethod {disposableAuthenticationMethod.GetType()} for registration {securityProvider.GetRegistrationID()} has been disposed.");
+                Logger.Trace($"IAuthenticationMethod {disposableAuthenticationMethodType} for registration {registrationId} has been disposed.");
             }
         }
 
