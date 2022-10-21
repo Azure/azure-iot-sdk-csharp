@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             'p',
             "HubConnectionString",
             Required = false,
-            HelpText = "The primary connection string for the device to simulate.")]
+            HelpText = "The primary connection string for the IoT hub in the event a device should be created by this sample.")]
         public string HubConnectionString { get; set; }
 
         [Option(
