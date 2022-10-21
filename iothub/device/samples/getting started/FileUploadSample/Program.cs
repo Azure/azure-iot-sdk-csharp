@@ -55,7 +55,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 string deviceId = $"FileUploadSample_{Guid.NewGuid()}";
                 var tempDevice = new Device(deviceId);
-                devicesToDelete.Add(tempDevice);
 
                 await registryManager.AddDeviceAsync(tempDevice);
                 using var deviceClient = DeviceClient.CreateFromConnectionString(
