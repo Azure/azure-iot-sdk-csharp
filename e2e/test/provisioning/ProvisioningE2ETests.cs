@@ -1190,32 +1190,44 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private async Task CleanupEnrollmentsAsync(AttestationMechanismType attestationMechanismType, EnrollmentType enrollmentType, string registrationId, string groupId)
         {
-            if (groupId == TestConfiguration.Provisioning.X509GroupEnrollmentName)
+            try
             {
-                VerboseTestLogger.WriteLine($"The test enrollment type {attestationMechanismType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
+                if (groupId == TestConfiguration.Provisioning.X509GroupEnrollmentName)
+                {
+                    VerboseTestLogger.WriteLine($"The test enrollment type {attestationMechanismType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
+                }
+                else
+                {
+                    VerboseTestLogger.WriteLine($"Deleting test enrollment type {attestationMechanismType}-{enrollmentType} with registration Id {registrationId}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, registrationId, groupId).ConfigureAwait(false);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                VerboseTestLogger.WriteLine($"Deleting test enrollment type {attestationMechanismType}-{enrollmentType} with registration Id {registrationId}.");
-                await DeleteCreatedEnrollmentAsync(enrollmentType, registrationId, groupId).ConfigureAwait(false);
+                VerboseTestLogger.WriteLine($"Encountered an exception while cleaning enrollments. Test will ignore this exception and continue: {ex}.");
             }
         }
 
         private void DisposeTestObjects(SecurityProvider securityProvider, Client.IAuthenticationMethod authenticationMethod)
         {
+            string registrationId = securityProvider.GetRegistrationID();
+
             if (securityProvider is SecurityProviderX509 x509SecurityProvider)
             {
                 X509Certificate2 deviceCertificate = x509SecurityProvider.GetAuthenticationCertificate();
+
                 deviceCertificate?.Dispose();
 
-                VerboseTestLogger.WriteLine($"Test certificate created for registration {x509SecurityProvider.GetRegistrationID()} has been disposed.");
+                VerboseTestLogger.WriteLine($"Test certificate created for registration {registrationId} has been disposed.");
             }
 
             if (authenticationMethod != null && authenticationMethod is IDisposable disposableAuthenticationMethod)
             {
+                string disposableAuthenticationType = disposableAuthenticationMethod.GetType().Name;
+
                 disposableAuthenticationMethod?.Dispose();
 
-                VerboseTestLogger.WriteLine($"IAuthenticationMethod {disposableAuthenticationMethod.GetType()} for registration {securityProvider.GetRegistrationID()} has been disposed.");
+                VerboseTestLogger.WriteLine($"IAuthenticationMethod {disposableAuthenticationType} for registration {registrationId} has been disposed.");
             }
         }
 
