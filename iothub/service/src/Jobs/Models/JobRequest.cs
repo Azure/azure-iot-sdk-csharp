@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices
         /// Required if the job type is update twin.
         /// </remarks>
         [JsonProperty(PropertyName = "updateTwin")]
-        internal Twin UpdateTwin { get; set; }
+        internal ClientTwin UpdateTwin { get; set; }
 
         /// <summary>
         /// Condition for device query to get devices to execute the job on.

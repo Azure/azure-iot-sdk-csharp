@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices
             /// desired porperty values are JSON objects, up-to 4KB in length.
             /// </remarks>
             [JsonProperty(PropertyName = "desired", NullValueHandling = NullValueHandling.Ignore)]
-            public TwinCollection DesiredProperties { get; set; }
+            public ClientTwinProperties DesiredProperties { get; set; }
 
             /// <summary>
             /// The collection of reported property key-value pairs.
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
             /// reported property values are JSON objects, up-to 4KB in length.
             /// </remarks>
             [JsonProperty(PropertyName = "reported", NullValueHandling = NullValueHandling.Ignore)]
-            public TwinCollection ReportedProperties { get; set; }
+            public ClientTwinProperties ReportedProperties { get; set; }
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices
         /// If disabled, it cannot connect to the service.
         /// </remarks>
         [JsonProperty(PropertyName = "status", Required = Required.Always)]
-        public DeviceStatus Status { get; set; }
+        public ClientStatus Status { get; set; }
 
         /// <summary>
         /// The 128 character-long string that stores the reason for the device identity status.

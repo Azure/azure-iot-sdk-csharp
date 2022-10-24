@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Samples
                 var deviceToAdd = new ExportImportDevice
                 {
                     Id = deviceName,
-                    Status = DeviceStatus.Enabled,
+                    Status = ClientStatus.Enabled,
                     Authentication = new AuthenticationMechanism
                     {
                         SymmetricKey = new SymmetricKey

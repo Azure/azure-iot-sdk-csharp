@@ -59,14 +59,14 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "connectionState")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceConnectionState ConnectionState { get; internal set; }
+        public ClientConnectionState ConnectionState { get; internal set; }
 
         /// <summary>
         /// Device's status.
         /// </summary>
         [JsonProperty(PropertyName = "status")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceStatus Status { get; set; }
+        public ClientStatus Status { get; set; }
 
         /// <summary>
         /// Reason, if any, for the device to be in specified status.

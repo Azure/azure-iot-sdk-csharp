@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
             //   IoT hub query language in additional detail.
             string query = $"DeviceId IN ['{DeviceId}']";
 
-            var twin = new Twin(DeviceId)
+            var twin = new ClientTwin(DeviceId)
             {
                 Tags = { { TestTagName, TestTagValue } },
             };

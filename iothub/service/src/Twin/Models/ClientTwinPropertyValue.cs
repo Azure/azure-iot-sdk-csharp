@@ -3,21 +3,21 @@
 
 using System;
 using Newtonsoft.Json.Linq;
-using static Microsoft.Azure.Devices.TwinCollection;
+using static Microsoft.Azure.Devices.ClientTwinProperties;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents a property array in a <see cref="TwinCollection"/>.
+    /// Represents a property value in a <see cref="ClientTwinProperties"/>.
     /// </summary>
-    public class TwinCollectionArray : JArray
+    public class ClientTwinPropertyValue : JValue
     {
         private readonly JObject _metadata;
 
-        internal TwinCollectionArray(JArray jArray, JObject metadata)
-            : base(jArray)
+        internal ClientTwinPropertyValue(JValue jValue, JObject metadata)
+            : base(jValue)
         {
-            _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+            _metadata = metadata;
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices
                     MetadataName => GetMetadata(),
                     LastUpdatedName => GetLastUpdatedOnUtc(),
                     LastUpdatedVersionName => GetLastUpdatedVersion(),
-                    _ => throw new InvalidOperationException($"{nameof(TwinCollectionArray)} does not contain a definition for '{propertyName}'."),
+                    _ => throw new InvalidOperationException($"{nameof(ClientTwinPropertyValue)} does not contain a definition for '{propertyName}'."),
                 };
             }
         }
@@ -44,13 +44,13 @@ namespace Microsoft.Azure.Devices
         /// Gets the metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public TwinMetadata GetMetadata()
+        public ClientTwinMetadata GetMetadata()
         {
-            return new TwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
+            return new ClientTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
         }
 
         /// <summary>
-        /// Gets the last updated time for this property.
+        /// Gets the time when this property was last updated in UTC.
         /// </summary>
         public DateTimeOffset GetLastUpdatedOnUtc()
         {

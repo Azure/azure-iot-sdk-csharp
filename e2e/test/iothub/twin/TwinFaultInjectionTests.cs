@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
                 await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
-                ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Client.ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
                 deviceTwin.Should().NotBeNull();
                 deviceTwin.ReportedByClient.Should().NotBeNull();
                 deviceTwin.ReportedByClient.TryGetValue(propName, out string actualValue).Should().BeTrue();
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            var twinPatch = new Twin();
+            var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[propName] = propValue;
 
             await serviceClient.Twins.UpdateAsync(deviceId, twinPatch).ConfigureAwait(false);
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             string propName = Guid.NewGuid().ToString();
-            var props = new TwinCollection();
+            var props = new ClientTwinProperties();
 
             // Configure the callback and start accepting twin changes.
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)

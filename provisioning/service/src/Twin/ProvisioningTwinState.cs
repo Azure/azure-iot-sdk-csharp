@@ -9,10 +9,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Representation of a single Twin initial state for the Device Provisioning Service.
     /// </summary>
     /// <remarks>
-    /// The TwinState can contain one <see cref="TwinCollection"/> of Tags, and one
-    /// <see cref="TwinCollection"/> of properties.desired.
+    /// The TwinState can contain one <see cref="ProvisioningTwinProperties"/> of Tags, and one
+    /// <see cref="ProvisioningTwinProperties"/> of properties.desired.
     ///
-    /// Each entity in the collections can contain a associated <see cref="TwinMetadata"/>.
+    /// Each entity in the collections can contain a associated <see cref="ProvisioningTwinMetadata"/>.
     ///
     /// These metadata are provided by the Service and contains information about the last
     ///     updated date time, and version.
@@ -63,10 +63,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// }
     /// </code>
     /// </example>
-    public class TwinState
+    public class ProvisioningTwinState
     {
         [JsonProperty(PropertyName = "properties", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        private TwinProperties _properties;
+        private ProvisioningTwinDocument _properties;
 
         /// <summary>
         /// Creates an instance of TwinState.
@@ -98,14 +98,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </example>
         /// <param name="tags">The twin collection with the initial tags state. It can be null.</param>
         /// <param name="desiredProperties">The twin collection with the initial desired properties. It can be null.</param>
-        public TwinState(TwinCollection tags, TwinCollection desiredProperties)
+        public ProvisioningTwinState(ProvisioningTwinProperties tags, ProvisioningTwinProperties desiredProperties)
         {
             Tags = tags;
             DesiredProperties = desiredProperties;
         }
 
         [JsonConstructor]
-        private TwinState(TwinCollection tags, TwinProperties properties)
+        private ProvisioningTwinState(ProvisioningTwinProperties tags, ProvisioningTwinDocument properties)
         {
             Tags = tags;
             DesiredProperties = properties?.Desired;
@@ -115,19 +115,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Getter and setter the for tags.
         /// </summary>
         [JsonProperty(PropertyName = "tags", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public TwinCollection Tags { get; set; }
+        public ProvisioningTwinProperties Tags { get; set; }
 
         /// <summary>
         /// Getter and setter the desired properties.
         /// </summary>
         [JsonIgnore]
-        public TwinCollection DesiredProperties
+        public ProvisioningTwinProperties DesiredProperties
         {
             get => _properties?.Desired;
 
             set => _properties = value == null
                 ? null
-                : new TwinProperties
+                : new ProvisioningTwinDocument
                     {
                         Desired = value,
                         Reported = null,

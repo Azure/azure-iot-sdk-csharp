@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<TwinScheduledJob> ScheduleTwinUpdateAsync(
             string queryCondition,
-            Twin twin,
+            ClientTwin twin,
             DateTimeOffset startOnUtc,
             ScheduledJobsOptions scheduledJobsOptions = default,
             CancellationToken cancellationToken = default)

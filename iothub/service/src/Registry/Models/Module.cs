@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "connectionState")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceConnectionState ConnectionState { get; internal set; }
+        public ClientConnectionState ConnectionState { get; internal set; }
 
         /// <summary>
         /// Time when the connection state was last updated.

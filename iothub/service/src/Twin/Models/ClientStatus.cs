@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     /// Specifies the different states of a device.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum DeviceStatus
+    public enum ClientStatus
     {
         /// <summary>
         /// Indicates that a device is enabled.

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     /// Used to specify the authentication type used by a device.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum AuthenticationType
+    public enum ClientAuthenticationType
     {
         /// <summary>
         /// Shared access key.

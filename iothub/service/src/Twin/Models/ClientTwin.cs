@@ -14,19 +14,19 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Properties of a device stored on the service.
     /// </summary>
-    [JsonConverter(typeof(TwinJsonConverter))]
-    public class Twin
+    [JsonConverter(typeof(ClientTwinJsonConverter))]
+    public class ClientTwin
     {
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        public Twin() { }
+        public ClientTwin() { }
 
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">The unique Id of the device to which the twin belongs.</param>
-        public Twin(string deviceId)
+        public ClientTwin(string deviceId)
         {
             DeviceId = deviceId;
         }
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="twinProperties">Properties of the twin.</param>
-        public Twin(TwinProperties twinProperties)
+        public ClientTwin(ClientTwinDocument twinProperties)
         {
             Properties = twinProperties ?? new();
         }
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets and sets the twin properties.
         /// </summary>
-        public TwinProperties Properties { get; set; } = new();
+        public ClientTwinDocument Properties { get; set; } = new();
 
         /// <summary>
         /// Gets the twin configuration properties.
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public DeviceStatus? Status { get; internal set; }
+        public ClientStatus? Status { get; internal set; }
 
         /// <summary>
         /// Reason, if any, for the corresponding device to be in specified status.
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceConnectionState? ConnectionState { get; internal set; }
+        public ClientConnectionState? ConnectionState { get; internal set; }
 
         /// <summary>
         /// Time when the corresponding device was last active.
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public AuthenticationType? AuthenticationType { get; internal set; }
+        public ClientAuthenticationType? AuthenticationType { get; internal set; }
 
         /// <summary>
         /// Corresponding device's X509 thumbprint.

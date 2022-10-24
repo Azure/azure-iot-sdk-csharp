@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -13,12 +12,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Represents a collection of properties for device twin.
     /// </summary>
-    [SuppressMessage(
-        "Microsoft.Design",
-        "CA1010:CollectionsShouldImplementGenericInterface",
-        Justification = "Public API: this was not designed to be a generic collection.")]
-    [JsonConverter(typeof(TwinCollectionJsonConverter))]
-    public class TwinCollection : IEnumerable
+    [JsonConverter(typeof(ProvisioningTwinPropertiesJsonConverter))]
+    public class ProvisioningTwinProperties : IEnumerable
     {
         internal const string MetadataName = "$metadata";
         internal const string LastUpdatedName = "$lastUpdated";
@@ -30,7 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates an instance of this class.
         /// Shouldn't use this constructor since _metadata is null and calling GetLastUpdated can result in NullReferenceException.
         /// </summary>
-        public TwinCollection()
+        public ProvisioningTwinProperties()
             : this((JObject)null)
         {
         }
@@ -39,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates an instance of this class using a JSON fragment as the body.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
-        public TwinCollection(string twinJson)
+        public ProvisioningTwinProperties(string twinJson)
             : this(JObject.Parse(twinJson))
         {
         }
@@ -49,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
-        public TwinCollection(string twinJson, string metadataJson)
+        public ProvisioningTwinProperties(string twinJson, string metadataJson)
             : this(JObject.Parse(twinJson), JObject.Parse(metadataJson))
         {
         }
@@ -58,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates an instance of this class using a JSON fragment as the body.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
-        internal TwinCollection(JObject twinJson)
+        internal ProvisioningTwinProperties(JObject twinJson)
         {
             JObject = twinJson ?? new JObject();
 
@@ -73,7 +68,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
-        public TwinCollection(JObject twinJson, JObject metadataJson)
+        public ProvisioningTwinProperties(JObject twinJson, JObject metadataJson)
         {
             JObject = twinJson ?? new JObject();
             _metadata = metadataJson;
@@ -157,9 +152,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the Metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public TwinMetadata GetMetadata()
+        public ProvisioningTwinMetadata GetMetadata()
         {
-            return new TwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
+            return new ProvisioningTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
         }
 
         /// <summary>
@@ -217,15 +212,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="result">The value to return from the property collection.</param>
         /// <returns>
         /// A <see cref="JToken"/> as an <see cref="object"/> if the metadata is not present; otherwise it will return a
-        /// <see cref="TwinCollection"/>, a <see cref="TwinCollectionArray"/> or a <see cref="TwinCollectionValue"/>.
+        /// <see cref="ProvisioningTwinProperties"/>, a <see cref="ProvisioningTwinPropertiesArray"/> or a <see cref="ProvisioningTwinPropertyValue"/>.
         /// </returns>
         /// <remarks>
-        /// If this method is used with a <see cref="TwinCollection"/> returned from a DeviceClient it will always return a
-        /// <see cref="JToken"/>. However, if you are using this method with a <see cref="TwinCollection"/> returned from a
+        /// If this method is used with a <see cref="ProvisioningTwinProperties"/> returned from a DeviceClient it will always return a
+        /// <see cref="JToken"/>. However, if you are using this method with a <see cref="ProvisioningTwinProperties"/> returned from a
         /// RegistryManager client, it will return the corresponding type depending on what is stored in the properties collection.
         ///
-        /// For example a <see cref="List{T}"/> would return a <see cref="TwinCollectionArray"/>, with the metadata intact, when used with
-        /// a <see cref="TwinCollection"/> returned from a `IotHubServiceClient`.`TwinsClient`. If you need this method to always return a
+        /// For example a <see cref="List{T}"/> would return a <see cref="ProvisioningTwinPropertiesArray"/>, with the metadata intact, when used with
+        /// a <see cref="ProvisioningTwinProperties"/> returned from a `IotHubServiceClient`.`TwinsClient`. If you need this method to always return a
         /// <see cref="JToken"/> please see the <see cref="ClearMetadata"/> method for more information.
         /// </remarks>
         private bool TryGetMemberInternal(string propertyName, out object result)
@@ -240,15 +235,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 if (value is JValue jsonValue)
                 {
-                    result = new TwinCollectionValue(jsonValue, (JObject)_metadata[propertyName]);
+                    result = new ProvisioningTwinPropertyValue(jsonValue, (JObject)_metadata[propertyName]);
                 }
                 else if (value is JArray jsonArray)
                 {
-                    result = new TwinCollectionArray(jsonArray, (JObject)_metadata[propertyName]);
+                    result = new ProvisioningTwinPropertiesArray(jsonArray, (JObject)_metadata[propertyName]);
                 }
                 else
                 {
-                    result = new TwinCollection(value as JObject, (JObject)_metadata[propertyName]);
+                    result = new ProvisioningTwinProperties(value as JObject, (JObject)_metadata[propertyName]);
                 }
             }
             else

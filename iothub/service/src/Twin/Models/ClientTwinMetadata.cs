@@ -6,16 +6,16 @@ using System;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Metadata for properties in <see cref="TwinCollection"/>.
+    /// Metadata for properties in <see cref="ClientTwinProperties"/>.
     /// </summary>
-    public sealed class TwinMetadata
+    public sealed class ClientTwinMetadata
     {
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
         /// <param name="lastUpdatedOnUtc">When a property was last updated.</param>
         /// <param name="lastUpdatedVersion">The version of the property when last updated.</param>
-        public TwinMetadata(DateTimeOffset lastUpdatedOnUtc, long? lastUpdatedVersion)
+        public ClientTwinMetadata(DateTimeOffset lastUpdatedOnUtc, long? lastUpdatedVersion)
         {
             LastUpdatedOnUtc = lastUpdatedOnUtc;
             LastUpdatedVersion = lastUpdatedVersion;

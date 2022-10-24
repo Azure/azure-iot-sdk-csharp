@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Samples
                 foreach (Device device in edgeDevices)
                 {
                     Console.WriteLine($"Created edge device {device.Id}");
-                    Twin twin = await _serviceClient.Twins.GetAsync(device.Id);
+                    ClientTwin twin = await _serviceClient.Twins.GetAsync(device.Id);
                     Console.WriteLine($"\tTwin is {JsonSerializer.Serialize(twin)}");
 
                     twin.Tags[conditionPropertyName] = conditionPropertyValue;

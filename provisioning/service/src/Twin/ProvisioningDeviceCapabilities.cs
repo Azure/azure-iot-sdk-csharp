@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Status of capabilities enabled on the device.
     /// </summary>
-    public class DeviceCapabilities
+    public class ProvisioningDeviceCapabilities
     {
         /// <summary>
         /// IoT Edge capability.

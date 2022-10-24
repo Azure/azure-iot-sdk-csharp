@@ -154,12 +154,20 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `Module.LastActivityTime` | `Module.LastActiveOnUtc` |
 | `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` |
 | `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` |
-| `Twin.StatusUpdatedOn` | `Twin.StatusUpdatedOnUtc` |
-| `Twin.LastActivityOn` | `Twin.LastActiveOnUtc` |
-| `TwinCollection.GetLastUpdatedOn()` | `TwinCollection.GetLastUpdatedOnUtc()` |
-| `TwinCollectionArray.GetLastUpdatedOn()` | `TwinCollectionArray.GetLastUpdatedOnUtc()` |
-| `TwinCollectionValue.GetLastUpdatedOn()` | `TwinCollectionValue.GetLastUpdatedOnUtc()` |
-| `Metadata.LastUpdatedOn` | `TwinMetadata.LastUpdatedOnUtc` |
+| `Twin` | `ClientTwin` |
+| `Twin.StatusUpdatedOn` | `ClientTwin.StatusUpdatedOnUtc` |
+| `Twin.LastActivityOn` | `ClientTwin.LastActiveOnUtc` |
+| `TwinCollection` | `ClientTwinProperties` |
+| `TwinCollection.GetLastUpdatedOn()` | `ClientTwinProperties.GetLastUpdatedOnUtc()` |
+| `TwinCollectionValue` | `ClientTwinPropertyValue` |
+| `TwinCollectionValue.GetLastUpdatedOn()` | `ClientTwinPropertyValue.GetLastUpdatedOnUtc()` |
+| `TwinCollectionArray` | `ClientTwinPropertyArray` |
+| `TwinCollectionArray.GetLastUpdatedOn()` | `ClientTwinPropertiesArray.GetLastUpdatedOnUtc()` |
+| `Metadata` | `ClientTwinMetadata` |
+| `Metadata.LastUpdatedOn` | `ClientTwinMetadata.LastUpdatedOnUtc` |
+| `AuthenticationType` | `ClientAuthenticationType` |
+| `DeviceConnectionState` | `ClientConnectionState` |
+| `DeviceStatus` | `ClientStatus` |
 | `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.CreateAsync<T>(...)` |
 | `RegistryManager.AddConfigurationAsync(...)` | `IotHubServiceClient.Configurations.CreateAsync(...)` |
 | `RegistryManager.GetConfigurationsAsync(int maxCount)`| `IotHubServiceClient.Configurations.GetAsync(int maxCount)` |
@@ -292,17 +300,22 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `EnrollmentGroup.LastUpdatedDateTimeUtc` | `EnrollmentGroup.LastUpdatedOnUtc` |
 | `IndividualEnrollment.CreatedDateTimeUtc` | `IndividualEnrollment.CreatedOnUtc` |
 | `IndividualEnrollment.LastUpdatedDateTimeUtc` | `IndividualEnrollment.LastUpdatedOnUtc` |
-| `Twin.StatusUpdatedOn` | `Twin.StatusUpdatedOnUtc` |
-| `Twin.LastActivityOn` | `Twin.LastActiveOnUtc` |
+| `Twin` | `ProvisioningTwin` |
+| `Twin.StatusUpdatedOn` | `ProvisioningTwin.StatusUpdatedOnUtc` |
+| `Twin.LastActivityOn` | `ProvisioningTwin.LastActiveOnUtc` |
+| `TwinCollection` | `ProvisioningTwinProperties` |
+| `TwinCollection.GetLastUpdatedOn()` | `ProvisioningTwinProperties.GetLastUpdatedOnUtc()` |
+| `TwinCollectionValue` | `ProvisioningTwinPropertyValue` |
+| `TwinCollectionValue.GetLastUpdatedOn()` | `ProvisioningTwinPropertyValue.GetLastUpdatedOnUtc()` |
+| `TwinCollectionArray` | `ProvisioningTwinPropertyArray` |
+| `TwinCollectionArray.GetLastUpdatedOn()` | `ProvisioningTwinPropertyArray.GetLastUpdatedOnUtc()` |
+| `Metadata` | `ProvisioningTwinMetadata` |
+| `Metadata.LastUpdatedOn` | `ProvisioningTwinMetadata.LastUpdatedOnUtc` |
 | `X509Attestation.CreateFromCAReferences(...)` | `X509Attestation.CreateFromCaReferences(...)` |
 | `X509Attestation.CAReferences` | `X509Attestation.CaReferences` |
 | `X509CAReferences` | `X509CaReferences` |
 | `X509CertificateInfo.SHA1Thumbprint` | `X509CertificateInfo.Sha1Thumbprint` |
 | `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` |
-| `TwinCollection.GetLastUpdatedOn()` | `TwinCollection.GetLastUpdatedOnUtc()` |
-| `TwinCollectionArray.GetLastUpdatedOn()` | `TwinCollectionArray.GetLastUpdatedOnUtc()` |
-| `TwinCollectionValue.GetLastUpdatedOn()` | `TwinCollectionValue.GetLastUpdatedOnUtc()` |
-| `Metadata.LastUpdatedOn` | `TwinMetadata.LastUpdatedOnUtc` |
 
 #### Other notable breaking changes
 

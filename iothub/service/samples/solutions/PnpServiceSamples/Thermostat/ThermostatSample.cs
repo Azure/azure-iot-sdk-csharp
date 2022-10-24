@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Samples
         public async Task RunSampleAsync()
         {
             // Get and print the device twin
-            Twin deviceTwin = await GetAndPrintDeviceTwinAsync();
+            ClientTwin deviceTwin = await GetAndPrintDeviceTwinAsync();
             _logger.LogDebug($"The {_deviceId} device twin has a model with ID {deviceTwin.ModelId}.");
 
             // Update the targetTemperature property of the device twin
@@ -35,11 +35,11 @@ namespace Microsoft.Azure.Devices.Samples
             await InvokeGetMaxMinReportCommandAsync();
         }
 
-        private async Task<Twin> GetAndPrintDeviceTwinAsync()
+        private async Task<ClientTwin> GetAndPrintDeviceTwinAsync()
         {
             _logger.LogDebug($"Get the {_deviceId} device twin.");
 
-            Twin twin = await _serviceClient.Twins.GetAsync(_deviceId);
+            ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
             _logger.LogDebug($"{_deviceId} twin: \n{JsonConvert.SerializeObject(twin, Formatting.Indented)}");
 
             return twin;
@@ -48,13 +48,13 @@ namespace Microsoft.Azure.Devices.Samples
         private async Task UpdateTargetTemperaturePropertyAsync()
         {
             const string targetTemperaturePropertyName = "targetTemperature";
-            Twin twin = await _serviceClient.Twins.GetAsync(_deviceId);
+            ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
 
             // Choose a random value to assign to the targetTemperature property
             int desiredTargetTemperature = s_random.Next(0, 100);
 
             // Update the twin
-            var twinPatch = new Twin
+            var twinPatch = new ClientTwin
             {
                 ETag = twin.ETag,
             };
