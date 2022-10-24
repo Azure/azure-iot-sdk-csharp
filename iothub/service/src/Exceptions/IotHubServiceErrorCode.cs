@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices
         /// The operation failed because the requested device isn't online or hasn't registered the direct method callback.
         /// </summary>
         /// <para>
-        /// May be thrown by operations such as <see cref="DirectMethodsClient.InvokeAsync(string, DirectMethodRequest, System.Threading.CancellationToken)"/>
+        /// May be thrown by operations such as <see cref="DirectMethodsClient.InvokeAsync(string, DirectMethodServiceRequest, System.Threading.CancellationToken)"/>
         /// </para>
         /// <remarks>
         /// For more information, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/troubleshoot-error-codes#404103-devicenotonline"/>.

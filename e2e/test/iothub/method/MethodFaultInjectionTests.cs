@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-                    var directMethodRequest = new DirectMethodRequest()
+                    var directMethodRequest = new DirectMethodServiceRequest()
                     {
                         MethodName = methodName,
                         Payload = serviceRequestPayload,
@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     };
 
                     VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-                    DirectMethodResponse response = await serviceClient.DirectMethods
+                    DirectMethodClientResponse response = await serviceClient.DirectMethods
                         .InvokeAsync(deviceName, directMethodRequest)
                         .ConfigureAwait(false);
 

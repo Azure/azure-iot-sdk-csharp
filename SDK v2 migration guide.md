@@ -95,6 +95,8 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `Message.CreationTimeUtc` | `TelemetryMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` |
 | `Message.EnqueuedTimeUtc` | `TelemetryMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` |
 | `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
+| `MethodRequest` | `DirectMethodRequest` |
+| `MethodResponse` | `DirectMethodResponse` |
 
 #### Other notable breaking changes
 
@@ -209,8 +211,8 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `Message.ExpiryTimeUtc` | `Message.ExpiresOnUtc` |
 | `Message.CreationTimeUtc` | `Message.CreatedOnUtc` |
 | `ServiceClient.InvokeDeviceMethodAsync(...)` | `IotHubServiceClient.DirectMethods.InvokeAsync(...)` |
-| `CloudToDeviceMethod` | `DirectMethodRequest` |
-| `CloudToDeviceMethodResult` | `DirectMethodResponse` |
+| `CloudToDeviceMethod` | `DirectMethodServiceRequest` |
+| `CloudToDeviceMethodResult` | `DirectMethodClientResponse` |
 | `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` |
 | `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor` |
 

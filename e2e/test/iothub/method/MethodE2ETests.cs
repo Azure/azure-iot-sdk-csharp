@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // setup
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            var methodInvocation = new DirectMethodRequest
+            var methodInvocation = new DirectMethodServiceRequest
             {
                 MethodName = "SetTelemetryInterval",
                 Payload = "10"
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // setup
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync("ModuleNotFoundTest").ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodServiceRequest
             {
                 MethodName = "SetTelemetryInterval",
                 Payload = "10",
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .ConfigureAwait(false);
 
                 using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-                var directMethodRequest = new DirectMethodRequest
+                var directMethodRequest = new DirectMethodServiceRequest
                 {
                     MethodName = commandName,
                     ConnectionTimeout = TimeSpan.FromMinutes(1),
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 // act
 
-                DirectMethodResponse response = await serviceClient.DirectMethods
+                DirectMethodClientResponse response = await serviceClient.DirectMethods
                     .InvokeAsync(testDevice.Id, directMethodRequest)
                     .ConfigureAwait(false);
 
@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodServiceRequest
             {
                 MethodName = methodName,
                 ResponseTimeout = methodTimeout,
@@ -302,14 +302,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodServiceRequest
             {
                 MethodName = methodName,
                 ResponseTimeout = methodTimeout,
                 Payload = reqJson,
             };
 
-            DirectMethodResponse response = await serviceClient.DirectMethods
+            DirectMethodClientResponse response = await serviceClient.DirectMethods
                 .InvokeAsync(deviceId, directMethodRequest)
                 .ConfigureAwait(false);
 
@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
 
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodServiceRequest
             {
                 MethodName = methodName,
                 ResponseTimeout = methodTimeout,
@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            DirectMethodResponse response = await serviceClient.DirectMethods
+            DirectMethodClientResponse response = await serviceClient.DirectMethods
                 .InvokeAsync(deviceId, moduleId, directMethodRequest)
                 .ConfigureAwait(false);
 

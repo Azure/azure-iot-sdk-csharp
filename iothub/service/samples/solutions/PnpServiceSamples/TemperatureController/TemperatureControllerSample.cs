@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             // Create command name to invoke for component. The command is formatted as <component name>*<command name>
             string commandToInvoke = $"{Thermostat1Component}*{getMaxMinReportCommandName}";
-            var commandInvocation = new DirectMethodRequest
+            var commandInvocation = new DirectMethodServiceRequest
             { 
                 MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                DirectMethodResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
+                DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on component {Thermostat1Component}." +
                     $"\nDevice returned status: {result.Status}. \nReport: {result.Payload}");
             }
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             // Create command name to invoke for component
             const string commandToInvoke = "reboot";
-            var commandInvocation = new DirectMethodRequest
+            var commandInvocation = new DirectMethodServiceRequest
             {
                 MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                DirectMethodResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
+                DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {commandToInvoke} was invoked on the {_deviceId} device twin." +
                     $"\nDevice returned status: {result.Status}.");
             }
