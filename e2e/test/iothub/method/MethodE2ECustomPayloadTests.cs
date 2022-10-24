@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodServiceRequest
             {
                 MethodName = methodName,
                 ResponseTimeout = methodTimeout,

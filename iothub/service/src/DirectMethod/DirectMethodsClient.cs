@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<DirectMethodClientResponse> InvokeAsync(string deviceId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken = default)
+        public virtual async Task<DirectMethodClientResponse> InvokeAsync(string deviceId, DirectMethodServiceRequest directMethodRequest, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking device method for device id: {deviceId}", nameof(InvokeAsync));
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<DirectMethodClientResponse> InvokeAsync(string deviceId, string moduleId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken = default)
+        public virtual async Task<DirectMethodClientResponse> InvokeAsync(string deviceId, string moduleId, DirectMethodServiceRequest directMethodRequest, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking device method for device id: {deviceId} and module id: {moduleId}", nameof(InvokeAsync));

@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodServiceRequest request)
+        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodRequest request)
         {
             return request.MethodName switch
             {
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
-        private async Task<DirectMethodResponse> HandleRebootCommandAsync(DirectMethodServiceRequest request)
+        private async Task<DirectMethodResponse> HandleRebootCommandAsync(DirectMethodRequest request)
         {
             bool delayReceived = request.TryGetPayload(out int delay);
 
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature from the
         // specified time to the current time.
-        private Task<DirectMethodResponse> HandleMaxMinReportCommand(DirectMethodServiceRequest request, object userContext)
+        private Task<DirectMethodResponse> HandleMaxMinReportCommand(DirectMethodRequest request, object userContext)
         {
             string componentName = (string)userContext;
             bool sinceInUtcReceived = request.TryGetPayload(out DateTime sinceInUtc);

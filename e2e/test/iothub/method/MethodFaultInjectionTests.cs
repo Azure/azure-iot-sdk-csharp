@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-                    var directMethodRequest = new DirectMethodRequest()
+                    var directMethodRequest = new DirectMethodServiceRequest()
                     {
                         MethodName = methodName,
                         Payload = serviceRequestPayload,

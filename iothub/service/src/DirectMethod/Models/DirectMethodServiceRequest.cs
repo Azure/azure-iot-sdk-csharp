@@ -10,14 +10,14 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Parameters to execute a direct method on a device or module.
     /// </summary>
-    public class DirectMethodRequest
+    public class DirectMethodServiceRequest
     {
         private object _payload;
 
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
-        public DirectMethodRequest()
+        public DirectMethodServiceRequest()
         {
         }
 

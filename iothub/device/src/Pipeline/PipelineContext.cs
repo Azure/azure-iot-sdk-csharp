@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal Action<DesiredProperties> DesiredPropertyUpdateCallback { get; set; }
 
-        internal Func<DirectMethodServiceRequest, Task> MethodCallback { get; set; }
+        internal Func<DirectMethodRequest, Task> MethodCallback { get; set; }
 
         internal Func<IncomingMessage, Task<MessageAcknowledgement>> MessageEventCallback { get; set; }
     }

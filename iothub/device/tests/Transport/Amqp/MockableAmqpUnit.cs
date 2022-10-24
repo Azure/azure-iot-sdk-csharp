@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             AdditionalClientInformation additionalClientInformation,
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
-            Func<DirectMethodServiceRequest, Task> onMethodCallback = null,
+            Func<DirectMethodRequest, Task> onMethodCallback = null,
             Action<AmqpMessage, string, IotHubClientException> twinMessageListener = null,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback = null,
             Action onUnitDisconnected = null)

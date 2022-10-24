@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly AdditionalClientInformation _additionalClientInformation;
         private readonly IotHubClientAmqpSettings _amqpSettings;
 
-        private readonly Func<DirectMethodServiceRequest, Task> _onMethodCallback;
+        private readonly Func<DirectMethodRequest, Task> _onMethodCallback;
         private readonly Action<AmqpMessage, string, IotHubClientException> _twinMessageListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _onMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             AdditionalClientInformation additionalClientInformation,
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
-            Func<DirectMethodServiceRequest, Task> onMethodCallback,
+            Func<DirectMethodRequest, Task> onMethodCallback,
             Action<AmqpMessage, string, IotHubClientException> twinMessageCallback,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected)
@@ -788,7 +788,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnMethodReceived(DirectMethodServiceRequest directMethodRequest)
+        private void OnMethodReceived(DirectMethodRequest directMethodRequest)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, directMethodRequest, nameof(OnMethodReceived));

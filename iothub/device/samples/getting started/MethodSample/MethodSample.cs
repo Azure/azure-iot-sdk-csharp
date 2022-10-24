@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 null);
         }
 
-        private async Task<DirectMethodResponse> OnDirectMethodCalledAsync(DirectMethodServiceRequest directMethodRequest)
+        private async Task<DirectMethodResponse> OnDirectMethodCalledAsync(DirectMethodRequest directMethodRequest)
         {
             switch (directMethodRequest.MethodName)
             {
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"Connection status changed reason is {connectionInfo.ChangeReason}.\n");
         }
 
-        private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodServiceRequest directMethodRequest)
+        private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodRequest directMethodRequest)
         {
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
             Console.WriteLine($"\t{directMethodRequest.GetPayloadAsJsonString()}\n");
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.FromResult(directMethodResponse);
         }
 
-        private Task<DirectMethodResponse> GetDeviceNameAsync(DirectMethodServiceRequest directMethodRequest)
+        private Task<DirectMethodResponse> GetDeviceNameAsync(DirectMethodRequest directMethodRequest)
         {
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
 

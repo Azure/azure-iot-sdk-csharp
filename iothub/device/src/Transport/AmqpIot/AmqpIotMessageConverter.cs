@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
-        public static DirectMethodServiceRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
+        public static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
         {
             Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 using var ms = new MemoryStream();
                 amqpMessage.BodyStream.CopyTo(ms);
-                return new DirectMethodServiceRequest
+                return new DirectMethodRequest
                 {
                     PayloadConvention = payloadConvention,
                     MethodName = methodName,

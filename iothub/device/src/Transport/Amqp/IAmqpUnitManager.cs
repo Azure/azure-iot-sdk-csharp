@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             IConnectionCredentials connectionCredentials,
             AdditionalClientInformation additionalClientInformation,
             IotHubClientAmqpSettings amqpSettings,
-            Func<DirectMethodServiceRequest, Task> onMethodCallback,
+            Func<DirectMethodRequest, Task> onMethodCallback,
             Action<AmqpMessage, string, IotHubClientException> twinMessageListener,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected);

@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // Handle the direct method call.
-        private Task<DirectMethodResponse> SetTelemetryInterval(DirectMethodServiceRequest methodRequest)
+        private Task<DirectMethodResponse> SetTelemetryInterval(DirectMethodRequest methodRequest)
         {
             // Check the payload is a single integer value.
             if (methodRequest.TryGetPayload<int>(out int telemetryIntervalInSeconds))

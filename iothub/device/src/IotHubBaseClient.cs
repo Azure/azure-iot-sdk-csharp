@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         // Method callback information
         private bool _isDeviceMethodEnabled;
 
-        private volatile Func<DirectMethodServiceRequest, Task<DirectMethodResponse>> _deviceDefaultMethodCallback;
+        private volatile Func<DirectMethodRequest, Task<DirectMethodResponse>> _deviceDefaultMethodCallback;
 
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDirectMethodCallbackAsync(
-            Func<DirectMethodServiceRequest, Task<DirectMethodResponse>> directMethodCallback,
+            Func<DirectMethodRequest, Task<DirectMethodResponse>> directMethodCallback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The callback for handling direct methods received from service.
         /// </summary>
-        internal async Task OnMethodCalledAsync(DirectMethodServiceRequest directMethodRequest)
+        internal async Task OnMethodCalledAsync(DirectMethodRequest directMethodRequest)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, directMethodRequest?.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));

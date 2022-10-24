@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             // Create command name to invoke for component. The command is formatted as <component name>*<command name>
             string commandToInvoke = $"{Thermostat1Component}*{getMaxMinReportCommandName}";
-            var commandInvocation = new DirectMethodRequest
+            var commandInvocation = new DirectMethodServiceRequest
             { 
                 MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             // Create command name to invoke for component
             const string commandToInvoke = "reboot";
-            var commandInvocation = new DirectMethodRequest
+            var commandInvocation = new DirectMethodServiceRequest
             {
                 MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),

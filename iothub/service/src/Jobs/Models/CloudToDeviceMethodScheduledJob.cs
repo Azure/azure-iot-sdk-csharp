@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class for cloud-to-device method scheduled job.
         /// </summary>
         /// <param name="directMethodRequest">Contains parameters to execute a direct method on a device or module.</param>
-        public CloudToDeviceMethodScheduledJob(DirectMethodRequest directMethodRequest)
+        public CloudToDeviceMethodScheduledJob(DirectMethodServiceRequest directMethodRequest)
         {
             JobType = JobType.ScheduleDeviceMethod;
             DirectMethodRequest = directMethodRequest;
@@ -30,6 +30,6 @@ namespace Microsoft.Azure.Devices
         /// Contains parameters to execute a direct method on a device or module.
         /// </summary>
         [JsonProperty(PropertyName = "cloudToDeviceMethod", NullValueHandling = NullValueHandling.Ignore)]
-        public DirectMethodRequest DirectMethodRequest { get; set; }
+        public DirectMethodServiceRequest DirectMethodRequest { get; set; }
     }
 }
