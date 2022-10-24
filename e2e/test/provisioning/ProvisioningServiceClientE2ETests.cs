@@ -606,7 +606,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         public static async Task DeleteCreatedEnrollmentAsync(
-            EnrollmentType? enrollmentType,
+            EnrollmentType enrollmentType,
             string registrationId,
             string groupId)
         {
