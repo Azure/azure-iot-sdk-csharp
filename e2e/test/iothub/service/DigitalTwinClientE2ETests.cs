@@ -27,12 +27,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string _devicePrefix = $"{nameof(DigitalTwinClientE2ETests)}_";
         private static readonly string s_connectionString = TestConfiguration.IotHub.ConnectionString;
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
         {
             // Create a new test device instance.
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             try
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Set callback handler for receiving root-level twin property updates.
                 await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
                 {
-                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
+                    VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
                     return Task.FromResult(true);
                 }, deviceClient);
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetMethodHandlerAsync(commandName,
                     (request, context) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.Name}.");
+                        VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.Name}.");
                         string payload = JsonConvert.SerializeObject(request.Name);
                         return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
                     },
@@ -100,12 +100,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithComponentOperationsAsync()
         {
             // Create a new test device instance.
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             try
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Set callback handler for receiving twin property updates.
                 await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
                 {
-                    Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
+                    VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithComponentOperationsAsync)}: DesiredProperty update received: {patch}, {context}");
                     return Task.FromResult(true);
                 }, deviceClient);
 
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetMethodHandlerAsync(rootCommandName,
                     (request, context) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
+                        VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
                         string payload = JsonConvert.SerializeObject(request.Name);
                         return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
                     },
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetMethodHandlerAsync(componentCommandNamePnp,
                     (request, context) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
+                        VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
                         string payload = JsonConvert.SerializeObject(request.Name);
                         return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
                     },

@@ -9,13 +9,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
     public class CustomWebProxy : IWebProxy
     {
-        private readonly MsTestLogger _logger;
         private long _counter;
-
-        public CustomWebProxy(MsTestLogger logger)
-        {
-            _logger = logger;
-        }
 
         public ICredentials Credentials { get; set; }
 
@@ -29,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public bool IsBypassed(Uri host)
         {
             Interlocked.Increment(ref _counter);
-            _logger.Trace($"{nameof(CustomWebProxy)}.{nameof(IsBypassed)} Uri = {host}");
+            VerboseTestLogger.WriteLine($"{nameof(CustomWebProxy)}.{nameof(IsBypassed)} Uri = {host}");
             return false;
         }
     }

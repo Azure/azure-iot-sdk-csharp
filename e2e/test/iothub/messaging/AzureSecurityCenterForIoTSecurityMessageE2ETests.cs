@@ -20,21 +20,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
             return TestSecurityMessageAsync(Client.TransportType.Amqp_Tcp_Only);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_Amqp()
         {
             return TestSecurityMessageModuleAsync(Client.TransportType.Amqp_Tcp_Only);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
         public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
@@ -42,42 +42,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return TestSecurityMessageAsync(Client.TransportType.Amqp_WebSocket_Only);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
             return TestSecurityMessageModuleAsync(Client.TransportType.Amqp_WebSocket_Only);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
         {
             return TestSecurityMessageAsync(Client.TransportType.Mqtt_Tcp_Only);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
         {
             return TestSecurityMessageModuleAsync(Client.TransportType.Mqtt_Tcp_Only);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
             return TestSecurityMessageAsync(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
             return TestSecurityMessageModuleAsync(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_DeviceSendSingleMessage_Http()
         {
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task TestSecurityMessageAsync(Client.TransportType transport)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
             try
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task TestSecurityMessageModuleAsync(Client.TransportType transport)
         {
-            TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
 
             using (var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport))
             {
