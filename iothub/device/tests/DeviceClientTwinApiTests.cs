@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.InnerHandler = innerHandler;
 
             // act
-            await client.GetTwinAsync().ConfigureAwait(false);
+            await client.GetTwinPropertiesAsync().ConfigureAwait(false);
 
             // assert
             await innerHandler.

@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Samples
             string edgeParentId = GenerateDeviceId();
             var edgeParent = new Device(edgeParentId)
             {
-                Capabilities = new DeviceCapabilities
+                Capabilities = new ClientCapabilities
                 {
                     // To create an edge device, this must be set to true
                     IsIotEdge = true,
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Samples
             string nestedEdgeId = GenerateDeviceId();
             var nestedEdge = new Device(nestedEdgeId)
             {
-                Capabilities = new DeviceCapabilities
+                Capabilities = new ClientCapabilities
                 {
                     IsIotEdge = true,
                 },

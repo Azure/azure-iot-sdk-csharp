@@ -197,10 +197,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetTwinAndDetectChangesAsync(CancellationToken cancellationToken)
         {
-            Twin twin = await s_deviceClient.GetTwinAsync(s_appCancellation.Token);
-            _logger.LogInformation($"Device retrieving twin values: {twin.RequestsFromService.GetSerializedString()}");
+            TwinProperties twin = await s_deviceClient.GetTwinPropertiesAsync(s_appCancellation.Token);
+            _logger.LogInformation($"Device retrieving twin values: {twin.Desired.GetSerializedString()}");
 
-            DesiredProperties desiredProperties = twin.RequestsFromService;
+            DesiredProperties desiredProperties = twin.Desired;
             long serverDesiredPropertyVersion = desiredProperties.Version;
 
             // Check if the desired property version is outdated on the local side.

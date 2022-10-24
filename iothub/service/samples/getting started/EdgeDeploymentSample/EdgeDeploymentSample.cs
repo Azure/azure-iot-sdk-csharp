@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Samples
                 string deviceName = $"{deviceIdPrefix}_{i:D8}-{Guid.NewGuid()}";
                 var device = new Device(deviceName)
                 {
-                    Capabilities = new DeviceCapabilities
+                    Capabilities = new ClientCapabilities
                     {
                         IsIotEdge = true,
                     }

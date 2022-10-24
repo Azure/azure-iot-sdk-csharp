@@ -115,10 +115,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetWritablePropertiesAndHandleChangesAsync()
         {
-            Twin twin = await _deviceClient.GetTwinAsync();
-            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.RequestsFromService.GetSerializedString()}");
+            TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync();
+            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.Desired.GetSerializedString()}");
 
-            DesiredProperties desiredProperties = twin.RequestsFromService;
+            DesiredProperties desiredProperties = twin.Desired;
             long serverWritablePropertiesVersion = desiredProperties.Version;
 
             // Check if the writable property version is outdated on the local side.
@@ -294,9 +294,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task CheckEmptyPropertiesAsync(CancellationToken cancellationToken)
         {
-            Twin twin = await _deviceClient.GetTwinAsync(cancellationToken);
-            DesiredProperties desiredProperties = twin.RequestsFromService;
-            ReportedProperties reportedProperties = twin.ReportedByClient;
+            TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync(cancellationToken);
+            DesiredProperties desiredProperties = twin.Desired;
+            ReportedProperties reportedProperties = twin.Reported;
 
             // Check if the device properties (both writable and reported) are empty.
             if (!desiredProperties.TryGetValue(TargetTemperatureProperty, out object _) && !reportedProperties.TryGetValue(TargetTemperatureProperty, out object _))

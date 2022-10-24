@@ -447,7 +447,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iotHubsToProvisionTo,
-            Devices.Provisioning.Service.ProvisioningDeviceCapabilities capabilities)
+            Devices.Provisioning.Service.ProvisioningClientCapabilities capabilities)
         {
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
@@ -506,7 +506,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            Devices.Provisioning.Service.ProvisioningDeviceCapabilities capabilities)
+            Devices.Provisioning.Service.ProvisioningClientCapabilities capabilities)
         {
             Attestation attestation;
 

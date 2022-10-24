@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
+        public override async Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));

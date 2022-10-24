@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             DateTimeOffset createdOnUtc,
             DateTimeOffset lastUpdatedOnUtc,
             ETag eTag,
-            ProvisioningDeviceCapabilities capabilities)
+            ProvisioningClientCapabilities capabilities)
         {
             if (attestation == null)
             {
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Capabilities of the device.
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public ProvisioningDeviceCapabilities Capabilities { get; set; }
+        public ProvisioningClientCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The behavior when a device is re-provisioned to an IoT hub.

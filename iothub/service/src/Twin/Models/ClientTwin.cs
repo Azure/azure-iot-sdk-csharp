@@ -12,7 +12,7 @@ using Newtonsoft.Json.Converters;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Properties of a device stored on the service.
+    /// Properties of a device or module stored on the service.
     /// </summary>
     [JsonConverter(typeof(ClientTwinJsonConverter))]
     public class ClientTwin
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices
         public string DeviceId { get; set; }
 
         /// <summary>
-        /// The DTDL model Id of the device.
+        /// The DTDL model Id of the device or module.
         /// </summary>
         /// <remarks>
         /// The value will be null for a non-pnp device.
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Twin capabilities are read only.
         /// </remarks>
-        public DeviceCapabilities Capabilities { get; internal set; }
+        public ClientCapabilities Capabilities { get; internal set; }
 
         /// <summary>
         /// Twin's ETag.

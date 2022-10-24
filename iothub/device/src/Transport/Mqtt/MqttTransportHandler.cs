@@ -547,7 +547,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
+        public override async Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
             if (!_isSubscribedToTwinResponses)
             {
@@ -1006,7 +1006,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             var getTwinResponse = new GetTwinResponse
                             {
                                 Status = status,
-                                Twin = new Twin(twinDesiredProperties, twinReportedProperties),
+                                Twin = new TwinProperties(twinDesiredProperties, twinReportedProperties),
                             };
 
                             getTwinCompletion.TrySetResult(getTwinResponse);

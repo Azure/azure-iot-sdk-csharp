@@ -3,17 +3,17 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// Status of capabilities enabled on the device.
     /// </summary>
-    public class DeviceCapabilities
+    public class ProvisioningClientCapabilities
     {
         /// <summary>
-        /// Indicates if the device is an IoT Edge device.
+        /// IoT Edge capability.
         /// </summary>
         [JsonProperty(PropertyName = "iotEdge")]
-        public bool IsIotEdge { get; set; }
+        public bool IotEdge { get; set; }
     }
 }

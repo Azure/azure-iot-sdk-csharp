@@ -70,14 +70,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Create a top-level edge device.
                 var edgeDevice1 = new Device(edgeId1)
                 {
-                    Capabilities = new DeviceCapabilities { IsIotEdge = true }
+                    Capabilities = new ClientCapabilities { IsIotEdge = true }
                 };
                 edgeDevice1 = await serviceClient.Devices.CreateAsync(edgeDevice1).ConfigureAwait(false);
 
                 // Create a second-level edge device with edge 1 as the parent.
                 var edgeDevice2 = new Device(edgeId2)
                 {
-                    Capabilities = new DeviceCapabilities { IsIotEdge = true },
+                    Capabilities = new ClientCapabilities { IsIotEdge = true },
                     ParentScopes = { edgeDevice1.Scope },
                 };
                 edgeDevice2 = await serviceClient.Devices.CreateAsync(edgeDevice2).ConfigureAwait(false);
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var iotEdgeDevice = new Device(deviceId)
             {
-                Capabilities = new DeviceCapabilities { IsIotEdge = true }
+                Capabilities = new ClientCapabilities { IsIotEdge = true }
             };
 
             await serviceClient.Devices.CreateWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);

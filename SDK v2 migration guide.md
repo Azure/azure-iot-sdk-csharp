@@ -80,10 +80,14 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | Version 1 API | Equivalent version 2 API |
 |:---|:---|
 | `DeviceClient` | `IotHubDeviceClient` |
-| `DeviceClient.SendTelemetryAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(...)` |
-| `DeviceClient.SendTelemetryBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` |
-| `DeviceClient.SetConnectionStatusChangesHandler(...)` | `DeviceClient.ConnectionStatusChangeCallback` |
-| `DeviceClient.SetReceiveMessageHandlerAsync(...)` | `DeviceClient.SetIncomingMessageCallbackAsync(...)` |
+| `DeviceClient.SendEventAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(...)` |
+| `DeviceClient.SendEventBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` |
+| `DeviceClient.SetConnectionStatusChangesHandler(...)` | `IotHubDeviceClient.ConnectionStatusChangeCallback` |
+| `DeviceClient.SetReceiveMessageHandlerAsync(...)` | `IotHubDeviceClient.SetIncomingMessageCallbackAsync(...)` |
+| `DeviceClient.GetTwinAsync(...)` | `IotHubDeviceClient.GetTwinPropertiesAsync(...)` |
+| `Twin` | `TwinProperties` |
+| `Twin.Properties.Desired` | `TwinProperties.Desired` |
+| `Twin.Properties.Reported` | `TwinProperties.Reported` |
 | `MessageResponse` | `MessageAcknowledgement` |
 | `Message` | `TelemetryMessage`, `IncomingMessage` |
 | `DeviceClient.SetRetryPolicy(...)` | `IotHubClientOptions.RetryPolicy` |
@@ -168,6 +172,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `AuthenticationType` | `ClientAuthenticationType` |
 | `DeviceConnectionState` | `ClientConnectionState` |
 | `DeviceStatus` | `ClientStatus` |
+| `DeviceCapabilities` | `ClientCapabilities` |
 | `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.CreateAsync<T>(...)` |
 | `RegistryManager.AddConfigurationAsync(...)` | `IotHubServiceClient.Configurations.CreateAsync(...)` |
 | `RegistryManager.GetConfigurationsAsync(int maxCount)`| `IotHubServiceClient.Configurations.GetAsync(int maxCount)` |
@@ -311,6 +316,7 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `TwinCollectionArray.GetLastUpdatedOn()` | `ProvisioningTwinPropertyArray.GetLastUpdatedOnUtc()` |
 | `Metadata` | `ProvisioningTwinMetadata` |
 | `Metadata.LastUpdatedOn` | `ProvisioningTwinMetadata.LastUpdatedOnUtc` |
+| `DeviceCapabilities` | `ProvisioningClientCapabilities` |
 | `X509Attestation.CreateFromCAReferences(...)` | `X509Attestation.CreateFromCaReferences(...)` |
 | `X509Attestation.CAReferences` | `X509Attestation.CaReferences` |
 | `X509CAReferences` | `X509CaReferences` |

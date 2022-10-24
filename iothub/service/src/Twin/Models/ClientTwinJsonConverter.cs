@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices
 
                     case CapabilitiesJsonTag:
                         Dictionary<string, object> capabilitiesDictionary = serializer.Deserialize<Dictionary<string, object>>(reader);
-                        twin.Capabilities = new DeviceCapabilities
+                        twin.Capabilities = new ClientCapabilities
                         {
                             IsIotEdge = capabilitiesDictionary.ContainsKey(IotEdgeName) && (bool)capabilitiesDictionary[IotEdgeName]
                         };

@@ -240,13 +240,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
                 await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
-                Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
                 deviceTwin.Should().NotBeNull();
-                deviceTwin.ReportedByClient.Should().NotBeNull();
-                deviceTwin.ReportedByClient.TryGetValue(propName, out string actualValue).Should().BeTrue();
+                deviceTwin.Reported.Should().NotBeNull();
+                deviceTwin.Reported.TryGetValue(propName, out string actualValue).Should().BeTrue();
                 actualValue.Should().Be(propValue);
-                deviceTwin.ReportedByClient[propName].Should().NotBeNull();
-                deviceTwin.ReportedByClient[propName].Should().BeEquivalentTo(propValue);
+                deviceTwin.Reported[propName].Should().NotBeNull();
+                deviceTwin.Reported[propName].Should().BeEquivalentTo(propValue);
             }
 
             await FaultInjection

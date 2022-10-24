@@ -1299,7 +1299,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            Func<Task> act = async () => await deviceClient.GetTwinAsync(cts.Token);
+            Func<Task> act = async () => await deviceClient.GetTwinPropertiesAsync(cts.Token);
 
             // assert
             act.Should().Throw<OperationCanceledException>();

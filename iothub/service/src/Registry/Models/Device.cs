@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices
         ///  Capabilities that are enabled one the device.
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
-        public virtual DeviceCapabilities Capabilities { get; set; }
+        public virtual ClientCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The scope of the device. For edge devices, this is auto-generated and immutable. For leaf devices, set this to create child/parent

@@ -34,11 +34,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync);
 
             Console.WriteLine("Retrieving twin...");
-            Twin twin = await _deviceClient.GetTwinAsync();
+            TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync();
 
             Console.WriteLine("\tInitial twin value received:");
-            Console.WriteLine($"\tDesired properties: {twin.RequestsFromService.GetSerializedString()}");
-            Console.WriteLine($"\tReported properties: {twin.ReportedByClient.GetSerializedString()}");
+            Console.WriteLine($"\tDesired properties: {twin.Desired.GetSerializedString()}");
+            Console.WriteLine($"\tReported properties: {twin.Reported.GetSerializedString()}");
 
             Console.WriteLine("Sending sample start time as reported property");
             var reportedProperties = new ReportedProperties

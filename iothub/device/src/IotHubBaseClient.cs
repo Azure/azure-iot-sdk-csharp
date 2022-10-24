@@ -282,16 +282,19 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Retrieve the twin properties for the current client. The client instance must be opened already.
+        /// Retrieve the twin properties for the current client.
         /// </summary>
         /// <remarks>
+        /// The client instance must be opened already.
+        /// <para>
         /// This API gives you the client's view of the twin. For more information on twins in IoT hub, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins"/>.
+        /// </para>
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The twin object for the current client.</returns>
-        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
+        public async Task<TwinProperties> GetTwinPropertiesAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

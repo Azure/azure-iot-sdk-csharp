@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly string _deviceId;
 
         private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
-        private readonly ProvisioningDeviceCapabilities _optionalEdgeCapabilityEnabled = new() { IotEdge = true };
-        private readonly ProvisioningDeviceCapabilities _optionalEdgeCapabilityDisabled = new() { IotEdge = false };
+        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityEnabled = new() { IotEdge = true };
+        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityDisabled = new() { IotEdge = false };
 
         public IndividualEnrollmentX509Sample(ProvisioningServiceClient provisioningServiceClient, X509Certificate2 issuerCertificate, string deviceId, string registrationId)
         {

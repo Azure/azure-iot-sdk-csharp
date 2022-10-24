@@ -126,10 +126,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.DisableTwinPatchAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
+        public virtual Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.GetTwinAsync(cancellationToken) ?? Task.FromResult((Twin)null);
+            return NextHandler?.GetTwinAsync(cancellationToken) ?? Task.FromResult((TwinProperties)null);
         }
 
         public virtual Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)

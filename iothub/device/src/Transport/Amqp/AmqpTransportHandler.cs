@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
+        public override async Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));
@@ -368,7 +368,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         PayloadConvention = _payloadConvention,
                     };
 
-                    return new Twin(twinDesiredProperties, twinReportedProperties);
+                    return new TwinProperties(twinDesiredProperties, twinReportedProperties);
                 }
                 catch (JsonReaderException ex)
                 {

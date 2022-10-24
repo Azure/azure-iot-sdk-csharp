@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningDeviceCapabilities() { IotEdge = true })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -385,7 +385,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningDeviceCapabilities() { IotEdge = true })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningDeviceCapabilities() { IotEdge = false })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningDeviceCapabilities() { IotEdge = false })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -591,7 +591,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
-            ProvisioningDeviceCapabilities capabilities,
+            ProvisioningClientCapabilities capabilities,
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
@@ -619,7 +619,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            ProvisioningDeviceCapabilities deviceCapabilities,
+            ProvisioningClientCapabilities deviceCapabilities,
             string proxyServerAddress = null)
         {
             string groupId = null;
@@ -887,7 +887,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (sendReportedPropertiesUpdate)
             {
                 VerboseTestLogger.WriteLine("DeviceClient updating desired properties.");
-                Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
+                TwinProperties twin = await iotClient.GetTwinPropertiesAsync().ConfigureAwait(false);
                 var propertiesToReport = new ReportedProperties
                 {
                     [new Guid().ToString()] = new Guid().ToString(),
@@ -902,7 +902,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static async Task ConfirmExpectedDeviceCapabilitiesAsync(
             DeviceRegistrationResult result,
             IAuthenticationMethod auth,
-            ProvisioningDeviceCapabilities capabilities)
+            ProvisioningClientCapabilities capabilities)
         {
             if (capabilities != null && capabilities.IotEdge)
             {
@@ -922,7 +922,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            ProvisioningDeviceCapabilities capabilities = null)
+            ProvisioningClientCapabilities capabilities = null)
         {
             VerboseTestLogger.WriteLine($"{nameof(CreateAuthProviderFromNameAsync)}({attestationType})");
 

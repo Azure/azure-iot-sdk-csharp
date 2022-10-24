@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices
         /// Status of capabilities enabled on the device or module.
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
-        public DeviceCapabilities Capabilities { get; set; }
+        public ClientCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The scope of the device. For edge devices, this is auto-generated and immutable. For leaf
