@@ -13,27 +13,38 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class IncrementalDelayRetryPolicy : RetryPolicyBase
     {
-        private readonly TimeSpan _delayIncrement;
-        private readonly TimeSpan _maxDelay;
-        private readonly bool _useJitter;
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="maxRetries">The maximum number of retry attempts; use 0 for infinite retries.</param>
-        /// <param name="delayIncrement"></param>
+        /// <param name="delayIncrement">The amount to increment the delay on each additional count of retry.</param>
         /// <param name="maxDelay">The maximum amount of time to wait between retries.</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
-        public IncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter)
+        public IncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
             : base(maxRetries)
         {
             Argument.AssertNotNegativeValue(delayIncrement.Ticks, nameof(delayIncrement));
             Argument.AssertNotNegativeValue(maxDelay.Ticks, nameof(maxDelay));
 
-            _delayIncrement = delayIncrement;
-            _maxDelay = maxDelay;
-            _useJitter = useJitter;
+            DelayIncrement = delayIncrement;
+            MaxDelay = maxDelay;
+            UseJitter = useJitter;
         }
+
+        /// <summary>
+        /// The amount to increment the delay on each additional count of retry.
+        /// </summary>
+        internal protected TimeSpan DelayIncrement { get; }
+
+        /// <summary>
+        /// The maximum amount of time to wait between retries.
+        /// </summary>
+        internal protected TimeSpan MaxDelay { get; }
+
+        /// <summary>
+        /// Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.
+        /// </summary>
+        internal protected bool UseJitter { get; }
 
         /// <summary>
         /// Returns true if, based on the parameters, the operation should be retried.
@@ -50,10 +61,10 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             double waitDurationMs = Math.Min(
-                currentRetryCount * _delayIncrement.TotalMilliseconds,
-                _maxDelay.TotalMilliseconds);
+                currentRetryCount * DelayIncrement.TotalMilliseconds,
+                MaxDelay.TotalMilliseconds);
 
-            retryInterval = _useJitter
+            retryInterval = UseJitter
                 ? UpdateWithJitter(waitDurationMs)
                 : TimeSpan.FromMilliseconds(waitDurationMs);
 

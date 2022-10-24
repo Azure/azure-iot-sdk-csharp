@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json.Linq;
+using static Microsoft.Azure.Devices.Provisioning.Service.TwinCollection;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -30,18 +31,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="propertyName">Property Name to lookup.</param>
         /// <returns>Property value, if present.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
-            Justification = "AppCompat. Changing the exception to ArgumentException might break existing applications.")]
+        /// <exception cref="InvalidOperationException">When the specified <paramref name="propertyName"/> does not exist in the collection.</exception>
         public dynamic this[string propertyName]
         {
             get
             {
                 return propertyName switch
                 {
-                    TwinCollection.MetadataName => GetMetadata(),
-                    TwinCollection.LastUpdatedName => GetLastUpdatedOnUtc(),
-                    TwinCollection.LastUpdatedVersionName => GetLastUpdatedVersion(),
-                    _ => throw new RuntimeBinderException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'."),
+                    MetadataName => GetMetadata(),
+                    LastUpdatedName => GetLastUpdatedOnUtc(),
+                    LastUpdatedVersionName => GetLastUpdatedVersion(),
+                    _ => throw new InvalidOperationException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'."),
                 };
             }
         }
@@ -56,12 +56,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Gets the LastUpdated time for this property.
+        /// Gets the time when this property was last updated.
         /// </summary>
-        /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
-        public DateTime GetLastUpdatedOnUtc()
+        public DateTimeOffset GetLastUpdatedOnUtc()
         {
-            return (DateTime)_metadata[TwinCollection.LastUpdatedName];
+            if (_metadata != null
+                && _metadata.TryGetValue(LastUpdatedName, out JToken lastUpdatedName)
+                && (DateTimeOffset)lastUpdatedName is DateTimeOffset lastUpdatedOnUtc)
+            {
+                return lastUpdatedOnUtc;
+            }
+
+            return DateTimeOffset.MinValue;
         }
 
         /// <summary>
@@ -70,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>LastUpdatdVersion if present, null otherwise.</returns>
         public long? GetLastUpdatedVersion()
         {
-            return (long?)_metadata[TwinCollection.LastUpdatedVersionName];
+            return (long?)_metadata?[LastUpdatedVersionName];
         }
     }
 }

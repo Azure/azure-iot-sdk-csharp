@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -129,6 +130,21 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             const string hostName = "acme.azure-devices.net";
             var authMethod = new ClientAuthenticationWithX509Certificate(null, "device1");
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
+
+            // act
+            using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void IotHubDeviceClient_NullX509CertificateChain()
+        {
+            // arrange
+            const string hostName = "acme.azure-devices.net";
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+            using var cert = new X509Certificate2();
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, chainCertificates: null, "device1");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act

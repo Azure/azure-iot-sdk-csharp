@@ -51,10 +51,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Associate(this, _internalRetryHandler, nameof(SetRetryPolicy));
         }
 
-        public override async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken)
+        public override async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
+                Logging.Enter(this, message, cancellationToken, nameof(SendTelemetryAsync));
 
             try
             {
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-                            await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+                            await base.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
@@ -71,14 +71,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, message, cancellationToken, nameof(SendEventAsync));
+                    Logging.Exit(this, message, cancellationToken, nameof(SendTelemetryAsync));
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken)
+        public override async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
+                Logging.Enter(this, messages, cancellationToken, nameof(SendTelemetryAsync));
 
             try
             {
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-                            await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
+                            await base.SendTelemetryAsync(messages, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messages, cancellationToken, nameof(SendEventAsync));
+                    Logging.Exit(this, messages, cancellationToken, nameof(SendTelemetryAsync));
             }
         }
 

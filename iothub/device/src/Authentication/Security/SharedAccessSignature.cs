@@ -8,9 +8,9 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal sealed class SharedAccessSignature
     {
-        internal SharedAccessSignature(DateTime expiresOn, string keyName, string signature, string encodedAudience)
+        internal SharedAccessSignature(DateTimeOffset expiresOn, string keyName, string signature, string encodedAudience)
         {
-            ExpiresOn = expiresOn;
+            ExpiresOnUtc = expiresOn;
             if (IsExpired())
             {
                 throw new IotHubClientException($"The specified SAS token has already expired - on {expiresOn}.", IotHubClientErrorCode.Unauthorized);
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
             Audience = WebUtility.UrlDecode(encodedAudience);
         }
 
-        internal DateTime ExpiresOn { get; }
+        internal DateTimeOffset ExpiresOnUtc { get; }
 
         internal string KeyName { get; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool IsExpired()
         {
-            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
+            return ExpiresOnUtc + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
     }
 }

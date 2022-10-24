@@ -61,13 +61,43 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>SAS token.</returns>
         internal string ToSignature()
         {
-            return BuildSignature(KeyName, Key, Target, TimeToLive);
+            return BuildSignature(KeyName, Key, Target, TimeToLive, null, null, null);
         }
 
-        private string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
+        internal static string BuildExpiresOn(TimeSpan timeToLive, DateTime startTime = default)
         {
-            string expiresOn = BuildExpiresOn(timeToLive);
-            string audience = WebUtility.UrlEncode(target);
+            DateTime expiresOn = startTime == default
+                ? DateTime.UtcNow.Add(timeToLive)
+                : startTime.Add(timeToLive);
+
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            long seconds = Convert.ToInt64(secondsFromBaseTime.TotalSeconds, CultureInfo.InvariantCulture);
+            return Convert.ToString(seconds, CultureInfo.InvariantCulture);
+        }
+
+        internal static string BuildAudience(string iotHub, string deviceId, string moduleId)
+        {
+            // DeviceId and ModuleId need to be double encoded.
+            string audience = WebUtility.UrlEncode(
+                "{0}/devices/{1}/modules/{2}".FormatInvariant(
+                    iotHub,
+                    WebUtility.UrlEncode(deviceId),
+                    WebUtility.UrlEncode(moduleId)));
+
+            return audience;
+        }
+
+        internal static string BuildSignature(
+            string keyName,
+            string key,
+            string target,
+            TimeSpan timeToLive,
+            string audience,
+            string signature,
+            string expiry)
+        {
+            string expiresOn = expiry ?? BuildExpiresOn(timeToLive);
+            audience ??= WebUtility.UrlEncode(target);
             var fields = new List<string>
             {
                 audience,
@@ -76,9 +106,9 @@ namespace Microsoft.Azure.Devices.Client
 
             // Example string to be signed:
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
-            // <Value for ExpiresOn>
+            // <Value for ExpiresOnUtc>
 
-            string signature = Sign(string.Join("\n", fields), key);
+            signature ??= Sign(string.Join("\n", fields), key);
 
             // Example returned string:
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
@@ -88,11 +118,14 @@ namespace Microsoft.Azure.Devices.Client
                 CultureInfo.InvariantCulture,
                 "{0} {1}={2}&{3}={4}&{5}={6}",
                 SharedAccessSignatureConstants.SharedAccessSignature,
-                SharedAccessSignatureConstants.AudienceFieldName, audience,
-                SharedAccessSignatureConstants.SignatureFieldName, WebUtility.UrlEncode(signature),
-                SharedAccessSignatureConstants.ExpiryFieldName, WebUtility.UrlEncode(expiresOn));
+                SharedAccessSignatureConstants.AudienceFieldName,
+                audience,
+                SharedAccessSignatureConstants.SignatureFieldName,
+                WebUtility.UrlEncode(signature),
+                SharedAccessSignatureConstants.ExpiryFieldName,
+                WebUtility.UrlEncode(expiresOn));
 
-            if (!keyName.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(keyName))
             {
                 buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
                     SharedAccessSignatureConstants.KeyNameFieldName, WebUtility.UrlEncode(keyName));
@@ -101,21 +134,13 @@ namespace Microsoft.Azure.Devices.Client
             return buffer.ToString();
         }
 
-        private static string BuildExpiresOn(TimeSpan timeToLive)
-        {
-            DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
-            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
-            long seconds = Convert.ToInt64(secondsFromBaseTime.TotalSeconds, CultureInfo.InvariantCulture);
-            return Convert.ToString(seconds, CultureInfo.InvariantCulture);
-        }
-
         /// <summary>
         /// Sign the request string with a key.
         /// </summary>
         /// <param name="requestString">The request string input to sign.</param>
         /// <param name="key">The secret key used for encryption.</param>
         /// <returns>The signed request string.</returns>
-        protected virtual string Sign(string requestString, string key)
+        protected static string Sign(string requestString, string key)
         {
             using var algorithm = new HMACSHA256(Convert.FromBase64String(key));
             return Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(requestString)));

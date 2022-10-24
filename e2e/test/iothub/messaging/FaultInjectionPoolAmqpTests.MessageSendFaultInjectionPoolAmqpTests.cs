@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private const string MessageSend_DevicePrefix = "MessageSendFaultInjectionPoolAmqpTests";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_Amqp()
         {
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
         {
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossSendRecovery_MultipleConnections_Amqp()
         {
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
         {
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_Amqp()
         {
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_AmqpWs()
         {
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_Amqp()
         {
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_AmqpWs()
         {
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_Amqp()
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_AmqpWs()
         {
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionRecovery_MultipleConnections_Amqp()
         {
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             error.And.IsTransient.Should().BeFalse();
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionRecovery_MultipleConnections_AmqpWs()
         {
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             error.And.IsTransient.Should().BeFalse();
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AuthenticationNoRecovery_MultipleConnections_Amqp()
         {
@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             error.And.IsTransient.Should().BeFalse();
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
         {
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // Test device client recovery when proxy settings are enabled
         [TestCategory("Proxy")]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs_WithProxy()
         {
@@ -274,11 +274,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                OutgoingMessage testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string payload, out string p1Value);
+                TelemetryMessage testMessage = MessageSendE2ETests.ComposeD2cTestMessage(out string payload, out string p1Value);
 
-                Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
+                VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                await deviceClient.SendEventAsync(testMessage, cts.Token).ConfigureAwait(false);
+                await deviceClient.SendTelemetryAsync(testMessage, cts.Token).ConfigureAwait(false);
             }
 
             await FaultInjectionPoolingOverAmqp
@@ -295,8 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     TestInitAsync,
                     TestOperationAsync,
                     (d, c) => Task.FromResult(false),
-                    ConnectionStringAuthScope.Device,
-                    Logger)
+                    ConnectionStringAuthScope.Device)
                 .ConfigureAwait(false);
         }
     }

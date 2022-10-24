@@ -13,9 +13,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class DeviceRegistrationResult
     {
         /// <summary>
-        /// For deserialization.
+        /// For deserialization and unit testing.
         /// </summary>
-        internal DeviceRegistrationResult()
+        protected internal DeviceRegistrationResult()
         {
 
         }
@@ -24,84 +24,84 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// This id is used to uniquely identify a device registration of an enrollment.
         /// </summary>
         [JsonProperty(PropertyName = "registrationId")]
-        public string RegistrationId { get; internal set; }
+        public string RegistrationId { get; protected internal set; }
 
         /// <summary>
         /// Registration create date time (in UTC).
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc")]
-        public DateTime? CreatedOnUtc { get; internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// The assigned Azure IoT hub.
         /// </summary>
         [JsonProperty(PropertyName = "assignedHub")]
-        public string AssignedHub { get; internal set; }
+        public string AssignedHub { get; protected internal set; }
 
         /// <summary>
         /// The Device Id.
         /// </summary>
         [JsonProperty(PropertyName = "deviceId")]
-        public string DeviceId { get; internal set; }
+        public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// The status of the operation.
         /// </summary>
         [JsonProperty(PropertyName = "status")]
-        public ProvisioningRegistrationStatusType Status { get; internal set; }
+        public ProvisioningRegistrationStatusType Status { get; protected internal set; }
 
         /// <summary>
         /// The substatus of the operation.
         /// </summary>
         [JsonProperty(PropertyName = "substatus")]
-        public ProvisioningRegistrationSubstatusType Substatus { get; internal set; }
+        public ProvisioningRegistrationSubstatusType Substatus { get; protected internal set; }
 
         /// <summary>
         /// The generation Id.
         /// </summary>
         [JsonProperty(PropertyName = "generationId")]
-        public string GenerationId { get; internal set; }
+        public string GenerationId { get; protected internal set; }
 
         /// <summary>
         /// The time when the device last refreshed the registration.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc")]
-        public DateTime? LastUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Error code.
         /// </summary>
         [JsonProperty(PropertyName = "errorCode")]
-        public int? ErrorCode { get; internal set; }
+        public int? ErrorCode { get; protected internal set; }
 
         /// <summary>
         /// Error message.
         /// </summary>
         [JsonProperty(PropertyName = "errorMessage")]
-        public string ErrorMessage { get; internal set; }
+        public string ErrorMessage { get; protected internal set; }
 
         /// <summary>
         /// The entity tag associated with the resource.
         /// </summary>
         [JsonProperty(PropertyName = "etag")]
-        public string Etag { get; internal set; }
+        public string Etag { get; protected internal set; }
 
         /// <summary>
         /// The custom data returned from the webhook to the device.
         /// </summary>
         [JsonProperty(PropertyName = "payload")]
-        public JRaw Payload { get; internal set; }
+        public JRaw Payload { get; protected internal set; }
 
         /// <summary>
         /// The registration result for X.509 certificate authentication.
         /// </summary>
         [JsonProperty(PropertyName = "x509")]
-        public X509RegistrationResult X509 { get; internal set; }
+        public X509RegistrationResult X509 { get; protected internal set; }
 
         /// <summary>
         /// The registration result for symmetric key authentication.
         /// </summary>
         [JsonProperty(PropertyName = "symmetricKey")]
-        public SymmetricKeyRegistrationResult SymmetricKey { get; internal set; }
+        public SymmetricKeyRegistrationResult SymmetricKey { get; protected internal set; }
     }
 }

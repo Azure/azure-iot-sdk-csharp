@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// If not specified, the input blob container will be used.</param>
         public ImportJobProperties(Uri inputBlobContainerUri, Uri outputBlobContainerUri = default)
         {
-            Type = JobType.ImportDevices;
+            JobType = JobType.ImportDevices;
             InputBlobContainerUri = inputBlobContainerUri;
             OutputBlobContainerUri = outputBlobContainerUri ?? inputBlobContainerUri;
         }

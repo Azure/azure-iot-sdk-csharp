@@ -11,11 +11,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
     internal class Parameters
     {
         [Option(
-            'd',
-            "DeviceId",
+            'r',
+            "RegistrationId",
             Required = true,
-            HelpText = "The desired device Id of the device that will use this derived key.")]
-        public string Id { get; set; }
+            HelpText = "The desired registration Id of the device that will use this derived key.")]
+        public string RegistrationId { get; set; }
 
         [Option(
             'p',

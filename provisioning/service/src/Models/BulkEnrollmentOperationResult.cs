@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// If false, not all operations in the bulk enrollment succeeded.
         /// </summary>
         [JsonProperty(PropertyName = "isSuccessful", Required = Required.Always)]
-        public bool IsSuccessful { get; internal set; }
+        public bool IsSuccessful { get; protected internal set; }
 
         /// <summary>
         /// Registration errors.
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Detail each enrollment failed in the bulk operation, and report the fail reason.
         /// </remarks>
         [JsonProperty(PropertyName = "errors", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public IEnumerable<BulkEnrollmentOperationError> Errors { get; internal set; }
+        public IEnumerable<BulkEnrollmentOperationError> Errors { get; protected internal set; }
 
         /// <summary>
         /// Convert this object in a pretty print format.

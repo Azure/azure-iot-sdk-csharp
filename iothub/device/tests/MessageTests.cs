@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void SettingMessageAsSecurityMessageTest()
         {
-            var msg = new OutgoingMessage("security message test");
+            var msg = new TelemetryMessage("security message test");
 
             msg.IsSecurityMessage.Should().BeFalse();
             msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId).Should().BeFalse();
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string propName2 = "test2";
             string propValue2 = "test_v_2";
             string originalMessageContent = "Original copy";
-            var originalMessage = new OutgoingMessage(originalMessageContent)
+            var originalMessage = new TelemetryMessage(originalMessageContent)
             {
                 MessageId = messageId,
                 ContentEncoding = contentEncoding,
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string propValue1 = "test_v_1";
             string propName2 = "test2";
             string originalMessageContent = "Original copy";
-            var originalMessage = new OutgoingMessage(originalMessageContent)
+            var originalMessage = new TelemetryMessage(originalMessageContent)
             {
                 ContentEncoding = contentEncoding,
                 ContentType = null,

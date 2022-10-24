@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? StartedOnUtc { get; protected internal set; }
+        public DateTimeOffset? StartedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// When the job finished.
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? EndedOnUtc { get; protected internal set; }
+        public DateTimeOffset? EndedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// The status of the job.

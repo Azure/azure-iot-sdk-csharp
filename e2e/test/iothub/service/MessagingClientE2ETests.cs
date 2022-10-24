@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string DevicePrefix = $"{nameof(MessagingClientE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(OperationCanceledException))]
         [TestCategory("Flaky")]
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await FastTimeout().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_NoTimeoutPassed()
         {
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task TestTimeout(CancellationToken cancellationToken)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             // don't pass in cancellation token here. This test is for seeing how SendAsync reacts with an valid or expired token.
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var sw = new Stopwatch();
             sw.Start();
 
-            Logger.Trace($"Testing ServiceClient SendAsync() cancellation.");
+            VerboseTestLogger.WriteLine($"Testing ServiceClient SendAsync() cancellation.");
             try
             {
                 var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
@@ -72,11 +72,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 await sender.Messages.CloseAsync(CancellationToken.None).ConfigureAwait(false);
                 sw.Stop();
-                Logger.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
+                VerboseTestLogger.WriteLine($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
 
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await sender.Messages.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             // Open, close, then re-open the client
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await sender.Messages.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
 
@@ -150,12 +150,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultNotSet_SendEventDoesNotSetMessageId()
         {
             // arrange
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
             string messageId = Guid.NewGuid().ToString();
@@ -179,12 +179,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultSetToNull_SendEventDoesNotSetMessageId()
         {
             // arrange
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             var options = new IotHubServiceClientOptions
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
@@ -212,12 +212,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultSetToGuid_SendEventSetMessageIdIfNotSet()
         {
             // arrange
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             var options = new IotHubServiceClientOptions
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             messageWithId.MessageId.Should().Be(messageId);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
 

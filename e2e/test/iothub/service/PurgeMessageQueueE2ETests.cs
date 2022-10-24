@@ -20,11 +20,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _devicePrefix = $"{nameof(PurgeMesageQueueE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task PurgeMessageQueueOperation()
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string expectedDeviceId = testDevice.Device.Id;
             using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false); // making sure the queue is empty

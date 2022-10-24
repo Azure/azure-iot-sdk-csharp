@@ -56,6 +56,6 @@ namespace Microsoft.Azure.Devices
         /// Date and time indicating when the notification was created in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "enqueuedTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime EnqueuedOnUtc { get; protected internal set; }
+        public DateTimeOffset EnqueuedOnUtc { get; protected internal set; }
     }
 }

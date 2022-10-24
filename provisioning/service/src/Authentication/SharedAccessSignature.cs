@@ -16,11 +16,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private readonly string _encodedAudience;
         private readonly string _expiry;
 
-        private SharedAccessSignature(string serviceName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
+        private SharedAccessSignature(string serviceName, DateTimeOffset expiresOn, string expiry, string keyName, string signature, string encodedAudience)
         {
             Debug.Assert(serviceName != null, "Service name cannot be null.");
 
-            ExpiresOn = expiresOn;
+            ExpiresOnUtc = expiresOn;
             if (IsExpired())
             {
                 throw new DeviceProvisioningServiceException("The specified SAS token is expired", HttpStatusCode.Unauthorized);
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public string ServiceName { get; private set; }
 
-        public DateTime ExpiresOn { get; private set; }
+        public DateTimeOffset ExpiresOnUtc { get; private set; }
 
         public string KeyName { get; private set; }
 
@@ -92,12 +92,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         internal bool IsExpired()
         {
-            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
+            return ExpiresOnUtc + SharedAccessSignatureConstants.MaxClockSkew < DateTimeOffset.UtcNow;
         }
 
-        internal DateTime ExpiryTime()
+        internal DateTimeOffset ExpiryTime()
         {
-            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
+            return ExpiresOnUtc + SharedAccessSignatureConstants.MaxClockSkew;
         }
 
         internal void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)

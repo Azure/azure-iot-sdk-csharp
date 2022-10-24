@@ -44,15 +44,15 @@ namespace Microsoft.Azure.Devices.Client
         [NonEvent]
         public static void GenerateToken(
             object thisOrContextObject,
-            DateTime expirationDateTime)
+            DateTimeOffset expirationDateTime)
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(expirationDateTime);
 
             Log.GenerateToken(
                 IdOf(thisOrContextObject),
-                DateTime.Now.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture),
-                expirationDateTime.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture));
+                DateTimeOffset.UtcNow.ToString("o", CultureInfo.InvariantCulture),
+                expirationDateTime.UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
         }
 
         [Event(CreateId, Keywords = Keywords.Default, Level = EventLevel.Informational)]

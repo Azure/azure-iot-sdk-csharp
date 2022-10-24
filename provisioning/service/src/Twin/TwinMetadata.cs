@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="lastUpdatedOn">When the property was last updated.</param>
         /// <param name="lastUpdatedVersion">The version of the property when updated.</param>
-        public TwinMetadata(DateTime lastUpdatedOn, long? lastUpdatedVersion)
+        public TwinMetadata(DateTimeOffset lastUpdatedOn, long? lastUpdatedVersion)
         {
             LastUpdatedOnUtc = lastUpdatedOn;
             LastUpdatedVersion = lastUpdatedVersion;
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Wwhen a property was last updated.
         /// </summary>
-        public DateTime LastUpdatedOnUtc { get; set; }
+        public DateTimeOffset LastUpdatedOnUtc { get; set; }
 
         /// <remarks>
         /// This should be null for Reported properties metadata and must not be null for Desired properties metadata.

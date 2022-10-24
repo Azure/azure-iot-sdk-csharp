@@ -22,4 +22,10 @@ namespace Microsoft.Azure.Devices
         [JsonProperty("timestampUtc")]
         internal string OccurredOnUtc { get; set; }
     }
+
+    internal class ResponseMessageWrapper
+    {
+        [JsonProperty("Message")]
+        internal string Message { get; set; }
+    }
 }

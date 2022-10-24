@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,22 +19,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
     public enum ConnectionStringAuthScope
     {
-        IoTHub,
+        IotHub,
         Device,
     }
 
     public class TestDevice : IDisposable
     {
-        private const int MaxRetryCount = 5;
-        private static readonly HashSet<IotHubServiceErrorCode> s_throttlingStatusCodes = new() { IotHubServiceErrorCode.ThrottlingException };
-        private static readonly HashSet<IotHubServiceErrorCode> s_retryableStatusCodes = new(s_throttlingStatusCodes) { IotHubServiceErrorCode.DeviceNotFound };
         private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 
-        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(MaxRetryCount, TimeSpan.FromSeconds(10));
+        private static readonly IRetryPolicy s_createRetryPolicy = new HubServiceTestRetryPolicy();
+
+        private static readonly HashSet<IotHubServiceErrorCode> s_getRetryableStatusCodes = new()
+        {
+            IotHubServiceErrorCode.DeviceNotFound,
+            IotHubServiceErrorCode.ModuleNotFound,
+        };
+        private static readonly IRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
 
         private X509Certificate2 _authCertificate;
-
-        private static MsTestLogger s_logger;
 
         private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
         {
@@ -48,9 +49,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         /// <param name="namePrefix">The prefix to apply to your device name</param>
         /// <param name="type">The way the device will authenticate</param>
-        public static async Task<TestDevice> GetTestDeviceAsync(MsTestLogger logger, string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
+        public static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
         {
-            s_logger = logger;
             string prefix = namePrefix + type + "_";
 
             try
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 await s_semaphore.WaitAsync().ConfigureAwait(false);
                 TestDevice ret = await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
 
-                s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
+                VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
                 return ret;
             }
             finally
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             // Delete existing devices named this way and create a new one.
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
+            VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             Client.IAuthenticationMethod auth = null;
 
@@ -99,34 +99,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             Device device = null;
 
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
                         device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
-                    s_retryPolicy,
-                    s_throttlingStatusCodes,
-                    s_logger,
+                    s_createRetryPolicy,
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
             // Confirm the device exists in the registry before calling it good to avoid downstream test failures.
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
-                        device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
-                        if (device is null)
-                        {
-                            throw new IotHubServiceException(
-                                $"Created device {requestDevice.Id} not yet gettable from IoT hub.",
-                                HttpStatusCode.NotFound,
-                                IotHubServiceErrorCode.DeviceNotFound);
-                        }
+                        await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                     },
-                    s_retryPolicy,
-                    s_retryableStatusCodes,
-                    s_logger,
+                    s_getRetryPolicy,
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -153,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Used in conjunction with DeviceClient.Create()
         /// </summary>
-        public string IotHubHostName => GetHostName(TestConfiguration.IotHub.ConnectionString);
+        public string IotHubHostName { get; } = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
         /// <summary>
         /// Device Id
@@ -165,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         public Device Device { get; private set; }
 
-        public Client.IAuthenticationMethod AuthenticationMethod { get; private set; }
+        public IAuthenticationMethod AuthenticationMethod { get; private set; }
 
         public IotHubDeviceClient CreateDeviceClient(IotHubClientOptions options = default, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
@@ -176,18 +165,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 if (authScope == ConnectionStringAuthScope.Device)
                 {
                     deviceClient = new IotHubDeviceClient(ConnectionString, options);
-                    s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from device connection string: Id={TestLogger.IdOf(deviceClient)}");
+                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from device connection string");
                 }
                 else
                 {
                     deviceClient = new IotHubDeviceClient($"{TestConfiguration.IotHub.ConnectionString};DeviceId={Device.Id}", options);
-                    s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IoTHub connection string: Id={TestLogger.IdOf(deviceClient)}");
+                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IoTHub connection string");
                 }
             }
             else
             {
                 deviceClient = new IotHubDeviceClient(IotHubHostName, AuthenticationMethod, options);
-                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod: ID={TestLogger.IdOf(deviceClient)}");
+                VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod");
             }
 
             return deviceClient;
@@ -198,14 +187,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             await RetryOperationHelper
-                .RetryOperationsAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
                         await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
-                    s_retryPolicy,
-                    s_throttlingStatusCodes,
-                    s_logger,
+                    s_getRetryPolicy,
                     CancellationToken.None)
                 .ConfigureAwait(false);
         }

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.HsmAuthentication;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -21,7 +22,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
         /// </summary>
-        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="authenticationMethod">
+        /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSharedAccessKeyRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>,
+        /// <see cref="ClientAuthenticationWithX509Certificate"/> or <see cref="EdgeModuleAuthenticationWithHsm"/>.
+        /// </param>
         /// <param name="iotHubHostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway (optional).</param>
         /// <returns>A new instance of the <c>IotHubConnectionCredentials</c> class with a populated connection string.</returns>
@@ -141,10 +145,10 @@ namespace Microsoft.Azure.Devices.Client
         public int SasTokenRenewalBuffer { get; internal set; }
 
         /// <summary>
-        /// The token refresh logic to be used for clients authenticating with either an AuthenticationWithTokenRefresh IAuthenticationMethod mechanism
+        /// The token refresh logic to be used for clients authenticating with either an ClientAuthenticationWithTokenRefresh IAuthenticationMethod mechanism
         /// or through a shared access key value that can be used by the SDK to generate SAS tokens.
         /// </summary>
-        public AuthenticationWithTokenRefresh SasTokenRefresher { get; private set; }
+        public ClientAuthenticationWithTokenRefresh SasTokenRefresher { get; private set; }
 
         /// <summary>
         /// The authentication method to be used with the IoT hub service.
@@ -246,52 +250,39 @@ namespace Microsoft.Azure.Devices.Client
             SharedAccessKeyName = iotHubConnectionString.SharedAccessKeyName;
             SharedAccessKey = iotHubConnectionString.SharedAccessKey;
             SharedAccessSignature = iotHubConnectionString.SharedAccessSignature;
+            Certificate = null;
+            ChainCertificates = null;
         }
 
         private void SetTokenRefresherIfApplicable()
         {
-            if (AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
+            if (AuthenticationMethod is ClientAuthenticationWithTokenRefresh authWithTokenRefresh)
             {
                 SasTokenRefresher = authWithTokenRefresh;
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithTokenRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
 
                 Debug.Assert(SasTokenRefresher != null);
             }
             else if (!SharedAccessKey.IsNullOrWhiteSpace())
             {
-                if (ModuleId.IsNullOrWhiteSpace())
-                {
-                    SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
-                        sharedAccessKey: SharedAccessKey,
-                        deviceId: DeviceId,
-                        sharedAccessKeyName: SharedAccessKeyName,
-                        sasTokenTimeToLive: SasTokenTimeToLive,
-                        sasTokenRenewalBuffer: SasTokenRenewalBuffer);
+                SasTokenRefresher = new ClientAuthenticationWithSharedAccessKeyRefresh(
+                    SharedAccessKey,
+                    SharedAccessKeyName,
+                    DeviceId,
+                    ModuleId,
+                    SasTokenTimeToLive,
+                    SasTokenRenewalBuffer);
 
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
-                }
-                else
-                {
-                    SasTokenRefresher = new ClientAuthenticationWithSakRefresh(
-                        SharedAccessKey,
-                        DeviceId,
-                        ModuleId,
-                        SharedAccessKeyName,
-                        SasTokenTimeToLive,
-                        SasTokenRenewalBuffer);
-
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
-                }
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ClientAuthenticationWithSharedAccessKeyRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
 
                 // This assignment resets any previously set SharedAccessSignature value. This is possible in flows where the same authentication method instance
                 // is used to reinitialize the client after close-dispose.
                 // SharedAccessSignature should be set only if it is non-null and the authentication method of the device client is
-                // not of type AuthenticationWithTokenRefresh.
-                // Setting the SAS value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
+                // not of type ClientAuthenticationWithTokenRefresh.
+                // Setting the SAS value for an ClientAuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
                 // This flow can be hit if the same authentication method is always used to initialize the client;
                 // as in, on disposal and reinitialization. This is because the value of the SAS token computed is stored within the authentication method,
                 // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
@@ -331,6 +322,13 @@ namespace Microsoft.Azure.Devices.Client
                 throw new FormatException("Device Id cannot be null or white space.");
             }
 
+            // Module Id
+            if (ModuleId != null && string.IsNullOrWhiteSpace(ModuleId))
+            {
+                // A module Id is not required to provide, but if they do it must be a valid string.
+                throw new FormatException("Module Id cannot be white space.");
+            }
+
             // Shared access key
             if (!string.IsNullOrWhiteSpace(SharedAccessKey))
             {
@@ -348,11 +346,11 @@ namespace Microsoft.Azure.Devices.Client
 
             // Either shared access key, shared access signature or X.509 certificate is required for authenticating the client with IoT hub.
             // These values should be populated in the constructor. The only exception to this scenario is when the authentication method is
-            // AuthenticationWithTokenRefresh, in which case the shared access signature is initially null and is generated on demand during client authentication.
+            // ClientAuthenticationWithTokenRefresh, in which case the shared access signature is initially null and is generated on demand during client authentication.
             if (Certificate == null
                 && SharedAccessKey.IsNullOrWhiteSpace()
                 && SharedAccessSignature.IsNullOrWhiteSpace()
-                && AuthenticationMethod is not AuthenticationWithTokenRefresh)
+                && AuthenticationMethod is not ClientAuthenticationWithTokenRefresh)
             {
                 throw new FormatException(
                         "Should specify either SharedAccessKey, SharedAccessSignature or X.509 certificate for authenticating the client with IoT hub.");
@@ -396,24 +394,22 @@ namespace Microsoft.Azure.Devices.Client
 
         private static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionString iotHubConnectionString)
         {
-            if (iotHubConnectionString.SharedAccessKeyName != null)
+            if (iotHubConnectionString.SharedAccessKey != null)
             {
-                return new ClientAuthenticationWithSharedAccessPolicy(
-                    iotHubConnectionString.SharedAccessKeyName,
-                    iotHubConnectionString.SharedAccessKey,
-                    iotHubConnectionString.DeviceId,
-                    iotHubConnectionString.ModuleId);
-            }
-            else if (iotHubConnectionString.SharedAccessKey != null)
-            {
-                return new ClientAuthenticationWithRegistrySymmetricKey(
+                return iotHubConnectionString.SharedAccessKeyName != null
+                    ? new ClientAuthenticationWithSharedAccessKeyRefresh(
                         iotHubConnectionString.SharedAccessKey,
+                        iotHubConnectionString.SharedAccessKeyName,
                         iotHubConnectionString.DeviceId,
-                        iotHubConnectionString.ModuleId);
+                        iotHubConnectionString.ModuleId)
+                    : new ClientAuthenticationWithSharedAccessKeyRefresh(
+                        sharedAccessKey: iotHubConnectionString.SharedAccessKey,
+                        deviceId: iotHubConnectionString.DeviceId,
+                        moduleId: iotHubConnectionString.ModuleId);
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {
-                return new ClientAuthenticationWithToken(
+                return new ClientAuthenticationWithSharedAccessSignature(
                     iotHubConnectionString.SharedAccessSignature,
                     iotHubConnectionString.DeviceId,
                     iotHubConnectionString.ModuleId);

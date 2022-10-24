@@ -15,6 +15,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Edge;
+using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
@@ -50,7 +51,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a disposable <c>IotHubModuleClient</c> from the specified parameters.
         /// </summary>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
-        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="authenticationMethod">
+        /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSharedAccessKeyRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>,
+        /// <see cref="ClientAuthenticationWithX509Certificate"/> or <see cref="EdgeModuleAuthenticationWithHsm"/>.
+        /// </param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable <c>IotHubModuleClient</c> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id, module Id or <paramref name="authenticationMethod"/> is null.</exception>
@@ -114,15 +118,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        public async Task SendEventAsync(string outputName, OutgoingMessage message, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryAsync(string outputName, TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, outputName, message, nameof(SendEventAsync));
+                Logging.Enter(this, outputName, message, nameof(SendTelemetryAsync));
 
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
             Argument.AssertNotNull(message, nameof(message));
 
-            ValidateModuleTransportHandler("SendEventAsync for a named output");
+            ValidateModuleTransportHandler("SendTelemetryAsync for a named output");
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -130,12 +134,12 @@ namespace Microsoft.Azure.Devices.Client
             {
                 message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
 
-                await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, outputName, message, nameof(SendEventAsync));
+                    Logging.Exit(this, outputName, message, nameof(SendTelemetryAsync));
             }
         }
 
@@ -152,28 +156,28 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The task containing the event</returns>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SendEventBatchAsync(string outputName, IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryBatchAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, outputName, messages, nameof(SendEventBatchAsync));
+                Logging.Enter(this, outputName, messages, nameof(SendTelemetryBatchAsync));
 
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
 
             var messagesList = messages?.ToList();
             Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
 
-            ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
+            ValidateModuleTransportHandler("SendTelemetryBatchAsync for a named output");
 
             try
             {
                 messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
 
-                await InnerHandler.SendEventAsync(messagesList, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.SendTelemetryAsync(messagesList, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, outputName, messages, nameof(SendEventBatchAsync));
+                    Logging.Exit(this, outputName, messages, nameof(SendTelemetryBatchAsync));
             }
         }
 

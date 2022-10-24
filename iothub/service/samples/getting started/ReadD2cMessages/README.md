@@ -4,7 +4,7 @@ This sample demonstrates how to use the Azure Event Hubs client library for .NET
 
 ## Prerequisites
 
-The .NET SDK 3.1 is recommended. You can download the .NET Core SDK for multiple platforms from [.NET](https://www.microsoft.com/net/download/all). You can verify the current version of C# on your development machine using 'dotnet --version'.
+The .NET SDK 3.1 is recommended. You can download the .NET Core SDK for multiple platforms from [.NET](https://www.microsoft.com/net/download/all). You can verify the current version on your development machine using 'dotnet --version'.
 
 > Note: the Event Hubs client 5.2 does not work with .NET 5.0.
 

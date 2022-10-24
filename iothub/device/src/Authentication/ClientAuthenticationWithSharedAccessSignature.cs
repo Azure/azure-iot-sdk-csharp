@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a shared access signature token.
     /// </summary>
-    public sealed class ClientAuthenticationWithToken : IAuthenticationMethod
+    public sealed class ClientAuthenticationWithSharedAccessSignature : IAuthenticationMethod
     {
         private string _deviceId;
         private string _moduleId;
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="token">Security Token.</param>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="moduleId">Module Identifier.</param>
-        public ClientAuthenticationWithToken(string token, string deviceId, string moduleId = default)
+        public ClientAuthenticationWithSharedAccessSignature(string token, string deviceId, string moduleId = default)
         {
             SetDeviceId(deviceId);
             SetModuleId(moduleId);

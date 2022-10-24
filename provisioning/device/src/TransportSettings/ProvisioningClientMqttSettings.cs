@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Contains MQTT transport-specific settings for a provisioning device client.
     /// </summary>
-    public class ProvisioningClientMqttSettings : ProvisioningClientTransportSettings
+    public sealed class ProvisioningClientMqttSettings : ProvisioningClientTransportSettings
     {
         /// <summary>
         /// Creates an instance of this class.

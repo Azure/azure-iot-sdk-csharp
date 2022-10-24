@@ -71,8 +71,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string iotHubHostName,
             TwinState initialTwinState,
             ProvisioningStatus? provisioningStatus,
-            DateTime createdOnUtc,
-            DateTime lastUpdatedOnUtc,
+            DateTimeOffset createdOnUtc,
+            DateTimeOffset lastUpdatedOnUtc,
             ETag eTag,
             DeviceCapabilities capabilities)
         {
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 if (value is X509Attestation attestation)
                 {
                     if ((attestation ?? throw new InvalidOperationException(nameof(value))).ClientCertificates == null
-                        && attestation.CAReferences == null)
+                        && attestation.CaReferences == null)
                     {
                         throw new InvalidOperationException($"Value for {nameof(attestation)} does not contain client certificate or CA reference.");
                     }
@@ -170,13 +170,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The DateTime this resource was created.
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? CreatedOnUtc { get; internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? LastUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Enrollment's ETag.

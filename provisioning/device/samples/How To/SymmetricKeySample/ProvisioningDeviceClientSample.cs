@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             Console.WriteLine($"Device {result.DeviceId} registered to {result.AssignedHub}.");
 
             Console.WriteLine("Creating symmetric key authentication for IoT Hub...");
-            Devices.Client.IAuthenticationMethod auth = new ClientAuthenticationWithRegistrySymmetricKey(
+            Devices.Client.IAuthenticationMethod auth = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 security.GetPrimaryKey(),
                 result.DeviceId);
 
@@ -70,8 +70,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
 
             Console.WriteLine("Sending a telemetry message...");
-            var message = new OutgoingMessage("TestMessage");
-            await iotClient.SendEventAsync(message);
+            var message = new TelemetryMessage("TestMessage");
+            await iotClient.SendTelemetryAsync(message);
 
             await iotClient.CloseAsync();
             Console.WriteLine("Finished.");

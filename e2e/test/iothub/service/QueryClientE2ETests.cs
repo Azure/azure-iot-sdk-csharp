@@ -29,15 +29,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // timeout is for how long to wait for this latency before failing the test.
         private readonly TimeSpan _queryableDelayTimeout = TimeSpan.FromMinutes(1);
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_Works()
         {
             // arrange
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
-            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(_idPrefix);
+            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(_idPrefix);
 
             string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}'";
 
@@ -60,16 +60,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             (await queryResponse.MoveNextAsync()).Should().BeFalse();
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_CustomPaginationWorks()
         {
             // arrange
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
-            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
-            using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(_idPrefix);
+            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(_idPrefix);
+            using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(_idPrefix);
 
             string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
             QueryOptions firstPageOptions = new QueryOptions
@@ -114,16 +114,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             secondPageEnumerator.MoveNext().Should().BeFalse();
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_IterateByItemAcrossPages()
         {
             // arrange
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
-            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
-            using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(_idPrefix);
+            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(_idPrefix);
+            using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(_idPrefix);
 
             string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
 
@@ -153,16 +153,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             returnedTwinDeviceIds.Should().Contain(expectedDeviceIds);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_IterateByItemWorksWithinPage()
         {
             // arrange
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
-            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
-            using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(_idPrefix);
+            using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(_idPrefix);
+            using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(_idPrefix);
 
             string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
 
@@ -192,14 +192,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             returnedTwinDeviceIds.Should().Contain(expectedDeviceIds);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobQuery_QueryWorks()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix);
 
-            await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id);
+            await QueryClientE2ETests.ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id);
 
             string query = "SELECT * FROM devices.jobs";
 
@@ -230,14 +230,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobQuery_QueryByTypeWorks()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix);
 
-            await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id);
+            await QueryClientE2ETests.ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id);
             await WaitForJobToBeQueryableAsync(serviceClient.Query, 1, null, null);
 
             QueryResponse<ScheduledJob> queryResponse = await serviceClient.Query.CreateJobsQueryAsync();
@@ -254,12 +254,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             queriedJob.Status.Should().NotBeNull();
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RawQuery_QueryWorks()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix);
 
             string query = "SELECT COUNT() as TotalNumberOfDevices FROM devices";
 
@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        private async Task ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
+        private static async Task ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
         {
             var twinUpdate = new Twin();
             twinUpdate.Properties.Desired["key"] = "value";
@@ -334,7 +334,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
                 // tests in this suite are written to work even if the queried job isn't the one they created.
-                Logger.Trace("Throttled when creating job. Will use existing job(s) to test query");
+                VerboseTestLogger.WriteLine("Throttled when creating job. Will use existing job(s) to test query");
             }
         }
     }

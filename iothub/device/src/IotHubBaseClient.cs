@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The latest connection status information since the last status change.
         /// </summary>
-        public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
+        public ConnectionStatusInfo ConnectionStatusInfo { get; protected private set; } = new();
 
         /// <summary>
         /// The callback to be executed each time connection status change notification is received.
@@ -111,12 +111,14 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sends an event to IoT hub. The client instance must be opened already.
+        /// Sends a telemetry message to IoT hub.
         /// </summary>
         /// <remarks>
+        /// The client instance must be opened already.
+        /// <para>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect
         /// the error details and take steps accordingly.
-        /// Please note that the list of exceptions is not exhaustive.
+        /// </para>
         /// </remarks>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -124,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        public async Task SendEventAsync(OutgoingMessage message, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
@@ -138,26 +140,32 @@ namespace Microsoft.Azure.Devices.Client
             message.ContentType = _clientOptions.PayloadConvention.PayloadSerializer.ContentType;
             message.ContentEncoding = _clientOptions.PayloadConvention.PayloadEncoder.ContentEncoding.WebName;
 
-            await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+            await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages
-        /// one after the other. The client instance must be opened already.
+        /// Sends a batch of telemetry message to IoT hub.
         /// </summary>
         /// <remarks>
-        /// For more information on IoT Edge module routing for <see cref="IotHubModuleClient"/> see <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// The client instance must be opened already.
+        /// <para>
+        /// Use AMQP for a true batch operation. MQTT will just send the messages one after the other.
+        /// </para>
+        /// <para>
+        /// For more information on IoT Edge module routing for <see cref="IotHubModuleClient"/> see
+        /// <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// </para>
         /// </remarks>
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SendEventBatchAsync(IEnumerable<OutgoingMessage> messages, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
             cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (OutgoingMessage message in messages)
+            foreach (TelemetryMessage message in messages)
             {
                 message.PayloadConvention = _clientOptions.PayloadConvention;
                 message.ContentType = _clientOptions.PayloadConvention.PayloadSerializer.ContentType;
@@ -169,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
+            await InnerHandler.SendTelemetryAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -184,12 +192,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetMessageCallbackAsync(
+        public async Task SetIncomingMessageCallbackAsync(
             Func<IncomingMessage, Task<MessageAcknowledgement>> messageCallback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, messageCallback, nameof(SetMessageCallbackAsync));
+                Logging.Enter(this, messageCallback, nameof(SetIncomingMessageCallbackAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -219,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client
                 _receiveMessageSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, messageCallback, nameof(SetMessageCallbackAsync));
+                    Logging.Exit(this, messageCallback, nameof(SetIncomingMessageCallbackAsync));
             }
         }
 

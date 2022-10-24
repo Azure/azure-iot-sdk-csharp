@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private readonly string _devicePrefix = $"{nameof(MessageSendE2EPoolAmqpTests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MultipleConnections_Amqp()
         {
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MultipleConnections_AmqpWs()
         {
@@ -53,9 +53,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                OutgoingMessage testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string payload, out string p1Value);
-                Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                TelemetryMessage testMessage = MessageSendE2ETests.ComposeD2cTestMessage(out string payload, out string p1Value);
+                VerboseTestLogger.WriteLine($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
+                await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp
@@ -68,8 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     TestOperationAsync,
                     null,
                     authScope,
-                    true,
-                    Logger)
+                    true)
                 .ConfigureAwait(false);
         }
     }

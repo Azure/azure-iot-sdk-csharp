@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         temperature = currentTemperature,
                         humidity = currentHumidity,
                     };
-                    var message = new OutgoingMessage(telemetryDataPoint);
+                    var message = new TelemetryMessage(telemetryDataPoint);
 
                     // Add a custom application property to the message.
                     // An IoT hub can filter on these properties without access to the message body.
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     await deviceClient.OpenAsync(ct);
                     // Send the telemetry message
-                    await deviceClient.SendEventAsync(message, ct);
+                    await deviceClient.SendTelemetryAsync(message, ct);
                     Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
 
                     await Task.Delay(1000, ct);
