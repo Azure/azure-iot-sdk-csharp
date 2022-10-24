@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -10,13 +11,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
     [TestCategory("Unit")]
     public class TwinStateTests
     {
-        private ProvisioningTwinProperties SampleTags = new ProvisioningTwinProperties
+        private readonly Dictionary<string, object> _sampleTags = new()
         {
-            ["SpeedUnity"] = "MPH",
-            ["ConsumeUnity"] = "MPG",
+            { "SpeedUnity", "MPH" },
+            { "ConsumeUnity", "MPG" },
         };
 
-        private ProvisioningTwinProperties SampleDesiredProperties = new ProvisioningTwinProperties
+        private readonly ProvisioningTwinProperties _sampleDesiredProperties = new ProvisioningTwinProperties
         {
             ["Brand"] = "NiceCar",
             ["Model"] = "SNC4",
@@ -60,14 +61,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "  }" +
             "}";
 
-        /* SRS_TWIN_STATE_21_001: [The constructor shall store the provided tags and desiredProperties.] */
-        /* SRS_TWIN_STATE_21_002: [If the _properties is null, the get.DesiredProperties shall return null.] */
-        /* SRS_TWIN_STATE_21_004: [If the value is null, the set.DesiredProperties shall set _properties as null.] */
         [TestMethod]
         public void TwinStateSucceedOnNull()
         {
             // arrange
-            ProvisioningTwinProperties tags = null;
+            Dictionary<string, object> tags = null;
             ProvisioningTwinProperties desiredProperties = null;
 
             // act
@@ -82,7 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TwinStateSucceedOnTagsWitoutDesiredProperties()
         {
             // arrange
-            ProvisioningTwinProperties tags = SampleTags;
+            Dictionary<string, object> tags = _sampleTags;
             ProvisioningTwinProperties desiredProperties = null;
 
             // act
@@ -93,15 +91,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNull(initialTwin.DesiredProperties);
         }
 
-        /* SRS_TWIN_STATE_21_003: [The get.DesiredProperties shall return the content of _properties.Desired.] */
-        /* SRS_TWIN_STATE_21_005: [The set.DesiredProperties shall convert the provided value in a 
-                                    TwinPropertyes.Desired and store it as _properties.] */
         [TestMethod]
         public void TwinStateSucceedOnDesiredPropertiesWitoutTags()
         {
             // arrange
-            ProvisioningTwinProperties tags = null;
-            ProvisioningTwinProperties desiredProperties = SampleDesiredProperties;
+            Dictionary<string, object> tags = null;
+            ProvisioningTwinProperties desiredProperties = _sampleDesiredProperties;
 
             // act
             var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
@@ -115,8 +110,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TwinStateSucceedOnDesiredPropertiesAndTags()
         {
             // arrange
-            ProvisioningTwinProperties tags = SampleTags;
-            ProvisioningTwinProperties desiredProperties = SampleDesiredProperties;
+            Dictionary<string, object> tags = _sampleTags;
+            ProvisioningTwinProperties desiredProperties = _sampleDesiredProperties;
 
             // act
             var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
@@ -130,7 +125,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TwinStateSucceedOnTagsToJson()
         {
             // arrange
-            ProvisioningTwinProperties tags = SampleTags;
+            Dictionary<string, object> tags = _sampleTags;
             ProvisioningTwinProperties desiredProperties = null;
             var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
 
@@ -145,8 +140,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TwinStateSucceedOnDesiredPropertiesToJson()
         {
             // arrange
-            ProvisioningTwinProperties tags = null;
-            ProvisioningTwinProperties desiredProperties = SampleDesiredProperties;
+            Dictionary<string, object> tags = null;
+            ProvisioningTwinProperties desiredProperties = _sampleDesiredProperties;
             var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
 
             // act
@@ -160,8 +155,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TwinStateSucceedOnToJson()
         {
             // arrange
-            ProvisioningTwinProperties tags = SampleTags;
-            ProvisioningTwinProperties desiredProperties = SampleDesiredProperties;
+            Dictionary<string, object> tags = _sampleTags;
+            ProvisioningTwinProperties desiredProperties = _sampleDesiredProperties;
             var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
 
             // act
@@ -174,10 +169,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         [TestMethod]
         public void TwinStateSucceedOnFromJson()
         {
-            // arrange
-            ProvisioningTwinProperties tags = SampleTags;
-            ProvisioningTwinProperties desiredProperties = SampleDesiredProperties;
-
             // act
             ProvisioningTwinState initialTwin = JsonConvert.DeserializeObject<ProvisioningTwinState>(FullInitialTwinJSON);
 
