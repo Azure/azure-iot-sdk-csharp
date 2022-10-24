@@ -9,12 +9,12 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// The collection of twin properties reported by the client.
     /// </summary>
-    public class ReportedPropertyCollection : PropertyCollection
+    public class ReportedProperties : PropertyCollection
     {
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        public ReportedPropertyCollection()
+        public ReportedProperties()
             : this(new Dictionary<string, object>(), false)
         {
         }
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
-        protected internal ReportedPropertyCollection(Dictionary<string, object> reportedProperties, bool responseFromService)
+        protected internal ReportedProperties(Dictionary<string, object> reportedProperties, bool responseFromService)
             : base(reportedProperties, responseFromService)
         {
         }

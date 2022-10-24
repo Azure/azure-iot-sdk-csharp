@@ -880,7 +880,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         internal async Task SendTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
             string correlationId,
-            ReportedPropertyCollection reportedProperties,
+            ReportedProperties reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)

@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// A container for client properties retrieved from the service.
     /// </summary>
-    public class ClientTwin
+    public class Twin
     {
         /// <summary>
         /// Creates an instance of this class.
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
-        protected internal ClientTwin(DesiredPropertyCollection requestsFromService, ReportedPropertyCollection reportedByClient)
+        protected internal Twin(DesiredProperties requestsFromService, ReportedProperties reportedByClient)
         {
             RequestsFromService = requestsFromService;
             ReportedByClient = reportedByClient;
@@ -23,11 +23,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The collection of desired property update requests received from service.
         /// </summary>
-        public DesiredPropertyCollection RequestsFromService { get; }
+        public DesiredProperties RequestsFromService { get; }
 
         /// <summary>
         /// The collection of twin properties reported by the client.
         /// </summary>
-        public ReportedPropertyCollection ReportedByClient { get; }
+        public ReportedProperties ReportedByClient { get; }
     }
 }

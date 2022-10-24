@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
+        public override async Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));
@@ -355,7 +355,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));

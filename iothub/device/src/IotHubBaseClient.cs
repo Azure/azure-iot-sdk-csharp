@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
 
-        private Func<DesiredPropertyCollection, Task> _desiredPropertyUpdateCallback;
+        private Func<DesiredProperties, Task> _desiredPropertyUpdateCallback;
 
         private protected readonly IotHubClientOptions _clientOptions;
 
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The twin object for the current client.</returns>
-        public async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken = default)
+        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -305,7 +305,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The new version of the updated twin if the update was successful.</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken = default)
+        public async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
             cancellationToken.ThrowIfCancellationRequested();
@@ -329,7 +329,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<DesiredPropertyCollection, Task> callback,
+            Func<DesiredProperties, Task> callback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -476,7 +476,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal void OnDesiredStatePatchReceived(DesiredPropertyCollection patch)
+        internal void OnDesiredStatePatchReceived(DesiredProperties patch)
         {
             if (_desiredPropertyUpdateCallback == null)
             {

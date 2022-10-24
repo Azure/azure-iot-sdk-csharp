@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string proxyAddress = null)
         {
             string propName = Guid.NewGuid().ToString();
-            var props = new ReportedPropertyCollection();
+            var props = new ReportedProperties();
 
             async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
                 await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
-                Client.ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
                 deviceTwin.Should().NotBeNull();
                 deviceTwin.ReportedByClient.Should().NotBeNull();
                 deviceTwin.ReportedByClient.TryGetValue(propName, out string actualValue).Should().BeTrue();

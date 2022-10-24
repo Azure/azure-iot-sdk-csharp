@@ -442,13 +442,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
-            var props = new ReportedPropertyCollection();
+            var props = new ReportedProperties();
             props[propName] = propValue;
             await deviceClient.OpenAsync().ConfigureAwait(false);
             long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            Client.ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+           Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             bool propertyFound = deviceTwin.ReportedByClient.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
@@ -502,7 +502,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             // Validate the updated twin from the device-client
             // Validate the updated twin from the device-client
-            Client.ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             bool propertyFound = deviceTwin.RequestsFromService.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
@@ -616,7 +616,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 updateReceivedTask).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            Client.ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             bool propertyFound = deviceTwin.RequestsFromService.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
@@ -645,7 +645,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await _serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            Client.ClientTwin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             bool propertyFound = deviceTwin.RequestsFromService.TryGetValue(propName, out string actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(propValue);
@@ -663,7 +663,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            var patch = new ReportedPropertyCollection();
+            var patch = new ReportedProperties();
             patch[propName] = propValue;
             await deviceClient.UpdateReportedPropertiesAsync(patch).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -687,7 +687,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new ReportedPropertyCollection
+                    new ReportedProperties
                     {
                         [propName1] = null
                     })
@@ -697,7 +697,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new ReportedPropertyCollection
+                    new ReportedProperties
                     {
                         [propName1] = new Dictionary<string, object>
                         {
@@ -713,7 +713,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new ReportedPropertyCollection
+                    new ReportedProperties
                     {
                         [propName1] = new Dictionary<string, object>
                         {
