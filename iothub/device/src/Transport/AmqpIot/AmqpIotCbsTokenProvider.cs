@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (!string.IsNullOrWhiteSpace(_connectionCredentials.SharedAccessSignature))
                 {
                     tokenValue = _connectionCredentials.SharedAccessSignature;
-                    expiresOn = DateTime.MaxValue;
+                    expiresOn = DateTimeOffset.MaxValue;
                 }
                 else
                 {
