@@ -299,7 +299,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<BulkRegistryOperationResult> CreateWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> CreateWithTwinAsync(Device device, ClientTwin twin, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));

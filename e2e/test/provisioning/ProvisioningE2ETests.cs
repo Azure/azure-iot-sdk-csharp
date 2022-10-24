@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -373,7 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new Devices.Provisioning.Service.DeviceCapabilities() { IotEdge = true })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -386,7 +385,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new Devices.Provisioning.Service.DeviceCapabilities() { IotEdge = true })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -399,7 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new Devices.Provisioning.Service.DeviceCapabilities() { IotEdge = false })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -412,7 +411,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new Devices.Provisioning.Service.DeviceCapabilities() { IotEdge = false })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -592,7 +591,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
-            Devices.Provisioning.Service.DeviceCapabilities capabilities,
+            ProvisioningClientCapabilities capabilities,
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
@@ -620,7 +619,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            Devices.Provisioning.Service.DeviceCapabilities deviceCapabilities,
+            ProvisioningClientCapabilities deviceCapabilities,
             string proxyServerAddress = null)
         {
             string groupId = null;
@@ -662,7 +661,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
             DeviceRegistrationResult result = null;
-            Client.IAuthenticationMethod authMethod = null;
+            IAuthenticationMethod authMethod = null;
 
             VerboseTestLogger.WriteLine($"ProvisioningDeviceClient RegisterAsync for group {groupId} . . . ");
 
@@ -686,7 +685,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     }
                 }
 
-                ValidateDeviceRegistrationResult(false, result);
+                ProvisioningE2ETests.ValidateDeviceRegistrationResult(false, result);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // The certificate instance referenced in the ClientAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
@@ -873,7 +872,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary
         private async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
-            Client.IAuthenticationMethod auth,
+            IAuthenticationMethod auth,
             IotHubClientTransportSettings transportSettings,
             bool sendReportedPropertiesUpdate)
         {
@@ -888,8 +887,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (sendReportedPropertiesUpdate)
             {
                 VerboseTestLogger.WriteLine("DeviceClient updating desired properties.");
-                ClientTwin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                var propertiesToReport = new ReportedPropertyCollection
+                TwinProperties twin = await iotClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+                var propertiesToReport = new ReportedProperties
                 {
                     [new Guid().ToString()] = new Guid().ToString(),
                 };
@@ -902,8 +901,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private static async Task ConfirmExpectedDeviceCapabilitiesAsync(
             DeviceRegistrationResult result,
-            Client.IAuthenticationMethod auth,
-            Devices.Provisioning.Service.DeviceCapabilities capabilities)
+            IAuthenticationMethod auth,
+            ProvisioningClientCapabilities capabilities)
         {
             if (capabilities != null && capabilities.IotEdge)
             {
@@ -923,7 +922,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            Devices.Provisioning.Service.DeviceCapabilities capabilities = null)
+            ProvisioningClientCapabilities capabilities = null)
         {
             VerboseTestLogger.WriteLine($"{nameof(CreateAuthProviderFromNameAsync)}({attestationType})");
 
@@ -1051,7 +1050,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             throw new NotSupportedException($"Unknown attestation type: '{attestationType}'.");
         }
 
-        private Client.IAuthenticationMethod CreateAuthenticationMethodFromAuthProvider(
+        private IAuthenticationMethod CreateAuthenticationMethodFromAuthProvider(
             AuthenticationProvider provisioningAuth,
             string deviceId)
         {
@@ -1078,7 +1077,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <summary>
         /// Assert that the device registration result has not errors, and that it was assigned to a hub and has a device id
         /// </summary>
-        private void ValidateDeviceRegistrationResult(bool validatePayload, DeviceRegistrationResult result)
+        private static void ValidateDeviceRegistrationResult(bool validatePayload, DeviceRegistrationResult result)
         {
             Assert.IsNotNull(result);
             VerboseTestLogger.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");

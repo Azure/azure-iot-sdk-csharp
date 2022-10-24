@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // Get device twin.
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            Twin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
+            ClientTwin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // Get device twin.
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            Twin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
+            ClientTwin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // Get module twin.
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            ClientTwin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the module was created as plug and play");

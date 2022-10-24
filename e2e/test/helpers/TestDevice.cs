@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private X509Certificate2 _authCertificate;
 
-        private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
+        private TestDevice(Device device, IAuthenticationMethod authenticationMethod)
         {
             Device = device;
             AuthenticationMethod = authenticationMethod;
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
-            Client.IAuthenticationMethod auth = null;
+            IAuthenticationMethod auth = null;
 
             var requestDevice = new Device(deviceName);
             X509Certificate2 authCertificate = null;

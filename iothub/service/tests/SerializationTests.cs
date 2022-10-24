@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Tests
  ""lastActivityTime"": ""2018-06-29T21:17:08.7759733"",
 }";
 
-            JsonConvert.DeserializeObject<Twin>(jsonString);
+            JsonConvert.DeserializeObject<ClientTwin>(jsonString);
         }
 
         [TestMethod]

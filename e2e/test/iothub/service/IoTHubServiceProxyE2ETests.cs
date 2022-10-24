@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            var twin = new Twin(JobDeviceId)
+            var twin = new ClientTwin(JobDeviceId)
             {
                 Tags = { { JobTestTagName, JobDeviceId } },
             };

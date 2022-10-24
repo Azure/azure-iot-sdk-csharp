@@ -6,9 +6,9 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class TwinCollectionJsonConverter : JsonConverter
+    internal class ProvisioningTwinPropertiesJsonConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -18,7 +18,8 @@ namespace Microsoft.Azure.Devices
                 return;
             }
 
-            if (value is not TwinCollection properties)
+            var properties = value as ProvisioningTwinProperties;
+            if (properties == null)
             {
                 throw new InvalidOperationException("Object passed is not of type TwinCollection.");
             }
@@ -26,11 +27,12 @@ namespace Microsoft.Azure.Devices
             serializer.Serialize(writer, properties.JObject);
         }
 
-        public override bool CanConvert(Type objectType) => typeof(TwinCollection).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
+        public override bool CanConvert(Type objectType) => typeof(ProvisioningTwinProperties).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return new TwinCollection(JToken.ReadFrom(reader) as JObject);
+            return new ProvisioningTwinProperties(JToken.ReadFrom(reader) as JObject);
         }
     }
 }
+

@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Converts a twin to JSON.
     /// </summary>
-    public sealed class TwinJsonConverter : JsonConverter
+    internal sealed class ClientTwinJsonConverter : JsonConverter
     {
         private const string DeviceIdJsonTag = "deviceId";
         private const string ModuleIdJsonTag = "moduleId";
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices
         /// Converts twin to its equivalent JSON representation.
         /// </summary>
         /// <param name="writer">the JSON writer.</param>
-        /// <param name="value">the <see cref="Twin"/> to convert.</param>
+        /// <param name="value">the <see cref="ClientTwin"/> to convert.</param>
         /// <param name="serializer">the JSON serializer.</param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(serializer));
             }
 
-            var twin = value as Twin;
+            var twin = value as ClientTwin;
 
             if (twin == null)
             {
@@ -161,13 +161,13 @@ namespace Microsoft.Azure.Devices
                 if (twin.Properties.Desired != null)
                 {
                     writer.WritePropertyName(DesiredPropertiesJsonTag);
-                    serializer.Serialize(writer, twin.Properties.Desired, typeof(TwinCollection));
+                    serializer.Serialize(writer, twin.Properties.Desired, typeof(ClientTwinProperties));
                 }
 
                 if (twin.Properties.Reported != null)
                 {
                     writer.WritePropertyName(ReportedPropertiesJsonTag);
-                    serializer.Serialize(writer, twin.Properties.Reported, typeof(TwinCollection));
+                    serializer.Serialize(writer, twin.Properties.Reported, typeof(ClientTwinProperties));
                 }
 
                 writer.WriteEndObject();
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Converts JSON to its equivalent <see cref="Twin"/> representation.
+        /// Converts JSON to its equivalent <see cref="ClientTwin"/> representation.
         /// </summary>
         /// <param name="reader">the JSON reader.</param>
         /// <param name="objectType">object type</param>
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(serializer));
             }
 
-            var twin = new Twin();
+            var twin = new ClientTwin();
 
             if (reader.TokenType != JsonToken.StartObject)
             {
@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices
 
                     case CapabilitiesJsonTag:
                         Dictionary<string, object> capabilitiesDictionary = serializer.Deserialize<Dictionary<string, object>>(reader);
-                        twin.Capabilities = new DeviceCapabilities
+                        twin.Capabilities = new ClientCapabilities
                         {
                             IsIotEdge = capabilitiesDictionary.ContainsKey(IotEdgeName) && (bool)capabilitiesDictionary[IotEdgeName]
                         };
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices
 
                     case StatusTag:
                         string status = reader.Value as string;
-                        twin.Status = status?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceStatus>(status) : serializer.Deserialize<DeviceStatus>(reader);
+                        twin.Status = status?[0] == '\"' ? JsonConvert.DeserializeObject<ClientStatus>(status) : serializer.Deserialize<ClientStatus>(reader);
                         break;
 
                     case StatusReasonTag:
@@ -292,8 +292,8 @@ namespace Microsoft.Azure.Devices
                     case ConnectionStateTag:
                         string connectionState = reader.Value as string;
                         twin.ConnectionState = connectionState?[0] == '\"'
-                            ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState)
-                            : serializer.Deserialize<DeviceConnectionState>(reader);
+                            ? JsonConvert.DeserializeObject<ClientConnectionState>(connectionState)
+                            : serializer.Deserialize<ClientConnectionState>(reader);
                         break;
 
                     case LastActivityTimeTag:
@@ -307,8 +307,8 @@ namespace Microsoft.Azure.Devices
                     case AuthenticationTypeTag:
                         string authenticationType = reader.Value as string;
                         twin.AuthenticationType = authenticationType?[0] == '\"'
-                            ? JsonConvert.DeserializeObject<AuthenticationType>(authenticationType)
-                            : serializer.Deserialize<AuthenticationType>(reader);
+                            ? JsonConvert.DeserializeObject<ClientAuthenticationType>(authenticationType)
+                            : serializer.Deserialize<ClientAuthenticationType>(reader);
                         break;
 
                     case X509ThumbprintTag:
@@ -346,7 +346,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Value indicating whether this TwinJsonConverter can write JSON
         /// </summary>
-        public override bool CanConvert(Type objectType) => typeof(Twin).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
+        public override bool CanConvert(Type objectType) => typeof(ClientTwin).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
 
         private static Dictionary<string, object> GetTagsForTwin(JsonReader reader)
         {
@@ -401,7 +401,7 @@ namespace Microsoft.Azure.Devices
                 : null;
         }
 
-        private static void PopulatePropertiesForTwin(Twin twin, JsonReader reader)
+        private static void PopulatePropertiesForTwin(ClientTwin twin, JsonReader reader)
         {
             if (twin == null)
             {
@@ -428,11 +428,11 @@ namespace Microsoft.Azure.Devices
                 switch (propertyName)
                 {
                     case DesiredPropertiesJsonTag:
-                        twin.Properties.Desired = new TwinCollection(JToken.ReadFrom(reader) as JObject);
+                        twin.Properties.Desired = new ClientTwinProperties(JToken.ReadFrom(reader) as JObject);
                         break;
 
                     case ReportedPropertiesJsonTag:
-                        twin.Properties.Reported = new TwinCollection(JToken.ReadFrom(reader) as JObject);
+                        twin.Properties.Reported = new ClientTwinProperties(JToken.ReadFrom(reader) as JObject);
                         break;
 
                     default:

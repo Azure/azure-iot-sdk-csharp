@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly MqttQualityOfServiceLevel _receivingQualityOfService;
 
         private readonly Func<DirectMethodRequest, Task> _methodListener;
-        private readonly Action<DesiredPropertyCollection> _onDesiredStatePatchListener;
+        private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _messageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
@@ -547,7 +547,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
+        public override async Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
             if (!_isSubscribedToTwinResponses)
             {
@@ -621,7 +621,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
         {
             if (!_isSubscribedToTwinResponses)
             {
@@ -947,7 +947,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             string patch = _payloadConvention.PayloadEncoder.ContentEncoding.GetString(receivedEventArgs.ApplicationMessage.Payload);
             Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(patch);
-            var desiredPropertyPatch = new DesiredPropertyCollection(desiredPropertyPatchDictionary)
+            var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
             {
                 PayloadConvention = _payloadConvention,
             };
@@ -986,19 +986,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
                             // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                             // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                            ClientTwinProperties clientTwinProperties = JsonConvert
-                                .DeserializeObject<ClientTwinProperties>(
+                            TwinDocument clientTwinProperties = JsonConvert
+                                .DeserializeObject<TwinDocument>(
                                     _payloadConvention
                                     .PayloadEncoder
                                     .ContentEncoding
                                     .GetString(payloadBytes));
 
-                            var twinDesiredProperties = new DesiredPropertyCollection(clientTwinProperties.Desired)
+                            var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
                             {
                                 PayloadConvention = _payloadConvention,
                             };
 
-                            var twinReportedProperties = new ReportedPropertyCollection(clientTwinProperties.Reported, true)
+                            var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true)
                             {
                                 PayloadConvention = _payloadConvention,
                             };
@@ -1006,7 +1006,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             var getTwinResponse = new GetTwinResponse
                             {
                                 Status = status,
-                                Twin = new ClientTwin(twinDesiredProperties, twinReportedProperties),
+                                Twin = new TwinProperties(twinDesiredProperties, twinReportedProperties),
                             };
 
                             getTwinCompletion.TrySetResult(getTwinResponse);

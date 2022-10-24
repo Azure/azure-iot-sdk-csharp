@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         ArgumentNull = 400005,
 
         /// <summary>
-        /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for <see cref="TwinsClient.UpdateAsync(string, Twin, bool, System.Threading.CancellationToken)"/> is invalid.
+        /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for <see cref="TwinsClient.UpdateAsync(string, ClientTwin, bool, System.Threading.CancellationToken)"/> is invalid.
         /// </summary>
         IotHubFormatError = 400006,
 

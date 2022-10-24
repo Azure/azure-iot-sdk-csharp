@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <typeparam name="T">
         /// The type to deserialize the set of items into. For example, when running a query like "SELECT * FROM devices",
-        /// this type should be <see cref="Twin"/>. When running a query like "SELECT * FROM devices.jobs", this type should be
+        /// this type should be <see cref="ClientTwin"/>. When running a query like "SELECT * FROM devices.jobs", this type should be
         /// <see cref="ScheduledJob"/>.
         /// </typeparam>
         /// <returns>An iterable set of the queried items.</returns>

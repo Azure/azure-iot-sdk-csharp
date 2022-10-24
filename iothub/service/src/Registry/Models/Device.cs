@@ -59,14 +59,14 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "connectionState")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceConnectionState ConnectionState { get; internal set; }
+        public ClientConnectionState ConnectionState { get; internal set; }
 
         /// <summary>
         /// Device's status.
         /// </summary>
         [JsonProperty(PropertyName = "status")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceStatus Status { get; set; }
+        public ClientStatus Status { get; set; }
 
         /// <summary>
         /// Reason, if any, for the device to be in specified status.
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices
         ///  Capabilities that are enabled one the device.
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
-        public virtual DeviceCapabilities Capabilities { get; set; }
+        public virtual ClientCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The scope of the device. For edge devices, this is auto-generated and immutable. For leaf devices, set this to create child/parent

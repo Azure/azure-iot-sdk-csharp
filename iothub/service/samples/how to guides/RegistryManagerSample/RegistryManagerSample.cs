@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Samples
             string edgeParentId = GenerateDeviceId();
             var edgeParent = new Device(edgeParentId)
             {
-                Capabilities = new DeviceCapabilities
+                Capabilities = new ClientCapabilities
                 {
                     // To create an edge device, this must be set to true
                     IsIotEdge = true,
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Samples
             string nestedEdgeId = GenerateDeviceId();
             var nestedEdge = new Device(nestedEdgeId)
             {
-                Capabilities = new DeviceCapabilities
+                Capabilities = new ClientCapabilities
                 {
                     IsIotEdge = true,
                 },
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 Authentication = new AuthenticationMechanism
                 {
-                    Type = AuthenticationType.SelfSigned,
+                    Type = ClientAuthenticationType.SelfSigned,
                     X509Thumbprint = new X509Thumbprint
                     {
                         PrimaryThumbprint = _parameters.PrimaryThumbprint,
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 Authentication = new AuthenticationMechanism
                 {
-                    Type = AuthenticationType.CertificateAuthority,
+                    Type = ClientAuthenticationType.CertificateAuthority,
                 },
             };
 
@@ -158,11 +158,11 @@ namespace Microsoft.Azure.Devices.Samples
             string queryText = $"SELECT * FROM devices WHERE STARTSWITH(id, '{_parameters.DevicePrefix}')";
             Console.WriteLine($"Using query text of: {queryText}");
 
-            QueryResponse<Twin> query = await _client.Query.CreateAsync<Twin>(queryText);
+            QueryResponse<ClientTwin> query = await _client.Query.CreateAsync<ClientTwin>(queryText);
 
             while (await query.MoveNextAsync())
             {
-                Twin twin = query.Current;
+                ClientTwin twin = query.Current;
                 Console.WriteLine($"{twin.DeviceId}");
                 Console.WriteLine($"\tIs edge: {twin.Capabilities.IsIotEdge}");
                 if (!string.IsNullOrWhiteSpace(twin.DeviceScope))
@@ -180,10 +180,10 @@ namespace Microsoft.Azure.Devices.Samples
         {
             Console.WriteLine("\n=== Updating a desired property value ===\n");
 
-            Twin twin = await _client.Twins.GetAsync(deviceId);
+            ClientTwin twin = await _client.Twins.GetAsync(deviceId);
 
             // Set a desired value for a property the device supports, with the corresponding data type
-            var patch = new Twin(twin.DeviceId)
+            var patch = new ClientTwin(twin.DeviceId)
             {
                 ETag = twin.ETag,
             };

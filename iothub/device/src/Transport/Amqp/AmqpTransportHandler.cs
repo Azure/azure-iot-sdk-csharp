@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class AmqpTransportHandler : TransportHandler
     {
         protected AmqpUnit _amqpUnit;
-        private readonly Action<DesiredPropertyCollection> _onDesiredStatePatchListener;
+        private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, DateTimeOffset> _twinResponseTimeouts = new();
@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
+        public override async Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));
@@ -356,19 +356,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     // The response here is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                     // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                    ClientTwinProperties clientTwinProperties = JsonConvert.DeserializeObject<ClientTwinProperties>(body);
+                    TwinDocument clientTwinProperties = JsonConvert.DeserializeObject<TwinDocument>(body);
 
-                    var twinDesiredProperties = new DesiredPropertyCollection(clientTwinProperties.Desired)
+                    var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
                     {
                         PayloadConvention = _payloadConvention,
                     };
 
-                    var twinReportedProperties = new ReportedPropertyCollection(clientTwinProperties.Reported, true)
+                    var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true)
                     {
                         PayloadConvention = _payloadConvention,
                     };
 
-                    return new ClientTwin(twinDesiredProperties, twinReportedProperties);
+                    return new TwinProperties(twinDesiredProperties, twinReportedProperties);
                 }
                 catch (JsonReaderException ex)
                 {
@@ -385,7 +385,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private async Task<AmqpMessage> RoundTripTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
-            ReportedPropertyCollection reportedProperties,
+            ReportedProperties reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -463,7 +463,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 string responseBody = reader.ReadToEnd();
 
                 Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(responseBody);
-                var desiredPropertyPatch = new DesiredPropertyCollection(desiredPropertyPatchDictionary)
+                var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
                 {
                     PayloadConvention = _payloadConvention,
                 };

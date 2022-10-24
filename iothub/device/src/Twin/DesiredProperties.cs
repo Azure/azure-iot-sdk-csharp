@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// The collection of desired property update requests received from service.
     /// </summary>
-    public class DesiredPropertyCollection : PropertyCollection
+    public class DesiredProperties : PropertyCollection
     {
         /// <summary>
         /// Creates an instance of this class.
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
-        protected internal DesiredPropertyCollection(Dictionary<string, object> desiredProperties)
+        protected internal DesiredProperties(Dictionary<string, object> desiredProperties)
             : base(desiredProperties, true)
         {
         }

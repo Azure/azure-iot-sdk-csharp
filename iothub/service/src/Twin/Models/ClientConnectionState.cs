@@ -4,9 +4,9 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Specifies the different connection states of a device.
+    /// Specifies the different connection states of a device or module.
     /// </summary>
-    public enum DeviceConnectionState
+    public enum ClientConnectionState
     {
         /// <summary>
         /// Represents a device in the disconnected state.

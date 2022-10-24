@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceGoodAuthConfig = new Device("123")
             {
-                ConnectionState = DeviceConnectionState.Connected,
+                ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism()
                 {
                     SymmetricKey = new SymmetricKey()
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceGoodAuthConfig = new Device("123")
             {
-                ConnectionState = DeviceConnectionState.Connected,
+                ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism()
                 {
                     SymmetricKey = null,
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceGoodAuthConfig = new Device("123")
             {
-                ConnectionState = DeviceConnectionState.Connected,
+                ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism()
                 {
                     SymmetricKey = null,
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceGoodAuthConfig = new Device("123")
             {
-                ConnectionState = DeviceConnectionState.Connected,
+                ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism()
                 {
                     SymmetricKey = null,
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceGoodAuthConfig = new Device("123")
             {
-                ConnectionState = DeviceConnectionState.Connected,
+                ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism()
                 {
                     SymmetricKey = new SymmetricKey()
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceBadAuthConfig = new Device("123")
             {
-                ConnectionState = DeviceConnectionState.Connected,
+                ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism()
                 {
                     SymmetricKey = null,
@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceBadAuthConfig = new Device("123")
             {
-                ConnectionState = DeviceConnectionState.Connected,
+                ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism()
                 {
                     SymmetricKey = null,
@@ -253,10 +253,10 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             var deviceBadThumbprint = new Device("123")
             {
-                ConnectionState = DeviceConnectionState.Connected,
+                ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism
                 {
-                    Type = AuthenticationType.CertificateAuthority,
+                    Type = ClientAuthenticationType.CertificateAuthority,
                     SymmetricKey = null,
                     X509Thumbprint = null
                 }

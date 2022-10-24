@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     async (r, d) =>
                     {
                         Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
-                        device.Status = DeviceStatus.Disabled;
+                        device.Status = ClientStatus.Disabled;
                         await r.Devices.SetAsync(device).ConfigureAwait(false);
                     })
                 .ConfigureAwait(false);
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 async (r, d) =>
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
-                    device.Status = DeviceStatus.Disabled;
+                    device.Status = ClientStatus.Disabled;
                     await r.Devices.SetAsync(device).ConfigureAwait(false);
                 })
                 .ConfigureAwait(false);
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Receiving the module twin should succeed right now.
             VerboseTestLogger.WriteLine($"{nameof(IotHubDeviceClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: DeviceClient GetTwinAsync.");
-            ClientTwin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            TwinProperties twin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
             Assert.IsNotNull(twin);
 
             // Delete/disable the device in IoT hub. This should trigger the ConnectionStatusChangeHandler.
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Receiving the module twin should succeed right now.
             VerboseTestLogger.WriteLine($"{nameof(IotHubModuleClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: ModuleClient GetTwinAsync.");
-            ClientTwin twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
+            TwinProperties twin = await moduleClient.GetTwinPropertiesAsync().ConfigureAwait(false);
             Assert.IsNotNull(twin);
 
             // Delete/disable the device in IoT hub.
