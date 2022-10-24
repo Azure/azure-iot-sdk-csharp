@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The device/module's response to a direct method invocation.
     /// </summary>
-    public class DirectMethodResponse
+    public class DirectMethodClientResponse
     {
         /// <summary>
         /// This constructor is for deserialization and unit test mocking purposes.
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
         /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
         /// that can set the properties you want.
         /// </remarks>
-        protected internal DirectMethodResponse()
+        protected internal DirectMethodClientResponse()
         { }
 
         /// <summary>

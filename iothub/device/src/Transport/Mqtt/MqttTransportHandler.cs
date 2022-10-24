@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly MqttQualityOfServiceLevel _publishingQualityOfService;
         private readonly MqttQualityOfServiceLevel _receivingQualityOfService;
 
-        private readonly Func<DirectMethodRequest, Task> _methodListener;
+        private readonly Func<DirectMethodServiceRequest, Task> _methodListener;
         private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _messageReceivedListener;
 
@@ -927,7 +927,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = queryStringKeyValuePairs.Get(RequestIdTopicKey);
             string methodName = tokens[3];
 
-            var methodRequest = new DirectMethodRequest
+            var methodRequest = new DirectMethodServiceRequest
             {
                 PayloadConvention = _payloadConvention,
                 MethodName = methodName,

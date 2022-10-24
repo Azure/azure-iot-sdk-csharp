@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<DirectMethodResponse> InvokeAsync(string deviceId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken = default)
+        public virtual async Task<DirectMethodClientResponse> InvokeAsync(string deviceId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking device method for device id: {deviceId}", nameof(InvokeAsync));
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, directMethodRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<DirectMethodResponse>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<DirectMethodClientResponse>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<DirectMethodResponse> InvokeAsync(string deviceId, string moduleId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken = default)
+        public virtual async Task<DirectMethodClientResponse> InvokeAsync(string deviceId, string moduleId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking device method for device id: {deviceId} and module id: {moduleId}", nameof(InvokeAsync));
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, directMethodRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<DirectMethodResponse>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<DirectMethodClientResponse>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

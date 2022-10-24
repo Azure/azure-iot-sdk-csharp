@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private Func<IncomingMessage, ArraySegment<byte>, Task> _onEventsReceived;
         private Func<IncomingMessage, ArraySegment<byte>, Task> _onDeviceMessageReceived;
-        private Action<DirectMethodRequest> _onMethodReceived;
+        private Action<DirectMethodServiceRequest> _onMethodReceived;
         private Action<AmqpMessage, string, IotHubClientException> _onTwinMessageReceived;
 
         public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink, PayloadConvention payloadConvention)
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Method handling
 
-        internal void RegisterMethodListener(Action<DirectMethodRequest> onMethodReceived)
+        internal void RegisterMethodListener(Action<DirectMethodServiceRequest> onMethodReceived)
         {
             _onMethodReceived = onMethodReceived;
             _receivingAmqpLink.RegisterMessageListener(OnMethodReceived);
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                DirectMethodRequest DirectMethodRequest = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, _payloadConvention);
+                DirectMethodServiceRequest DirectMethodRequest = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, _payloadConvention);
                 DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
                 _onMethodReceived?.Invoke(DirectMethodRequest);
             }

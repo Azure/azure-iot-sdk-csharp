@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
+        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, DirectMethodServiceRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
             return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
+        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodServiceRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
             return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
+        private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, DirectMethodServiceRequest methodRequest, CancellationToken cancellationToken = default)
         {
             HttpClientHandler httpClientHandler = null;
             Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();

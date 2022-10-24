@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// A direct method request can only be made by the service or a module.
     /// </remarks>
-    public class DirectMethodRequest
+    public class DirectMethodServiceRequest
     {
         /// <summary>
         /// Initialize an instance of this class.
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         /// A direct method request can only be made by the service or a module;
         /// a device client app will not need to instantiate this class.
         /// </remarks>
-        public DirectMethodRequest()
+        public DirectMethodServiceRequest()
         {
         }
 

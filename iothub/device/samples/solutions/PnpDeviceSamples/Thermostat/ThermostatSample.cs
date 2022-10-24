@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodRequest request)
+        private async Task<DirectMethodResponse> OnDirectMethodAsync(DirectMethodServiceRequest request)
         {
             return request.MethodName switch
             {
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The callback to handle "getMaxMinReport" command. This method will returns the max, min and average temperature
         // from the specified time to the current time.
-        private Task<DirectMethodResponse> HandleMaxMinReportCommandAsync(DirectMethodRequest request)
+        private Task<DirectMethodResponse> HandleMaxMinReportCommandAsync(DirectMethodServiceRequest request)
         {
             try
             {

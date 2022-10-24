@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 Payload = request,
             };
 
-            DirectMethodResponse methodResponse = await serviceClient.DirectMethods
+            DirectMethodClientResponse methodResponse = await serviceClient.DirectMethods
                 .InvokeAsync(deviceId, directMethodRequest)
                 .ConfigureAwait(false);
 

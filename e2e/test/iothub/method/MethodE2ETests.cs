@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 // act
 
-                DirectMethodResponse response = await serviceClient.DirectMethods
+                DirectMethodClientResponse response = await serviceClient.DirectMethods
                     .InvokeAsync(testDevice.Id, directMethodRequest)
                     .ConfigureAwait(false);
 
@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 Payload = reqJson,
             };
 
-            DirectMethodResponse response = await serviceClient.DirectMethods
+            DirectMethodClientResponse response = await serviceClient.DirectMethods
                 .InvokeAsync(deviceId, directMethodRequest)
                 .ConfigureAwait(false);
 
@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            DirectMethodResponse response = await serviceClient.DirectMethods
+            DirectMethodClientResponse response = await serviceClient.DirectMethods
                 .InvokeAsync(deviceId, moduleId, directMethodRequest)
                 .ConfigureAwait(false);
 
