@@ -59,8 +59,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             ThrowIfNotOpen();
 
-            Fx.AssertAndThrow(args.Buffer != null || args.ByteBufferList != null, "must have a buffer to write");
-            Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
+            AssertAndThrow(args.Buffer != null || args.ByteBufferList != null, "must have a buffer to write");
+            AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
             args.Exception = null; // null out any exceptions
 
             Task taskResult = WriteImplAsync(args);
@@ -78,8 +78,8 @@ namespace Microsoft.Azure.Devices.Client
             ThrowIfNotOpen();
 
             // Read with buffer list not supported
-            Fx.AssertAndThrow(args.Buffer != null, "must have buffer to read");
-            Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
+            AssertAndThrow(args.Buffer != null, "must have buffer to read");
+            AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
 
             ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
             args.Exception = null; // null out any exceptions
@@ -432,6 +432,14 @@ namespace Microsoft.Azure.Devices.Client
                 TaskScheduler.Default);
 
             return tcs.Task;
+        }
+
+        private static void AssertAndThrow(bool condition, string description)
+        {
+            if (!condition)
+            {
+                throw new InvalidOperationException(description);
+            }
         }
     }
 }
