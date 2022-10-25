@@ -58,9 +58,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Protocols = amqpTransportSettings.SslProtocols,
             };
 
-            if (_connectionCredentials.Certificate != null)
+            if (_connectionCredentials.ClientCertificate != null)
             {
-                _tlsTransportSettings.Certificate = _connectionCredentials.Certificate;
+                _tlsTransportSettings.Certificate = _connectionCredentials.ClientCertificate;
             }
         }
 
@@ -161,9 +161,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         Logging.Info(this, $"{nameof(CreateClientWebSocket)} Set websocket keep-alive to {_amqpTransportSettings.WebSocketKeepAlive}");
                 }
 
-                if (_connectionCredentials.Certificate != null)
+                if (_connectionCredentials.ClientCertificate != null)
                 {
-                    websocket.Options.ClientCertificates.Add(_connectionCredentials.Certificate);
+                    websocket.Options.ClientCertificates.Add(_connectionCredentials.ClientCertificate);
                 }
 
                 return websocket;

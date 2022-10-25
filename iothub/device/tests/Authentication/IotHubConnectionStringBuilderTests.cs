@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<ClientAuthenticationWithSharedAccessKeyRefresh>();
 
             iotHubConnectionCredentials.SharedAccessSignature.Should().BeNull("SharedAccessKey and SharedAccessSignature are mutually exclusive");
-            iotHubConnectionCredentials.Certificate.Should().BeNull("SharedAccessKey and X.509 are mutually exclusive");
+            iotHubConnectionCredentials.ClientCertificate.Should().BeNull("SharedAccessKey and X.509 are mutually exclusive");
         }
 
         [TestMethod]
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
             iotHubConnectionCredentials.SharedAccessKey.Should().Be(SharedAccessKey);
             iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<ClientAuthenticationWithSharedAccessKeyRefresh>();
-            iotHubConnectionCredentials.Certificate.Should().BeNull("SharedAccessKey and X.509 are mutually exclusive");
+            iotHubConnectionCredentials.ClientCertificate.Should().BeNull("SharedAccessKey and X.509 are mutually exclusive");
         }
 
         [TestMethod]
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<ClientAuthenticationWithSharedAccessSignature>();
 
             iotHubConnectionCredentials.SharedAccessKey.Should().BeNull("SharedAccessSignature and SharedAccessKey are mutually exclusive");
-            iotHubConnectionCredentials.Certificate.Should().BeNull("SharedAccessSignature and X.509 are mutually exclusive");
+            iotHubConnectionCredentials.ClientCertificate.Should().BeNull("SharedAccessSignature and X.509 are mutually exclusive");
         }
 
         [TestMethod]

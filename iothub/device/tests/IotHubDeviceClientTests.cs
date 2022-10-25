@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning disable SYSLIB0026 // Type or member is obsolete
             using var cert = new X509Certificate2();
 
-            Action act = () => new ClientAuthenticationWithX509Certificate(cert, chainCertificates: null, "device1");
+            Action act = () => new ClientAuthenticationWithX509Certificate(cert, certificateChain: null, "device1");
 
             act.Should().Throw<ArgumentException>();
         }

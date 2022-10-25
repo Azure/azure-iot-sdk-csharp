@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (authenticationProvider is AuthenticationProviderX509 x509Auth)
             {
-                CertificateInstaller.EnsureChainIsInstalled(x509Auth.GetAuthenticationCertificateChain());
+                CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
             }
 
             _options = options != default

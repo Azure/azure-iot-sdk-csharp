@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -10,9 +11,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// </summary>
     public class AuthenticationProviderX509 : AuthenticationProvider
     {
-        private readonly X509Certificate2 _clientCertificate;
-        private readonly X509Certificate2Collection _certificateChain;
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -30,33 +28,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             X509Certificate2 clientCertificate,
             X509Certificate2Collection certificateChain = null)
         {
-            _clientCertificate = clientCertificate;
-            _certificateChain = certificateChain;
+            ClientCertificate = clientCertificate
+                ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(clientCertificate));
+
+            CertificateChain = certificateChain;
         }
 
         /// <inheritdoc/>
         public override string GetRegistrationId()
         {
-            X509Certificate2 cert = GetAuthenticationCertificate();
-            return cert.GetNameInfo(X509NameType.DnsName, false);
-        }
-
-        /// <summary>
-        /// Gets the certificate trust chain that will end in the Trusted Root installed on the server side.
-        /// </summary>
-        /// <returns>The certificate chain.</returns>
-        public X509Certificate2 GetAuthenticationCertificate()
-        {
-            return _clientCertificate;
+            return ClientCertificate.GetNameInfo(X509NameType.DnsName, false);
         }
 
         /// <summary>
         /// Gets the certificate used for TLS device authentication.
         /// </summary>
         /// <returns>The client certificate used during TLS communications.</returns>
-        public X509Certificate2Collection GetAuthenticationCertificateChain()
-        {
-            return _certificateChain;
-        }
+        public X509Certificate2 ClientCertificate { get; }
+
+        /// <summary>
+        /// Gets the certificate trust chain that will end in the Trusted Root installed on the server side.
+        /// </summary>
+        /// <returns>The certificate chain.</returns>
+        public X509Certificate2Collection CertificateChain { get; }
     }
 }

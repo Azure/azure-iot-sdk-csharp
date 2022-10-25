@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             RemoteCertificateValidationCallback remoteCertificateValidationCallback,
             CancellationToken cancellationToken)
         {
-            X509Certificate2 clientCert = _authentication.GetAuthenticationCertificate();
+            X509Certificate2 clientCert = _authentication.ClientCertificate;
             return connection.OpenAsync(useWebSocket, clientCert, proxy, remoteCertificateValidationCallback, cancellationToken);
         }
 

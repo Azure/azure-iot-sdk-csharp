@@ -9,8 +9,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class AuthenticationProviderSymmetricKey : AuthenticationProvider
     {
         private readonly string _registrationId;
-        private readonly string _primaryKey;
-        private readonly string _secondaryKey;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -20,9 +18,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="secondaryKey">The secondary key for this device.</param>
         public AuthenticationProviderSymmetricKey(string registrationId, string primaryKey, string secondaryKey)
         {
+            Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
+            Argument.AssertNotNullOrWhiteSpace(primaryKey, nameof(primaryKey));
+            Argument.AssertNotNullOrWhiteSpace(secondaryKey, nameof(secondaryKey));
+
             _registrationId = registrationId;
-            _primaryKey = primaryKey;
-            _secondaryKey = secondaryKey;
+            PrimaryKey = primaryKey;
+            SecondaryKey = secondaryKey;
         }
 
         /// <inheritdoc/>
@@ -32,15 +34,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Gets the primary key.
+        /// The primary key for this device.
         /// </summary>
-        /// <returns>primary key</returns>
-        public string GetPrimaryKey() => _primaryKey;
+        public string PrimaryKey { get; }
 
         /// <summary>
-        /// Gets the secondary key.
+        /// The secondary key for this device.
         /// </summary>
-        /// <returns>secondary key</returns>
-        public string GetSecondaryKey() => _secondaryKey;
+        public string SecondaryKey { get; }
     }
 }
