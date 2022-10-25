@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <ProjectReference Include="..\..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
 
 </Project>

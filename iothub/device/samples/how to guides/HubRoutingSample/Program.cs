@@ -7,11 +7,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace SimulatedDevice
+namespace Microsoft.Azure.Devices.Client.Samples
 {
     /// <summary>
     /// This is the code that sends messages to the IoT Hub for testing the routing as defined

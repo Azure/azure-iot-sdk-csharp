@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string DevicePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}_Device";
         private readonly string ModulePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestCategory("LongRunning")]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)] // This test always takes more than 5 minutes for service to return. Needs investigation.
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Client.TransportType protocol,
             Func<RegistryManager, string, Task> registryManagerOperation)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
 
             var config = new TestConfiguration.IotHub.ConnectionStringParser(deviceConnectionString);
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, protocol);
             void statusChangeHandler(ConnectionStatus s, ConnectionStatusChangeReason r)
             {
-                Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)} connection status change {s}, {r} at {sw.Elapsed}.");
+                VerboseTestLogger.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)} connection status change {s}, {r} at {sw.Elapsed}.");
                 if (r == ConnectionStatusChangeReason.Device_Disabled)
                 {
                     status = s;
@@ -123,12 +123,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(DeviceClient)} with device Id={testDevice.Id}");
+            VerboseTestLogger.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(DeviceClient)} with device Id={testDevice.Id}");
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Receiving the twin should succeed right now.
-            Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: DeviceClient GetTwinAsync.");
+            VerboseTestLogger.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: DeviceClient GetTwinAsync.");
             Shared.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             twin.Should().NotBeNull();
 
@@ -136,12 +136,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             sw.Restart();
             await registryManagerOperation(registryManager, deviceId).ConfigureAwait(false);
-            Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
+            VerboseTestLogger.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
             // Artificial sleep waiting for the connection status change handler to get triggered.
             while (deviceDisabledReceivedCount <= 0)
             {
-                Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Still waiting for connection update {sw.Elapsed} after device status was changed.");
+                VerboseTestLogger.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Still waiting for connection update {sw.Elapsed} after device status was changed.");
                 await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
             }
 
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var amqpTransportSettings = new AmqpTransportSettings(protocol);
             var transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + $"_{Guid.NewGuid()}", ModulePrefix, Logger).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + $"_{Guid.NewGuid()}", ModulePrefix).ConfigureAwait(false);
             ConnectionStatus? status = null;
             ConnectionStatusChangeReason? statusChangeReason = null;
             int deviceDisabledReceivedCount = 0;
@@ -173,12 +173,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings);
             moduleClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(ModuleClient)} with moduleId={testModule.Id}");
+            VerboseTestLogger.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(ModuleClient)} with moduleId={testModule.Id}");
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             // Receiving the module twin should succeed right now.
-            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: ModuleClient GetTwinAsync.");
+            VerboseTestLogger.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: ModuleClient GetTwinAsync.");
             Shared.Twin twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
             Assert.IsNotNull(twin);
 
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             await registryManagerOperation(registryManager, testModule.DeviceId).ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
+            VerboseTestLogger.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
             // Artificial sleep waiting for the connection status change handler to get triggered.
             int sleepCount = 50;

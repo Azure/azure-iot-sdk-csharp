@@ -22,16 +22,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_CompleteMixOrder_AMQP()
         {
-            await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, Logger).ConfigureAwait(false);
+            await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport, MsTestLogger logger)
+        private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             using (var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString))
             {
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 var messages = new List<Client.Message>();
                 for (int i = 0; i < MESSAGE_COUNT; i++)
                 {
-                    (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(logger);
+                    (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
                     await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                     Client.Message message = await deviceClient.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                     if (message == null)

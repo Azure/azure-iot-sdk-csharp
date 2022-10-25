@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(MessageSendFaultInjectionTests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
         {
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs()
         {
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // Test device client recovery when proxy settings are enabled
         [TestCategory("Proxy")]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs_WithProxy()
         {
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
         {
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs()
         {
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // Test device client recovery when proxy settings are enabled
         [TestCategory("Proxy")]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs_WithProxy()
         {
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossSendRecovery_Amqp()
         {
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossSendRecovery_AmqpWs()
         {
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AmqpSessionLossSendRecovery_Amqp()
         {
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AmqpSessionLossSendRecovery_AmqpWs()
         {
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AmqpD2cLinkDropSendRecovery_Amqp()
         {
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AmqpD2cLinkDropSendRecovery_AmqpWs()
         {
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             catch (TimeoutException) { }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             catch (TimeoutException) { }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
         {
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             catch (TimeoutException) { }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         [DoNotParallelize]
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
         public async Task Message_QuotaExceededRecovery_Http()
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             catch (TimeoutException) { }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_AuthenticationRecovery_Amqp()
@@ -314,7 +314,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_AuthenticationRecovery_AmqpWs()
@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_AuthenticationWontRecover_Http()
@@ -338,7 +338,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Amqp()
         {
@@ -349,7 +349,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_AmqpWs()
         {
@@ -360,7 +360,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Mqtt()
         {
@@ -371,7 +371,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_MqttWs()
         {
@@ -406,7 +406,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
-                using Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(Logger, out string _, out string _);
+                using Client.Message testMessage = MessageSendE2ETests.ComposeD2cTestMessage(out string _, out string _);
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             }
 
@@ -422,8 +422,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.DefaultFaultDuration,
                     InitAsync,
                     TestOperationAsync,
-                    () => Task.FromResult(false),
-                    Logger)
+                    () => Task.FromResult(false))
                 .ConfigureAwait(false);
         }
     }
