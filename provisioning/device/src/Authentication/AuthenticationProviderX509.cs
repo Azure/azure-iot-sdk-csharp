@@ -16,6 +16,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
+        /// <remarks>
+        /// Ensure that you dispose any supplied <see cref="X509Certificate2"/> after you are done using it to ensure there are no memory leaks.
+        /// </remarks>
         /// <param name="clientCertificate">
         /// The client certificate used for authentication. The private key should be available in the <see cref="X509Certificate2"/> object,
         /// or should be available in the certificate store of the system where the client will be authenticated from.
