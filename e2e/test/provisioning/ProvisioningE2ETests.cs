@@ -412,7 +412,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             try
             {
-                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType.Http1).ConfigureAwait(false);
+                await ProvisioningE2ETests.ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType.Http1).ConfigureAwait(false);
                 Assert.Fail("Expected exception not thrown");
             }
             catch (ProvisioningTransportException ex)
@@ -429,7 +429,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             try
             {
-                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+                await ProvisioningE2ETests.ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
                 Assert.Fail("Expected exception not thrown");
             }
             catch (ProvisioningTransportException ex)
@@ -714,24 +714,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     }
                 }
 
-                ValidateDeviceRegistrationResult(false, result);
+                ProvisioningE2ETests.ValidateDeviceRegistrationResult(false, result);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
                 auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                await ConfirmRegisteredDeviceWorksAsync(result, auth, transportType, false).ConfigureAwait(false);
+                await ProvisioningE2ETests.ConfirmRegisteredDeviceWorksAsync(result, auth, transportType, false).ConfigureAwait(false);
                 await ConfirmExpectedDeviceCapabilitiesAsync(result, auth, deviceCapabilities).ConfigureAwait(false);
             }
             finally
             {
-                await CleanupEnrollmentsAsync(attestationType, enrollmentType, security.GetRegistrationID(), groupId);
-                DisposeTestObjects(security, auth);
+                await ProvisioningE2ETests.CleanupEnrollmentsAsync(attestationType, enrollmentType, security.GetRegistrationID(), groupId);
+                ProvisioningE2ETests.DisposeTestObjects(security, auth);
             }
         }
 
-        public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType transportProtocol)
+        public static async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType transportProtocol)
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
             using SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid");
@@ -792,8 +792,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await CleanupEnrollmentsAsync(attestationType, enrollmentType, security.GetRegistrationID(), groupId);
-                DisposeTestObjects(security, null);
+                await ProvisioningE2ETests.CleanupEnrollmentsAsync(attestationType, enrollmentType, security.GetRegistrationID(), groupId);
+                ProvisioningE2ETests.DisposeTestObjects(security, null);
             }
         }
 
@@ -836,8 +836,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await CleanupEnrollmentsAsync(attestationType, enrollmentType, security.GetRegistrationID(), groupId);
-                DisposeTestObjects(security, null);
+                await ProvisioningE2ETests.CleanupEnrollmentsAsync(attestationType, enrollmentType, security.GetRegistrationID(), groupId);
+                ProvisioningE2ETests.DisposeTestObjects(security, null);
             }
         }
 
@@ -870,7 +870,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// Attempt to create device client instance from provided arguments, ensure that it can open a
         /// connection, ensure that it can send telemetry, and (optionally) send a reported property update
         /// </summary
-        private async Task ConfirmRegisteredDeviceWorksAsync(
+        private static async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
             Client.IAuthenticationMethod auth,
             Client.TransportType transportProtocol,
@@ -1086,7 +1086,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <summary>
         /// Assert that the device registration result has not errors, and that it was assigned to a hub and has a device id
         /// </summary>
-        private void ValidateDeviceRegistrationResult(bool validatePayload, DeviceRegistrationResult result)
+        private static void ValidateDeviceRegistrationResult(bool validatePayload, DeviceRegistrationResult result)
         {
             Assert.IsNotNull(result);
             VerboseTestLogger.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
@@ -1170,25 +1170,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public static bool ImplementsWebProxy(Client.TransportType transportProtocol)
         {
-            switch (transportProtocol)
+            return transportProtocol switch
             {
-                case Client.TransportType.Mqtt_WebSocket_Only:
-                case Client.TransportType.Amqp_WebSocket_Only:
-                    return true;
-
-                case Client.TransportType.Amqp:
-                case Client.TransportType.Amqp_Tcp_Only:
-                case Client.TransportType.Mqtt:
-                case Client.TransportType.Mqtt_Tcp_Only:
-                case Client.TransportType.Http1:
-                default:
-                    return false;
-            }
-
+                Client.TransportType.Mqtt_WebSocket_Only or Client.TransportType.Amqp_WebSocket_Only => true,
+                _ => false,
+            };
             throw new NotSupportedException($"Unknown transport: '{transportProtocol}'.");
         }
 
-        private async Task CleanupEnrollmentsAsync(AttestationMechanismType attestationMechanismType, EnrollmentType enrollmentType, string registrationId, string groupId)
+        private static async Task CleanupEnrollmentsAsync(AttestationMechanismType attestationMechanismType, EnrollmentType enrollmentType, string registrationId, string groupId)
         {
             try
             {
@@ -1208,7 +1198,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        private void DisposeTestObjects(SecurityProvider securityProvider, Client.IAuthenticationMethod authenticationMethod)
+        private static void DisposeTestObjects(SecurityProvider securityProvider, Client.IAuthenticationMethod authenticationMethod)
         {
             string registrationId = securityProvider.GetRegistrationID();
 
