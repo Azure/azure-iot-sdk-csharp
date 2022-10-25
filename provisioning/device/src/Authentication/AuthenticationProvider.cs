@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// The authentication provider used by Azure IoT device clients.
+    /// The authentication provider used by Azure IoT provisioning device client.
     /// </summary>
     public abstract class AuthenticationProvider
     {
