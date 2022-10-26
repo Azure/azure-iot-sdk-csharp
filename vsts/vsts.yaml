@@ -269,7 +269,7 @@ jobs:
 
       - task: Bash@3
         displayName: 'Postmortum'
-        name: CVTEST_NET
+        name: CVTEST_NET_2
         inputs:
           targetType: 'inline'
           script: |
