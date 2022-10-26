@@ -45,9 +45,6 @@
   </PropertyGroup>
 
   <!--Project reference dependencies-->
-  <ItemGroup>
-    <ProjectReference Include="$(RootDir)\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
-  </ItemGroup>
 
   <!--Nuget package dependencies-->
   <ItemGroup>

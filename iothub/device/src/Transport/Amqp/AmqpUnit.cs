@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private bool IsPooled()
         {
-            return _connectionCredentials.Certificate == null
+            return _connectionCredentials.ClientCertificate == null
                 && _amqpSettings.ConnectionPoolSettings != null
                 && _amqpSettings.ConnectionPoolSettings.UsePooling;
         }

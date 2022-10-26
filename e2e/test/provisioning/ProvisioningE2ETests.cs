@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
@@ -709,7 +708,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (authMethod is AuthenticationProviderX509 x509Auth)
                 {
-                    X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
+                    X509Certificate2 deviceCertificate = x509Auth.ClientCertificate;
                     deviceCertificate?.Dispose();
                 }
 
@@ -773,7 +772,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (auth is AuthenticationProviderX509 x509Auth)
                 {
-                    X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
+                    X509Certificate2 deviceCertificate = x509Auth.ClientCertificate;
                     deviceCertificate?.Dispose();
                 }
 
@@ -836,7 +835,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (auth is AuthenticationProviderX509 x509Auth)
                 {
-                    X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
+                    X509Certificate2 deviceCertificate = x509Auth.ClientCertificate;
                     deviceCertificate?.Dispose();
                 }
 
@@ -1059,12 +1058,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             IAuthenticationMethod auth;
             if (provisioningAuth is AuthenticationProviderX509 x509Auth)
             {
-                X509Certificate2 cert = x509Auth.GetAuthenticationCertificate();
+                X509Certificate2 cert = x509Auth.ClientCertificate;
                 auth = new ClientAuthenticationWithX509Certificate(cert, deviceId);
             }
             else if (provisioningAuth is AuthenticationProviderSymmetricKey symmetricKeyAuth)
             {
-                auth = new ClientAuthenticationWithSharedAccessKeyRefresh(symmetricKeyAuth.GetPrimaryKey(), deviceId);
+                auth = new ClientAuthenticationWithSharedAccessKeyRefresh(symmetricKeyAuth.PrimaryKey, deviceId);
             }
             else
             {

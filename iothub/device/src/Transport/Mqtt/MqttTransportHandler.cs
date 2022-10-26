@@ -218,9 +218,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             var tlsParameters = new MqttClientOptionsBuilderTlsParameters();
 
-            List<X509Certificate> certs = _connectionCredentials.Certificate == null
+            List<X509Certificate> certs = _connectionCredentials.ClientCertificate == null
                 ? new List<X509Certificate>(0)
-                : new List<X509Certificate> { _connectionCredentials.Certificate };
+                : new List<X509Certificate> { _connectionCredentials.ClientCertificate };
 
             tlsParameters.Certificates = certs;
 

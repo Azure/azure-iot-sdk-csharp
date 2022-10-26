@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, connectionCredentials, nameof(CreateAmqpUnit));
 
-            if (connectionCredentials.Certificate == null
+            if (connectionCredentials.ClientCertificate == null
                 && amqpSettings.ConnectionPoolSettings != null
                 && amqpSettings.ConnectionPoolSettings.UsePooling)
             {
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Enter(this, amqpUnit, nameof(RemoveAmqpUnit));
 
             (IConnectionCredentials connectionCredentials, IotHubClientAmqpSettings amqpSettings) = amqpUnit.GetConnectionCredentialsAndAmqpSettings();
-            if (connectionCredentials.Certificate == null
+            if (connectionCredentials.ClientCertificate == null
                 && amqpSettings.ConnectionPoolSettings != null
                 && amqpSettings.ConnectionPoolSettings.UsePooling)
             {

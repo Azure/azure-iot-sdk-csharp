@@ -3,7 +3,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Authentication;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -34,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (authenticationProvider is AuthenticationProviderX509 x509Auth)
             {
-                CertificateInstaller.EnsureChainIsInstalled(x509Auth.GetAuthenticationCertificateChain());
+                CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
             }
 
             _options = options != default

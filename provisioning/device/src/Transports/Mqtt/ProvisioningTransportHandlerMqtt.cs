@@ -10,7 +10,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
 using MQTTnet;
 using MQTTnet.Client;
@@ -357,7 +356,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 var certs = new List<X509Certificate>()
                 {
-                    x509Auth.GetAuthenticationCertificate()
+                    x509Auth.ClientCertificate,
                 };
 
                 tlsParameters.Certificates = certs;
@@ -365,7 +364,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             else if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey key1)
             {
                 password = ProvisioningSasBuilder.BuildSasSignature(
-                    key1.GetPrimaryKey(),
+                    key1.PrimaryKey,
                     string.Concat(
                         provisioningRequest.IdScope,
                         "/registrations/",
