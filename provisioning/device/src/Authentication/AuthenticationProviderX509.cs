@@ -34,12 +34,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             CertificateChain = certificateChain;
         }
 
-        /// <inheritdoc/>
-        public override string GetRegistrationId()
-        {
-            return ClientCertificate.GetNameInfo(X509NameType.DnsName, false);
-        }
-
         /// <summary>
         /// Gets the certificate used for TLS device authentication.
         /// </summary>
@@ -51,5 +45,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <returns>The certificate chain.</returns>
         public X509Certificate2Collection CertificateChain { get; }
+
+        /// <inheritdoc/>
+        public override string GetRegistrationId()
+        {
+            return ClientCertificate.GetNameInfo(X509NameType.DnsName, false);
+        }
     }
 }

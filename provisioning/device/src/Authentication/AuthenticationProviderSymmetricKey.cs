@@ -27,12 +27,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             SecondaryKey = secondaryKey;
         }
 
-        /// <inheritdoc/>
-        public override string GetRegistrationId()
-        {
-            return _registrationId;
-        }
-
         /// <summary>
         /// The primary key for this device.
         /// </summary>
@@ -42,5 +36,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The secondary key for this device.
         /// </summary>
         public string SecondaryKey { get; }
+
+        /// <inheritdoc/>
+        public override string GetRegistrationId()
+        {
+            return _registrationId;
+        }
     }
 }
