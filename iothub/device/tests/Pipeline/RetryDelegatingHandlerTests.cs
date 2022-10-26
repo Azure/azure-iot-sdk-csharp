@@ -314,12 +314,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
+            var telemetry = new List<TelemetryMessage>(0);
 
             // act
-            await sut.SendTelemetryAsync(new List<TelemetryMessage>(), cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
+            await sut.SendTelemetryAsync(telemetry, cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
 
             // assert
-            await nextHandlerMock.Received(0).SendTelemetryAsync(new List<TelemetryMessage>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await nextHandlerMock.Received(0).SendTelemetryAsync(telemetry, cts.Token).ConfigureAwait(false);
         }
 
         [TestMethod]
