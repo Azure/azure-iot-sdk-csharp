@@ -189,14 +189,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     symmetricKeyAttestation.PrimaryKey.Should().Be(((SymmetricKeyAttestation)individualEnrollment.Attestation).PrimaryKey);
                     symmetricKeyAttestation.SecondaryKey.Should().Be(((SymmetricKeyAttestation)individualEnrollment.Attestation).SecondaryKey);
                 }
-                else if (attestationType == AttestationMechanismType.X509)
-                {
-                    attestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
-
-                    var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
-                    x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint);
-                    x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint);
-                }
                 else
                 {
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.Tpm);
@@ -210,6 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (individualEnrollment != null)
                 {
+                    // No need to dispose x509 certificates here, not testing x509 based enrollments
                     await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null);
                 }
             }
@@ -260,19 +253,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     symmetricKeyAttestation.PrimaryKey.Should().Be(((SymmetricKeyAttestation)enrollmentGroup.Attestation).PrimaryKey);
                     symmetricKeyAttestation.SecondaryKey.Should().Be(((SymmetricKeyAttestation)enrollmentGroup.Attestation).SecondaryKey);
                 }
-                else if (attestationType == AttestationMechanismType.X509)
-                {
-                    attestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
-
-                    var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
-                    x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint.Should().Be(((X509Attestation)enrollmentGroup.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint);
-                    x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint.Should().Be(((X509Attestation)enrollmentGroup.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint);
-                }
             }
             finally
             {
                 if (enrollmentGroup != null)
                 {
+                    // No need to dispose x509 certificates here, not testing x509 based enrollments
                     await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, null, enrollmentGroup.EnrollmentGroupId);
                 }
             }
@@ -366,6 +352,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     if (individualEnrollment != null)
                     {
+                        // No need to dispose x509 certificates here, not testing x509 based enrollments
                         await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, individualEnrollment.RegistrationId, null);
                     }
                 }
@@ -438,6 +425,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     if (enrollmentGroup != null)
                     {
+                        // No need to dispose x509 certificates here, not testing x509 based enrollments
                         await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
                     }
                 }
@@ -516,10 +504,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
                     break;
 
-                case AttestationMechanismType.X509:
-                    attestation = X509Attestation.CreateFromClientCertificates(authenticationCertificate);
-                    break;
-
                 default:
                     throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
             }
@@ -572,7 +556,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
                     break;
 
-                case AttestationMechanismType.X509:
                 default:
                     throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
             }
