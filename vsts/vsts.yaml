@@ -202,11 +202,7 @@ jobs:
             echo "====================="
             echo "Ping containers (URL)"
             echo "====================="
-            docker ps -a
-            route
-            ping -c 2 invalidcertgde1.westus.cloudapp.azure.com
-            ping -c 2 invalidcertdps1.westus.cloudapp.azure.com
-            ping -c 2 invalidcertiothub1.westus.cloudapp.azure.com
+
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
