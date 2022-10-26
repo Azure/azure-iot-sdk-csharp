@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
-            _retryPolicy = options.RetryPolicy ?? new NoRetry();
+            _retryPolicy = clientOptions.RetryPolicy ?? new NoRetry();
 
             InitializeSubclients(clientOptions);
         }
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
-            _retryPolicy = options.RetryPolicy ?? new NoRetry();
+            _retryPolicy = clientOptions.RetryPolicy ?? new NoRetry();
 
             InitializeSubclients(clientOptions);
         }
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
-            _retryPolicy = options.RetryPolicy ?? new NoRetry();
+            _retryPolicy = clientOptions.RetryPolicy ?? new NoRetry();
 
             InitializeSubclients(clientOptions);
         }
