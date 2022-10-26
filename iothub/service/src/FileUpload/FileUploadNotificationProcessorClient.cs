@@ -4,10 +4,13 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
+using Azure;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Amqp;
 
@@ -22,6 +25,7 @@ namespace Microsoft.Azure.Devices
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly AmqpConnectionHandler _amqpConnection;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -33,10 +37,12 @@ namespace Microsoft.Azure.Devices
         internal FileUploadNotificationProcessorClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
-            IotHubServiceClientOptions options)
+            IotHubServiceClientOptions options,
+            IRetryPolicy retryPolicy)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
+            _internalRetryHandler = new RetryHandler(retryPolicy);
             _amqpConnection = new AmqpConnectionHandler(
                 credentialProvider,
                 options.Protocol,
@@ -109,7 +115,14 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -145,7 +158,14 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {

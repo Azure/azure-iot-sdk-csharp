@@ -116,6 +116,16 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
 
+        /// <summary>
+        /// Sets the retry policy used in the operation retries.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to a nearly infinite exponential backoff. If set to null, will use <see cref="NoRetry"/> to perform no retries.
+        /// Can be set to any of the built in retry policies such as <see cref="FixedDelayRetryPolicy"/> or <see cref="IncrementalDelayRetryPolicy"/> 
+        /// or a custom one by inheriting from <see cref="IRetryPolicy"/>.
+        /// </remarks>
+        public IRetryPolicy RetryPolicy { get; set; } = new ExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
+
         // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
         // during the handshake.
         private static bool DefaultRemoteCertificateValidation(
@@ -139,6 +149,7 @@ namespace Microsoft.Azure.Devices
                 SdkAssignsMessageId = SdkAssignsMessageId,
                 AmqpConnectionKeepAlive = AmqpConnectionKeepAlive,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
+                RetryPolicy = RetryPolicy,
             };
         }
     }

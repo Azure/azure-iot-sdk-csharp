@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
-                RetryPolicy = new NoRetry(),
+                RetryPolicy = new Client.NoRetry(),
             };
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 

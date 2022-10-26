@@ -3,10 +3,10 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents a retry policy for the hub device/module client.
+    /// Represents a retry policy for the hub service clients.
     /// </summary>
     public interface IRetryPolicy
     {
