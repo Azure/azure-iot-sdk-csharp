@@ -150,6 +150,8 @@ Function RunSamples($path, $message)
     try {
             $sampleRunningTimeInSeconds = 30
 
+            RunSample 'provisioning\service\samples\how to\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c '$env:PROVISIONING_CONNECTION_STRING'"
+
             <#
             # Run the iot-hub\device samples
             #RunSample 'iothub\device\samples\how to guides\DeviceReconnectionSample' "IoTHub\Device\DeviceReconnectionSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
@@ -161,7 +163,6 @@ Function RunSamples($path, $message)
             $pnpDeviceSecurityType = "connectionString"
             RunSample iothub\device\samples\solutions\PnpDeviceSamples\TemperatureController "IoTHub\Device\PnpDeviceSamples\TemperatureController" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_TC_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample iothub\device\samples\solutions\PnpDeviceSamples\Thermostat "IoTHub\Device\PnpDeviceSamples\Thermostat" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_THERMOSTAT_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
-            #>
             # Run the iot-hub\service samples
             $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | Where-Object {$_ -like "DeviceId=*"}).Split("=")[1]
             $iothubHost = ($Env:IOTHUB_CONNECTION_STRING.Split(';') | Where-Object {$_ -like "HostName=*"}).Split("=")[1]
@@ -179,6 +180,7 @@ Function RunSamples($path, $message)
     
             Write-Warning "Using device $deviceId for the ServiceClientSample."
             RunSample 'iothub\service\samples\getting started\ServiceClientSample' "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -d $deviceId -r $sampleRunningTimeInSeconds"
+            #>
 
             # Run provisioning\device samples
     
@@ -189,8 +191,8 @@ Function RunSamples($path, $message)
             #RunSample 'provisioning\device\samples\how to\SymmetricKeySample' "Provisioning\Device\SymmetricKeySample" "-i ""$env:DPS_IDSCOPE"" -r ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
     
             # Run provisioning\service samples
-            RunSample 'provisioning\service\samples\how to\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-            RunSample 'provisioning\service\samples\getting started\EnrollmentSample' "Provisioning\Service\EnrollmentSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+#            RunSample 'provisioning\service\samples\how to\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+#            RunSample 'provisioning\service\samples\getting started\EnrollmentSample' "Provisioning\Service\EnrollmentSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
 
             <#
 
