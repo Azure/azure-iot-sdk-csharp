@@ -5,14 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
-using Azure;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Amqp;
 
