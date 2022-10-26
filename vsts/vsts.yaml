@@ -269,7 +269,6 @@ jobs:
 
       - task: Bash@3
         displayName: 'Postmortum'
-        name: CVTEST_NET_2
         inputs:
           targetType: 'inline'
           script: |
@@ -279,15 +278,6 @@ jobs:
             echo "READING .ps1 SCRIPTS IN _temp"
             echo "===================="
             cat ../../_temp/*.ps1
-
-      - task: CopyFiles@2
-        displayName: "Copy files to the artifacts folder"
-        inputs:
-          SourceFolder: "$(Build.SourcesDirectory)"
-          Contents: "**/*.trx"
-          TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
-        condition: always()
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
