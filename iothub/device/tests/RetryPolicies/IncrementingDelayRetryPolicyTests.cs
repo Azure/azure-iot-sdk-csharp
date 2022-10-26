@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var step = TimeSpan.FromSeconds(1);
-            var retryPolicy = new IncrementalDelayRetryPolicy(0, step, TimeSpan.FromMinutes(100), false);
+            var retryPolicy = new IotHubClientIncrementalDelayRetryPolicy(0, step, TimeSpan.FromMinutes(100), false);
 
             // act
             for (uint i = 1; i < 10; ++i)

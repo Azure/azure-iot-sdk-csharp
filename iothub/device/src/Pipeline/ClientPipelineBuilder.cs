@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
             return this;
         }
 
-        public IDelegatingHandler Build(PipelineContext context, IRetryPolicy retryPolicy)
+        public IDelegatingHandler Build(PipelineContext context, IIotHubClientRetryPolicy retryPolicy)
         {
             if (_pipeline.Count == 0)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
                 currentHandler = currentFactory(context, nextHandler);
                 if (currentHandler is RetryDelegatingHandler retryHandler)
                 {
-                    retryHandler.SetRetryPolicy(retryPolicy ?? new NoRetry());
+                    retryHandler.SetRetryPolicy(retryPolicy ?? new IotHubClientNoRetry());
                 }
                 currentHandler.ContinuationFactory = nextFactory;
 

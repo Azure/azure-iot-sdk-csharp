@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This exception typically means the service is unavailable due to high load or an unexpected error and is usually transient.
         /// The best course of action is to retry your operation after some time.
-        /// By default, the SDK will utilize the <see cref="ExponentialBackoffRetryPolicy"/> retry policy.
+        /// By default, the SDK will utilize the <see cref="IotHubClientExponentialBackoffRetryPolicy"/> retry policy.
         /// </remarks>
         ServerBusy,
 
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Please review the
         /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>
         /// guide for more information. The best course of action is to retry your operation after some time. By default,
-        /// the SDK will utilize the <see cref="ExponentialBackoffRetryPolicy"/> retry policy.
+        /// the SDK will utilize the <see cref="IotHubClientExponentialBackoffRetryPolicy"/> retry policy.
         /// </remarks>
         ServerError,
 

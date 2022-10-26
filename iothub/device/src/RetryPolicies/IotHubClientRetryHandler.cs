@@ -14,22 +14,22 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// Jitter can be under 1 second, plus or minus.
     /// </remarks>
-    internal class RetryHandler
+    internal class IotHubClientRetryHandler
     {
-        private IRetryPolicy _retryPolicy;
+        private IIotHubClientRetryPolicy _retryPolicy;
 
         /// <summary>
         /// Creates an instance of this class with the specified number of retry attempts and parameters defining the progressive delay between retries.
         /// </summary>
         /// <param name="retryPolicy">The retry policy to use for operations.</param>
         /// 
-        internal RetryHandler(IRetryPolicy retryPolicy)
+        internal IotHubClientRetryHandler(IIotHubClientRetryPolicy retryPolicy)
         {
             Debug.Assert(retryPolicy != null);
             _retryPolicy = retryPolicy;
         }
 
-        internal void SetRetryPolicy(IRetryPolicy retryPolicy)
+        internal void SetRetryPolicy(IIotHubClientRetryPolicy retryPolicy)
         {
             Debug.Assert(retryPolicy != null);
             _retryPolicy = retryPolicy;

@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void NoRetryPolicy_RecommendsNo()
         {
             // arrange
-            var noRetryPolicy = new NoRetry();
+            var noRetryPolicy = new IotHubClientNoRetry();
 
             // act and assert
             noRetryPolicy.ShouldRetry(0, null, out TimeSpan retryInterval).Should().BeFalse();

@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var expected = TimeSpan.FromSeconds(10);
-            var retryPolicy = new FixedDelayRetryPolicy(0, expected, false);
+            var retryPolicy = new IotHubClientFixedDelayRetryPolicy(0, expected, false);
 
             // act
             retryPolicy.ShouldRetry(retryCount, new IotHubClientException("", true), out TimeSpan retryInterval);

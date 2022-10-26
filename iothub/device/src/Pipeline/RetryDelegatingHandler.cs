@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // RetryCount is used for testing purpose and is equal to MaxValue in prod.
         private const uint RetryMaxCount = uint.MaxValue;
 
-        private readonly RetryHandler _internalRetryHandler;
-        private IRetryPolicy _retryPolicy;
+        private readonly IotHubClientRetryHandler _internalRetryHandler;
+        private IIotHubClientRetryPolicy _retryPolicy;
 
         private bool _isOpen;
         private SemaphoreSlim _handlerSemaphore = new(1, 1);
@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
-            _retryPolicy = new ExponentialBackoffRetryPolicy(RetryMaxCount, TimeSpan.FromMinutes(2));
-            _internalRetryHandler = new RetryHandler(_retryPolicy);
+            _retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(RetryMaxCount, TimeSpan.FromMinutes(2));
+            _internalRetryHandler = new IotHubClientRetryHandler(_retryPolicy);
 
             _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
 
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Associate(this, _internalRetryHandler, nameof(SetRetryPolicy));
         }
 
-        internal virtual void SetRetryPolicy(IRetryPolicy retryPolicy)
+        internal virtual void SetRetryPolicy(IIotHubClientRetryPolicy retryPolicy)
         {
             _retryPolicy = retryPolicy;
             _internalRetryHandler.SetRetryPolicy(_retryPolicy);
@@ -556,7 +556,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                // This is used to ensure that when NoRetry() policy is enabled, we should not be retrying.
+                // This is used to ensure that when IotHubServiceNoRetry() policy is enabled, we should not be retrying.
                 if (!_retryPolicy.ShouldRetry(0, new IotHubClientException(IotHubClientErrorCode.NetworkErrors), out TimeSpan delay))
                 {
                     if (Logging.IsEnabled)

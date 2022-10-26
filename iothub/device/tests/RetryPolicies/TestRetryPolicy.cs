@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
-    internal class TestRetryPolicy : RetryPolicyBase
+    internal class TestRetryPolicy : IotHubClientRetryPolicyBase
     {
         public TestRetryPolicy(uint maxRetries)
             : base(maxRetries)

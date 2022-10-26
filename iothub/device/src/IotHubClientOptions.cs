@@ -83,11 +83,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets the retry policy used in the operation retries.
         /// </summary>
         /// <remarks>
-        /// Defaults to a nearly infinite exponential backoff. If set to null, will use <see cref="NoRetry"/> to perform no retries.
-        /// Can be set to any of the built in retry policies such as <see cref="FixedDelayRetryPolicy"/> or <see cref="IncrementalDelayRetryPolicy"/> 
-        /// or a custom one by inheriting from <see cref="IRetryPolicy"/>.
+        /// Defaults to a nearly infinite exponential backoff. If set to null, will use <see cref="IotHubClientNoRetry"/> to perform no retries.
+        /// Can be set to any of the built in retry policies such as <see cref="IotHubClientFixedDelayRetryPolicy"/> or <see cref="IotHubClientIncrementalDelayRetryPolicy"/> 
+        /// or a custom one by inheriting from <see cref="IIotHubClientRetryPolicy"/>.
         /// </remarks>
-        public IRetryPolicy RetryPolicy { get; set; } = new ExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
+        public IIotHubClientRetryPolicy RetryPolicy { get; set; } = new IotHubClientExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
 
         /// <summary>
         /// Specifies additional information that will be appended to the user-agent string that is sent to IoT hub.

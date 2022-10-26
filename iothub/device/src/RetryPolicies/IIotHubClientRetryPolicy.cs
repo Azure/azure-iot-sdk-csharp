@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Represents a retry policy for the hub device/module client.
     /// </summary>
-    public interface IRetryPolicy
+    public interface IIotHubClientRetryPolicy
     {
         /// <summary>
         /// Method called by the client prior to a retry.

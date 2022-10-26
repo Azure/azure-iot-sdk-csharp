@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerCallCounter.Should().Be(2);
             retryPolicy.Counter.Should().Be(2);
 
-            var noretry = new NoRetry();
+            var noretry = new IotHubClientNoRetry();
             sut.SetRetryPolicy(noretry);
 
             exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
@@ -357,7 +357,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             retryPolicy.Counter.Should().Be(2);
         }
 
-        private class TestRetryPolicy : IRetryPolicy
+        private class TestRetryPolicy : IIotHubClientRetryPolicy
         {
             public uint Counter { get; private set; }
 

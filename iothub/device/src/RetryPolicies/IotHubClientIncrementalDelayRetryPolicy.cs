@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
-    public class IncrementalDelayRetryPolicy : RetryPolicyBase
+    public class IotHubClientIncrementalDelayRetryPolicy : IotHubClientRetryPolicyBase
     {
         /// <summary>
         /// Creates an instance of this class.
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="delayIncrement">The amount to increment the delay on each additional count of retry.</param>
         /// <param name="maxDelay">The maximum amount of time to wait between retries.</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
-        public IncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
+        public IotHubClientIncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
             : base(maxRetries)
         {
             Argument.AssertNotNegativeValue(delayIncrement.Ticks, nameof(delayIncrement));

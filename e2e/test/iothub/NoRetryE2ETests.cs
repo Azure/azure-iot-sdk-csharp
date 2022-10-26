@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
-                RetryPolicy = new Client.NoRetry(),
+                RetryPolicy = new IotHubClientNoRetry(),
             };
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 

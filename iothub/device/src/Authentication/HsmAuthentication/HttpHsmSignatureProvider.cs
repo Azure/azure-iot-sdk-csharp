@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         private readonly string _apiVersion;
         private readonly Uri _providerUri;
 
-        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
+        private static readonly IIotHubClientRetryPolicy s_retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 
         public HttpHsmSignatureProvider(string providerUri, string apiVersion)
         {
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             string generationId,
             SignRequest signRequest)
         {
-            var retryHandler = new RetryHandler(s_retryPolicy);
+            var retryHandler = new IotHubClientRetryHandler(s_retryPolicy);
             return await retryHandler
                 .RunWithRetryAsync(
                     () => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest),
