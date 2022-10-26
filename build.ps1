@@ -150,7 +150,7 @@ Function RunSamples($path, $message)
     try {
             $sampleRunningTimeInSeconds = 30
             RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c '$env:IOTHUB_DEVICE_CONN_STRING'"
-            RunSample 'provisioning\service\samples\how to\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c '$env:PROVISIONING_CONNECTION_STRING'"
+            RunSample 'provisioning\service\samples\How To\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c '$env:PROVISIONING_CONNECTION_STRING'"
 
             <#
             # Run the iot-hub\device samples
@@ -306,8 +306,13 @@ Function RunSample($path, $message, $params) {
     $label = "RUN: --- $message $configuration ($params)---"
 
     Write-Host
-    Write-Host -ForegroundColor Cyan $label
+    Write-Host -ForegroundColor Green $label
+    Write-Host "PATH: [$path]"
+    Write-Host "MESSAGE: [$message]"
+    Write-Host "PARAMS: [$params]"
+   
     Set-Location (Join-Path $rootDir $path)
+    Write-Host -ForegroundColor Cyan $label
     Write-Host "PATH: [$path]"
     Write-Host "MESSAGE: [$message]"
     Write-Host "PARAMS: [$params]"
