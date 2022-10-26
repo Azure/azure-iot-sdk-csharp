@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestClass]
     [TestCategory("Unit")]
     [TestCategory("IoTHub")]
-    public class ExponentialBackoffRetryPolicyTests
+    public class IotHubClientExponentialBackoffRetryPolicyTests
     {
         [TestMethod]
         public void ExponentialBackoffRetryPolicy_DoesNotUnderflowDelay()

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class NoRetryPolicyTests
+    public class IotHubClientNoRetryPolicyTests
     {
         [TestMethod]
         public void NoRetryPolicy_RecommendsNo()

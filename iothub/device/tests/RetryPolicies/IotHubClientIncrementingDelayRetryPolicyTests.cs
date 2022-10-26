@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
     [TestClass]
     [TestCategory("Unit")]
     [TestCategory("IoTHub")]
-    public class IncrementalDelayRetryPolicyTests
+    public class IotHubClientIncrementalDelayRetryPolicyTests
     {
         [TestMethod]
         public void IncrementalDelayRetryPolicy_IncrementsInSteps()

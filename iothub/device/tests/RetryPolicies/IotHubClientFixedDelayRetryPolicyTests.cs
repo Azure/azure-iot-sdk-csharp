@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestClass]
     [TestCategory("Unit")]
     [TestCategory("IoTHub")]
-    public class FixedDelayRetryPolicyTests
+    public class IotHubClientFixedDelayRetryPolicyTests
     {
         [TestMethod]
         [DataRow(1u)]

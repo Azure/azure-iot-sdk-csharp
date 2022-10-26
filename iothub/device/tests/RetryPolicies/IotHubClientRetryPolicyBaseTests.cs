@@ -14,14 +14,14 @@ namespace Microsoft.Azure.Devices.Client.Tests
     [TestClass]
     [TestCategory("Unit")]
     [TestCategory("IoTHub")]
-    public class RetryPolicyBaseTests
+    public class IotHubClientRetryPolicyBaseTests
     {
         [TestMethod]
         public void RetryPolicyBase_ObservesMax()
         {
             // arrange
             const uint maxRetries = 2;
-            var retryPolicy = new TestRetryPolicy(maxRetries);
+            var retryPolicy = new IotHubClientTestRetryPolicy(maxRetries);
             var ex = new IotHubClientException("", true);
 
             // act and assert
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void RetryPolicyBase_ObservesInifiniteRetries()
         {
             // arrange
-            var retryPolicy = new TestRetryPolicy(0);
+            var retryPolicy = new IotHubClientTestRetryPolicy(0);
             var ex = new IotHubClientException("", true);
 
             // act and assert
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void RetryPolicyBase_IotHubException_ReturnsTrueWhenTransient(bool isTransient)
         {
             // arrange
-            var retryPolicy = new TestRetryPolicy(0);
+            var retryPolicy = new IotHubClientTestRetryPolicy(0);
             var ex = new IotHubClientException("", isTransient);
 
             // act and assert
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void RetryPolicyBase_OtherExceptions_ReturnFalse(Type exceptionType)
         {
             // arrange
-            var retryPolicy = new TestRetryPolicy(0);
+            var retryPolicy = new IotHubClientTestRetryPolicy(0);
             var ex = Activator.CreateInstance(exceptionType, "exParam") as Exception;
 
             // act and assert
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void RetryPolicyBase_UpdateWithJitter_IgnoresAtThresholdOf50(double baseTimeMs)
         {
             // arrange
-            var retryPolicy = new TestRetryPolicy(0);
+            var retryPolicy = new IotHubClientTestRetryPolicy(0);
 
             // act
             TimeSpan jitter = retryPolicy.UpdateWithJitter(baseTimeMs);
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void RetryPolicyBase_UpdateWithJitter_NearValue(double seconds)
         {
             // arrange
-            var retryPolicy = new TestRetryPolicy(0);
+            var retryPolicy = new IotHubClientTestRetryPolicy(0);
             var duration = TimeSpan.FromSeconds(seconds);
             double min = duration.TotalMilliseconds * .95d;
             double max = duration.TotalMilliseconds * 1.05d;
