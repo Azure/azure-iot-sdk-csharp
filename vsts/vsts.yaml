@@ -203,10 +203,10 @@ jobs:
             echo "Ping containers (URL)"
             echo "====================="
             pwd
-            ls -al ../../_temp/
-
+            ls -al ../../_temp/*.ps1
             echo "===================="
             echo "READING .ps1 SCRIPTS IN _temp"
+            echo "===================="
             cat ../../_temp/*.ps1
 
 
