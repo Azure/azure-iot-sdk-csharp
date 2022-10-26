@@ -213,9 +213,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // tests in this suite are written to work even if the queried job isn't the one they created.
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
-            queriedJob.JobType.Should().NotBeNull();
+            queriedJob.JobType.Should().NotBe(JobType.Unknown);
             queriedJob.CreatedOnUtc.Should().NotBeNull();
-            queriedJob.Status.Should().NotBeNull();
+            queriedJob.Status.Should().NotBe(JobStatus.Unknown);
             if (queriedJob.Status != JobStatus.Queued
                 && queriedJob.Status != JobStatus.Scheduled
                 && queriedJob.Status != JobStatus.Cancelled
@@ -248,10 +248,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // tests in this suite are written to work even if the queried job isn't the one they created.
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
-            queriedJob.JobType.Should().NotBeNull();
+            queriedJob.JobType.Should().NotBe(JobType.Unknown);
             queriedJob.EndedOnUtc.Should().NotBeNull();
             queriedJob.CreatedOnUtc.Should().NotBeNull();
-            queriedJob.Status.Should().NotBeNull();
+            queriedJob.Status.Should().NotBe(JobStatus.Unknown);
         }
 
         [TestMethod]
