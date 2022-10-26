@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             if (args.CompletedCallback == null)
             {
-                throw new InvalidOperationException("Must have a valid callback");
+                throw new InvalidOperationException("Must have a valid callback.");
             }
 
             ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
