@@ -110,6 +110,15 @@ jobs:
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
+      - ${{ if eq(variables['testNetcore31'], 'True') }}:
+        - task: UseDotNet@2
+          displayName: 'Use .NET Core SDK 3.1'
+          inputs:
+            packageType: sdk
+            version: 3.1.x
+            performMultiLevelLookup: true
+            installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: PowerShell@2
         displayName: 'Cert Validation - Setup Certificate Proxy'
         inputs:
