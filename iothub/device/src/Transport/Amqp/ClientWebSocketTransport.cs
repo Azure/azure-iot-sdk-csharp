@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (args.Buffer == null || args.ByteBufferList == null)
             {
-                throw new InvalidOperationException("Must have a buffer to write");
+                throw new InvalidOperationException("Must have a buffer to write.");
             }
             if (args.CompletedCallback == null)
             {
