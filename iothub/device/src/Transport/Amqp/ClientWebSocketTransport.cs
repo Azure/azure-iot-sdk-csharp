@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
             // Read with buffer list not supported
             if (args.Buffer == null)
             {
-                throw new InvalidOperationException("Must have buffer to read");
+                throw new InvalidOperationException("Must have buffer to read.");
             }
             if (args.CompletedCallback == null)
             {
