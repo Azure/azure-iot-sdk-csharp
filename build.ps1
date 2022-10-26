@@ -149,7 +149,7 @@ Function RunSamples($path, $message)
 
     try {
             $sampleRunningTimeInSeconds = 30
-
+            RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c '$env:IOTHUB_DEVICE_CONN_STRING'"
             RunSample 'provisioning\service\samples\how to\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c '$env:PROVISIONING_CONNECTION_STRING'"
 
             <#
@@ -308,6 +308,9 @@ Function RunSample($path, $message, $params) {
     Write-Host
     Write-Host -ForegroundColor Cyan $label
     Set-Location (Join-Path $rootDir $path)
+    Write-Host "PATH: [$path]"
+    Write-Host "MESSAGE: [$message]"
+    Write-Host "PARAMS: [$params]"
 
     $runCommand = "dotnet run -- $params"
     Invoke-Expression $runCommand
