@@ -35,15 +35,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Gets the certificate used for TLS device authentication.
+        /// The client certificate used for TLS device authentication.
         /// </summary>
-        /// <returns>The client certificate used during TLS communications.</returns>
         public X509Certificate2 ClientCertificate { get; }
 
         /// <summary>
-        /// Gets the certificate trust chain that will end in the Trusted Root installed on the server side.
+        /// The certificate trust chain that will end in the Trusted Root installed on the server side.
         /// </summary>
-        /// <returns>The certificate chain.</returns>
         public X509Certificate2Collection CertificateChain { get; }
 
         /// <inheritdoc/>
