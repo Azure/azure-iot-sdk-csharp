@@ -204,6 +204,7 @@ jobs:
             echo "====================="
             pwd
             ls -al ../../_temp/
+            cat ../../_temp/*.ps1
 
 
       - powershell: ./vsts/gatedBuild.ps1
