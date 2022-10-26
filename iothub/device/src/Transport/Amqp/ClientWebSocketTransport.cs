@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             if (args.CompletedCallback == null)
             {
-                throw new InvalidOperationException("Must have a valid callback");
+                throw new InvalidOperationException("Must have a valid callback.");
             }
             args.Exception = null; // null out any exceptions
 
