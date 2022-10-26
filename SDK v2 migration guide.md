@@ -104,7 +104,7 @@ In the connection status callback, a third value, `RecommendedAction`, is now pr
 
 ## What will happen to the v1 SDK
 
-After the v2 SDK is released as GA (general audience), meaning it is no longer only in preview, there will be one final LTS of the v1 SDK released that we will support like any other LTS release (security bug fixes, some non-security bug fixes as needed).
+After the v2 SDK is released as GA (general availability), meaning it is no longer only in preview, there will be one final LTS of the v1 SDK released that we will support like any other LTS release (security bug fixes, some non-security bug fixes as needed).
 Users are still encouraged to migrate to v2 when they have the chance.
 
 > For more details on LTS releases, see [this document](./readme.md#long-term-support-lts).
@@ -131,7 +131,7 @@ Find a client you currently use below, read the table of API name changes and us
   - Two properties enum values are mostly the same as before, with some renames (underscores removed) and obsolete members removed.
   - A new property has been added with a recommended action, which a device developer may observe or ignore.
 - The file upload method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
-- Cloud-to-device messages can be received by calling `SetMessageHandlerAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
+- Cloud-to-device messages can be received by calling `SetMessageIncomingMessageCallbackAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
 - Several callback handler set methods and definitions have changed, losing the `userContext` parameter which was deemed unnecessary and a vestige of the C device client.
 - The exponential back-off retry policy has updated parameters and logic.
 - Remote certificate validation is no natively longer supported for AMQP web socket connections.
