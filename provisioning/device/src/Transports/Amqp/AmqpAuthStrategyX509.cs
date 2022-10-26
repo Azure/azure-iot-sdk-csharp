@@ -7,7 +7,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Authentication;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -32,7 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             RemoteCertificateValidationCallback remoteCertificateValidationCallback,
             CancellationToken cancellationToken)
         {
-            X509Certificate2 clientCert = _authentication.GetAuthenticationCertificate();
+            X509Certificate2 clientCert = _authentication.ClientCertificate;
             return connection.OpenAsync(useWebSocket, clientCert, proxy, remoteCertificateValidationCallback, cancellationToken);
         }
 

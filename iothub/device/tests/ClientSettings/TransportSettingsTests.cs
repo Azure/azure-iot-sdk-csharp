@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             const string hostName = "acme.azure-devices.net";
 #pragma warning disable SYSLIB0026 // Type or member is obsolete
             using var cert = new X509Certificate2();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, chainCertificates: null, "device1");
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certificateChain: null, "device1");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act

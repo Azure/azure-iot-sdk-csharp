@@ -35,7 +35,6 @@
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
     <ProjectReference Include="$(RootDir)\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
     <ProjectReference Include="$(RootDir)\iothub\service\src\Microsoft.Azure.Devices.csproj" />
-    <ProjectReference Include="$(RootDir)\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
   </ItemGroup>

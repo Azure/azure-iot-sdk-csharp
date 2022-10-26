@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
-using Microsoft.Azure.Devices.Authentication;
-using Microsoft.Azure.Devices.Logging;
-using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
+using Microsoft.Azure.Devices.Logging;
+using Microsoft.Azure.Devices.Provisioning.Client;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {

@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClientHandler.SslProtocols = iotHubClientHttpSettings.SslProtocols;
             _httpClientHandler.CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck;
 
-            X509Certificate2 clientCert = _connectionCredentials.Certificate;
+            X509Certificate2 clientCert = _connectionCredentials.ClientCertificate;
             IWebProxy proxy = iotHubClientHttpSettings.Proxy;
 
             if (clientCert != null)
