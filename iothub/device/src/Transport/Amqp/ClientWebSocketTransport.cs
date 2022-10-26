@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             ThrowIfNotOpen();
 
-            if (args.Buffer == null || args.ByteBufferList == null)
+            if (args.Buffer == null && args.ByteBufferList == null)
             {
                 throw new InvalidOperationException("Must have a buffer to write.");
             }
