@@ -20,10 +20,8 @@ are outlines of the notable breaking changes as well as a mapping from version 1
 
 There are a number of reasons why the Azure IoT SDK team chose to do a major version revision. Here are a few of the more important reasons:
 
-### Creating, removing, or upgrading several NuGet dependencies.
+### Removing or upgrading several NuGet dependencies.
 
-- Created
-  - Microsoft.Azure.Devices.Authentication
 - Upgraded
   - Microsoft.Azure.Devices (IoT hub service)
   - Microsoft.Azure.Devices.Client (IoT hub device)
@@ -97,6 +95,10 @@ but users are still encouraged to migrate to version 2 when they have the chance
 | `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` |
 | `MethodRequest` | `DirectMethodRequest` |
 | `MethodResponse` | `DirectMethodResponse` |
+| `DeviceAuthenticationWithRegistrySymmetricKey`, `DeviceAuthenticationWithSharedAccessPolicyKey`, `ModuleAuthenticationWithRegistrySymmetricKey` | `ClientAuthenticationWithSharedAccessKeyRefresh` |
+| `DeviceAuthenticationWithToken`, `ModuleAuthenticationWithToken` | `ClientAuthenticationWithSharedAccessSignature` |
+| `DeviceAuthenticationWithTokenRefresh`, `ModuleAuthenticationWithTokenRefresh` | `ClientAuthenticationWithTokenRefresh` |
+| `DeviceAuthenticationWithX509Certificate` | `ClientAuthenticationWithX509Certificate` |
 
 #### Other notable breaking changes
 
