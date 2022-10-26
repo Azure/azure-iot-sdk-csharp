@@ -90,7 +90,7 @@ az iot dps certificate create -g $resourceGroup --dps-name $dpsName --name $cert
 # Verify rootCA cert in dps
 Write-Host "Verifying possession of rootCACert in $dpsName"
 $etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag'
-$requestedCommonName = az iot dps certificate generate-verification-code -g $resourceGroup --dps-name $dpsName --name $certNameToUpload -e $etag --query 'properties.verificationCode'
+$requestedCommonName = az iot dps certificate generate-verification-code -g $resourceGroup --dps-name $dpsName --name $certNameToUpload -e $etag --query 'properties.verificationCode' 2>nul
 $verificationCertArgs = @{
     "-DnsName"                       = $requestedCommonName;
     "-CertStoreLocation"             = "cert:\LocalMachine\My";
@@ -98,9 +98,10 @@ $verificationCertArgs = @{
     "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
     "-Signer"                        = $rootCACert;
 }
+
 $verificationCertPath = "$certFolder/verification.cer"
 $verificationCert = New-SelfSignedCertificate @verificationCertArgs
 Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
-$etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag'
+$etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag' 2>nul
 az iot dps certificate verify -g $resourceGroup --dps-name $dpsName --name $certNameToUpload -e $etag --path $verificationCertPath --output none
 Write-Host "Successfully verified possession of rootCACert in $dpsName"

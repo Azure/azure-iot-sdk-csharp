@@ -58,7 +58,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
         private readonly Parameters _parameters;
 
-        private string _globalDeviceEndpoint;
         private readonly string _globalEndpoint;
         private readonly string _idScope;
         private readonly string _certificateName;

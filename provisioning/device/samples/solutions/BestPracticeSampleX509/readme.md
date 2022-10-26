@@ -80,7 +80,7 @@ You can specify initialTwinState, provisioning status, device capabilities, ioth
     .\GenerateGroupEnrollment.ps1 `
         -intermediateCertName <intermediate certificate file name including the path> `
         -resourceGroup <DPS instance resource group> `
-        -dpsName <DPS instance name> `
+        -dpsName <DPS instance name>
 ```
 
 ### 4. Provision a device through DPS and connect to IoT Hub
@@ -97,7 +97,7 @@ In this step, we will use the chained device certificate to provision a device t
 3. Set the IdScope, device certificate, and certificate password.
 
 ```powershell
-    dotnet run -s <IdScope> -c <CertificateName> -p <CertificatePassword>
+    dotnet run --s <IdScope> --c <CertificateName> --p <CertificatePassword>
 ```
 
 4. Exchange messages between the device process and the IoT hub.
