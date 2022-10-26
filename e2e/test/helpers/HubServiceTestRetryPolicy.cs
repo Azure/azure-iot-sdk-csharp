@@ -7,7 +7,7 @@ using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    internal class HubServiceTestRetryPolicy : IRetryPolicy
+    internal class HubServiceTestRetryPolicy : IIotHubClientRetryPolicy
     {
         private readonly HashSet<IotHubServiceErrorCode> _iotHubServiceErrorCodes;
         private const int MaxRetries = 20;

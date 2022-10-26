@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-        private readonly IRetryPolicy _retryPolicy;
+        private readonly IIotHubServiceRetryPolicy _retryPolicy;
         private const string ApiVersion = "2021-04-12";
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
-            _retryPolicy = clientOptions.RetryPolicy ?? new NoRetry();
+            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
 
             InitializeSubclients(clientOptions);
         }
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
-            _retryPolicy = clientOptions.RetryPolicy ?? new NoRetry();
+            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
 
             InitializeSubclients(clientOptions);
         }
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
-            _retryPolicy = clientOptions.RetryPolicy ?? new NoRetry();
+            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
 
             InitializeSubclients(clientOptions);
         }

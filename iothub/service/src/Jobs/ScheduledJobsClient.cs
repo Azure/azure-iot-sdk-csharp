@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
         private readonly QueryClient _queryClient;
-        private readonly RetryHandler _internalRetryHandler;
+        private readonly IotHubServiceRetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates client, provided for unit testing purposes only.
@@ -41,14 +41,14 @@ namespace Microsoft.Azure.Devices
             HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
             QueryClient queryClient,
-            IRetryPolicy retryPolicy)
+            IIotHubServiceRetryPolicy retryPolicy)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
             _queryClient = queryClient;
-            _internalRetryHandler = new RetryHandler(retryPolicy);
+            _internalRetryHandler = new IotHubServiceRetryHandler(retryPolicy);
         }
 
         /// <summary>

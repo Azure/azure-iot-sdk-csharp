@@ -8,7 +8,7 @@ using Microsoft.Azure.Devices.Provisioning.Service;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    public class ProvisioningServiceRetryPolicy : IRetryPolicy
+    public class ProvisioningServiceRetryPolicy : IIotHubClientRetryPolicy
     {
         private const string RetryAfterKey = "Retry-After";
         private const uint MaxRetryCount = 20;

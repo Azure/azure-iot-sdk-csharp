@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// 
         public static async Task RunWithRetryAsync(
             Func<Task> asyncOperation,
-            IRetryPolicy retryPolicy,
+            IIotHubClientRetryPolicy retryPolicy,
             CancellationToken cancellationToken = default)
         {
             uint counter = 0;

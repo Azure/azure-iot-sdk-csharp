@@ -120,11 +120,11 @@ namespace Microsoft.Azure.Devices
         /// Sets the retry policy used in the operation retries.
         /// </summary>
         /// <remarks>
-        /// Defaults to a nearly infinite exponential backoff. If set to null, will use <see cref="NoRetry"/> to perform no retries.
-        /// Can be set to any of the built in retry policies such as <see cref="FixedDelayRetryPolicy"/> or <see cref="IncrementalDelayRetryPolicy"/> 
-        /// or a custom one by inheriting from <see cref="IRetryPolicy"/>.
+        /// Defaults to a nearly infinite exponential backoff. If set to null, will use <see cref="IotHubServiceNoRetry"/> to perform no retries.
+        /// Can be set to any of the built in retry policies such as <see cref="IotHubServiceFixedDelayRetryPolicy"/> or <see cref="IotHubServiceIncrementalDelayRetryPolicy"/> 
+        /// or a custom one by inheriting from <see cref="IIotHubServiceRetryPolicy"/>.
         /// </remarks>
-        public IRetryPolicy RetryPolicy { get; set; } = new ExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
+        public IIotHubServiceRetryPolicy RetryPolicy { get; set; } = new IotHubServiceExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
 
         // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
         // during the handshake.

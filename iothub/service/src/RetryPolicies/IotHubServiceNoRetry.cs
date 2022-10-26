@@ -8,18 +8,18 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Represents a retry policy that performs no retries.
     /// </summary>
-    public class NoRetry : IRetryPolicy
+    public class IotHubServiceNoRetry : IIotHubServiceRetryPolicy
     {
         /// <summary>
         /// Create an instance of a retry policy that perfrms no retries.
         /// </summary>
-        public NoRetry()
+        public IotHubServiceNoRetry()
         {
             if (Logging.IsEnabled)
                 Logging.Info(
                     this,
                     $"NOTE: A no-retry policy has been enabled; the client will not perform any retries on error.",
-                    nameof(NoRetry));
+                    nameof(IotHubServiceNoRetry));
         }
 
         /// <summary>

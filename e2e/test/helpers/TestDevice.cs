@@ -27,14 +27,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     {
         private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 
-        private static readonly IRetryPolicy s_createRetryPolicy = new HubServiceTestRetryPolicy();
+        private static readonly IIotHubClientRetryPolicy s_createRetryPolicy = new HubServiceTestRetryPolicy();
 
         private static readonly HashSet<IotHubServiceErrorCode> s_getRetryableStatusCodes = new()
         {
             IotHubServiceErrorCode.DeviceNotFound,
             IotHubServiceErrorCode.ModuleNotFound,
         };
-        private static readonly IRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
+        private static readonly IIotHubClientRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
 
         private X509Certificate2 _authCertificate;
 

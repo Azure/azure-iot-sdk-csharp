@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceErrorCode.DeviceNotFound,
             IotHubServiceErrorCode.ModuleNotFound,
         };
-        private static readonly IRetryPolicy s_retryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
+        private static readonly IIotHubClientRetryPolicy s_retryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
