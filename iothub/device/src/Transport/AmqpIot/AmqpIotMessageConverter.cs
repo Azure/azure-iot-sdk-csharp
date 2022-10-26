@@ -67,7 +67,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// </summary>
         public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, IncomingMessage message)
         {
-            Fx.AssertAndThrow(amqpMessage.DeliveryTag != null, "AmqpMessage should always contain delivery tag.");
+            if (amqpMessage.DeliveryTag == null)
+            {
+                throw new InvalidOperationException("AmqpMessage should always contain delivery tag.");
+            }
 
             SectionFlag sections = amqpMessage.Sections;
             if ((sections & SectionFlag.Properties) != 0)
