@@ -202,6 +202,7 @@ jobs:
             echo "====================="
             echo "Ping containers (URL)"
             echo "====================="
+            ls -al home/vsts/work/_temp/
 
 
       - powershell: ./vsts/gatedBuild.ps1
