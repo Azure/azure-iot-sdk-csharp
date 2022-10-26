@@ -204,6 +204,9 @@ jobs:
             echo "====================="
             pwd
             ls -al ../../_temp/
+
+            echo "===================="
+            echo "READING .ps1 SCRIPTS IN _temp"
             cat ../../_temp/*.ps1
 
 
