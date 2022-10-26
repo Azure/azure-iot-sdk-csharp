@@ -202,6 +202,7 @@ jobs:
             echo "====================="
             echo "Ping containers (URL)"
             echo "====================="
+            pwd
             ls -al home/vsts/work/_temp/
 
 
