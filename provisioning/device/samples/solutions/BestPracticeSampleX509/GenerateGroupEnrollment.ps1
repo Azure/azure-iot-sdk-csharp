@@ -12,7 +12,11 @@ param(
 
     # IoT dps name used for running the sample.
     [Parameter(Mandatory=$true)]
-    [string] $dpsName
+    [string] $dpsName,
+
+    # Deletes and recreate enrollmentGroup if it already exists
+    [Parameter(Mandatory=$false)]
+    [switch] $force = $false
 )
 # GroupEnrollment Id created to use in sample.
 $groupEnrollmentId = "x509GroupEnrollment"
@@ -42,9 +46,15 @@ Write-Host "`Checking if '$groupEnrollmentId' enrollment group already exists in
 $groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g $resourceGroup --enrollment-id $groupEnrollmentId 2>nul
 if ($groupEnrollmentExists)
 {
-    Write-Host "Deleting existing enrollment group '$groupEnrollmentId' in '$dpsName'..."
-    az iot dps enrollment-group delete -g $resourceGroup --eid $groupEnrollmentId --dps-name $dpsName
-    Write-Host "Enrollment group '$groupEnrollmentId' is deleted in '$dpsName'."
+    if ($force) {
+        Write-Host "Deleting existing enrollment group '$groupEnrollmentId' in '$dpsName'..."
+        az iot dps enrollment-group delete -g $resourceGroup --eid $groupEnrollmentId --dps-name $dpsName
+        Write-Host "Enrollment group '$groupEnrollmentId' is deleted in '$dpsName'."
+    }
+    else {
+        Write-Host "Enrollment group '$groupEnrollmentId' already exists under '$dpsName'. If you wish to delete the enrollment group '$groupEnrollmentId', set the force flag. Exiting..."
+        exit
+    }
 }
 else {
     Write-Host "$groupEnrollmentId enrollment group does not exist in $dpsName"
