@@ -37,10 +37,16 @@ namespace Microsoft.Azure.Devices
         {
             if (maxWait.Ticks < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(maxWait), maxWait.Ticks, string.Format(CultureInfo.CurrentCulture, "ArgumentCannotBeNegative", new object[]
-                {
-                    nameof(maxWait)
-                }));
+                throw new ArgumentOutOfRangeException(
+                    nameof(maxWait),
+                    maxWait.Ticks,
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        "ArgumentCannotBeNegative",
+                        new object[]
+                        {
+                            nameof(maxWait)
+                        }));
             }
 
             _maxDelay = maxWait;

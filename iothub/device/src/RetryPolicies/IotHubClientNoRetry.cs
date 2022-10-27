@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     public class IotHubClientNoRetry : IIotHubClientRetryPolicy
     {
         /// <summary>
-        /// Create an instance of a retry policy that perfrms no retries.
+        /// Create an instance of a retry policy that performs no retries.
         /// </summary>
         public IotHubClientNoRetry()
         {
