@@ -86,10 +86,10 @@ All of our samples are located in this repository. The samples live alongside th
 Samples for each of these categories are further separated into three sub-categories (from simplest to complex):
 
 1. `Getting Started`
-- [DeviceReconnectionSample](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample)
 2. `How To`
 3. `Solutions`
-- [BestPracticeSampleX509](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509)
+
+If you are looking for a best practice solution sample using X.509 authentication to get started with building your own custom IoT cloud solution, please see [best practice X.509 solution](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509) sample.
 
 If you are looking for a good device sample to get started with, please see the [device reconnection sample](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample).
 It shows how to connect a device, handle disconnect events, cases to handle when making calls, and when to re-initialize the `DeviceClient`.
