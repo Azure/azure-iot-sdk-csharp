@@ -19,7 +19,7 @@ The business needs of Company-X are -
 
 ![solution](media/auth_flow_diagram.png)
 > **Note**\
-> The Device Process is the device (host) application that holds the device provisioning client and IoT hub communication code.
+> The Device Process is the device (host) application that holds the provisioning client and IoT hub communication code.
 
 ### Prerequisites
 
@@ -43,13 +43,13 @@ In this solution, we will use a self-managed PKI. If you want to see a sample th
 
 ### 2. Generate self-signed X.509 certificates and verify root certificate
 
-1. Create a secure string password to use in the creation of self-signed certificates.
+1. Create a secure string password to use in the creation of self-signed certificates. Open Windows PowerShell as administrator.
 
 ```powershell
     $password= ConvertTo-SecureString <your password> -AsPlainText -Force
 ```
 
-2. [X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509AuthSetup.ps1) creates the root, intermediate, device certificate, and uploads the root certificate to your DPS instance, and performs proof-of-possession. You must run the script in administrative mode.
+2. [X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509AuthSetup.ps1) creates the root, intermediate, device certificate, and uploads the root certificate to your DPS instance, and performs proof-of-possession.
 
 ```powershell
     .\X509AuthSetup.ps1 `
@@ -107,6 +107,18 @@ In this step, we will use the chained device certificate to provision a device t
 > For more details about the sample implementation, see [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample).
 
 ![x509-bootsequence](media/bootsequence.png)
+
+### Optional - Clean-up
+
+- cleanup.ps1 script will remove the enrollment group in your DPS instance and the device in the IoT hub.
+
+```powershell
+    .\cleanup.ps1 `
+        -resourceGroup <resource group> `
+        -dpsName <DPS instance name> `
+        -iothubName <IoT hub instance name> `
+        -deviceId <device Id>
+```
 
 ## Read More
 

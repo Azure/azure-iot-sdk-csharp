@@ -52,7 +52,7 @@ if ($groupEnrollmentExists)
         Write-Host "Enrollment group '$groupEnrollmentId' is deleted in '$dpsName'."
     }
     else {
-        Write-Host "Enrollment group '$groupEnrollmentId' already exists under '$dpsName'. If you wish to delete the enrollment group '$groupEnrollmentId', set the force flag. Exiting..."
+        Write-Host "Enrollment group '$groupEnrollmentId' already exists under '$dpsName'. If you wish to delete the enrollment group '$groupEnrollmentId', add -force. Exiting..."
         exit
     }
 }

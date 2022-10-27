@@ -38,7 +38,6 @@ $dpsCertChainDeviceCommonName = $deviceId
 $certFolder = $certFolderPath
 $dpsCredentials = New-Object System.Management.Automation.PSCredential("Password", $rootCertPassword)
 $resourceGroup = $dpsResourceGroup
-$dpsName = $dpsName
 $certNameToUpload = "rootCA"
 
 # Create root cert
