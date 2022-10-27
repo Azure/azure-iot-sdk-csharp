@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <param name="retryPolicy">The retry policy of hub device/module to be applied.</param>
         /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
         /// 
-        public static async Task RunWithRetryAsync(
+        public static async Task RunWithHubClientRetryAsync(
             Func<Task> asyncOperation,
             IIotHubClientRetryPolicy retryPolicy,
             CancellationToken cancellationToken = default)
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <param name="retryPolicy">The retry policy of hub service to be applied.</param>
         /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
         /// 
-        public static async Task RunWithRetryAsync(
+        public static async Task RunWithHubServiceRetryAsync(
             Func<Task> asyncOperation,
             IIotHubServiceRetryPolicy retryPolicy,
             CancellationToken cancellationToken = default)

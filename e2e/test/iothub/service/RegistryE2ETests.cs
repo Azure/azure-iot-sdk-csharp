@@ -436,7 +436,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Module retrievedModule = null;
 
                 await RetryOperationHelper
-                    .RunWithRetryAsync(
+                    .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         retrievedModule = await serviceClient.Modules.GetAsync(testDeviceId, testModuleId).ConfigureAwait(false);
@@ -637,7 +637,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
 
             await RetryOperationHelper
-                .RunWithRetryAsync(
+                .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
@@ -705,7 +705,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
 
             await RetryOperationHelper
-                .RunWithRetryAsync(
+                .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);

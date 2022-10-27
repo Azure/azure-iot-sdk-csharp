@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             Device device = null;
 
             await RetryOperationHelper
-                .RunWithRetryAsync(
+                .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             // Confirm the device exists in the registry before calling it good to avoid downstream test failures.
             await RetryOperationHelper
-                .RunWithRetryAsync(
+                .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             await RetryOperationHelper
-                .RunWithRetryAsync(
+                .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);

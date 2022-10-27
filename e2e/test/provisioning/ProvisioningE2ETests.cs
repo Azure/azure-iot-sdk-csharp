@@ -1118,7 +1118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 if (enrollmentType == EnrollmentType.Individual)
                 {
                     await RetryOperationHelper
-                        .RunWithRetryAsync(
+                        .RunWithHubClientRetryAsync(
                             async () =>
                             {
                                 await dpsClient.IndividualEnrollments.DeleteAsync(authProvider.GetRegistrationId()).ConfigureAwait(false);
@@ -1130,7 +1130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 else if (enrollmentType == EnrollmentType.Group)
                 {
                     await RetryOperationHelper
-                        .RunWithRetryAsync(
+                        .RunWithHubClientRetryAsync(
                             async () =>
                             {
                                 await dpsClient.EnrollmentGroups.DeleteAsync(groupId).ConfigureAwait(false);
