@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The created or updated enrollment group.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroup"/> is null.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to create or update the enrollment.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The retrieved enrollment group.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to retrieve the enrollment group information for the provided <paramref name="enrollmentGroupId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroupId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroup">The <see cref="EnrollmentGroup"/> that identifies the enrollmentGroup. It cannot be null.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroup"/> is null.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to delete the enrollment group information for the provided <paramref name="enrollmentGroup"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>An object with the result of each operation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroups"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroups"/> is an empty collection.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the client failed to send the request or service was not able to execute the bulk operation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The attestation mechanism of the enrollment group.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to retrieve the enrollment group attestation information for the provided <paramref name="enrollmentGroupId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>

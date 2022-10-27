@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the DeviceRegistrationState in the Provisioning Device Service.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to retrieve the registration state for the provided <paramref name="registrationId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to delete the registration state for the provided <paramref name="registrationId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="deviceRegistrationState">The device registration to delete.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="deviceRegistrationState"/> is null.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// When the service wasn't able to delete the registration status.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>

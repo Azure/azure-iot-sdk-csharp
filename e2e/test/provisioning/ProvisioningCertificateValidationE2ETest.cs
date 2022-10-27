@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             Func<Task> act = async () => await q.NextAsync();
 
-            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>().ConfigureAwait(false);
+            var error = await act.Should().ThrowAsync<ProvisioningServiceException>().ConfigureAwait(false);
 #if NET472
                 Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp));
             Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
-            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+            var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
         }
 
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp));
             Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
-            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+            var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             if (error.And.InnerException == null)
             {
                 Assert.AreEqual("MQTT Protocol Exception: Channel closed.", error.And.Message);
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
             Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
-            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+            var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket));
             Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
-            var error = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+            var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 

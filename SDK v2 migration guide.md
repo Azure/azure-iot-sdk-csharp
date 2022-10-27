@@ -92,7 +92,7 @@ The v2 strategy can be grouped into 3 categories.
     - The exception message is meant for human readable expanation.
     - Inner exceptions may offer more insight and are worth logging out.
     - `TrackingId` is for uniquely identifying specific operations and are useful in sharing with IoT hub support to assist them in more quickly identifying errors that may have been logged by the service.
-  - `DeviceProvisioningClientException` for provisioning device client and `DeviceProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
+  - `ProvisioningClientException` for provisioning device client and `ProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
     > As with the IoT hub exceptions, primarily observe the `IsTransient` and `ErrorCode` properties.
     > Other properties may be valuable for logging or debugging.
 
