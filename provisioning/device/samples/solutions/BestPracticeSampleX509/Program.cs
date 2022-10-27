@@ -36,13 +36,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                     // The SDK logs are written at Trace level. Set this to LogLevel.Trace to get ALL logs.
                     MinLogLevel = LogLevel.Debug,
                 });
-            var logger = loggerFactory.CreateLogger<Program>();
+            ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
 
             // Instantiating this seems to do all we need for outputting SDK events to our console log.
             using var sdkLogs = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
             // Run the sample
-            var runningTime = parameters.ApplicationRunningTime != null
+            TimeSpan runningTime = parameters.ApplicationRunningTime != null
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 

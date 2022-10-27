@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 Console.WriteLine("Initializing the device provisioning client...");
 
                 using ProvisioningTransportHandler transport = GetTransportHandler();
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+                var provClient = ProvisioningDeviceClient.Create(
                     _globalEndpoint,
                     _idScope,
                     security,

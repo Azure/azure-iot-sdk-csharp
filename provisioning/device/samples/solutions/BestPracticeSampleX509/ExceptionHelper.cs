@@ -1,4 +1,6 @@
-﻿// Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Microsoft.All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -29,6 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             typeof(WebException),
             typeof(WebSocketException),
         };
+
         private static readonly bool s_isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         internal static bool IsNetworkExceptionChain(Exception exceptionChain)
