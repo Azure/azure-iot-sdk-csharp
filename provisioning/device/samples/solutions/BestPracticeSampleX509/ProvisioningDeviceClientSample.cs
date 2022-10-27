@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -93,42 +94,46 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             _logger.LogInformation($"Sample execution started, press Control+C to quit the sample.");
 
             Console.WriteLine("Loading the certificate...");
-            using X509Certificate2 certificate = LoadProvisioningCertificate();
-            using var security = new SecurityProviderX509Certificate(certificate);
-
-            Console.WriteLine("Initializing the device provisioning client...");
-
-            using ProvisioningTransportHandler transport = GetTransportHandler();
-            ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
-                _globalEndpoint,
-                _idScope,
-                security,
-                transport);
-
-            Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}.");
-
-            Console.WriteLine("Registering with the device provisioning service... ");
-            DeviceRegistrationResult result = await provClient.RegisterAsync(s_appCancellation.Token);
-
-            Console.WriteLine($"Registration status: {result.Status}.");
-            if (result.Status != ProvisioningRegistrationStatusType.Assigned)
-            {
-                Console.WriteLine($"Registration status did not assign a hub, so exiting this sample.");
-                return;
-            }
-
-            _assignedIoTHub = result.AssignedHub;
-            Console.WriteLine($"Device {result.DeviceId} registered to {_assignedIoTHub}.");
-
-            Console.WriteLine("Creating X509 authentication for IoT Hub...");
-            _auth = new DeviceAuthenticationWithX509Certificate(
-                result.DeviceId,
-                certificate);
-
             try
             {
+                using X509Certificate2 certificate = LoadProvisioningCertificate();
+
+                using var security = new SecurityProviderX509Certificate(certificate);
+                Console.WriteLine("Initializing the device provisioning client...");
+
+                using ProvisioningTransportHandler transport = GetTransportHandler();
+                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+                    _globalEndpoint,
+                    _idScope,
+                    security,
+                    transport);
+
+                Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}.");
+
+                Console.WriteLine("Registering with the device provisioning service... ");
+                DeviceRegistrationResult result = await provClient.RegisterAsync(s_appCancellation.Token);
+
+                Console.WriteLine($"Registration status: {result.Status}.");
+                if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+                {
+                    Console.WriteLine($"Registration status did not assign a hub, so exiting this sample.");
+                    return;
+                }
+
+                _assignedIoTHub = result.AssignedHub;
+                Console.WriteLine($"Device {result.DeviceId} registered to {_assignedIoTHub}.");
+
+                Console.WriteLine("Creating X509 authentication for IoT Hub...");
+                _auth = new DeviceAuthenticationWithX509Certificate(
+                    result.DeviceId,
+                    certificate);
                 await InitializeAndSetupClientAsync(s_appCancellation.Token);
                 await Task.WhenAll(SendMessagesAsync(s_appCancellation.Token), ReceiveMessagesAsync(s_appCancellation.Token));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError($"InvalidOperation exception caught, check error message: \n{ex}");
+                s_appCancellation.Cancel();
             }
             catch (OperationCanceledException) { } // User canceled the operation
             catch (Exception ex)
@@ -136,12 +141,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 _logger.LogError($"Unrecoverable exception caught, user action is required, so exiting: \n{ex}");
                 s_appCancellation.Cancel();
             }
+            finally
+            {
+                if (s_deviceClient != null)
+                {
+                    // Finally, close the client, but we can't use s_appCancellation because it has been signaled to quit the app.
+                    await s_deviceClient.CloseAsync(CancellationToken.None);
+                }
 
-            // Finally, close the client, but we can't use s_appCancellation because it has been signaled to quit the app.
-            await s_deviceClient.CloseAsync(CancellationToken.None);
-            s_initSemaphore.Dispose();
-            _auth.Dispose();
-            s_appCancellation.Dispose();
+                s_initSemaphore.Dispose();
+                if (_auth != null)
+                {
+                    _auth.Dispose();
+                }
+                s_appCancellation.Dispose();
+            }
 
             Console.WriteLine("Finished.");
         }

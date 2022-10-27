@@ -48,8 +48,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
-            var sample = new ProvisioningDeviceClientSample(parameters.GlobalDeviceEndpoint, parameters.IdScope, parameters.CertificateName, parameters.CertificatePassword, parameters.TransportType, logger, parameters);
-            await sample.RunSampleAsync(runningTime);
+            try
+            {
+                var sample = new ProvisioningDeviceClientSample(parameters.GlobalDeviceEndpoint, parameters.IdScope, parameters.CertificateName, parameters.CertificatePassword, parameters.TransportType, logger, parameters);
+                await sample.RunSampleAsync(runningTime);
+            }
+            catch (OperationCanceledException)
+            { logger.LogDebug("OperationCanceledException caught."); }
+            catch (Exception ex)
+            { logger.LogDebug($"Exception caught. \n{ex}"); }
+
             return 0;
         }
     }
