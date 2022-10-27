@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Globalization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -27,8 +26,8 @@ namespace Microsoft.Azure.Devices
         public IotHubServiceIncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
             : base(maxRetries)
         {
-            AssertNotNegativeValue(delayIncrement.Ticks, nameof(delayIncrement));
-            AssertNotNegativeValue(maxDelay.Ticks, nameof(maxDelay));
+            Argument.AssertNotNegativeValue(delayIncrement.Ticks, nameof(delayIncrement));
+            Argument.AssertNotNegativeValue(maxDelay.Ticks, nameof(maxDelay));
 
             DelayIncrement = delayIncrement;
             MaxDelay = maxDelay;
@@ -73,17 +72,6 @@ namespace Microsoft.Azure.Devices
                 : TimeSpan.FromMilliseconds(waitDurationMs);
 
             return true;
-        }
-
-        private static void AssertNotNegativeValue(long argumentValue, string argumentName)
-        {
-            if (argumentValue < 0)
-            {
-                throw new ArgumentOutOfRangeException(argumentName, argumentValue, string.Format(CultureInfo.CurrentCulture, "ArgumentCannotBeNegative", new object[]
-                {
-                    argumentName
-                }));
-            }
         }
     }
 }

@@ -2,12 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Globalization;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// 
+    /// A base retry policy.
     /// </summary>
     public abstract class IotHubServiceRetryPolicyBase : IIotHubServiceRetryPolicy
     {
@@ -21,15 +20,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentOutOfRangeException">Throw if the value of <paramref name="maxRetries"/> is negative.</exception>
         protected IotHubServiceRetryPolicyBase(uint maxRetries)
         {
-            if (maxRetries < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(maxRetries), maxRetries, string.Format(CultureInfo.CurrentCulture, "ArgumentCannotBeNegative", new object[]
-                {
-                    nameof(maxRetries)
-                }));
-            }
-
-
+            Argument.AssertNotNegativeValue(maxRetries, nameof(maxRetries));
             MaxRetries = maxRetries;
         }
 

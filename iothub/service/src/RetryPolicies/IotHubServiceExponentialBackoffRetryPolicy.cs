@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Globalization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -35,19 +34,7 @@ namespace Microsoft.Azure.Devices
         public IotHubServiceExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait, bool useJitter = true)
             : base(maxRetries)
         {
-            if (maxWait.Ticks < 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(maxWait),
-                    maxWait.Ticks,
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        "ArgumentCannotBeNegative",
-                        new object[]
-                        {
-                            nameof(maxWait)
-                        }));
-            }
+            Argument.AssertNotNegativeValue(maxWait.Ticks, nameof(maxWait));
 
             _maxDelay = maxWait;
             _useJitter = useJitter;
