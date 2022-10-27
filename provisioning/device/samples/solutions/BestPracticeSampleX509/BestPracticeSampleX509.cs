@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
     /// <summary>
-    /// Demonstrates how to register a device with the device provisioning service using a certificate, and then
+    /// Demonstrates how to register a device with the device provisioning service using a X.509 leaf certificate, and then
     /// use the registration information to authenticate to IoT Hub.
     /// </summary>
     internal class BestPracticeSampleX509
