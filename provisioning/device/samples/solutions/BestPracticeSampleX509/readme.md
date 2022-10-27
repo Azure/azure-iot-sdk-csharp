@@ -1,8 +1,8 @@
-# Best Practice Solution Sample with X.509 Attestation
+# Best Practice Solution Sample with X.509 Authentication
 
 ## Objective
 
-This doc demonstrates a real-world example to help you get started with building your own custom IoT cloud solution with X.509 certificate-based authentication. See [here](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-service#attestation-mechanism) to review available attestation mechanisms.
+This doc demonstrates a real-world example to help you get started with building your own custom IoT cloud solution with X.509 certificate-based authentication. See [here](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-service#Authentication-mechanism) to review available attestation mechanisms.
 
 ## Example
 
@@ -74,7 +74,7 @@ An enrollment group is a group of devices that share a specific attestation meth
 We will use the generated intermediate certificate to group devices by production lines. See [here](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-x509-attestation#why-are-intermediate-certs-useful) to read more about intermediate certificates.
 
 [GenerateGroupEnrollment.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/GenerateGroupEnrollment.ps1) creates an enrollment group in your DPS instance using the generated intermediate certificate.
-You can specify initialTwinState, provisioning status, device capabilities, iothubName, eTag, etc. To learn more about optional parameters, see [here](https://learn.microsoft.com/en-us/cli/azure/iot/dps/enrollment-group?view=azure-cli-latest#az-iot-dps-enrollment-group-create).
+You can specify initial twin state, provisioning status, device capabilities, IoT hub name, eTag, etc. To learn more about these optional parameters, see [here](https://learn.microsoft.com/en-us/cli/azure/iot/dps/enrollment-group?view=azure-cli-latest#az-iot-dps-enrollment-group-create).
 
 ```powershell
     .\GenerateGroupEnrollment.ps1 `
@@ -85,7 +85,7 @@ You can specify initialTwinState, provisioning status, device capabilities, ioth
 
 ### 4. Provision a device through DPS and connect to IoT Hub
 
-In this step, we will use the chained device certificate to provision a device to an IoT Hub using the enrollment group. Devices provisioned through the same enrollment group will share the initial configuration and will be assigned to one of the linked IoT Hub(s).
+In this step, we will use the chained device certificate to provision a device to an IoT Hub using the enrollment group. Devices provisioned through the same enrollment group will share the same initial configuration and will be assigned to one of the linked IoT Hub(s).
 
 1. Obtain the IDScope of the DPS instance from Azure Portal.
 2. To build the sample application using dotnet, from terminal navigate to the sample folder (where the .csproj file lives). Then execute the following command and check for build errors:
@@ -110,10 +110,10 @@ In this step, we will use the chained device certificate to provision a device t
 
 ### Optional - Clean-up
 
-cleanup.ps1 script will remove the enrollment group in your DPS instance and the device in the IoT hub.
+[Cleanup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/Cleanup.ps1) will remove the enrollment group in your DPS instance and the device in the IoT hub.
 
 ```powershell
-    .\cleanup.ps1 `
+    .\Cleanup.ps1 `
         -resourceGroup <resource group> `
         -dpsName <DPS instance name> `
         -iothubName <IoT hub instance name> `

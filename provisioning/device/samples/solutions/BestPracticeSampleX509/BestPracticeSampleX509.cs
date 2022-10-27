@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq.Expressions;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -22,7 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
     /// Demonstrates how to register a device with the device provisioning service using a certificate, and then
     /// use the registration information to authenticate to IoT Hub.
     /// </summary>
-    internal class ProvisioningDeviceClientSample
+    internal class BestPracticeSampleX509
     {
         private static readonly Random s_randomGenerator = new();
         private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(15);
@@ -66,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         private DeviceAuthenticationWithX509Certificate _auth;
         private string _assignedIoTHub;
 
-        public ProvisioningDeviceClientSample(string globalEndpoint, string idScope, string certificateName, string certificatePassword, TransportType transportType, ILogger logger, Parameters parameters)
+        public BestPracticeSampleX509(string globalEndpoint, string idScope, string certificateName, string certificatePassword, TransportType transportType, ILogger logger, Parameters parameters)
         {
             _logger = logger;
             _customRetryPolicy = new CustomRetryPolicy(s_exceptionsToBeRetried, _logger);
@@ -183,7 +182,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                             s_deviceClient.Dispose();
                         }
 
-                        s_deviceClient = DeviceClient.Create(_assignedIoTHub, _auth, _transportType);
+                        s_deviceClient = DeviceClient.Create(_assignedIoTHub, _auth, _transportType, s_clientOptions);
                         s_deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandlerAsync);
                         s_deviceClient.SetRetryPolicy(_customRetryPolicy);
                         _logger.LogDebug("Initialized the client instance.");

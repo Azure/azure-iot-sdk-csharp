@@ -3,8 +3,6 @@
 
 using CommandLine;
 using Microsoft.Azure.Devices.Logging;
-
-//using Microsoft.Azure.Devices.Logging;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
@@ -12,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
-    public class Program
+    internal class Program
     {
         private const string SdkEventProviderPrefix = "Microsoft-Azure-";
 
@@ -50,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             try
             {
-                var sample = new ProvisioningDeviceClientSample(parameters.GlobalDeviceEndpoint, parameters.IdScope, parameters.CertificateName, parameters.CertificatePassword, parameters.TransportType, logger, parameters);
+                var sample = new BestPracticeSampleX509(parameters.GlobalDeviceEndpoint, parameters.IdScope, parameters.CertificateName, parameters.CertificatePassword, parameters.TransportType, logger, parameters);
                 await sample.RunSampleAsync(runningTime);
             }
             catch (OperationCanceledException)
