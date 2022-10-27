@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             };
-            receiveMessageOverCallback.Should().Throw<OperationCanceledException>();
+            await receiveMessageOverCallback.Should().ThrowAsync<OperationCanceledException>();
 
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);

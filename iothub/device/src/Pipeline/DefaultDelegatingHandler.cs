@@ -90,10 +90,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.SendTelemetryAsync(message, cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public virtual Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendTelemetryAsync(messages, cancellationToken) ?? Task.CompletedTask;
+            return NextHandler?.SendTelemetryBatchAsync(messages, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)

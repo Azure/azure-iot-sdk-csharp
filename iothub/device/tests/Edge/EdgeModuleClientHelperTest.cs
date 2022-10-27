@@ -2,11 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Edge;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using NSubstitute;
 
 namespace Microsoft.Azure.Devices.Client.Test.Edge
@@ -161,12 +165,17 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new IotHubClientAmqpSettings();
             var options = new IotHubClientOptions(settings);
-            var trustBundle = Substitute.For<ITrustBundleProvider>();
+            var trustBundle = new Mock<ITrustBundleProvider>();
+            trustBundle
+                .Setup(x => x.GetTrustBundleAsync(It.IsAny<Uri>(), It.IsAny<string>()))
+                .Returns(() => Task.FromResult<IList<X509Certificate2>>(new List<X509Certificate2>(0)));
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
-            ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
+            ICertificateValidator certValidator = await EdgeModuleClientHelper
+                .CreateCertificateValidatorFromEnvironmentAsync(trustBundle.Object, options)
+                .ConfigureAwait(false);
             using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
-            Assert.IsNotNull(dc);
+            dc.Should().NotBeNull();
 
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, null);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, null);

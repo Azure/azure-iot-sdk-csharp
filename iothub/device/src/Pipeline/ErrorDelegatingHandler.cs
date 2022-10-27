@@ -78,9 +78,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
         }
 
-        public override Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public override Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.SendTelemetryAsync(messages, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.SendTelemetryBatchAsync(messages, cancellationToken));
         }
 
         public override Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
