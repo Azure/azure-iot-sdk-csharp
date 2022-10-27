@@ -51,7 +51,12 @@ namespace Microsoft.Azure.Devices.Api.Test
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, new IotHubServiceNoRetry());
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -83,7 +88,12 @@ namespace Microsoft.Azure.Devices.Api.Test
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, new IotHubServiceNoRetry());
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -115,7 +125,12 @@ namespace Microsoft.Azure.Devices.Api.Test
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, new IotHubServiceNoRetry());
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -147,7 +162,12 @@ namespace Microsoft.Azure.Devices.Api.Test
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, new IotHubServiceNoRetry());
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -179,7 +199,12 @@ namespace Microsoft.Azure.Devices.Api.Test
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, new IotHubServiceNoRetry());
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -211,7 +236,12 @@ namespace Microsoft.Azure.Devices.Api.Test
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, new IotHubServiceNoRetry());
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
@@ -243,7 +273,12 @@ namespace Microsoft.Azure.Devices.Api.Test
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, new IotHubServiceNoRetry());
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
@@ -272,7 +307,12 @@ namespace Microsoft.Azure.Devices.Api.Test
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, new IotHubServiceNoRetry());
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
