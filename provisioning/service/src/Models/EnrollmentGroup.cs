@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (attestation == null)
             {
-                throw new DeviceProvisioningServiceException("Service responded with an enrollment without attestation.", HttpStatusCode.BadRequest);
+                throw new ProvisioningServiceException("Service responded with an enrollment without attestation.", HttpStatusCode.BadRequest);
             }
 
             EnrollmentGroupId = enrollmentGroupId;
