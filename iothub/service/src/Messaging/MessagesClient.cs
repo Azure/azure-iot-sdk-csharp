@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubServiceClientOptions _clientOptions;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-        private readonly IotHubServiceRetryHandler _internalRetryHandler;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
             HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
             IotHubServiceClientOptions options,
-            IotHubServiceRetryHandler retryHandler)
+            RetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;

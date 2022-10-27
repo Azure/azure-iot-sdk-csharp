@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     /// <remarks>
     /// Jitter can be under 1 second, plus or minus.
     /// </remarks>
-    internal class IotHubServiceRetryHandler
+    internal class RetryHandler
     {
         private IIotHubServiceRetryPolicy _retryPolicy;
 
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="retryPolicy">The retry policy to use for operations.</param>
         /// 
-        internal IotHubServiceRetryHandler(IIotHubServiceRetryPolicy retryPolicy)
+        internal RetryHandler(IIotHubServiceRetryPolicy retryPolicy)
         {
             Debug.Assert(retryPolicy != null);
             _retryPolicy = retryPolicy;

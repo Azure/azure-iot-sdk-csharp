@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // RetryCount is used for testing purpose and is equal to MaxValue in prod.
         private const uint RetryMaxCount = uint.MaxValue;
 
-        private readonly IotHubClientRetryHandler _internalRetryHandler;
+        private readonly RetryHandler _internalRetryHandler;
         private IIotHubClientRetryPolicy _retryPolicy;
 
         private bool _isOpen;
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             : base(context, innerHandler)
         {
             _retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(RetryMaxCount, TimeSpan.FromMinutes(2));
-            _internalRetryHandler = new IotHubClientRetryHandler(_retryPolicy);
+            _internalRetryHandler = new RetryHandler(_retryPolicy);
 
             _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
 

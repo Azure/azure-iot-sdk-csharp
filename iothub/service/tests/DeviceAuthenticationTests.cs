@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
@@ -312,7 +312,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await devicesClient.CreateAsync(deviceBadThumbprint).ConfigureAwait(false);
         }

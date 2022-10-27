@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             var device = await DevicesClient.GetAsync(DeviceId).ConfigureAwait(false);
             Assert.AreEqual(deviceToReturn.Id, device.Id);
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.GetAsync(null).ConfigureAwait(false);
             Assert.Fail("Calling GetDeviceAsync with null device id did not throw an exception.");
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             var returnedDevice = await DevicesClient.CreateAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreEqual(deviceToReturn.Id, returnedDevice.Id);
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.CreateAsync((Device)null).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when the device parameter was null.");
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.CreateAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when ETag was used.");
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.CreateAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when Null device was used.");
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.CreateAsync(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when empty device list was used.");
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             var returnedDevice = await DevicesClient.SetAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreEqual(deviceToReturn.Id, returnedDevice.Id);
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.SetAsync((Device)null).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the device parameter was null.");
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.SetAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when Null device was used.");
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.SetAsync(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when Null device list was used.");
@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.SetAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.SetAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.DeleteAsync(string.Empty).ConfigureAwait(false);
             Assert.Fail("Delete API did not throw exception when the device id was null.");
@@ -343,7 +343,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.DeleteAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when Null device was used.");
@@ -362,7 +362,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.DeleteAsync(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when empty device list was used.");
@@ -388,7 +388,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.DeleteAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
@@ -412,7 +412,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory.Object,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.DeleteAsync(new List<Device>() { badDevice1, badDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
@@ -436,7 +436,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await DevicesClient.DeleteAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
@@ -460,7 +460,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory, 
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await Twin.UpdateAsync(new List<ClientTwin>() { goodTwin, badTwin }, true).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when bad deviceid was used.");
@@ -485,7 +485,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await Twin.UpdateAsync(new List<ClientTwin>() { goodTwin, badTwin }, true).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when ETag was null.");
@@ -509,7 +509,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await Twin.UpdateAsync(new List<ClientTwin>() { goodTwin, badTwin }, true).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin was used.");
@@ -543,7 +543,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await Twin.UpdateAsync(new List<ClientTwin>() { goodTwin, badTwin }, true).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when deviceId was null.");
@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await Twin.UpdateAsync(new List<ClientTwin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
@@ -592,7 +592,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await Twin.UpdateAsync(new List<ClientTwin>() { badTwin1, badTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
@@ -616,7 +616,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                new IotHubServiceRetryHandler(new IotHubServiceNoRetry()));
+                new RetryHandler(new IotHubServiceNoRetry()));
 
             await Twin.UpdateAsync(new List<ClientTwin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }

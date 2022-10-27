@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             string generationId,
             SignRequest signRequest)
         {
-            var retryHandler = new IotHubClientRetryHandler(s_retryPolicy);
+            var retryHandler = new RetryHandler(s_retryPolicy);
             return await retryHandler
                 .RunWithRetryAsync(
                     () => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest),

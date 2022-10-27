@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
             HttpHsmClient hsmHttpClient,
             string apiVersion)
         {
-            var transientRetryPolicy = new IotHubClientRetryHandler(s_retryPolicy);
+            var transientRetryPolicy = new RetryHandler(s_retryPolicy);
             return await transientRetryPolicy
                 .RunWithRetryAsync(
                     () => hsmHttpClient.TrustBundleAsync(apiVersion),
