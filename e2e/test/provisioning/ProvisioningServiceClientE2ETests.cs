@@ -504,6 +504,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
                     break;
 
+                case AttestationMechanismType.X509:
+                    attestation = X509Attestation.CreateFromClientCertificates(authenticationCertificate);
+                    break;
+
                 default:
                     throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
             }
