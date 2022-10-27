@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Func<Task> act = async () => await provisioningServiceClient.IndividualEnrollments.GetAsync("invalid-registration-id").ConfigureAwait(false);
 
             // assert
-            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
+            var error = await act.Should().ThrowAsync<ProvisioningServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
             error.And.ErrorCode.Should().Be(404201);
             error.And.IsTransient.Should().BeFalse();
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Func<Task> act = async () => await provisioningServiceClient.EnrollmentGroups.GetAsync("invalid-registration-id").ConfigureAwait(false);
 
             // assert
-            var error = await act.Should().ThrowAsync<DeviceProvisioningServiceException>();
+            var error = await act.Should().ThrowAsync<ProvisioningServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
             error.And.ErrorCode.Should().Be(404204);
             error.And.IsTransient.Should().BeFalse();

@@ -22,12 +22,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             retryInterval = TimeSpan.Zero;
 
             if (currentRetryCount > MaxRetryCount
-                || lastException is not DeviceProvisioningServiceException)
+                || lastException is not ProvisioningServiceException)
             {
                 return false;
             }
 
-            if (lastException is DeviceProvisioningServiceException provisioningException)
+            if (lastException is ProvisioningServiceException provisioningException)
             {
                 if (!provisioningException.IsTransient)
                 {

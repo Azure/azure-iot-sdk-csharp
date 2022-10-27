@@ -92,7 +92,7 @@ The v2 strategy can be grouped into 3 categories.
     - The exception message is meant for human readable expanation.
     - Inner exceptions may offer more insight and are worth logging out.
     - `TrackingId` is for uniquely identifying specific operations and are useful in sharing with IoT hub support to assist them in more quickly identifying errors that may have been logged by the service.
-  - `DeviceProvisioningClientException` for provisioning device client and `DeviceProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
+  - `ProvisioningClientException` for provisioning device client and `ProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
     > As with the IoT hub exceptions, primarily observe the `IsTransient` and `ErrorCode` properties.
     > Other properties may be valuable for logging or debugging.
 
@@ -171,6 +171,7 @@ Find a client you currently use below, read the table of API name changes and us
 | `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` | See³ |
 | `MethodRequest` | `DirectMethodRequest` | Use full name of the operation type.⁴ |
 | `MethodResponse` | `DirectMethodResponse` | See⁴ |
+| `IotHubException` | `IotHubClientException` | Specify the exception is for Hub device and module client only. |
 
 #### ModuleClient
 
@@ -280,6 +281,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `CloudToDeviceMethodResult` | `DirectMethodClientResponse` | See² |
 | `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` | |
 | `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor` | |
+| `IotHubException` | `IotHubServiceException` | Specify the exception is for Hub service client only. |
 
 #### JobClient
 
@@ -336,6 +338,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `ProvisioningRegistrationAdditionalData` | `RegistrationRequestPayload`| |
 | `DeviceRegistrationResult.CreatedDateTimeUtc` | `DeviceRegistrationResult.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
 | `DeviceRegistrationResult.LastUpdatedDateTimeUtc` | `DeviceRegistrationResult.LastUpdatedOnUtc` | See¹ |
+| `ProvisioningTransportException` | `ProvisioningClientException` | |
 
 ### DPS service client
 
@@ -388,6 +391,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `X509CAReferences` | `X509CaReferences` | See³ |
 | `X509CertificateInfo.SHA1Thumbprint` | `X509CertificateInfo.Sha1Thumbprint` | See³ |
 | `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` | See³ |
+| `ProvisioningServiceClientException` | `ProvisioningServiceException` | |
 
 ### Security provider client
 

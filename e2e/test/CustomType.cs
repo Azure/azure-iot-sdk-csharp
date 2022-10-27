@@ -12,16 +12,16 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class CustomType
     {
         [JsonProperty("stringAttri")]
-        internal string StringAttri;
+        public string StringAttri;
 
         [JsonProperty("intAttri")]
-        internal int IntAttri;
+        public int IntAttri;
 
         [JsonProperty("boolAttri")]
-        internal bool BoolAttri;
+        public bool BoolAttri;
 
         [JsonProperty("nestedCustomType")]
-        internal NestedCustomType NestedCustomType;
+        public NestedCustomType NestedCustomType;
 
         public CustomType(string stringAttri, int intAttri, bool boolAttri, NestedCustomType nestedCustomType)
         {
@@ -29,19 +29,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             IntAttri = intAttri;
             BoolAttri = boolAttri;
             NestedCustomType = nestedCustomType;
-        }
-
-        public override string ToString()
-        {
-            Dictionary<string, object> dict = new Dictionary<string, object>()
-            {
-                { "stringAttri", StringAttri },
-                { "intAttri", IntAttri },
-                { "boolAttri", BoolAttri },
-                { "NestedCustomType", NestedCustomType },
-            };
-
-            return dict.ToString();
         }
     }
 }

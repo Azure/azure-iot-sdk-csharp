@@ -675,9 +675,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                         break;
                     }
-                    // Catching all DeviceProvisioningClientException as the status code is not the same for Mqtt, Amqp and Http.
+                    // Catching all ProvisioningClientException as the status code is not the same for Mqtt, Amqp and Http.
                     // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
-                    catch (DeviceProvisioningClientException ex) when (++tryCount < MaxTryCount)
+                    catch (ProvisioningClientException ex) when (++tryCount < MaxTryCount)
                     {
                         VerboseTestLogger.WriteLine($"ProvisioningDeviceClient RegisterAsync failed because: {ex.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
@@ -753,7 +753,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
-                var exception = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+                var exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
                 VerboseTestLogger.WriteLine($"Exception: {exception}");
             }
             finally
@@ -815,7 +815,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 VerboseTestLogger.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
 
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
-                var exception = await act.Should().ThrowAsync<DeviceProvisioningClientException>().ConfigureAwait(false);
+                var exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
 
                 VerboseTestLogger.WriteLine($"Exception: {exception}");
             }

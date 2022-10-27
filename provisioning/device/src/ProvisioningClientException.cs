@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -10,16 +9,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// The exception that is thrown when an error occurs during device provisioning client operation.
     /// </summary>
-    public class DeviceProvisioningClientException : Exception
+    public class ProvisioningClientException : Exception
     {
-        private const string IsTransientValueSerializationStoreName = "DeviceProvisioningClientException-IsTransient";
+        private const string IsTransientValueSerializationStoreName = "ProvisioningClientException-IsTransient";
 
         /// <summary>
         /// Creates a new instance of this class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
-        protected internal DeviceProvisioningClientException(string message, bool isTransient)
+        protected internal ProvisioningClientException(string message, bool isTransient)
             : this(message, null, isTransient)
         {
         }
@@ -30,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
         /// <param name="innerException">The inner exception.</param>
-        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient)
+        protected internal ProvisioningClientException(string message, Exception innerException, bool isTransient)
             : base(message, innerException)
         {
             IsTransient = isTransient;
@@ -44,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="isTransient">If the error is transient and the application should retry at a later time.</param>
         /// <param name="errorCode">The specific 6-digit error code in the DPS response, if available.</param>
         /// <param name="trackingId">Service reported tracking Id.</param>
-        protected internal DeviceProvisioningClientException(string message, Exception innerException, bool isTransient, int errorCode, string trackingId)
+        protected internal ProvisioningClientException(string message, Exception innerException, bool isTransient, int errorCode, string trackingId)
             : base(message, innerException)
         {
             IsTransient = isTransient;
@@ -57,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected internal DeviceProvisioningClientException(SerializationInfo info, StreamingContext context)
+        protected internal ProvisioningClientException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             if (info != null)
