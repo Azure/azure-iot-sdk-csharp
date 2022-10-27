@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     {
         private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 
-        private static readonly IIotHubServiceRetryPolicy s_createRetryPolicy = new HubServiceTestRetryPolicy();
+        private static readonly IIotHubServiceRetryPolicy s_createRetryPolicy = new IotHubServiceExponentialBackoffRetryPolicy(0, TimeSpan.FromMinutes(1), true);
 
         private static readonly HashSet<IotHubServiceErrorCode> s_getRetryableStatusCodes = new()
         {

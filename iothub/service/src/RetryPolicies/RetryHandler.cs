@@ -40,20 +40,19 @@ namespace Microsoft.Azure.Devices
         {
             async Task<bool> TaskWrapper()
             {
-                // There are two typews of tasks: return nothing and return a specific type.
+                // There are two types of tasks: return nothing and return a specific type.
                 // We use this to proxy to the generics implementation.
                 await taskFunc();
                 return true;
             }
 
-            await RunWithRetryAsync(TaskWrapper, (ex) => false, cancellationToken).ConfigureAwait(false);
+            await RunWithRetryAsync(TaskWrapper, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Repetitively executes the specified asynchronous task with a specific return value while it satisfies the current retry policy.
         /// </summary>
         /// <param name="taskFunc">A function that returns a started task (also known as "hot" task).</param>
-        /// <param name="transientErrorCheck">Additional check for transient exceptions.</param>
         /// <param name="cancellationToken">The token used to cancel the retry operation. This token does not cancel the execution
         /// of the asynchronous task.</param>
         /// <returns>
@@ -61,11 +60,10 @@ namespace Microsoft.Azure.Devices
         /// first time or after retrying transient failures). If the task fails with a non-transient error or
         /// the retry limit is reached, the returned task will transition to a faulted state and the exception must be observed.
         /// </returns>
-        internal async Task<T> RunWithRetryAsync<T>(Func<Task<T>> taskFunc, Func<Exception, bool> transientErrorCheck, CancellationToken cancellationToken = default)
+        internal async Task<T> RunWithRetryAsync<T>(Func<Task<T>> taskFunc, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Debug.Assert(taskFunc != null);
-            Debug.Assert(transientErrorCheck != null);
 
             uint retryCount = 0;
             TimeSpan retryDelay;
@@ -76,8 +74,7 @@ namespace Microsoft.Azure.Devices
                 {
                     return await taskFunc().ConfigureAwait(false);
                 }
-                catch (Exception ex) when (transientErrorCheck.Invoke(ex)
-                    || _retryPolicy.ShouldRetry(++retryCount, ex, out retryDelay))
+                catch (Exception ex) when (_retryPolicy.ShouldRetry(++retryCount, ex, out retryDelay))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"Retry handler observed an exception approved for retry {retryCount} with delay {retryDelay}: {ex}");
