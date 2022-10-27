@@ -97,7 +97,7 @@ In this step, we will use the chained device certificate to provision a device t
 3. Set the IdScope, device certificate, and certificate password.
 
 ```powershell
-    dotnet run --s <IdScope> --c <CertificateName> --p <CertificatePassword>
+    dotnet run --s <IdScope> --c <CertificateName> --p <your password>
 ```
 
 4. Exchange messages between the device process and the IoT hub.

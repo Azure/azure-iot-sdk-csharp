@@ -76,6 +76,20 @@ $deviceCert = New-SelfSignedCertificate `
 Write-Host "Exporting $dpsCertChainDeviceCommonName.pfx to $devicePfxPath"
 Export-PFXCertificate -cert $deviceCert -filePath $devicePfxPath -password $dpsCredentials.Password | Out-Null
 
+# Check if the resource group exists. If not, exit.
+$resourceGroupExists = az group exists -n $resourceGroup
+if ($resourceGroupExists -ne $true){
+    Write-Host "Resource Group '$resourceGroup' does not exist. Exiting..."
+    exit
+}
+
+# Check if the dps instance exists. If not, exit.
+$dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2>nul
+if ($dpsExists -eq $null){
+    Write-Host "Dps '$dpsName' does not exist under '$resourceGroup'. Exiting..."
+    exit
+}
+
 # Upload rootCA certificate to dps
 Write-Host "Uploading $rootCertPath to $dpsName"
 $certExits = az iot dps certificate list -g $resourceGroup --dps-name $dpsName --query "value[?name=='$certNameToUpload']" --output tsv
