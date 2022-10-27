@@ -37,11 +37,11 @@ namespace Microsoft.Azure.Devices
             string hostName,
             IotHubConnectionProperties credentialProvider,
             IotHubServiceClientOptions options,
-            IIotHubServiceRetryPolicy retryPolicy)
+            IotHubServiceRetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
-            _internalRetryHandler = new IotHubServiceRetryHandler(retryPolicy);
+            _internalRetryHandler = retryHandler;
             _amqpConnection = new AmqpConnectionHandler(
                 credentialProvider,
                 options.Protocol,

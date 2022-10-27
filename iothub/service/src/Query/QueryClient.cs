@@ -40,13 +40,13 @@ namespace Microsoft.Azure.Devices
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
-            IIotHubServiceRetryPolicy retryPolicy)
+            IotHubServiceRetryHandler retryHandler)
         {
             _credentialProvider = credentialProvider;
             _hostName = hostName;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
-            _internalRetryHandler = new IotHubServiceRetryHandler(retryPolicy);
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>

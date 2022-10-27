@@ -31,6 +31,7 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
         private readonly IIotHubServiceRetryPolicy _retryPolicy;
+        private readonly IotHubServiceRetryHandler _retryHandler;
         private const string ApiVersion = "2021-04-12";
 
         /// <summary>
@@ -62,6 +63,7 @@ namespace Microsoft.Azure.Devices
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
             _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
+            _retryHandler = new IotHubServiceRetryHandler(_retryPolicy);
 
             InitializeSubclients(clientOptions);
         }
@@ -97,6 +99,7 @@ namespace Microsoft.Azure.Devices
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
             _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
+            _retryHandler = new IotHubServiceRetryHandler(_retryPolicy);
 
             InitializeSubclients(clientOptions);
         }
@@ -131,6 +134,7 @@ namespace Microsoft.Azure.Devices
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
             _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
+            _retryHandler = new IotHubServiceRetryHandler(_retryPolicy);
 
             InitializeSubclients(clientOptions);
         }
@@ -215,18 +219,18 @@ namespace Microsoft.Azure.Devices
 
         private void InitializeSubclients(IotHubServiceClientOptions options)
         {
-            Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryPolicy);
-            Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryPolicy);
-            Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryPolicy);
-            Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryPolicy);
-            ScheduledJobs = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, Query, _retryPolicy);
-            DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryPolicy);
-            DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryPolicy);
-            Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryPolicy);
-            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, options, _retryPolicy);
+            Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            ScheduledJobs = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, Query, _retryHandler);
+            DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, options, _retryHandler);
 
-            MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, options, _retryPolicy);
-            FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, options, _retryPolicy);
+            MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, options, _retryHandler);
+            FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, options, _retryHandler);
 
             // Adds additional logging to the AMQP connections created by this client
             AmqpTrace.Provider = new AmqpTransportLog();

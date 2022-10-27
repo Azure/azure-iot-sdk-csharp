@@ -7,8 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
-using Azure;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
@@ -46,14 +44,14 @@ namespace Microsoft.Azure.Devices
             HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
             IotHubServiceClientOptions options,
-            IIotHubServiceRetryPolicy retryPolicy)
+            IotHubServiceRetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
             _clientOptions = options;
-            _internalRetryHandler = new IotHubServiceRetryHandler(retryPolicy);
+            _internalRetryHandler = retryHandler;
             _amqpConnection = new AmqpConnectionHandler(
                 credentialProvider,
                 options.Protocol,
