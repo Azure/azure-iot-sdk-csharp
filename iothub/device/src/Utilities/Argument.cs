@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(
                     argumentName,
                     argumentValue,
-                    $"The value of {argumentName} cannot be greater than {ceilingValue}. It is currently {argumentValue}.");
+                    $"The value of '{argumentName}' cannot be greater than '{ceilingValue}'. It is currently '{argumentValue}'.");
             }
         }
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(
                     argumentName,
                     argumentValue,
-                    $"The value of {argumentName} cannot be negative. It is currently {argumentValue}.");
+                    $"The value of '{argumentName}' cannot be negative. It is currently '{argumentValue}'.");
             }
         }
 

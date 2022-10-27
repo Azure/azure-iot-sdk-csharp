@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentOutOfRangeException(
                     argumentName,
                     argumentValue,
-                    $"The value of {argumentName} cannot be negative. It is currently {argumentValue}.");
+                    $"The value of '{argumentName}' cannot be negative. It is currently '{argumentValue}'.");
             }
         }
 
