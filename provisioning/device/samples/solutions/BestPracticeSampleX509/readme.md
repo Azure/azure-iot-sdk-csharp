@@ -110,7 +110,7 @@ In this step, we will use the chained device certificate to provision a device t
 
 ### Optional - Clean-up
 
-- cleanup.ps1 script will remove the enrollment group in your DPS instance and the device in the IoT hub.
+cleanup.ps1 script will remove the enrollment group in your DPS instance and the device in the IoT hub.
 
 ```powershell
     .\cleanup.ps1 `
@@ -123,6 +123,6 @@ In this step, we will use the chained device certificate to provision a device t
 ## Read More
 
 - [Best practices for large-scale IoT device deployments](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-deploy-at-scale)
-- [Security practices for Azure IoT device manufacturers](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-device-oem-security-practices#where-certificates-are-stored)
+- [Security practices for Azure IoT device manufacturers](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-device-oem-security-practices)
 - [X.509 certificate attestation](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-x509-attestation)
 - [Create an X.509 enrollment group with DPS service SDK](https://learn.microsoft.com/en-us/azure/iot-dps/quick-enroll-device-x509?pivots=programming-language-csharp)
