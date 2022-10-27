@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Samples;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
+using System.Security.Cryptography.X509Certificates;
+using System.IO;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Samples;
+using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {

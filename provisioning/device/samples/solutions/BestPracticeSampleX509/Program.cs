@@ -52,9 +52,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 await sample.RunSampleAsync(runningTime);
             }
             catch (OperationCanceledException)
-            { logger.LogDebug("OperationCanceledException caught."); }
+            {
+                logger.LogDebug("OperationCanceledException caught.");
+            }
             catch (Exception ex)
-            { logger.LogDebug($"Exception caught. \n{ex}"); }
+            {
+                logger.LogDebug($"Exception caught. \n{ex}");
+            }
 
             return 0;
         }

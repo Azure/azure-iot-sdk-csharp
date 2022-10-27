@@ -23,11 +23,11 @@ param(
     [string] $deviceId
 )
 
-# Check that script is run in admin mode
+# Check that script is run in admin mode as it requires admin permission to create self-signed certificates. 
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 if (-not $isAdmin)
 {
-    throw "This script must be run in administrative mode."
+    throw "This script must be run in administrative mode for creating self-signed certificates."
 }
 
 # Setup parameters
@@ -78,19 +78,21 @@ Export-PFXCertificate -cert $deviceCert -filePath $devicePfxPath -password $dpsC
 
 # Check if the resource group exists. If not, exit.
 $resourceGroupExists = az group exists -n $resourceGroup
-if ($resourceGroupExists -ne $true){
+if ($resourceGroupExists -ne $true)
+{
     Write-Host "Resource Group '$resourceGroup' does not exist. Exiting..."
     exit
 }
 
-# Check if the dps instance exists. If not, exit.
+# Check if the DPS instance exists. If not, exit.
 $dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2>nul
-if ($dpsExists -eq $null){
-    Write-Host "Dps '$dpsName' does not exist under '$resourceGroup'. Exiting..."
+if ($dpsExists -eq $null)
+{
+    Write-Host "DPS instance '$dpsName' does not exist under '$resourceGroup'. Exiting..."
     exit
 }
 
-# Upload rootCA certificate to dps
+# Upload rootCA certificate to DPS
 Write-Host "Uploading $rootCertPath to $dpsName"
 $certExits = az iot dps certificate list -g $resourceGroup --dps-name $dpsName --query "value[?name=='$certNameToUpload']" --output tsv
 if ($certExits)
@@ -100,7 +102,7 @@ if ($certExits)
 }
 az iot dps certificate create -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --path $rootCertPath | Out-Null
 
-# Verify rootCA cert in dps
+# Verify rootCA cert in DPS
 Write-Host "Verifying possession of rootCACert in $dpsName"
 $etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag'
 $requestedCommonName = az iot dps certificate generate-verification-code -g $resourceGroup --dps-name $dpsName --name $certNameToUpload -e $etag --query 'properties.verificationCode' 2>nul

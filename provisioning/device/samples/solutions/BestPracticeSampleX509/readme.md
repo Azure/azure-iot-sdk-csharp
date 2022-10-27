@@ -2,18 +2,18 @@
 
 ## Objective
 
-This doc demonstrates a real-world example to help you get started with building your own custom IoT cloud solution with X.509 certificate-based authentication. See [here](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-service#Authentication-mechanism) to review available attestation mechanisms.
+This document demonstrates a real-world example to help you get started with building your own custom IoT cloud solution with X.509 certificate-based authentication. See [here](https://learn.microsoft.com/azure/iot-dps/concepts-service#attestation-mechanism) to review available attestation mechanisms.
 
 ## Example
 
-Company-X is a manufacturing company that wants to manage various types of products remotely.
+Contoso is a manufacturing company that wants to manage various types of products remotely.
 
-The business needs of Company-X are -
+The business needs of Contoso are:
 
-- provision devices securely at scale
-- group devices by production line
-- collect data from devices
-- manage and monitor devices remotely (e.g., controlling the temperature of a thermostat)
+- Provision devices securely at scale.
+- Group devices by production line.
+- Collect data from devices.
+- Manage and monitor devices remotely (e.g., controlling the temperature of a thermostat).
 
 ## Recommended Solution
 
@@ -26,13 +26,13 @@ The business needs of Company-X are -
 1. Create a resource group and one or more IoT hubs.
 2. Set up an IoT hub Device Provisioning Service (DPS) instance.
 3. Link the IoT hub(s) to the DPS instance.
-See [here](https://learn.microsoft.com/en-us/azure/iot-dps/quick-setup-auto-provision) for the instructions.
+See [here](https://learn.microsoft.com/azure/iot-dps/quick-setup-auto-provision) for the instructions.
 
 In this solution, we will use the standard X.509 CA certificate authentication.
 
-### 1. Determine the Public Key Infrastructure (PKI) design
+### Determine the Public Key Infrastructure (PKI) design
 
-See [here](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn786436(v=ws.11)) for Public Key Infrastructure (PKI) design options.
+See [here](https://learn.microsoft.com/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn786436(v=ws.11)) for Public Key Infrastructure (PKI) design options.
 
 | PKI Design option  |  Use case |
 | ----------- | ------------|
@@ -41,12 +41,12 @@ See [here](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/wi
 
 In this solution, we will use a self-managed PKI. If you want to see a sample that registers a device to your DPS instance using a self-signed device certificate, see [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/Getting%20Started/X509Sample).
 
-### 2. Generate self-signed X.509 certificates and verify root certificate
+### Generate self-signed X.509 certificates and verify root certificate
 
 1. Create a secure string password to use in the creation of self-signed certificates. Open Windows PowerShell as administrator.
 
 ```powershell
-    $password= ConvertTo-SecureString <your password> -AsPlainText -Force
+    $password = ConvertTo-SecureString <your password> -AsPlainText -Force
 ```
 
 2. [X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509AuthSetup.ps1) creates the root, intermediate, device certificate, and uploads the root certificate to your DPS instance, and performs proof-of-possession.
@@ -63,18 +63,18 @@ In this solution, we will use a self-managed PKI. If you want to see a sample th
 [X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509AuthSetup.ps1)  first issues a self-signed root CA certificate. Then it uses the root CA certificate to generate a unique intermediate certificate for each product line. Finally, it uses the production line certificate, to generate a unique device (end-entity) certificate for each device manufactured on the line.
 
 > **Note**\
-> Read more about X.509 certificate attestation [here](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-x509-attestation).
-> To know more about the parameters used in the Export-PfxCertificate command, read [here](https://learn.microsoft.com/en-us/powershell/module/pki/export-pfxcertificate?view=windowsserver2022-ps#-password).
-> For more details about the proof-of-possession process, see [here](https://learn.microsoft.com/en-us/azure/iot-hub/iot-hub-x509ca-concept#proof-of-possession) and [here](https://learn.microsoft.com/en-us/azure/iot-dps/how-to-verify-certificates).
+> Read more about X.509 certificate attestation [here](https://learn.microsoft.com/azure/iot-dps/concepts-x509-attestation).
+> To know more about the parameters used in the Export-PfxCertificate command, read [here](https://learn.microsoft.com/powershell/module/pki/export-pfxcertificate?view=windowsserver2022-ps#-password).
+> For more details about the proof-of-possession process, see [here](https://learn.microsoft.com/azure/iot-hub/iot-hub-x509ca-concept#proof-of-possession) and [here](https://learn.microsoft.com/azure/iot-dps/how-to-verify-certificates).
 
-### 3. Create a DPS enrollment with an intermediate certificate
+### Create a DPS enrollment with an intermediate certificate
 
 An enrollment group is a group of devices that share a specific attestation method. The enrollment group supports X.509 certificate attestation. Devices in an X.509 enrollment group present X.509 device certificates that have been signed by the same intermediate CA.
 
-We will use the generated intermediate certificate to group devices by production lines. See [here](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-x509-attestation#why-are-intermediate-certs-useful) to read more about intermediate certificates.
+We will use the generated intermediate certificate to group devices by production lines. See [here](https://learn.microsoft.com/azure/iot-dps/concepts-x509-attestation#why-are-intermediate-certs-useful) to read more about intermediate certificates.
 
 [GenerateGroupEnrollment.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/GenerateGroupEnrollment.ps1) creates an enrollment group in your DPS instance using the generated intermediate certificate.
-You can specify initial twin state, provisioning status, device capabilities, IoT hub name, eTag, etc. To learn more about these optional parameters, see [here](https://learn.microsoft.com/en-us/cli/azure/iot/dps/enrollment-group?view=azure-cli-latest#az-iot-dps-enrollment-group-create).
+You can specify initial twin state, provisioning status, device capabilities, IoT hub name, eTag, etc. To learn more about these optional parameters, see [here](https://learn.microsoft.com/cli/azure/iot/dps/enrollment-group?view=azure-cli-latest#az-iot-dps-enrollment-group-create).
 
 ```powershell
     .\GenerateGroupEnrollment.ps1 `
@@ -83,7 +83,7 @@ You can specify initial twin state, provisioning status, device capabilities, Io
         -dpsName <DPS instance name>
 ```
 
-### 4. Provision a device through DPS and connect to IoT Hub
+### Provision a device through DPS and connect to IoT Hub
 
 In this step, we will use the chained device certificate to provision a device to an IoT Hub using the enrollment group. Devices provisioned through the same enrollment group will share the same initial configuration and will be assigned to one of the linked IoT Hub(s).
 
@@ -103,7 +103,7 @@ In this step, we will use the chained device certificate to provision a device t
 4. Exchange messages between the device process and the IoT hub.
 
 > **Note**\
-> RegistrationId is set to the subject common name of the device certificate. To read more about RegistrationId, see [here](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-service#registration-id).
+> RegistrationId is set to the subject common name of the device certificate. To read more about RegistrationId, see [here](https://learn.microsoft.com/azure/iot-dps/concepts-service#registration-id).
 > For more details about the sample implementation, see [here](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample).
 
 ![x509-bootsequence](media/bootsequence.png)
@@ -122,7 +122,7 @@ In this step, we will use the chained device certificate to provision a device t
 
 ## Read More
 
-- [Best practices for large-scale IoT device deployments](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-deploy-at-scale)
-- [Security practices for Azure IoT device manufacturers](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-device-oem-security-practices)
-- [X.509 certificate attestation](https://learn.microsoft.com/en-us/azure/iot-dps/concepts-x509-attestation)
-- [Create an X.509 enrollment group with DPS service SDK](https://learn.microsoft.com/en-us/azure/iot-dps/quick-enroll-device-x509?pivots=programming-language-csharp)
+- [Best practices for large-scale IoT device deployments](https://learn.microsoft.com/azure/iot-dps/concepts-deploy-at-scale)
+- [Security practices for Azure IoT device manufacturers](https://learn.microsoft.com/azure/iot-dps/concepts-device-oem-security-practices)
+- [X.509 certificate attestation](https://learn.microsoft.com/azure/iot-dps/concepts-x509-attestation)
+- [Create an X.509 enrollment group with DPS service SDK](https://learn.microsoft.com/azure/iot-dps/quick-enroll-device-x509?pivots=programming-language-csharp)
