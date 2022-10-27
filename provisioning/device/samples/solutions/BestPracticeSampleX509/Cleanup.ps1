@@ -55,6 +55,7 @@ $groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g
 if ($groupEnrollmentExists -eq $null)
 {
     Write-Host "$groupEnrollmentId enrollment group does not exist in $dpsName. Exiting..."
+    exit
 }
 
 Write-Host "Deleting device '$deviceId' in '$iothubName'..."
