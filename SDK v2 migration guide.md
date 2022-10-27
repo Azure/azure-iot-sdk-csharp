@@ -171,6 +171,7 @@ Find a client you currently use below, read the table of API name changes and us
 | `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` | See³ |
 | `MethodRequest` | `DirectMethodRequest` | Use full name of the operation type.⁴ |
 | `MethodResponse` | `DirectMethodResponse` | See⁴ |
+| `IotHubException` | `IotHubClientException` | Specify the exception is for Hub device and module client only. |
 
 #### ModuleClient
 
@@ -275,6 +276,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `CloudToDeviceMethodResult` | `DirectMethodClientResponse` | See² |
 | `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` | |
 | `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor` | |
+| `IotHubException` | `IotHubServiceException` | Specify the exception is for Hub service client only. |
 
 #### JobClient
 
@@ -331,6 +333,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `ProvisioningRegistrationAdditionalData` | `RegistrationRequestPayload`| |
 | `DeviceRegistrationResult.CreatedDateTimeUtc` | `DeviceRegistrationResult.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
 | `DeviceRegistrationResult.LastUpdatedDateTimeUtc` | `DeviceRegistrationResult.LastUpdatedOnUtc` | See¹ |
+| `ProvisioningTransportException` | `ProvisioningClientException` | |
 
 ### DPS service client
 
@@ -383,6 +386,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `X509CAReferences` | `X509CaReferences` | See³ |
 | `X509CertificateInfo.SHA1Thumbprint` | `X509CertificateInfo.Sha1Thumbprint` | See³ |
 | `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` | See³ |
+| `ProvisioningServiceClientException` | `ProvisioningServiceException` | |
 
 ### Security provider client
 
