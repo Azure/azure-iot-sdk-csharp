@@ -49,10 +49,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Run the sample
             var runningTime = parameters.ApplicationRunningTime != null
-                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                ? TimeSpan.FromSeconds((long)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
-            var sample = new DeviceReconnectionSample(parameters.GetConnectionStrings(), parameters.TransportType, logger);
+            var sample = new DeviceReconnectionSample(parameters, logger);
             await sample.RunSampleAsync(runningTime);
 
             logger.LogInformation("Done.");

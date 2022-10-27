@@ -2,35 +2,6 @@
 
 This sample code demonstrates the various connection status changes and connection status change reasons the device client can return, and how to handle them.
 
-### Initialize the client:
-
-```csharp
-// Connection string:
-// Get the device connection string from Azure IoT Portal, or using Azure CLI. 
-// Azure portal - 
-// Navigate to your IoT Hub. From the left pane, under "Explorers", click on "IoT devices".
-// Click and navigate to your device.
-// Copy the connection strings listed (primary and/or secondary).
-// Azure CLI - 
-//  az iot hub device-identity connection-string show --device-id <device_id> [--key-type {primary, secondary}]
-//  --key-type is optional. It defaults to "primary".
-//
-// Transport type:
-// The transport to use to communicate with the IoT Hub. Possible values include Mqtt,
-// Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_only, and Http1.
-
-string connectionString = "<connection_string>";
-TransportType transportType = TransportType.Mqtt;
-
-// This option is helpful in delegating the assignment of Message.MessageId to the sdk.
-// If the user doesn't set a value for Message.MessageId, the sdk will assign it a random GUID before sending the message.
-var options = new ClientOptions
-{
-    SdkAssignsMessageId = Shared.SdkAssignsMessageId.WhenUnset,
-};
-deviceClient = DeviceClient.CreateFromConnectionString(connectionString, transportType, options);
-```
-
 ### Send device to cloud telemetry:
 
 ```csharp

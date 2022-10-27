@@ -2,11 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Provisioning.Client;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
@@ -16,14 +21,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class DeviceReconnectionSample
     {
         private static readonly Random s_randomGenerator = new();
-        private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(15);
-
         private static readonly SemaphoreSlim s_initSemaphore = new(1, 1);
-        private readonly List<string> _deviceConnectionStrings;
-        private readonly TransportType _transportType;
         private static readonly ClientOptions s_clientOptions = new() { SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset };
 
+        private readonly Parameters _parameters;
+        private readonly TimeSpan s_sleepDuration;
         private readonly ILogger _logger;
+        private static X509Certificate2 s_certificate;
+        private static SecurityProviderX509Certificate s_security;
+        private static DeviceAuthenticationWithX509Certificate s_auth;
 
         // An UnauthorizedException is handled in the connection status change handler through its corresponding status change event.
         // We will ignore this exception when thrown by client API operations.
@@ -39,6 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Mark these fields as volatile so that their latest values are referenced.
         private static volatile DeviceClient s_deviceClient;
         private static volatile ConnectionStatus s_connectionStatus = ConnectionStatus.Disconnected;
+        private static String s_hub;
 
         private static CancellationTokenSource s_appCancellation;
 
@@ -48,32 +55,51 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // has been processed.
         private static long s_localDesiredPropertyVersion = 1;
 
-        public DeviceReconnectionSample(List<string> deviceConnectionStrings, TransportType transportType, ILogger logger)
+        public DeviceReconnectionSample(Parameters parameters, ILogger logger)
         {
             _logger = logger;
-            _customRetryPolicy = new CustomRetryPolicy(s_exceptionsToBeRetried, _logger);
+            _parameters = parameters;
 
-            // This class takes a list of potentially valid connection strings (most likely the currently known good primary and secondary keys)
-            // and will attempt to connect with the first. If it receives feedback that a connection string is invalid, it will discard it, and
-            // if any more are remaining, will try the next one.
-            // To test this, either pass an invalid connection string as the first one, or rotate it while the sample is running, and wait about
-            // 5 minutes.
-            if (deviceConnectionStrings == null
-                || !deviceConnectionStrings.Any())
-            {
-                throw new ArgumentException("At least one connection string must be provided.", nameof(deviceConnectionStrings));
-            }
-            _deviceConnectionStrings = deviceConnectionStrings;
-            _logger.LogInformation($"Supplied with {_deviceConnectionStrings.Count} connection string(s).");
-
-            _transportType = transportType;
-            _logger.LogInformation($"Using {_transportType} transport.");
+            _customRetryPolicy = new CustomRetryPolicy(s_exceptionsToBeRetried, _logger, _parameters.ExponentOrderBackoff);
+            s_sleepDuration = TimeSpan.FromSeconds(_parameters.MessageWaitTime);
         }
 
         private static bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
+            _logger.LogInformation($"Loading the certificate...");
+            s_certificate = LoadProvisioningCertificate(_parameters.GetCertificatePath(), _parameters.CertificateName, _parameters.CertificatePassword);
+            s_security = new SecurityProviderX509Certificate(s_certificate);
+            
+            _logger.LogInformation($"Initializing the device provisioning client using {_parameters.TransportType} transport...");
+            using ProvisioningTransportHandler transport = GetTransportHandler(_parameters.TransportType);
+            var provClient = ProvisioningDeviceClient.Create(
+                _parameters.GlobalDeviceEndpoint,
+                _parameters.IdScope,
+                s_security,
+                transport);
+
+            _logger.LogInformation($"Initialized for registration Id {s_security.GetRegistrationID()}.");
+
+            _logger.LogInformation("Registering with the device provisioning service... ");
+            DeviceRegistrationResult deviceRegistrationResult = await provClient.RegisterAsync();
+            DeviceRegistrationResult result = deviceRegistrationResult;
+
+            _logger.LogInformation($"Registration status: {result.Status}.");
+            if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+            {
+                throw new ArgumentException("Registration status did not assign a hub, so exiting this sample.");
+            }
+
+            _logger.LogInformation($"Device {result.DeviceId} registered to {result.AssignedHub}.");
+            s_hub = result.AssignedHub;
+
+            _logger.LogInformation("Creating X509 authentication for IoT Hub...");
+            s_auth = new DeviceAuthenticationWithX509Certificate(
+                result.DeviceId,
+                s_certificate);
+            
             s_appCancellation = new CancellationTokenSource(sampleRunningTime);
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
@@ -125,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             s_deviceClient.Dispose();
                         }
 
-                        s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _transportType, s_clientOptions);
+                        s_deviceClient = DeviceClient.Create(s_hub, s_auth, _parameters.TransportType);
                         s_deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandlerAsync);
                         s_deviceClient.SetRetryPolicy(_customRetryPolicy);
                         _logger.LogDebug("Initialized the client instance.");
@@ -185,12 +211,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     switch (reason)
                     {
                         case ConnectionStatusChangeReason.Bad_Credential:
-                            // When getting this reason, the current connection string being used is not valid.
-                            // If we had a backup, we can try using that.
-                            _deviceConnectionStrings.RemoveAt(0);
-                            if (_deviceConnectionStrings.Any())
+                            if (s_hub.Any())
                             {
-                                _logger.LogWarning($"The current connection string is invalid. Trying another.");
+                                _logger.LogWarning("### The DeviceClient has been disconnected because of bad credential." +
+                                "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
 
                                 try
                                 {
@@ -319,7 +343,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await Task.Delay(s_sleepDuration, cancellationToken);
                     continue;
                 }
-                else if (_transportType == TransportType.Http1)
+                else if (_parameters.TransportType == TransportType.Http1)
                 {
                     // The call to ReceiveAsync over HTTP completes immediately, rather than waiting up to the specified
                     // time or when a cancellation token is signaled, so if we want it to poll at the same rate, we need
@@ -401,7 +425,54 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private bool ShouldClientBeInitialized(ConnectionStatus connectionStatus)
         {
             return (connectionStatus == ConnectionStatus.Disconnected || connectionStatus == ConnectionStatus.Disabled)
-                && _deviceConnectionStrings.Any();
+                && s_hub.Any();
+        }
+
+        private ProvisioningTransportHandler GetTransportHandler(TransportType type)
+        {
+            return type switch
+            {
+                TransportType.Mqtt => new ProvisioningTransportHandlerMqtt(),
+                TransportType.Mqtt_Tcp_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly),
+                TransportType.Mqtt_WebSocket_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly),
+                TransportType.Amqp => new ProvisioningTransportHandlerAmqp(),
+                TransportType.Amqp_Tcp_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly),
+                TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
+                TransportType.Http1 => new ProvisioningTransportHandlerHttp(),
+                _ => throw new NotSupportedException($"Unsupported provisioning transport type {type}"),
+            };
+        }
+        private X509Certificate2 LoadProvisioningCertificate(String path, String file, String password)
+        {
+            var certificateCollection = new X509Certificate2Collection();
+            certificateCollection.Import(
+                path,
+                password,
+                X509KeyStorageFlags.UserKeySet);
+
+            X509Certificate2 certificate = null;
+
+            foreach (X509Certificate2 element in certificateCollection)
+            {
+                _logger.LogInformation($"Found certificate: {element?.Thumbprint} {element?.Subject}; PrivateKey: {element?.HasPrivateKey}");
+                if (certificate == null && element.HasPrivateKey)
+                {
+                    certificate = element;
+                }
+                else
+                {
+                    element.Dispose();
+                }
+            }
+
+            if (certificate == null)
+            {
+                throw new FileNotFoundException($"{file} did not contain any certificate with a private key.");
+            }
+
+            _logger.LogInformation($"Using certificate {certificate.Thumbprint} {certificate.Subject}");
+
+            return certificate;
         }
     }
 }
