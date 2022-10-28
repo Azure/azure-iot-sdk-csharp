@@ -793,6 +793,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = "")
         {
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
+            // Set no retry for the provisioning client other than letting it retry infinitely, so that the
+            // expected ProvisioningClientException can be thrown before the cancellation token is signaled.
+            clientOptions.RetryPolicy = new ProvisioningClientNoRetry();
             AuthenticationProvider auth = null;
 
             try
