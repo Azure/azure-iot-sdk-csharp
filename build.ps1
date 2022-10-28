@@ -150,7 +150,7 @@ Function RunSamples($path, $message)
     try {
             $sampleRunningTimeInSeconds = 30
             RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c '$env:IOTHUB_DEVICE_CONN_STRING'"
-            RunSample 'provisioning\service\samples\How To\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c '$env:PROVISIONING_CONNECTION_STRING'"
+            RunSample 'provisioning\service\samples\how to guides\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c '$env:PROVISIONING_CONNECTION_STRING'"
 
             <#
             # Run the iot-hub\device samples
