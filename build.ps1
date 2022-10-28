@@ -149,10 +149,8 @@ Function RunSamples($path, $message)
 
     try {
             $sampleRunningTimeInSeconds = 30
-            RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c '$env:IOTHUB_DEVICE_CONN_STRING'"
-            RunSample 'provisioning\service\samples\how to guides\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c '$env:PROVISIONING_CONNECTION_STRING'"
 
-            <#
+            
             # Run the iot-hub\device samples
             #RunSample 'iothub\device\samples\how to guides\DeviceReconnectionSample' "IoTHub\Device\DeviceReconnectionSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"""
@@ -173,14 +171,14 @@ Function RunSamples($path, $message)
     
             RunSample 'iothub\service\samples\getting started\EdgeDeploymentSample' "IoTHub\Service\EdgeDeploymentSample"
             RunSample 'iothub\service\samples\getting started\JobsSample' "IoTHub\Service\JobsSample"
-            #RunSample 'iothub\service\samples\getting started\RegistryManagerSample' "IoTHub\Service\RegistryManagerSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -p ""$env:IOTHUB_X509_DEVICE_PFX_THUMBPRINT"""
+            RunSample 'iothub\service\samples\getting started\RegistryManagerSample' "IoTHub\Service\RegistryManagerSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -p ""$env:IOTHUB_X509_DEVICE_PFX_THUMBPRINT"""
 
             Write-Warning "Using device $deviceId for the RoleBasedAuthenticationSample."
             RunSample 'iothub\service\samples\how to guides\RoleBasedAuthenticationSample' "IoTHub\Service\RoleBasedAuthenticationSample" "-h $iothubHost -d $deviceId --ClientId ""$env:E2E_TEST_AAD_APP_CLIENT_ID"" --TenantId ""$env:MSFT_TENANT_ID"" --ClientSecret ""$env:E2E_TEST_AAD_APP_CLIENT_SECRET"""
     
             Write-Warning "Using device $deviceId for the ServiceClientSample."
             RunSample 'iothub\service\samples\getting started\ServiceClientSample' "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -d $deviceId -r $sampleRunningTimeInSeconds"
-            #>
+            
 
             # Run provisioning\device samples
     
