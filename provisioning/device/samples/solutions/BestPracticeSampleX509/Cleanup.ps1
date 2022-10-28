@@ -32,40 +32,44 @@ if ($resourceGroupExists -ne $true)
 
 # Check if the IoT hub instance exists. If not, exit.
 $iothubExists = az iot hub show --name $iothubName -g $resourceGroup 2>nul
-if ($iothubExists -eq $null)
+if ($iothubExists)
 {
-    Write-Host "IoThub '$iothubName' does not exist under '$resourceGroup'. Exiting..."
-    exit
-}
-
-# Check if the device exists. If not, exit.
-$deviceExists = az iot hub device-identity show --device-id $deviceId -g $resourceGroup --hub-name $iothubName 2>nul
-if ($deviceExists -eq $null)
-{
-    Write-Host "Device '$deviceId' does not exist under '$iothubName'. Exiting..."
-    exit
-}
-
-Write-Host "Deleting device '$deviceId' in '$iothubName'..."
-az iot hub device-identity delete --device-id $deviceId --hub-name $iothubName -g $resourceGroup 2>nul
-Write-Host "Device '$deviceId' deleted in '$iothubName'..."
-
-# Check if the DPS instance exists. If not, exit.
-$dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2>nul
-if ($dpsExists -eq $null)
-{
-    Write-Host "DPS '$dpsName' does not exist under '$resourceGroup'. Unabled to delete '$groupEnrollmentId'."
+    # Check if the device exists. If it does, delete the device.
+    $deviceExists = az iot hub device-identity show --device-id $deviceId -g $resourceGroup --hub-name $iothubName 2>nul
+    if ($deviceExists)
+    {
+        Write-Host "Deleting device '$deviceId' in '$iothubName'..."
+        az iot hub device-identity delete --device-id $deviceId --hub-name $iothubName -g $resourceGroup 2>nul
+        Write-Host "Device '$deviceId' deleted in '$iothubName'."
+    }
+    else
+    {
+        Write-Host "Device '$deviceId' does not exist under '$iothubName'."
+    }
 }
 else
 {
-    # Check if the enrollment group exists in dps instance. If not, exit.
+    Write-Host "IoThub '$iothubName' does not exist under '$resourceGroup'."
+}
+
+# Check if the DPS instance exists. If it does, delete the device.
+$dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2>nul
+if ($dpsExists)
+{
+    # Check if the enrollment group exists in dps instance.
     $groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g $resourceGroup --enrollment-id $groupEnrollmentId 2>nul
-    if ($groupEnrollmentExists -eq $null)
+    if ($groupEnrollmentExists)
     {
-        Write-Host "$groupEnrollmentId enrollment group does not exist in $dpsName. Exiting..."
-    } else {
         Write-Host "Deleting enrollment group '$groupEnrollmentId' in '$dpsName'..."
         az iot dps enrollment-group delete -g $resourceGroup --eid $groupEnrollmentId --dps-name $dpsName 2>nul
         Write-Host "Enrollment group '$groupEnrollmentId' is deleted in '$dpsName'."
     }
+    else
+    {
+        Write-Host "$groupEnrollmentId enrollment group does not exist in $dpsName."
+    }
+}
+else
+{
+    Write-Host "DPS '$dpsName' does not exist under '$resourceGroup'. Unabled to delete '$groupEnrollmentId'."
 }
