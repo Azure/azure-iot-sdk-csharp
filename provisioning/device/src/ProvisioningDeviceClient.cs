@@ -16,6 +16,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly AuthenticationProvider _authentication;
         private readonly ProvisioningClientOptions _options;
         private readonly ProvisioningTransportHandler _provisioningTransportHandler;
+        private readonly IProvisioningClientRetryPolicy _retryPolicy;
+        private readonly RetryHandler _retryHandler;
 
         /// <summary>
         /// Creates an instance of this class.
@@ -47,6 +49,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _authentication = authenticationProvider;
+            _retryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
+            _retryHandler = new RetryHandler(_retryPolicy);
 
             Logging.Associate(this, _authentication);
             Logging.Associate(this, _options);
@@ -73,13 +77,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public Task<DeviceRegistrationResult> RegisterAsync(RegistrationRequestPayload data, CancellationToken cancellationToken = default)
+        public async Task<DeviceRegistrationResult> RegisterAsync(RegistrationRequestPayload data, CancellationToken cancellationToken = default)
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
             var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData);
 
-            return _provisioningTransportHandler.RegisterAsync(request, cancellationToken);
+            DeviceRegistrationResult result = null;
+
+            await _retryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        result = await _provisioningTransportHandler.RegisterAsync(request, cancellationToken);
+                    },
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            return result;
         }
     }
 }

@@ -52,6 +52,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             set => UserAgentInfo.Extra = value;
         }
 
+        /// <summary>
+        /// Sets the retry policy used in the operation retries.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to a nearly infinite exponential backoff. If set to null, will use <see cref="ProvisioningClientNoRetry"/> to perform no retries.
+        /// Can be set to any of the built in retry policies such as <see cref="ProvisioningClientFixedDelayRetryPolicy"/> or <see cref="ProvisioningClientIncrementalDelayRetryPolicy"/> 
+        /// or a custom one by inheriting from <see cref="IProvisioningClientRetryPolicy"/>.
+        /// </remarks>
+        public IProvisioningClientRetryPolicy RetryPolicy { get; set; } = new ProvisioningClientExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
+
         internal ProductInfo UserAgentInfo { get; } = new();
 
         internal ProvisioningClientOptions Clone()
@@ -61,6 +71,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return new ProvisioningClientOptions(transport)
             {
                 AdditionalUserAgentInfo = AdditionalUserAgentInfo,
+                RetryPolicy = RetryPolicy,
             };
         }
     }

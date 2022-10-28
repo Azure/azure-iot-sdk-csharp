@@ -731,6 +731,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId)
         {
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
+            // Set no retry for the provisioning client other than letting it retry infinitely, so that the
+            // expected ProvisioningClientException can be thrown before the cancellation token is signaled.
+            clientOptions.RetryPolicy = new ProvisioningClientNoRetry();
             AuthenticationProvider auth = null;
 
             try
@@ -754,7 +757,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
                 var exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-                VerboseTestLogger.WriteLine($"Exception: {exception}");
+                VerboseTestLogger.WriteLine($"Exception: {exception.And.Message}");
             }
             finally
             {
@@ -790,6 +793,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = "")
         {
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
+            // Set no retry for the provisioning client other than letting it retry infinitely, so that the
+            // expected ProvisioningClientException can be thrown before the cancellation token is signaled.
+            clientOptions.RetryPolicy = new ProvisioningClientNoRetry();
             AuthenticationProvider auth = null;
 
             try
@@ -817,7 +823,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
                 var exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
 
-                VerboseTestLogger.WriteLine($"Exception: {exception}");
+                VerboseTestLogger.WriteLine($"Exception: {exception.And.Message}");
             }
             finally
             {
@@ -858,8 +864,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (transportSettings is IotHubClientMqttSettings)
             {
                 return transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
-                    ? new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp))
-                    : new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
+                    ? new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp))
+                    : new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket));
             }
 
             throw new NotSupportedException($"Unknown transport: '{transportSettings}'.");
