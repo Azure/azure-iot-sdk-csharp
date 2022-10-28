@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private readonly IContractApiHttp _contractApiHttp;
         private readonly ServiceConnectionString _serviceConnectionString;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -36,10 +37,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal EnrollmentGroupsClient(ServiceConnectionString serviceConnectionString, IContractApiHttp contractApiHttp)
+        internal EnrollmentGroupsClient(ServiceConnectionString serviceConnectionString, IContractApiHttp contractApiHttp, RetryHandler retryHandler)
         {
             _serviceConnectionString = serviceConnectionString;
             _contractApiHttp = contractApiHttp;
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>
@@ -65,13 +67,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Put,
-                    GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
-                    null,
-                    JsonConvert.SerializeObject(enrollmentGroup),
-                    enrollmentGroup.ETag,
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Put,
+                                GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
+                                null,
+                                JsonConvert.SerializeObject(enrollmentGroup),
+                                enrollmentGroup.ETag,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -96,13 +107,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Get,
-                    GetEnrollmentUri(enrollmentGroupId),
-                    null,
-                    null,
-                    new ETag(),
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Get,
+                                GetEnrollmentUri(enrollmentGroupId),
+                                null,
+                                null,
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -126,13 +146,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Delete,
-                    GetEnrollmentUri(enrollmentGroupId),
-                    null,
-                    null,
-                    new ETag(),
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Delete,
+                                GetEnrollmentUri(enrollmentGroupId),
+                                null,
+                                null,
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -153,13 +180,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Delete,
-                    GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
-                    null,
-                    null,
-                    enrollmentGroup.ETag,
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Delete,
+                                GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
+                                null,
+                                null,
+                                enrollmentGroup.ETag,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -196,13 +230,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 Enrollments = enrollmentGroups,
             };
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Post,
-                    GetEnrollmentUri(),
-                    null,
-                    JsonConvert.SerializeObject(bulkOperation),
-                    new ETag(),
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Post,
+                                GetEnrollmentUri(),
+                                null,
+                                JsonConvert.SerializeObject(bulkOperation),
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -252,13 +295,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Post,
-                    GetEnrollmentAttestationUri(enrollmentGroupId),
-                    null,
-                    null,
-                    new ETag(),
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Post,
+                                GetEnrollmentAttestationUri(enrollmentGroupId),
+                                null,
+                                null,
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 
