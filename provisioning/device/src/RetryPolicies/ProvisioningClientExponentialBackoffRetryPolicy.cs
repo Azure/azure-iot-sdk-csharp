@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <remarks>
     /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
-    public class DeviceProvisioningClientExponentialBackoffRetryPolicy : DeviceProvisioningClientRetryPolicyBase
+    public class ProvisioningClientExponentialBackoffRetryPolicy : ProvisioningClientRetryPolicyBase
     {
         // If we start with an exponent of 1 to calculate the number of millisecond delay, it starts too low and takes too long to get over 1 second.
         // So we always add 6 to the retry count to start at 2^7=128 milliseconds, and exceed 1 second delay on retry #4.
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="maxWait">The maximum amount of time to wait between retries (will not exceed ~12.43 days).</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
         /// <exception cref="ArgumentOutOfRangeException">Throw if the value of <paramref name="maxWait"/> is negative.</exception>
-        public DeviceProvisioningClientExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait, bool useJitter = true)
+        public ProvisioningClientExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait, bool useJitter = true)
             : base(maxRetries)
         {
             if (maxWait.Ticks < 0)

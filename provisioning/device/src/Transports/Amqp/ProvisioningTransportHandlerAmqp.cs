@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,7 +105,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     },
                     _settings);
 
-                await authStrategy.OpenConnectionAsync(connection, useWebSocket, _settings.Proxy, _settings.RemoteCertificateValidationCallback, cancellationToken).ConfigureAwait(false);
+                await authStrategy.OpenConnectionAsync(
+                        connection,
+                        useWebSocket,
+                        _settings.Proxy,
+                        _settings.RemoteCertificateValidationCallback,
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
                 // Link the user-supplied cancellation token with a cancellation token that is cancelled
                 // when the connection is lost so that all operations stop when either the user

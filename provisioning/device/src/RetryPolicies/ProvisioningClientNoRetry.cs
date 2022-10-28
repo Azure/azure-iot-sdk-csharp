@@ -8,18 +8,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents a retry policy that performs no retries.
     /// </summary>
-    public class DeviceProvisioningClientNoRetry : IDeviceProvisioningClientRetryPolicy
+    public class ProvisioningClientNoRetry : IProvisioningClientRetryPolicy
     {
         /// <summary>
         /// Create an instance of a retry policy that perfrms no retries.
         /// </summary>
-        public DeviceProvisioningClientNoRetry()
+        public ProvisioningClientNoRetry()
         {
             if (Logging.IsEnabled)
                 Logging.Info(
                     this,
                     $"NOTE: A no-retry policy has been enabled; the client will not perform any retries on error.",
-                    nameof(DeviceProvisioningClientNoRetry));
+                    nameof(ProvisioningClientNoRetry));
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <remarks>
     /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
-    public class DeviceProvisioningClientIncrementalDelayRetryPolicy : DeviceProvisioningClientRetryPolicyBase
+    public class ProvisioningClientIncrementalDelayRetryPolicy : ProvisioningClientRetryPolicyBase
     {
         /// <summary>
         /// Creates an instance of this class.
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <exception cref="ArgumentOutOfRangeException">
         /// Throw if the value of <paramref name="delayIncrement"/> or <paramref name="maxDelay"/> is negative.
         /// </exception>
-        public DeviceProvisioningClientIncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
+        public ProvisioningClientIncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
             : base(maxRetries)
         {
             AssertNotNegativeValue(delayIncrement.Ticks, nameof(delayIncrement));

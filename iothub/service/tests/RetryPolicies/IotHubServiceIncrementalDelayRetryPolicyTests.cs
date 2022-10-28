@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices.Tests
                 retryPolicy.ShouldRetry(i, new IotHubServiceException("") { IsTransient = true }, out TimeSpan retryInterval);
                 retryInterval.TotalSeconds.Should().Be(step.TotalSeconds * i);
             }
-
         }
     }
 }

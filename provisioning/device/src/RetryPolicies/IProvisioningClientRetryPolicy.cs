@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents a retry policy for the DPS device client.
     /// </summary>
-    public interface IDeviceProvisioningClientRetryPolicy
+    public interface IProvisioningClientRetryPolicy
     {
         /// <summary>
         /// Method called by the client prior to a retry.

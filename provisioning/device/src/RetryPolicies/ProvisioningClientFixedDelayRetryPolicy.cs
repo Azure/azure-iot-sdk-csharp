@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <remarks>
     /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
-    public class DeviceProvisioningClientFixedDelayRetryPolicy : DeviceProvisioningClientRetryPolicyBase
+    public class ProvisioningClientFixedDelayRetryPolicy : ProvisioningClientRetryPolicyBase
     {
         private readonly TimeSpan _fixedDelay;
         private readonly bool _useJitter;
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="fixedDelay">The fixed delay to wait between retries.</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in retrying clients.</param>
         /// <exception cref="ArgumentOutOfRangeException">Throw if the value of <paramref name="fixedDelay"/> is negative.</exception>
-        public DeviceProvisioningClientFixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay, bool useJitter = true)
+        public ProvisioningClientFixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay, bool useJitter = true)
             : base(maxRetries)
         {
             AssertNotNegativeValue(fixedDelay.Ticks, nameof(fixedDelay));

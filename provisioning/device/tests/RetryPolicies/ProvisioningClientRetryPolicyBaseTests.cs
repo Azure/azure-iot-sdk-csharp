@@ -2,29 +2,25 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FluentAssertions;
 
-namespace Microsoft.Azure.Devices.Tests
+namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
     [TestClass]
     [TestCategory("Unit")]
-    [TestCategory("IoTHub")]
-    public class IotHubServiceRetryPolicyBaseTests
+    public class ProvisioningClientRetryPolicyBaseTests
     {
         [TestMethod]
         public void RetryPolicyBase_ObservesMax()
         {
             // arrange
             const uint maxRetries = 2;
-            var retryPolicy = new IotHubServiceTestRetryPolicy(maxRetries);
-            var ex = new IotHubServiceException("") { IsTransient = true };
+            var retryPolicy = new ProvisioningClientTestRetryPolicy(maxRetries);
+            var ex = new ProvisioningClientException("", true);
 
             // act and assert
             retryPolicy.ShouldRetry(maxRetries - 1, ex, out TimeSpan delay).Should().BeTrue();
@@ -35,8 +31,8 @@ namespace Microsoft.Azure.Devices.Tests
         public void RetryPolicyBase_ObservesInifiniteRetries()
         {
             // arrange
-            var retryPolicy = new IotHubServiceTestRetryPolicy(0);
-            var ex = new IotHubServiceException("") { IsTransient = true };
+            var retryPolicy = new ProvisioningClientTestRetryPolicy(0);
+            var ex = new ProvisioningClientException("", true);
 
             // act and assert
             retryPolicy.ShouldRetry(uint.MaxValue, ex, out TimeSpan delay).Should().BeTrue();
@@ -45,11 +41,11 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
-        public void RetryPolicyBase_IotHubServiceException_ReturnsTrueWhenTransient(bool isTransient)
+        public void RetryPolicyBase_ProvisioningClientException_ReturnsTrueWhenTransient(bool isTransient)
         {
             // arrange
-            var retryPolicy = new IotHubServiceTestRetryPolicy(0);
-            var ex = new IotHubServiceException("") { IsTransient = isTransient };
+            var retryPolicy = new ProvisioningClientTestRetryPolicy(0);
+            var ex = new ProvisioningClientException("", isTransient);
 
             // act and assert
             retryPolicy.ShouldRetry(1, ex, out TimeSpan delay).Should().Be(isTransient);
@@ -69,7 +65,7 @@ namespace Microsoft.Azure.Devices.Tests
         public void RetryPolicyBase_OtherExceptions_ReturnFalse(Type exceptionType)
         {
             // arrange
-            var retryPolicy = new IotHubServiceTestRetryPolicy(0);
+            var retryPolicy = new ProvisioningClientTestRetryPolicy(0);
             var ex = Activator.CreateInstance(exceptionType, "exParam") as Exception;
 
             // act and assert
@@ -84,7 +80,7 @@ namespace Microsoft.Azure.Devices.Tests
         public void RetryPolicyBase_UpdateWithJitter_IgnoresAtThresholdOf50(double baseTimeMs)
         {
             // arrange
-            var retryPolicy = new IotHubServiceTestRetryPolicy(0);
+            var retryPolicy = new ProvisioningClientTestRetryPolicy(0);
 
             // act
             TimeSpan jitter = retryPolicy.UpdateWithJitter(baseTimeMs);
@@ -104,7 +100,7 @@ namespace Microsoft.Azure.Devices.Tests
         public void RetryPolicyBase_UpdateWithJitter_NearValue(double seconds)
         {
             // arrange
-            var retryPolicy = new IotHubServiceTestRetryPolicy(0);
+            var retryPolicy = new ProvisioningClientTestRetryPolicy(0);
             var duration = TimeSpan.FromSeconds(seconds);
             double min = duration.TotalMilliseconds * .95d;
             double max = duration.TotalMilliseconds * 1.05d;

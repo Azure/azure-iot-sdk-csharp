@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// A base retry policy.
     /// </summary>
-    public abstract class DeviceProvisioningClientRetryPolicyBase : IDeviceProvisioningClientRetryPolicy
+    public abstract class ProvisioningClientRetryPolicyBase : IProvisioningClientRetryPolicy
     {
         private readonly Random _rng = new();
         private readonly object _rngLock = new();
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="maxRetries">The maximum number of retries; use a negative value for infinite retries.</param>
         /// <exception cref="ArgumentOutOfRangeException">Throw if the value of <paramref name="maxRetries"/> is negative.</exception>
-        protected DeviceProvisioningClientRetryPolicyBase(uint maxRetries)
+        protected ProvisioningClientRetryPolicyBase(uint maxRetries)
         {
             if (maxRetries < 0)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             retryDelay = TimeSpan.Zero;
 
-            return (lastException is DeviceProvisioningClientException ex
+            return (lastException is ProvisioningClientException ex
                     && ex.IsTransient)
                 && (MaxRetries == 0
                 || currentRetryCount < MaxRetries);
