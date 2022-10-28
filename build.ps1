@@ -151,9 +151,9 @@ Function RunSamples($path, $message)
             $sampleRunningTimeInSeconds = 30
 
             # Run the cleanup
-            RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-            RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
-            RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:FAR_AWAY_IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
+            #RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+            #RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
+            #RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:FAR_AWAY_IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
             
             # Run the iot-hub\device samples
             RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"""
