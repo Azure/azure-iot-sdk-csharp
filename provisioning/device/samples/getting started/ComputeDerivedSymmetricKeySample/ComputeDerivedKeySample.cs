@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
         public void RunSample()
         {
-            Console.WriteLine("DEBUG STATEMENT: COMPUTING KEY");
             string derivedKey = ComputeDerivedSymmetricKey(_parameters.PrimaryKey, _parameters.RegistrationId);
 
             Console.WriteLine($"Your derived device key is:'{derivedKey}'");
