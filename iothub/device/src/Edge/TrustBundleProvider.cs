@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
 {
     internal class TrustBundleProvider : ITrustBundleProvider
     {
-        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
+        private static readonly IIotHubClientRetryPolicy s_retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 
         public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion)
         {

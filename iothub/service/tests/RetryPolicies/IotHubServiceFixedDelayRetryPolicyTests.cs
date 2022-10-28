@@ -2,15 +2,19 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     [TestCategory("IoTHub")]
-    public class FixedDelayRetryPolicyTests
+    public class IotHubServiceFixedDelayRetryPolicyTests
     {
         [TestMethod]
         [DataRow(1u)]
@@ -21,10 +25,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var expected = TimeSpan.FromSeconds(10);
-            var retryPolicy = new FixedDelayRetryPolicy(0, expected, false);
+            var retryPolicy = new IotHubServiceFixedDelayRetryPolicy(0, expected, false);
 
             // act
-            retryPolicy.ShouldRetry(retryCount, new IotHubClientException("", true), out TimeSpan retryInterval);
+            retryPolicy.ShouldRetry(retryCount, new IotHubServiceException("") { IsTransient = true }, out TimeSpan retryInterval);
 
             // assert
             retryInterval.Should().Be(expected);

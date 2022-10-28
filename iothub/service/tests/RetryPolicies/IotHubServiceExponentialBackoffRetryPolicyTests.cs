@@ -2,16 +2,19 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     [TestCategory("IoTHub")]
-    public class ExponentialBackoffRetryPolicyTests
+    public class IotHubServiceExponentialBackoffRetryPolicyTests
     {
         [TestMethod]
         public void ExponentialBackoffRetryPolicy_DoesNotUnderflowDelay()
@@ -19,13 +22,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             const uint MaxRetryAttempts = 70;
 
-            var exponentialBackoff = new ExponentialBackoffRetryPolicy(MaxRetryAttempts, TimeSpan.FromDays(365), false);
+            var exponentialBackoff = new IotHubServiceExponentialBackoffRetryPolicy(MaxRetryAttempts, TimeSpan.FromDays(365), false);
             TimeSpan previousDelay = TimeSpan.Zero;
 
             for (uint retryCount = 1; retryCount < MaxRetryAttempts; retryCount++)
             {
                 // act
-                exponentialBackoff.ShouldRetry(retryCount, new IotHubClientException("", true), out TimeSpan delay).Should().BeTrue();
+                exponentialBackoff.ShouldRetry(retryCount, new IotHubServiceException("") { IsTransient = true }, out TimeSpan delay).Should().BeTrue();
 
                 // assert
                 Console.WriteLine($"{retryCount}: {delay}");
@@ -43,11 +46,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ExponentialBackoffRetryPolicy_IsExponential(uint retryCount)
         {
             // arrange
-            var exponentialBackoff = new ExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.FromDays(30), false);
+            var exponentialBackoff = new IotHubServiceExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.FromDays(30), false);
             TimeSpan previousDelay = TimeSpan.Zero;
             uint exponent = retryCount + 6; // starts at 7
             // act
-            exponentialBackoff.ShouldRetry(retryCount, new IotHubClientException("", true), out TimeSpan delay);
+            exponentialBackoff.ShouldRetry(retryCount, new IotHubServiceException("") { IsTransient = true }, out TimeSpan delay);
 
             // assert
             delay.TotalMilliseconds.Should().BeApproximately(Math.Pow(2, exponent), 100);

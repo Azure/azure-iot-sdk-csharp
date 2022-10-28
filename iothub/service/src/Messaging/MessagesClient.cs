@@ -20,15 +20,16 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
     public class MessagesClient : IDisposable
     {
+        private const string SendingPath = "/messages/deviceBound";
+        private const string PurgeMessageQueueFormat = "/devices/{0}/commands";
+
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly AmqpConnectionHandler _amqpConnection;
         private readonly IotHubServiceClientOptions _clientOptions;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-
-        private const string SendingPath = "/messages/deviceBound";
-        private const string PurgeMessageQueueFormat = "/devices/{0}/commands";
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -42,13 +43,15 @@ namespace Microsoft.Azure.Devices
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
-            IotHubServiceClientOptions options)
+            IotHubServiceClientOptions options,
+            RetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
             _clientOptions = options;
+            _internalRetryHandler = retryHandler;
             _amqpConnection = new AmqpConnectionHandler(
                 credentialProvider,
                 options.Protocol,
@@ -89,7 +92,14 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -122,7 +132,14 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -173,7 +190,15 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Outcome outcome = await _amqpConnection.SendAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
+                Outcome outcome = null;
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            outcome = await _amqpConnection.SendAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
@@ -230,7 +255,16 @@ namespace Microsoft.Azure.Devices
             amqpMessage.Properties.To = $"/devices/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}/messages/deviceBound";
             try
             {
-                Outcome outcome = await _amqpConnection.SendAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
+                Outcome outcome = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            outcome = await _amqpConnection.SendAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
@@ -290,7 +324,17 @@ namespace Microsoft.Azure.Devices
                     UriKind.Relative);
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, purgeUri, _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<PurgeMessageQueueResult>(response).ConfigureAwait(false);
             }

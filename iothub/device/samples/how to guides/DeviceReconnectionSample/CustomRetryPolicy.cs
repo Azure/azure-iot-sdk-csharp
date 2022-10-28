@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     /// An exponential backoff with jitter based retry policy that retries on additional exceptions
     /// not covered by the SDK, because in this application we wish to run as long as possible.
     /// </summary>
-    internal class CustomRetryPolicy : ExponentialBackoffRetryPolicy
+    internal class CustomRetryPolicy : IotHubClientExponentialBackoffRetryPolicy
     {
         private readonly HashSet<Type> _exceptionsToBeRetried;
         private readonly ILogger _logger;

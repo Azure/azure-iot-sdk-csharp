@@ -10,13 +10,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// The Device Provisioning Service exceptions on the Service Client.
     /// </summary>
-    public class DeviceProvisioningServiceException : Exception
+    public class ProvisioningServiceException : Exception
     {
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message.</param>
-        public DeviceProvisioningServiceException(string message)
+        public ProvisioningServiceException(string message)
             : this(message, innerException: null, isTransient: false)
         {
         }
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="isTransient">True if the error is transient and the operation should be retried.</param>
-        public DeviceProvisioningServiceException(string message, bool isTransient)
+        public ProvisioningServiceException(string message, bool isTransient)
             : this(message, innerException: null, isTransient: isTransient)
         {
         }
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="innerException">The inner exception.</param>
-        public DeviceProvisioningServiceException(Exception innerException)
+        public ProvisioningServiceException(Exception innerException)
             : this(string.Empty, innerException, isTransient: false)
         {
         }
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="message">The message</param>
         /// <param name="innerException">The inner exception</param>
         /// <param name="isTransient">True if the error is transient and the operation should be retried.</param>
-        internal DeviceProvisioningServiceException(string message, Exception innerException, bool isTransient)
+        internal ProvisioningServiceException(string message, Exception innerException, bool isTransient)
             : base(message, innerException)
         {
             IsTransient = isTransient;
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="message">The message.</param>
         /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
         /// <param name="innerException">The inner exception</param>
-        internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, Exception innerException = null)
+        internal ProvisioningServiceException(string message, HttpStatusCode statusCode, Exception innerException = null)
             : base(message, innerException)
         {
             IsTransient = DetermineIfTransient(statusCode);
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="message">The message.</param>
         /// <param name="statusCode">The 3-digit HTTP status code returned by Device Provisioning Service.</param>
         /// <param name="fields">The HTTP headers.</param>
-        internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, IDictionary<string, string> fields)
+        internal ProvisioningServiceException(string message, HttpStatusCode statusCode, IDictionary<string, string> fields)
             : base(message)
         {
             IsTransient = DetermineIfTransient(statusCode);
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="errorCode">The specific 6-digit error code in the DPS response, if available.</param>
         /// <param name="trackingId">Service reported tracking Id. Use this when reporting a service issue.</param>
         /// <param name="fields">The HTTP headers.</param>
-        internal DeviceProvisioningServiceException(string message, HttpStatusCode statusCode, int errorCode, string trackingId, IDictionary<string, string> fields)
+        internal ProvisioningServiceException(string message, HttpStatusCode statusCode, int errorCode, string trackingId, IDictionary<string, string> fields)
             : base(message)
         {
             IsTransient = DetermineIfTransient(statusCode);

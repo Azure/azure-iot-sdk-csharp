@@ -11,25 +11,21 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Provides the base implementation of the retry mechanism for unreliable actions and transient conditions.
     /// </summary>
-    /// <remarks>
-    /// Jitter can be under 1 second, plus or minus.
-    /// </remarks>
     internal class RetryHandler
     {
-        private IRetryPolicy _retryPolicy;
+        private IIotHubClientRetryPolicy _retryPolicy;
 
         /// <summary>
         /// Creates an instance of this class with the specified number of retry attempts and parameters defining the progressive delay between retries.
         /// </summary>
         /// <param name="retryPolicy">The retry policy to use for operations.</param>
-        /// 
-        internal RetryHandler(IRetryPolicy retryPolicy)
+        internal RetryHandler(IIotHubClientRetryPolicy retryPolicy)
         {
             Debug.Assert(retryPolicy != null);
             _retryPolicy = retryPolicy;
         }
 
-        internal void SetRetryPolicy(IRetryPolicy retryPolicy)
+        internal void SetRetryPolicy(IIotHubClientRetryPolicy retryPolicy)
         {
             Debug.Assert(retryPolicy != null);
             _retryPolicy = retryPolicy;
@@ -50,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             async Task<bool> TaskWrapper()
             {
-                // There are two typews of tasks: return nothing and return a specific type.
+                // There are two types of tasks: return nothing and return a specific type.
                 // We use this to proxy to the generics implementation.
                 await taskFunc();
                 return true;

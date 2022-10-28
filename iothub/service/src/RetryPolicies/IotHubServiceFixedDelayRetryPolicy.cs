@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Represents a retry policy that performs a specified number of retries, using a fixed retry delay with jitter.
@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
-    public class FixedDelayRetryPolicy : RetryPolicyBase
+    public class IotHubServiceFixedDelayRetryPolicy : IotHubServiceRetryPolicyBase
     {
         private readonly TimeSpan _fixedDelay;
         private readonly bool _useJitter;
@@ -22,10 +22,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="maxRetries">The maximum number of retry attempts; use 0 for infinite retries.</param>
         /// <param name="fixedDelay">The fixed delay to wait between retries.</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in retrying clients.</param>
-        public FixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay, bool useJitter = true)
+        /// <exception cref="ArgumentOutOfRangeException">Throw if the value of <paramref name="fixedDelay"/> is negative.</exception>
+        public IotHubServiceFixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay, bool useJitter = true)
             : base(maxRetries)
         {
-            Argument.AssertNotNegativeValue(maxRetries, nameof(maxRetries));
             Argument.AssertNotNegativeValue(fixedDelay.Ticks, nameof(fixedDelay));
 
             _fixedDelay = fixedDelay;

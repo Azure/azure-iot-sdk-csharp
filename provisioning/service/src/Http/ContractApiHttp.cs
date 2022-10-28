@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
         /// <exception cref="OperationCanceledException">If the cancellation was requested.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">If there is an error in the HTTP communication
+        /// <exception cref="ProvisioningServiceException">If there is an error in the HTTP communication
         /// between client and service or the service answers the request with error status.</exception>
         public async Task<ContractApiResponse> RequestAsync(
             HttpMethod httpMethod,
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     using HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
                     if (httpResponse == null)
                     {
-                        throw new DeviceProvisioningServiceException(
+                        throw new ProvisioningServiceException(
                             $"The response message was null when executing operation {httpMethod}.", isTransient: true);
                     }
 
@@ -155,22 +155,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
                     if (innerExceptions.Any(e => e is TimeoutException))
                     {
-                        throw new DeviceProvisioningServiceException(ex.Message, ex, true);
+                        throw new ProvisioningServiceException(ex.Message, ex, true);
                     }
 
                     throw;
                 }
                 catch (TimeoutException ex)
                 {
-                    throw new DeviceProvisioningServiceException(ex.Message, HttpStatusCode.RequestTimeout, ex);
+                    throw new ProvisioningServiceException(ex.Message, HttpStatusCode.RequestTimeout, ex);
                 }
                 catch (IOException ex)
                 {
-                    throw new DeviceProvisioningServiceException(ex.Message, ex, true);
+                    throw new ProvisioningServiceException(ex.Message, ex, true);
                 }
                 catch (HttpRequestException ex)
                 {
-                    throw new DeviceProvisioningServiceException(ex.Message, ex, true);
+                    throw new ProvisioningServiceException(ex.Message, ex, true);
                 }
                 catch (TaskCanceledException ex)
                 {
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         throw new OperationCanceledException(ex.Message, ex);
                     }
 
-                    throw new DeviceProvisioningServiceException($"The {httpMethod} operation timed out.", HttpStatusCode.RequestTimeout, ex);
+                    throw new ProvisioningServiceException($"The {httpMethod} operation timed out.", HttpStatusCode.RequestTimeout, ex);
                 }
             }
 
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (response.Body == null)
             {
-                throw new DeviceProvisioningServiceException(response.ErrorMessage, response.StatusCode, response.Fields);
+                throw new ProvisioningServiceException(response.ErrorMessage, response.StatusCode, response.Fields);
             }
 
             // Both 200 and 204 indicate a successful operation, so there is no reason to parse the body for an error code
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                     if (response.StatusCode >= HttpStatusCode.Ambiguous)
                     {
-                        throw new DeviceProvisioningServiceException(
+                        throw new ProvisioningServiceException(
                             $"{response.ErrorMessage}:{response.Body}",
                             response.StatusCode,
                             responseBody.ErrorCode,
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 }
                 catch (JsonException jex)
                 {
-                    throw new DeviceProvisioningServiceException(
+                    throw new ProvisioningServiceException(
                         $"Fail to deserialize the received response body: {response.Body}",
                         jex,
                         false);

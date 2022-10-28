@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             msg.SetAsSecurityMessage();
 
             msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId).Should().BeTrue();
-            msg.SystemProperties[MessageSystemPropertyNames.InterfaceId].Should().Equals(CommonConstants.SecurityMessageInterfaceId);
+            msg.SystemProperties[MessageSystemPropertyNames.InterfaceId].Should().Be(CommonConstants.SecurityMessageInterfaceId);
             msg.IsSecurityMessage.Should().BeTrue();
         }
 

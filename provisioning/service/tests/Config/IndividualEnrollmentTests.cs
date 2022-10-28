@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // act - assert
             Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-            var error = act.Should().Throw<DeviceProvisioningServiceException>();
+            var error = act.Should().Throw<ProvisioningServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.And.IsTransient.Should().BeFalse();
         }

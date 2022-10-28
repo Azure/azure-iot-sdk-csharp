@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 
 namespace Microsoft.Azure.Devices
 {
@@ -29,6 +28,7 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -37,13 +37,18 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        internal ConfigurationsClient(string hostName, IotHubConnectionProperties credentialProvider,
-            HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
+        internal ConfigurationsClient(
+            string hostName,
+            IotHubConnectionProperties credentialProvider,
+            HttpClient httpClient,
+            HttpRequestMessageFactory httpRequestMessageFactory,
+            RetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>
@@ -75,7 +80,17 @@ namespace Microsoft.Azure.Devices
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Configuration>(response).ConfigureAwait(false);
             }
@@ -122,7 +137,17 @@ namespace Microsoft.Azure.Devices
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(configurationId), _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Configuration>(response).ConfigureAwait(false);
             }
@@ -175,7 +200,17 @@ namespace Microsoft.Azure.Devices
                     _credentialProvider,
                     null,
                     string.Format(CultureInfo.InvariantCulture, ConfigurationsRequestUriFormat, maxCount));
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<IEnumerable<Configuration>>(response).ConfigureAwait(false);
             }
@@ -228,7 +263,17 @@ namespace Microsoft.Azure.Devices
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);
                 HttpMessageHelper.ConditionallyInsertETag(request, configuration.ETag, onlyIfUnchanged);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Configuration>(response).ConfigureAwait(false);
             }
@@ -304,7 +349,17 @@ namespace Microsoft.Azure.Devices
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
                 HttpMessageHelper.ConditionallyInsertETag(request, configuration.ETag, onlyIfUnchanged);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -358,7 +413,17 @@ namespace Microsoft.Azure.Devices
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider, content);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
             }
             catch (Exception ex)

@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            await InnerHandler.SendTelemetryAsync(messages, cancellationToken).ConfigureAwait(false);
+            await InnerHandler.SendTelemetryBatchAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

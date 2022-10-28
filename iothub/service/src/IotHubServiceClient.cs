@@ -30,6 +30,8 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
+        private readonly IIotHubServiceRetryPolicy _retryPolicy;
+        private readonly RetryHandler _retryHandler;
         private const string ApiVersion = "2021-04-12";
 
         /// <summary>
@@ -60,6 +62,9 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
+            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
+            _retryHandler = new RetryHandler(_retryPolicy);
+
             InitializeSubclients(clientOptions);
         }
 
@@ -93,6 +98,8 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
+            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
+            _retryHandler = new RetryHandler(_retryPolicy);
 
             InitializeSubclients(clientOptions);
         }
@@ -126,6 +133,8 @@ namespace Microsoft.Azure.Devices
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
                 ApiVersion);
+            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
+            _retryHandler = new RetryHandler(_retryPolicy);
 
             InitializeSubclients(clientOptions);
         }
@@ -208,20 +217,20 @@ namespace Microsoft.Azure.Devices
             _httpClient?.Dispose();
         }
 
-        private void InitializeSubclients(IotHubServiceClientOptions _options)
+        private void InitializeSubclients(IotHubServiceClientOptions options)
         {
-            Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            ScheduledJobs = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, Query);
-            DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _options);
+            Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            ScheduledJobs = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, Query, _retryHandler);
+            DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
+            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, options, _retryHandler);
 
-            MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _options);
-            FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _options);
+            MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, options, _retryHandler);
+            FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, options, _retryHandler);
 
             // Adds additional logging to the AMQP connections created by this client
             AmqpTrace.Provider = new AmqpTransportLog();

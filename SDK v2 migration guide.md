@@ -92,7 +92,7 @@ The v2 strategy can be grouped into 3 categories.
     - The exception message is meant for human readable expanation.
     - Inner exceptions may offer more insight and are worth logging out.
     - `TrackingId` is for uniquely identifying specific operations and are useful in sharing with IoT hub support to assist them in more quickly identifying errors that may have been logged by the service.
-  - `DeviceProvisioningClientException` for provisioning device client and `DeviceProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
+  - `ProvisioningClientException` for provisioning device client and `ProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
     > As with the IoT hub exceptions, primarily observe the `IsTransient` and `ErrorCode` properties.
     > Other properties may be valuable for logging or debugging.
 
@@ -143,7 +143,7 @@ Find a client you currently use below, read the table of API name changes and us
 
 - The device and module clients now have a property (e.g., `IotHubDeviceClient.ConnectionStatusInfo`) with the latest connection status information on it, eliminating the need for a connection status callback method to cache the latest values.
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
-- The library now includes 2 new `IRetryPolicy` implmentations: `IncrementalDelayRetryStrategy` and `FixedDelayRetryStrategy`.
+- The library now includes 2 new `IIotHubClientRetryPolicy` implementations: `IotHubClientIncrementalDelayRetryStrategy` and `IotHubClientFixedDelayRetryStrategy`.
 - The client can now be re-opened after it has been closed, removing the need to close/dispose/initialize/open; simply initialize/open, then if necessary close/open, and finally when done dispose.
   > Be advised, subscriptions do not carry over when the client is re-opened.
   >
@@ -165,12 +165,13 @@ Find a client you currently use below, read the table of API name changes and us
 | `MessageResponse` | `MessageAcknowledgement` | It isn't a full response, just a simple acknowledgement. |
 | `Message` | `TelemetryMessage`, `IncomingMessage` | Distinguished between the different messaging operations. |
 | `DeviceClient.SetRetryPolicy(...)` | `IotHubClientOptions.RetryPolicy` | Should be specified at initialization time, and putting it in the client options object reduces the client API surface. |
-| `ExponentialBackOff` | `ExponentialBackOffRetryPolicy` | Clarify it is a retry policy. |
+| `ExponentialBackOff` | `IotHubClientExponentialBackOffRetryPolicy` | Clarify it is a retry policy. |
 | `Message.CreationTimeUtc` | `TelemetryMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).³ |
 | `Message.EnqueuedTimeUtc` | `TelemetryMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` | See³ |
 | `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` | See³ |
 | `MethodRequest` | `DirectMethodRequest` | Use full name of the operation type.⁴ |
 | `MethodResponse` | `DirectMethodResponse` | See⁴ |
+| `IotHubException` | `IotHubClientException` | Specify the exception is for Hub device and module client only. |
 
 #### ModuleClient
 
@@ -262,6 +263,11 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - `FeedbackReceiver` is now a callback assigned to the `MessageFeedbackProcessor` property.
 - `GetFileNotificationReceiver(...)` is now a callback assigned to `FileUploadNotificationProcessor` property. These methods return a callback value.
 
+#### Notable additions
+
+- The library now includes `IIotHubServiceRetryPolicy` implementations: `IotHubServiceExponentialBackoffRetryPolicy`, `IotHubServiceFixedDelayRetryPolicy`, `IotHubServiceIncrementalDelayRetryPolicy` and `IotHubServiceNoRetry`,
+ which can be set by calling `IotHubServiceClientOptions.RetryPolicy`.
+
 #### API mapping
 
 | v1 API | Equivalent v2 API | Notes |
@@ -275,6 +281,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `CloudToDeviceMethodResult` | `DirectMethodClientResponse` | See² |
 | `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` | |
 | `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor` | |
+| `IotHubException` | `IotHubServiceException` | Specify the exception is for Hub service client only. |
 
 #### JobClient
 
@@ -331,6 +338,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `ProvisioningRegistrationAdditionalData` | `RegistrationRequestPayload`| |
 | `DeviceRegistrationResult.CreatedDateTimeUtc` | `DeviceRegistrationResult.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
 | `DeviceRegistrationResult.LastUpdatedDateTimeUtc` | `DeviceRegistrationResult.LastUpdatedOnUtc` | See¹ |
+| `ProvisioningTransportException` | `ProvisioningClientException` | |
 
 ### DPS service client
 
@@ -383,6 +391,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `X509CAReferences` | `X509CaReferences` | See³ |
 | `X509CertificateInfo.SHA1Thumbprint` | `X509CertificateInfo.Sha1Thumbprint` | See³ |
 | `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` | See³ |
+| `ProvisioningServiceClientException` | `ProvisioningServiceException` | |
 
 ### Security provider client
 
