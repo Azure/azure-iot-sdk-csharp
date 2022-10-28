@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class ProvisioningClientNoRetry : IProvisioningClientRetryPolicy
     {
         /// <summary>
-        /// Create an instance of a retry policy that perfrms no retries.
+        /// Create an instance of a retry policy that performs no retries.
         /// </summary>
         public ProvisioningClientNoRetry()
         {

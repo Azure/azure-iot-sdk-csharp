@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="currentRetryCount">The number of times the current operation has been attempted.</param>
         /// <param name="lastException">The exception that caused this retry policy check.</param>
         /// <param name="retryDelay">Set this to the desired delay prior to the next attempt.</param>
-        /// <returns>True if the operation should be retried,otherwise false.</returns>
+        /// <returns>True if the operation should be retried, otherwise false.</returns>
         bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay);
     }
 }

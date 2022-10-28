@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningClientFixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay, bool useJitter = true)
             : base(maxRetries)
         {
-            AssertNotNegativeValue(fixedDelay.Ticks, nameof(fixedDelay));
+            Argument.AssertNotNegativeValue(fixedDelay.Ticks, nameof(fixedDelay));
 
             _fixedDelay = fixedDelay;
             _useJitter = useJitter;
@@ -52,17 +52,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 : _fixedDelay;
 
             return true;
-        }
-
-        private static void AssertNotNegativeValue(long argumentValue, string argumentName)
-        {
-            if (argumentValue < 0)
-            {
-                throw new ArgumentOutOfRangeException(argumentName, argumentValue, string.Format(CultureInfo.CurrentCulture, "ArgumentCannotBeNegative", new object[]
-                {
-                    argumentName
-                }));
-            }
         }
     }
 }
