@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private readonly List<string> _deviceConnectionStrings;
         private readonly IotHubClientOptions _clientOptions;
-        private readonly IRetryPolicy _customRetryPolicy;
+        private readonly IIotHubClientRetryPolicy _customRetryPolicy;
 
         // An UnauthorizedException is handled in the connection status change handler through its corresponding status change event.
         // We will ignore this exception when thrown by client API operations.

@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    internal class HubServiceTestRetryPolicy : IRetryPolicy
+    internal class HubServiceTestRetryPolicy : IIotHubServiceRetryPolicy
     {
         private readonly HashSet<IotHubServiceErrorCode> _iotHubServiceErrorCodes;
         private const int MaxRetries = 20;

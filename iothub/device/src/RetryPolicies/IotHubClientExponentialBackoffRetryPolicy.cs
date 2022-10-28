@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// Jitter can change the delay from 95% to 105% of the calculated time.
     /// </remarks>
-    public class ExponentialBackoffRetryPolicy : RetryPolicyBase
+    public class IotHubClientExponentialBackoffRetryPolicy : IotHubClientRetryPolicyBase
     {
         // If we start with an exponent of 1 to calculate the number of millisecond delay, it starts too low and takes too long to get over 1 second.
         // So we always add 6 to the retry count to start at 2^7=128 milliseconds, and exceed 1 second delay on retry #4.
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="maxRetries">The maximum number of retry attempts; use 0 for infinite retries.</param>
         /// <param name="maxWait">The maximum amount of time to wait between retries (will not exceed ~12.43 days).</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
-        public ExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait, bool useJitter = true)
+        public IotHubClientExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait, bool useJitter = true)
             : base(maxRetries)
         {
             Argument.AssertNotNegativeValue(maxWait.Ticks, nameof(maxWait));

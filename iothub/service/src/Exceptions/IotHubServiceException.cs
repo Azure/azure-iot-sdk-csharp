@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient { get; }
+        public bool IsTransient { get; protected internal set; }
 
         /// <summary>
         /// The service returned tracking Id associated with this particular error.

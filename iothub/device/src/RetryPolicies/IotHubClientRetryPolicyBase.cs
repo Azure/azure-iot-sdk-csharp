@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// A base retry policy.
     /// </summary>
-    public abstract class RetryPolicyBase : IRetryPolicy
+    public abstract class IotHubClientRetryPolicyBase : IIotHubClientRetryPolicy
     {
         private readonly Random _rng = new();
         private readonly object _rngLock = new();
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="maxRetries">The maximum number of retries; use a negative value for infinite retries.</param>
-        protected RetryPolicyBase(uint maxRetries)
+        protected IotHubClientRetryPolicyBase(uint maxRetries)
         {
             Argument.AssertNotNegativeValue(maxRetries, nameof(maxRetries));
             MaxRetries = maxRetries;

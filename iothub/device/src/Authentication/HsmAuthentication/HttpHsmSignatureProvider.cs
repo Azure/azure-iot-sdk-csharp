@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         private readonly string _apiVersion;
         private readonly Uri _providerUri;
 
-        private static readonly IRetryPolicy s_retryPolicy = new ExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
+        private static readonly IIotHubClientRetryPolicy s_retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 
         public HttpHsmSignatureProvider(string providerUri, string apiVersion)
         {

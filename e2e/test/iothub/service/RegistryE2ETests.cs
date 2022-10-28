@@ -9,8 +9,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -31,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceErrorCode.DeviceNotFound,
             IotHubServiceErrorCode.ModuleNotFound,
         };
-        private static readonly IRetryPolicy s_retryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
+        private static readonly IIotHubServiceRetryPolicy s_retryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -438,7 +436,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Module retrievedModule = null;
 
                 await RetryOperationHelper
-                    .RunWithRetryAsync(
+                    .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         retrievedModule = await serviceClient.Modules.GetAsync(testDeviceId, testModuleId).ConfigureAwait(false);
@@ -639,7 +637,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
 
             await RetryOperationHelper
-                .RunWithRetryAsync(
+                .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
@@ -707,7 +705,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
 
             await RetryOperationHelper
-                .RunWithRetryAsync(
+                .RunWithHubServiceRetryAsync(
                     async () =>
                     {
                         module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);

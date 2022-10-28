@@ -3,12 +3,12 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents a retry policy.
+    /// Represents a retry policy for the IoT hub service client.
     /// </summary>
-    public interface IRetryPolicy
+    public interface IIotHubServiceRetryPolicy
     {
         /// <summary>
         /// Method called by the client prior to a retry.
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="currentRetryCount">The number of times the current operation has been attempted.</param>
         /// <param name="lastException">The exception that caused this retry policy check.</param>
         /// <param name="retryDelay">Set this to the desired delay prior to the next attempt.</param>
-        /// <returns>True if the operation should be retried,otherwise false.</returns>
+        /// <returns>True if the operation should be retried, otherwise false.</returns>
         bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay);
     }
 }

@@ -47,6 +47,22 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
+        /// Checks an argument to ensure that its 64-bit signed value isn't negative.
+        /// </summary>
+        /// <param name="argumentValue">The value of the argument.</param>
+        /// <param name="argumentName">The name of the argument for diagnostic purposes.</param>
+        internal static void AssertNotNegativeValue(long argumentValue, string argumentName)
+        {
+            if (argumentValue < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    argumentName,
+                    argumentValue,
+                    $"The value of '{argumentName}' cannot be negative. It is currently '{argumentValue}'.");
+            }
+        }
+
+        /// <summary>
         /// Throws if <paramref name="value"/> is null or an empty collection.
         /// </summary>
         /// <param name="value">The value to validate.</param>
