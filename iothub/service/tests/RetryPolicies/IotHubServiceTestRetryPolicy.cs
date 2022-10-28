@@ -5,6 +5,7 @@ using System;
 
 namespace Microsoft.Azure.Devices.Tests
 {
+    // This class is for unit testing of IotHubServiceRetryPolicyBase.
     internal class IotHubServiceTestRetryPolicy : IotHubServiceRetryPolicyBase
     {
         public IotHubServiceTestRetryPolicy(uint maxRetries)
