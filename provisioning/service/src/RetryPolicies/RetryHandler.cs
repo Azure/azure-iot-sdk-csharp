@@ -6,20 +6,20 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// Provides the base implementation of the retry mechanism for unreliable actions and transient conditions.
     /// </summary>
     internal class RetryHandler
     {
-        private readonly IProvisioningClientRetryPolicy _retryPolicy;
+        private readonly IProvisioningServiceRetryPolicy _retryPolicy;
 
         /// <summary>
         /// Creates an instance of this class with the specified number of retry attempts and parameters defining the progressive delay between retries.
         /// </summary>
         /// <param name="retryPolicy">The retry policy to use for operations.</param>
-        internal RetryHandler(IProvisioningClientRetryPolicy retryPolicy)
+        internal RetryHandler(IProvisioningServiceRetryPolicy retryPolicy)
         {
             Debug.Assert(retryPolicy != null);
             _retryPolicy = retryPolicy;
