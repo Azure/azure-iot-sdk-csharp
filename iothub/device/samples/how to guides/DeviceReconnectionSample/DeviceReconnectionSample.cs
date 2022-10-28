@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using System.Linq;
+using System.Net;
 using System.Text;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static readonly ClientOptions s_clientOptions = new() { SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset };
 
         private readonly Parameters _parameters;
-        private readonly TimeSpan s_sleepDuration;
+        private readonly TimeSpan s_waitTIme;
         private readonly ILogger _logger;
         private static X509Certificate2 s_certificate;
         private static SecurityProviderX509Certificate s_security;
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _parameters = parameters;
 
             _customRetryPolicy = new CustomRetryPolicy(s_exceptionsToBeRetried, _logger, _parameters.ExponentOrderBackoff);
-            s_sleepDuration = TimeSpan.FromSeconds(_parameters.MessageWaitTime);
+            s_waitTIme = TimeSpan.FromSeconds(_parameters.ConnectionWaitTime);
         }
 
         private static bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;
@@ -72,21 +72,52 @@ namespace Microsoft.Azure.Devices.Client.Samples
             s_certificate = LoadProvisioningCertificate(_parameters.GetCertificatePath(), _parameters.CertificateName, _parameters.CertificatePassword);
             s_security = new SecurityProviderX509Certificate(s_certificate);
             
-            _logger.LogInformation($"Initializing the device provisioning client using {_parameters.TransportType} transport...");
             using ProvisioningTransportHandler transport = GetTransportHandler(_parameters.TransportType);
+            if (ImplementsWebProxy(_parameters.TransportType) && !String.IsNullOrEmpty(_parameters.ProxyServerAddress.Trim()))
+            {
+                transport.Proxy = _parameters.ProxyServerAddress == null
+                    ? null
+                    : new WebProxy(_parameters.ProxyServerAddress);
+                _logger.LogInformation($"Provisioning with {_parameters.TransportType} tranport thru proxy {_parameters.ProxyServerAddress}.");
+            }
+            else
+            {
+                _logger.LogInformation($"Provisioning with {_parameters.TransportType} transport.");
+            }
+
             var provClient = ProvisioningDeviceClient.Create(
                 _parameters.GlobalDeviceEndpoint,
                 _parameters.IdScope,
                 s_security,
                 transport);
 
-            _logger.LogInformation($"Initialized for registration Id {s_security.GetRegistrationID()}.");
+            _logger.LogInformation($"Provisioning with Device: {s_security.GetRegistrationID()}.");
 
-            _logger.LogInformation("Registering with the device provisioning service... ");
-            DeviceRegistrationResult deviceRegistrationResult = await provClient.RegisterAsync();
-            DeviceRegistrationResult result = deviceRegistrationResult;
+            DeviceRegistrationResult result = null;
+            s_appCancellation = new CancellationTokenSource(sampleRunningTime);
 
-            _logger.LogInformation($"Registration status: {result.Status}.");
+            // fixed duration loop retry for provisioning
+            int tryCount = 0;
+            while (true)
+            {
+                try
+                {
+                    _logger.LogInformation($"Provisioning Attempt #{tryCount} with {_parameters.GlobalDeviceEndpoint}... ");
+                    result = s_waitTIme != TimeSpan.MaxValue
+                        ? await provClient.RegisterAsync(s_waitTIme).ConfigureAwait(false)
+                        : await provClient.RegisterAsync(s_appCancellation.Token).ConfigureAwait(false);
+                    break;
+                }
+                // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
+                // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
+                catch (ProvisioningTransportException ex) when (tryCount < int.MaxValue)
+                {
+                    _logger.LogError($"Provisioning Attempt #{tryCount++} failed. Retry in {s_waitTIme}s. Reason: [{ex.GetType()}: {ex.Message}]");
+                    await Task.Delay(TimeSpan.FromSeconds(_parameters.ConnectionWaitTime)).ConfigureAwait(false);
+                }
+            }
+
+            _logger.LogInformation($"Device {result.DeviceId} registration {result.Status}.");
             if (result.Status != ProvisioningRegistrationStatusType.Assigned)
             {
                 throw new ArgumentException("Registration status did not assign a hub, so exiting this sample.");
@@ -99,8 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             s_auth = new DeviceAuthenticationWithX509Certificate(
                 result.DeviceId,
                 s_certificate);
-            
-            s_appCancellation = new CancellationTokenSource(sampleRunningTime);
+        
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
@@ -211,7 +241,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     switch (reason)
                     {
                         case ConnectionStatusChangeReason.Bad_Credential:
-                            if (s_hub.Any())
+                            if (!String.IsNullOrEmpty(s_hub.Trim()))
                             {
                                 _logger.LogWarning("### The DeviceClient has been disconnected because of bad credential." +
                                 "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
@@ -330,7 +360,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogInformation($"Device sent message {messageCount} to IoT hub.");
                 }
 
-                await Task.Delay(s_sleepDuration, cancellationToken);
+                await Task.Delay(s_waitTIme, cancellationToken);
             }
         }
 
@@ -340,7 +370,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 if (!IsDeviceConnected)
                 {
-                    await Task.Delay(s_sleepDuration, cancellationToken);
+                    await Task.Delay(s_waitTIme, cancellationToken);
                     continue;
                 }
                 else if (_parameters.TransportType == TransportType.Http1)
@@ -348,10 +378,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     // The call to ReceiveAsync over HTTP completes immediately, rather than waiting up to the specified
                     // time or when a cancellation token is signaled, so if we want it to poll at the same rate, we need
                     // to add an explicit delay here.
-                    await Task.Delay(s_sleepDuration, cancellationToken);
+                    await Task.Delay(s_waitTIme, cancellationToken);
                 }
 
-                _logger.LogInformation($"Device waiting for C2D messages from the hub for {s_sleepDuration}." +
+                _logger.LogInformation($"Device waiting for C2D messages from the hub for {s_waitTIme}." +
                     $"\nUse the IoT Hub Azure Portal or Azure IoT Explorer to send a message to this device.");
 
                 await ReceiveMessageAndCompleteAsync(cancellationToken);
@@ -425,7 +455,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private bool ShouldClientBeInitialized(ConnectionStatus connectionStatus)
         {
             return (connectionStatus == ConnectionStatus.Disconnected || connectionStatus == ConnectionStatus.Disabled)
-                && s_hub.Any();
+                && !String.IsNullOrEmpty(s_hub.Trim());
         }
 
         private ProvisioningTransportHandler GetTransportHandler(TransportType type)
@@ -473,6 +503,26 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogInformation($"Using certificate {certificate.Thumbprint} {certificate.Subject}");
 
             return certificate;
+        }
+
+        public static bool ImplementsWebProxy(TransportType transportProtocol)
+        {
+            switch (transportProtocol)
+            {
+                case TransportType.Mqtt_WebSocket_Only:
+                case TransportType.Amqp_WebSocket_Only:
+                    return true;
+
+                case TransportType.Amqp:
+                case TransportType.Amqp_Tcp_Only:
+                case TransportType.Mqtt:
+                case TransportType.Mqtt_Tcp_Only:
+                case TransportType.Http1:
+                default:
+                    return false;
+            }
+
+            throw new NotSupportedException($"Unknown transport: '{transportProtocol}'.");
         }
     }
 }

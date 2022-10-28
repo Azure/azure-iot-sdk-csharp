@@ -38,6 +38,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public string GlobalDeviceEndpoint { get; set; }
 
         [Option(
+            'y',
+            "ProxyServerAddress",
+            Default = "",
+            HelpText = "The proxy server address for connection.")]
+        public string ProxyServerAddress { get; set; }
+
+        [Option(
             't',
             "TransportType",
             Default = TransportType.Mqtt,
@@ -54,10 +61,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         [Option(
             'w',
-            "MessageWaitTime",
+            "ConnectionWaitTime",
             Default = 15,
-            HelpText = "Time in second to wait between messages.")]
-        public long MessageWaitTime { get; set; }
+            HelpText = "Time in second to wait on async connection APIs.")]
+        public long ConnectionWaitTime { get; set; }
 
         [Option(
             'x',
