@@ -152,7 +152,6 @@ Function RunSamples($path, $message)
 
             
             # Run the iot-hub\device samples
-            #RunSample 'iothub\device\samples\how to guides\DeviceReconnectionSample' "IoTHub\Device\DeviceReconnectionSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"""
             RunSample 'iothub\device\samples\getting started\MessageReceiveSample' "IoTHub\Device\MessageReceiveSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample 'iothub\device\samples\getting started\MethodSample' "IoTHub\Device\MethodSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
