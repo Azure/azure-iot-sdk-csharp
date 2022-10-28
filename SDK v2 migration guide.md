@@ -328,6 +328,8 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
 - Added support for setting the web socket level keep alive interval for AMQP web socket connections.
 - Added support for setting the remote certificate validation callback for AMQP TCP connections.
+- The library now includes `IProvisioningClientRetryPolicy` implementations: `ProvisioningClientExponentialBackoffRetryPolicy`, `ProvisioningClientFixedDelayRetryPolicy`, `IotHubServiceIncrementalDelayRetryPolicy` and `ProvisioningClientNoRetry`,
+ which can be set by calling `ProvisioningClientOptions.RetryPolicy`.
 
 #### API mapping
 
