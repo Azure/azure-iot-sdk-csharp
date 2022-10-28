@@ -305,9 +305,6 @@ Function RunSample($path, $message, $params) {
    
     Set-Location (Join-Path $rootDir $path)
     Write-Host -ForegroundColor Cyan $label
-    Write-Host "PATH: [$path]"
-    Write-Host "MESSAGE: [$message]"
-    Write-Host "PARAMS: [$params]"
 
     $runCommand = "dotnet run -- $params"
     Invoke-Expression $runCommand
