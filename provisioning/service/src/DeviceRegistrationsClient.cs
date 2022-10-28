@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Query CreateEnrollmentGroupQuery(string query, string enrollmentGroupId, int pageSize = 0, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-            return new Query(_serviceConnectionString, GetDeviceRegistrationStatusUri(enrollmentGroupId).ToString(), query, _contractApiHttp, pageSize, cancellationToken);
+            return new Query(_serviceConnectionString, GetDeviceRegistrationStatusUri(enrollmentGroupId).ToString(), query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
         }
 
         private static Uri GetDeviceRegistrationStatusUri(string id)

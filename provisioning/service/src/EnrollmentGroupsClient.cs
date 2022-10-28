@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Query CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-            return new Query(_serviceConnectionString, ServiceName, query, _contractApiHttp, pageSize, cancellationToken);
+            return new Query(_serviceConnectionString, ServiceName, query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
         }
 
         /// <summary>

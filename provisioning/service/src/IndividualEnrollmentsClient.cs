@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
-            return new Query(_serviceConnectionString, ServiceName, query, _contractApiHttp, pageSize, cancellationToken);
+            return new Query(_serviceConnectionString, ServiceName, query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
         }
 
         /// <summary>
