@@ -318,7 +318,7 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
 
           # Environment variables for the DevOps pipeline
-          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
@@ -501,7 +501,7 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
 
           # Environment variables for the DevOps pipeline
-          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
