@@ -162,11 +162,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\d
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDeviceWithCommand", "iothub\device\samples\getting started\SimulatedDeviceWithCommand\SimulatedDeviceWithCommand.csproj", "{292B1759-B5A2-4A26-BB44-A039488D044F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComputeDerivedSymmetricKeySample", "provisioning\device\samples\Getting Started\ComputeDerivedSymmetricKeySample\ComputeDerivedSymmetricKeySample.csproj", "{A2D72CEF-7CB6-439D-A875-22DB39899969}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComputeDerivedSymmetricKeySample", "provisioning\device\samples\getting started\ComputeDerivedSymmetricKeySample\ComputeDerivedSymmetricKeySample.csproj", "{A2D72CEF-7CB6-439D-A875-22DB39899969}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8F9D9145-B786-4A2C-9A59-E1C33E07F5A2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X509Sample", "provisioning\device\samples\Getting Started\X509Sample\X509Sample.csproj", "{CAD27793-E63B-4579-B6A8-31FAA9AC8BE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X509Sample", "provisioning\device\samples\getting started\X509Sample\X509Sample.csproj", "{CAD27793-E63B-4579-B6A8-31FAA9AC8BE4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "getting started", "getting started", "{F75B3567-DCC4-49E9-A3D9-4A56E7557F13}"
 EndProject
@@ -176,11 +176,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{696B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "getting started", "getting started", "{A6EC8979-5E0C-46C9-A13C-DD038BDD5C19}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanupEnrollmentsSample", "provisioning\service\samples\Getting Started\CleanupEnrollmentsSample\CleanupEnrollmentsSample.csproj", "{65A77CA6-E5E2-406D-8DD4-8C00CFE655F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanupEnrollmentsSample", "provisioning\service\samples\getting started\CleanupEnrollmentsSample\CleanupEnrollmentsSample.csproj", "{65A77CA6-E5E2-406D-8DD4-8C00CFE655F5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupSample", "provisioning\service\samples\Getting Started\EnrollmentGroupSample\EnrollmentGroupSample.csproj", "{EDE1FB8E-5BD4-49E7-9745-6599687D34CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupSample", "provisioning\service\samples\getting started\EnrollmentGroupSample\EnrollmentGroupSample.csproj", "{EDE1FB8E-5BD4-49E7-9745-6599687D34CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentSample", "provisioning\service\samples\Getting Started\EnrollmentSample\EnrollmentSample.csproj", "{C8639C47-5772-4E58-A5A1-9D4134577437}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentSample", "provisioning\service\samples\getting started\EnrollmentSample\EnrollmentSample.csproj", "{C8639C47-5772-4E58-A5A1-9D4134577437}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how to guides", "how to guides", "{E6205B13-D163-4247-80F5-905ACC7F0977}"
 EndProject
