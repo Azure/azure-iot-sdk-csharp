@@ -24,7 +24,6 @@ Parameters:
     -framework: Select which framework to run tests on. Allowed values examples include, but are not limited to, "netcoreapp3.1", "net47", "net451"
     -skipIotHubTests: Provide this flag if you want to skip all IoT Hub integration tests
     -skipDPSTests: Provide this flag if you want to skip all DPS integration tests
-    -skipTPMTests: Provide this flag if you want to skip all TPM integration tests
 	
 
 Build will automatically detect if the machine is Windows vs Unix. On Windows development boxes, additional testing on .NET Framework will be performed.
@@ -71,7 +70,6 @@ Param(
     [string] $framework = "*",
     [switch] $skipIotHubTests,
     [switch] $skipDPSTests,
-    [switch] $skipTPMTests,
     [switch] $noBuildBeforeTesting
 )
 
@@ -314,11 +312,6 @@ try
         if ($skipDPSTests)
         {
             $testCategory += "&TestCategory!=DPS"
-        }
-
-        if ($skipTPMTests)
-        {
-            $testCategory += "&TestCategory!=TPM"
         }
 
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework

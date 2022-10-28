@@ -33,7 +33,6 @@ if (IsPullRequestBuild)
 {
 	Write-Host "Pull request build detected, will run pr tests"
 	$runTestCmd += " -prtests"
-	$runTestCmd += " -skipTPMTests"
 
 	if (ShouldSkipDPSTests)
 	{
