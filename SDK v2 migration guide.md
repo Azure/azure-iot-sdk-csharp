@@ -266,7 +266,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 #### Notable additions
 
 - The library now includes `IIotHubServiceRetryPolicy` implementations: `IotHubServiceExponentialBackoffRetryPolicy`, `IotHubServiceFixedDelayRetryPolicy`, `IotHubServiceIncrementalDelayRetryPolicy` and `IotHubServiceNoRetry`,
- which can be set by calling `IotHubServiceClientOptions.RetryPolicy`.
+ which can be set via `IotHubServiceClientOptions.RetryPolicy`.
 
 #### API mapping
 
@@ -329,7 +329,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - Added support for setting the web socket level keep alive interval for AMQP web socket connections.
 - Added support for setting the remote certificate validation callback for AMQP TCP connections.
 - The library now includes `IProvisioningClientRetryPolicy` implementations: `ProvisioningClientExponentialBackoffRetryPolicy`, `ProvisioningClientFixedDelayRetryPolicy`, `IotHubServiceIncrementalDelayRetryPolicy` and `ProvisioningClientNoRetry`,
- which can be set by calling `ProvisioningClientOptions.RetryPolicy`.
+ which can be set via `ProvisioningClientOptions.RetryPolicy`.
 
 #### API mapping
 

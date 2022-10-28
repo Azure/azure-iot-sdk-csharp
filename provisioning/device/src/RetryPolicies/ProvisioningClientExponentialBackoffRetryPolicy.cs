@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Globalization;
 using System;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -35,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningClientExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait, bool useJitter = true)
             : base(maxRetries)
         {
-            Argument.AssertNotNegativeValue(maxWait.Ticks, nameof(maxWait));
+            Argument.AssertNotNegativeValue(maxWait, nameof(maxWait));
 
             _maxDelay = maxWait;
             _useJitter = useJitter;

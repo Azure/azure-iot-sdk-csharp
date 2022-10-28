@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Globalization;
 using System;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -27,8 +26,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningClientIncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
             : base(maxRetries)
         {
-            Argument.AssertNotNegativeValue(delayIncrement.Ticks, nameof(delayIncrement));
-            Argument.AssertNotNegativeValue(maxDelay.Ticks, nameof(maxDelay));
+            Argument.AssertNotNegativeValue(delayIncrement, nameof(delayIncrement));
+            Argument.AssertNotNegativeValue(maxDelay, nameof(maxDelay));
 
             DelayIncrement = delayIncrement;
             MaxDelay = maxDelay;

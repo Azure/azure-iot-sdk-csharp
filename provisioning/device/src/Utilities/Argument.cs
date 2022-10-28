@@ -51,13 +51,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Checks an argument to ensure that its 64-bit signed value isn't negative.
+        /// Checks an argument to ensure that its value isn't negative.
         /// </summary>
         /// <param name="argumentValue">The value of the argument.</param>
         /// <param name="argumentName">The name of the argument for diagnostic purposes.</param>
-        internal static void AssertNotNegativeValue(long argumentValue, string argumentName)
+        internal static void AssertNotNegativeValue<T>(T argumentValue, string argumentName)
         {
-            if (argumentValue < 0)
+            // Currently we check "argumentValue" in types of uint and TimeSpan only,
+            // and we might need to add check for other types as well in the future.
+            if (argumentValue is uint intVal && intVal < 0
+                || argumentValue is TimeSpan timeVal && timeVal < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
                     argumentName,

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Globalization;
 using System;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -27,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningClientFixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay, bool useJitter = true)
             : base(maxRetries)
         {
-            Argument.AssertNotNegativeValue(fixedDelay.Ticks, nameof(fixedDelay));
+            Argument.AssertNotNegativeValue(fixedDelay, nameof(fixedDelay));
 
             _fixedDelay = fixedDelay;
             _useJitter = useJitter;
