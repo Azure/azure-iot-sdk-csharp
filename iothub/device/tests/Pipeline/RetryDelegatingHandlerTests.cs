@@ -29,21 +29,24 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             var ct = CancellationToken.None;
-            PipelineContext contextMock = Substitute.For<PipelineContext>();
+            PipelineContext contextMock = new PipelineContext();
             contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
-            IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
 
             nextHandlerMock
-                .OpenAsync(ct)
-                .Returns(t =>
+                .Setup(x => x.OpenAsync(ct))
+                .Returns(() =>
                     {
                         return ++callCounter == 1
                             ? throw new IotHubClientException("Test transient exception", isTransient: true)
                             : Task.CompletedTask;
                     });
-            nextHandlerMock.WaitForTransportClosedAsync().Returns(Task.Delay(TimeSpan.FromSeconds(10)));
+            nextHandlerMock
+                .Setup(x => x.WaitForTransportClosedAsync())
+                .Returns(() => Task.Delay(TimeSpan.FromSeconds(10)));
 
-            var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock);
+            var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // act
             await retryDelegatingHandler.OpenAsync(ct).ConfigureAwait(false);
