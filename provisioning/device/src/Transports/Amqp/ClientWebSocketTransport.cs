@@ -86,11 +86,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new DeviceProvisioningClientException(webSocketException.Message, webSocketException, true);
+                throw new ProvisioningClientException(webSocketException.Message, webSocketException, true);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new DeviceProvisioningClientException(httpListenerException.Message, httpListenerException, true);
+                throw new ProvisioningClientException(httpListenerException.Message, httpListenerException, true);
             }
             finally
             {
@@ -138,11 +138,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new DeviceProvisioningClientException(webSocketException.Message, webSocketException, true);
+                throw new ProvisioningClientException(webSocketException.Message, webSocketException, true);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new DeviceProvisioningClientException(httpListenerException.Message, httpListenerException, true);
+                throw new ProvisioningClientException(httpListenerException.Message, httpListenerException, true);
             }
             finally
             {
