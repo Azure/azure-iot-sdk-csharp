@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
 using System.Threading.Tasks;
-using Azure.Core;
-using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
@@ -59,8 +56,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             Console.WriteLine($"Device {result.DeviceId} registered to {result.AssignedHub}.");
 
             Console.WriteLine("Creating symmetric key authentication for IoT Hub...");
-            Devices.Client.IAuthenticationMethod auth = new ClientAuthenticationWithSharedAccessKeyRefresh(
-                security.GetPrimaryKey(),
+            IAuthenticationMethod auth = new ClientAuthenticationWithSharedAccessKeyRefresh(
+                security.PrimaryKey,
                 result.DeviceId);
 
             Console.WriteLine($"Testing the provisioned device with IoT Hub...");

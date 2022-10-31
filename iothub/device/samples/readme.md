@@ -15,6 +15,7 @@ This folder contains simple samples showing how to use the various features of M
 - [Xamarin][d-xamarin-sample] sample
 - [Simulated device][d-simulated-device-sample] sample
 - [Simulated device with command][d-simulated-device-with-command-sample] sample
+- [Hub routing][d-hub-routing-sample] sample
 
 ### Prerequisites
 
@@ -74,3 +75,4 @@ You need to clone the repository or download the sample (the one you want to try
 [d-read-d2c-messages-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/ReadD2cMessages
 [d-simulated-device-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/SimulatedDevice
 [d-simulated-device-with-command-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/SimulatedDeviceWithCommand
+[d-hub-routing-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/HubRoutingSample

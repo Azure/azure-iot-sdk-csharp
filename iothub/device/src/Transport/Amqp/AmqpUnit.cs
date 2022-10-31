@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private bool IsPooled()
         {
-            return _connectionCredentials.Certificate == null
+            return _connectionCredentials.ClientCertificate == null
                 && _amqpSettings.ConnectionPoolSettings != null
                 && _amqpSettings.ConnectionPoolSettings.UsePooling;
         }
@@ -880,7 +880,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         internal async Task SendTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
             string correlationId,
-            ReportedPropertyCollection reportedProperties,
+            ReportedProperties reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)

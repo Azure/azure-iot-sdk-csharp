@@ -90,10 +90,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.SendTelemetryAsync(message, cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public virtual Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendTelemetryAsync(messages, cancellationToken) ?? Task.CompletedTask;
+            return NextHandler?.SendTelemetryBatchAsync(messages, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)
@@ -126,13 +126,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.DisableTwinPatchAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
+        public virtual Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.GetTwinAsync(cancellationToken) ?? Task.FromResult((ClientTwin)null);
+            return NextHandler?.GetTwinAsync(cancellationToken) ?? Task.FromResult((TwinProperties)null);
         }
 
-        public virtual Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public virtual Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return NextHandler?.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0L);

@@ -115,10 +115,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetWritablePropertiesAndHandleChangesAsync()
         {
-            ClientTwin twin = await _deviceClient.GetTwinAsync();
-            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.RequestsFromService.GetSerializedString()}");
+            TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync();
+            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.Desired.GetSerializedString()}");
 
-            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
+            DesiredProperties desiredProperties = twin.Desired;
             long serverWritablePropertiesVersion = desiredProperties.Version;
 
             // Check if the writable property version is outdated on the local side.
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and reported property update.
-        private async Task TargetTemperatureUpdateCallbackAsync(DesiredPropertyCollection desiredProperties)
+        private async Task TargetTemperatureUpdateCallbackAsync(DesiredProperties desiredProperties)
         {
             bool targetTempUpdateReceived = desiredProperties.TryGetValue(TargetTemperatureProperty, out double targetTemperature);
             if (targetTempUpdateReceived)
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 s_localWritablePropertiesVersion = desiredProperties.Version;
 
-                var reportedPropertyPending = new ReportedPropertyCollection
+                var reportedPropertyPending = new ReportedProperties
                 {
                     {
                         TargetTemperatureProperty,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await Task.Delay(6 * 1000);
                 }
 
-                var reportedProperty = new ReportedPropertyCollection
+                var reportedProperty = new ReportedProperties
                 {
                     {
                         TargetTemperatureProperty,
@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string propertyName = "maxTempSinceLastReboot";
 
-            var reportedProperties = new ReportedPropertyCollection
+            var reportedProperties = new ReportedProperties
             {
                 [propertyName] = _maxTemp
             };
@@ -294,9 +294,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task CheckEmptyPropertiesAsync(CancellationToken cancellationToken)
         {
-            ClientTwin twin = await _deviceClient.GetTwinAsync(cancellationToken);
-            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
-            ReportedPropertyCollection reportedProperties = twin.ReportedByClient;
+            TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync(cancellationToken);
+            DesiredProperties desiredProperties = twin.Desired;
+            ReportedProperties reportedProperties = twin.Reported;
 
             // Check if the device properties (both writable and reported) are empty.
             if (!desiredProperties.TryGetValue(TargetTemperatureProperty, out object _) && !reportedProperties.TryGetValue(TargetTemperatureProperty, out object _))
@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             // If the device properties are empty, report the default value with ACK(ac=203, av=0) as part of the PnP convention.
             // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
-            var reportedProperty = new ReportedPropertyCollection
+            var reportedProperty = new ReportedProperties
             {
                 {
                     propertyName,

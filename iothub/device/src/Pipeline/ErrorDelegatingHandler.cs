@@ -68,19 +68,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.DisableTwinPatchAsync(cancellationToken));
         }
 
-        public override Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken)
+        public override Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.GetTwinAsync(cancellationToken));
         }
 
-        public override Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
         }
 
-        public override Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public override Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.SendTelemetryAsync(messages, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.SendTelemetryBatchAsync(messages, cancellationToken));
         }
 
         public override Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)

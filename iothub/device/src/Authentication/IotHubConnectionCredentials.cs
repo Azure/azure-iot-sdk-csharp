@@ -31,10 +31,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A new instance of the <c>IotHubConnectionCredentials</c> class with a populated connection string.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="iotHubHostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="iotHubHostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
-        /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
+        /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
         /// <exception cref="FormatException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
+        /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
         public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string iotHubHostName, string gatewayHostName = null)
         {
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
@@ -127,12 +127,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The client X509 certificates used for authenticating with IoT hub.
         /// </summary>
-        public X509Certificate2 Certificate { get; set; }
+        public X509Certificate2 ClientCertificate { get; set; }
 
         /// <summary>
         /// The full chain of certificates from the one used to sign the client certificate to the one uploaded to the service.
         /// </summary>
-        public X509Certificate2Collection ChainCertificates { get; set; }
+        public X509Certificate2Collection CertificateChain { get; set; }
 
         /// <summary>
         /// The suggested time to live value for tokens generated for SAS authenticated clients.
@@ -250,8 +250,8 @@ namespace Microsoft.Azure.Devices.Client
             SharedAccessKeyName = iotHubConnectionString.SharedAccessKeyName;
             SharedAccessKey = iotHubConnectionString.SharedAccessKey;
             SharedAccessSignature = iotHubConnectionString.SharedAccessSignature;
-            Certificate = null;
-            ChainCertificates = null;
+            ClientCertificate = null;
+            CertificateChain = null;
         }
 
         private void SetTokenRefresherIfApplicable()
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetAuthenticationModel()
         {
-            AuthenticationModel = Certificate == null
+            AuthenticationModel = ClientCertificate == null
                 ? SharedAccessKeyName == null
                     ? AuthenticationModel.SasIndividual
                     : AuthenticationModel.SasGrouped
@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices.Client
             // Either shared access key, shared access signature or X.509 certificate is required for authenticating the client with IoT hub.
             // These values should be populated in the constructor. The only exception to this scenario is when the authentication method is
             // ClientAuthenticationWithTokenRefresh, in which case the shared access signature is initially null and is generated on demand during client authentication.
-            if (Certificate == null
+            if (ClientCertificate == null
                 && SharedAccessKey.IsNullOrWhiteSpace()
                 && SharedAccessSignature.IsNullOrWhiteSpace()
                 && AuthenticationMethod is not ClientAuthenticationWithTokenRefresh)
@@ -357,7 +357,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // If an X.509 certificate is supplied then neither shared access key nor shared access signature should be supplied.
-            if (Certificate != null
+            if (ClientCertificate != null
                 && (!SharedAccessKey.IsNullOrWhiteSpace()
                     || !SharedAccessSignature.IsNullOrWhiteSpace()))
             {
@@ -369,17 +369,17 @@ namespace Microsoft.Azure.Devices.Client
             if (AuthenticationMethod is ClientAuthenticationWithX509Certificate)
             {
                 // Prep for certificate auth.
-                if (Certificate == null)
+                if (ClientCertificate == null)
                 {
                     throw new FormatException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
-                if (ChainCertificates != null)
+                if (CertificateChain != null)
                 {
                     // Install all the intermediate certificates in the chain if specified.
                     try
                     {
-                        CertificateInstaller.EnsureChainIsInstalled(ChainCertificates);
+                        CertificateInstaller.EnsureChainIsInstalled(CertificateChain);
                     }
                     catch (Exception ex)
                     {

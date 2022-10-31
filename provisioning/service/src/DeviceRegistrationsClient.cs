@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private readonly IContractApiHttp _contractApiHttp;
         private readonly ServiceConnectionString _serviceConnectionString;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -31,10 +32,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal DeviceRegistrationStatesClient(ServiceConnectionString serviceConnectionString, IContractApiHttp contractApiHttp)
+        internal DeviceRegistrationStatesClient(ServiceConnectionString serviceConnectionString, IContractApiHttp contractApiHttp, RetryHandler retryHandler)
         {
             _serviceConnectionString = serviceConnectionString;
             _contractApiHttp = contractApiHttp;
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>
@@ -45,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the DeviceRegistrationState in the Provisioning Device Service.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to retrieve the registration state for the provided <paramref name="registrationId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -55,13 +57,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Get,
-                    GetDeviceRegistrationStatusUri(registrationId),
-                    null,
-                    null,
-                    new ETag(),
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Get,
+                                GetDeviceRegistrationStatusUri(registrationId),
+                                null,
+                                null,
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -75,7 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to delete the registration state for the provided <paramref name="registrationId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -92,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="deviceRegistrationState">The device registration to delete.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="deviceRegistrationState"/> is null.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// When the service wasn't able to delete the registration status.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -102,13 +113,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Delete,
-                    GetDeviceRegistrationStatusUri(deviceRegistrationState.RegistrationId),
-                    null,
-                    null,
-                    deviceRegistrationState.ETag,
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Delete,
+                                GetDeviceRegistrationStatusUri(deviceRegistrationState.RegistrationId),
+                                null,
+                                null,
+                                deviceRegistrationState.ETag,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -128,7 +146,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Query CreateEnrollmentGroupQuery(string query, string enrollmentGroupId, int pageSize = 0, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-            return new Query(_serviceConnectionString, GetDeviceRegistrationStatusUri(enrollmentGroupId).ToString(), query, _contractApiHttp, pageSize, cancellationToken);
+            return new Query(_serviceConnectionString, GetDeviceRegistrationStatusUri(enrollmentGroupId).ToString(), query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
         }
 
         private static Uri GetDeviceRegistrationStatusUri(string id)

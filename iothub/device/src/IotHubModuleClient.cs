@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
 
-                await InnerHandler.SendTelemetryAsync(messagesList, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.SendTelemetryBatchAsync(messagesList, cancellationToken).ConfigureAwait(false);
             }
             finally
             {

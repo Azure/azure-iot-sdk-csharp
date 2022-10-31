@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Authentication method that uses a X.509 certificate
+    /// Authentication method that uses an X.509 certificate
     /// </summary>
     public sealed class ClientAuthenticationWithX509Certificate : IAuthenticationMethod
     {
@@ -18,26 +18,26 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class.
         /// </summary>
         /// <remarks>
-        /// The <paramref name="certificate"/> managed resource should be disposed by the user.
+        /// The <paramref name="clientCertificate"/> managed resource should be disposed by the user.
         /// This class doesn't dispose it since the user might want to reuse it.
         /// </remarks>
-        /// <param name="certificate">X.509 certificate.</param>
-        /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
+        /// <param name="clientCertificate">X.509 certificate.</param>
+        /// <param name="certificateChain">Certificates in the device certificate chain.</param>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="moduleId">Module identifier.</param>
-        /// <exception cref="ArgumentException">When <paramref name="certificate"/> or <paramref name="chainCertificates"/> is null.</exception>
+        /// <exception cref="ArgumentException">When <paramref name="clientCertificate"/> or <paramref name="certificateChain"/> is null.</exception>
         public ClientAuthenticationWithX509Certificate(
-            X509Certificate2 certificate,
-            X509Certificate2Collection chainCertificates,
+            X509Certificate2 clientCertificate,
+            X509Certificate2Collection certificateChain,
             string deviceId,
             string moduleId = default)
         {
             SetDeviceId(deviceId);
             SetModuleId(moduleId);
-            Certificate = certificate
-                ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(certificate));
-            ChainCertificates = chainCertificates
-                ?? throw new ArgumentException("No certificate chain was found.", nameof(chainCertificates));
+            ClientCertificate = clientCertificate
+                ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(clientCertificate));
+            CertificateChain = certificateChain
+                ?? throw new ArgumentException("No certificate chain was found.", nameof(certificateChain));
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             SetDeviceId(deviceId);
             SetModuleId(moduleId);
-            Certificate = certificate
+            ClientCertificate = certificate
                 ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(certificate));
         }
 
@@ -85,14 +85,14 @@ namespace Microsoft.Azure.Devices.Client
         /// The private key should be available in the <see cref="X509Certificate2"/> object,
         /// or should be available in the certificate store of the system where the client will be authenticated from.
         /// </summary>
-        public X509Certificate2 Certificate { get; }
+        public X509Certificate2 ClientCertificate { get; }
 
         /// <summary>
         /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the
         /// service. Private keys are not required for these certificates.
         /// This is only supported on AMQP_Tcp_Only and Mqtt_Tcp_Only
         /// </summary>
-        public X509Certificate2Collection ChainCertificates { get; }
+        public X509Certificate2Collection CertificateChain { get; }
 
         /// <summary>
         /// Populates a supplied instance based on the properties of the current instance.
@@ -105,8 +105,8 @@ namespace Microsoft.Azure.Devices.Client
 
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.ModuleId = ModuleId;
-            iotHubConnectionCredentials.Certificate = Certificate;
-            iotHubConnectionCredentials.ChainCertificates = ChainCertificates;
+            iotHubConnectionCredentials.ClientCertificate = ClientCertificate;
+            iotHubConnectionCredentials.CertificateChain = CertificateChain;
             iotHubConnectionCredentials.SharedAccessSignature = null;
             iotHubConnectionCredentials.SharedAccessKey = null;
             iotHubConnectionCredentials.SharedAccessKeyName = null;

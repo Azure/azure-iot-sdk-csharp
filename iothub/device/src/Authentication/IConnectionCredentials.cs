@@ -68,12 +68,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The client X509 certificates used for authenticating with IoT hub.
         /// </summary>
-        X509Certificate2 Certificate { get; }
+        X509Certificate2 ClientCertificate { get; }
 
         /// <summary>
         /// The full chain of certificates from the one used to sign the client certificate to the one uploaded to the service.
         /// </summary>
-        X509Certificate2Collection ChainCertificates { get; }
+        X509Certificate2Collection CertificateChain { get; }
 
         /// <summary>
         /// The suggested time to live value for tokens generated for SAS authenticated clients.

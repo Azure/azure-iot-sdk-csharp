@@ -10,7 +10,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
 using MQTTnet;
 using MQTTnet.Client;
@@ -121,7 +120,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    throw new DeviceProvisioningClientException("Failed to open the MQTT connection.", ex, true);
+                    throw new ProvisioningClientException("Failed to open the MQTT connection.", ex, true);
                 }
 
                 currentStatus = "subscribing to registration responses";
@@ -164,7 +163,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // Deliberately not including the caught exception as this exception's inner exception because
                 // if the user sees an OperationCancelledException in the thrown exception, they may think they cancelled
                 // the operation even though they didn't.
-                throw new DeviceProvisioningClientException($"MQTT connection was lost while {currentStatus}.", _connectionLossCause, true);
+                throw new ProvisioningClientException($"MQTT connection was lost while {currentStatus}.", _connectionLossCause, true);
 
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
@@ -173,7 +172,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                 // when the cancellation token requests cancellation.
-                throw new DeviceProvisioningClientException("Timed out while provisioning.", ex, true);
+                throw new ProvisioningClientException("Timed out while provisioning.", ex, true);
             }
             catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
             {
@@ -200,19 +199,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (subscribeResults?.Items == null)
                 {
-                    throw new DeviceProvisioningClientException($"Failed to subscribe to topic '{SubscribeFilter}'.", true);
+                    throw new ProvisioningClientException($"Failed to subscribe to topic '{SubscribeFilter}'.", true);
                 }
 
                 MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
 
                 if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter))
                 {
-                    throw new DeviceProvisioningClientException($"Received unexpected subscription to topic '{subscribeResult.TopicFilter.Topic}'.", true);
+                    throw new ProvisioningClientException($"Received unexpected subscription to topic '{subscribeResult.TopicFilter.Topic}'.", true);
                 }
             }
-            catch (Exception ex) when (ex is not DeviceProvisioningClientException && ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not ProvisioningClientException && ex is not OperationCanceledException)
             {
-                throw new DeviceProvisioningClientException("Failed to subscribe to the registrations response topic.", ex, true);
+                throw new ProvisioningClientException("Failed to subscribe to the registrations response topic.", ex, true);
             }
         }
 
@@ -241,12 +240,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new DeviceProvisioningClientException($"Failed to publish the MQTT packet for message with reason code '{publishResult.ReasonCode}'.", true);
+                    throw new ProvisioningClientException($"Failed to publish the MQTT packet for message with reason code '{publishResult.ReasonCode}'.", true);
                 }
             }
-            catch (Exception ex) when (ex is not DeviceProvisioningClientException && ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not ProvisioningClientException && ex is not OperationCanceledException)
             {
-                throw new DeviceProvisioningClientException("Failed to send the initial registration request.", ex, true);
+                throw new ProvisioningClientException("Failed to send the initial registration request.", ex, true);
             }
 
             if (Logging.IsEnabled)
@@ -263,7 +262,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             if (registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning)
             {
-                throw new DeviceProvisioningClientException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true);
+                throw new ProvisioningClientException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true);
             }
 
             return registrationStatus;
@@ -285,7 +284,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new DeviceProvisioningClientException($"Failed to publish the MQTT registration message with reason code '{publishResult.ReasonCode}'.", true);
+                    throw new ProvisioningClientException($"Failed to publish the MQTT registration message with reason code '{publishResult.ReasonCode}'.", true);
                 }
 
                 RegistrationOperationStatus currentStatus = await GetTaskCompletionSourceResultAsync(
@@ -357,7 +356,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 var certs = new List<X509Certificate>()
                 {
-                    x509Auth.GetAuthenticationCertificate()
+                    x509Auth.ClientCertificate,
                 };
 
                 tlsParameters.Certificates = certs;
@@ -365,7 +364,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             else if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey key1)
             {
                 password = ProvisioningSasBuilder.BuildSasSignature(
-                    key1.GetPrimaryKey(),
+                    key1.PrimaryKey,
                     string.Concat(
                         provisioningRequest.IdScope,
                         "/registrations/",

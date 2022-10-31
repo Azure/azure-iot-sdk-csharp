@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private readonly IContractApiHttp _contractApiHttp;
         private readonly ServiceConnectionString _serviceConnectionString;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -36,10 +37,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal IndividualEnrollmentsClient(ServiceConnectionString serviceConnectionString, IContractApiHttp contractApiHttp)
+        internal IndividualEnrollmentsClient(ServiceConnectionString serviceConnectionString, IContractApiHttp contractApiHttp, RetryHandler retryHandler)
         {
             _serviceConnectionString = serviceConnectionString;
             _contractApiHttp = contractApiHttp;
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>
@@ -49,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The created or updated individual enrollment.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="individualEnrollment"/> is null.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">If the service was not able to create or update the enrollment.</exception>
+        /// <exception cref="ProvisioningServiceException">If the service was not able to create or update the enrollment.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public async Task<IndividualEnrollment> CreateOrUpdateAsync(IndividualEnrollment individualEnrollment, CancellationToken cancellationToken = default)
         {
@@ -57,13 +59,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Put,
-                    GetEnrollmentUri(individualEnrollment.RegistrationId),
-                    null,
-                    JsonConvert.SerializeObject(individualEnrollment),
-                    individualEnrollment.ETag,
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Put,
+                                GetEnrollmentUri(individualEnrollment.RegistrationId),
+                                null,
+                                JsonConvert.SerializeObject(individualEnrollment),
+                                individualEnrollment.ETag,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -78,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The retrieved enrollment.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">If the service was not able to get the enrollment.</exception>
+        /// <exception cref="ProvisioningServiceException">If the service was not able to get the enrollment.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public async Task<IndividualEnrollment> GetAsync(string registrationId, CancellationToken cancellationToken = default)
         {
@@ -86,13 +97,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Get,
-                    GetEnrollmentUri(registrationId),
-                    null,
-                    null,
-                    new ETag(),
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Get,
+                                GetEnrollmentUri(registrationId),
+                                null,
+                                null,
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -106,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the client failed to send the request or service was not able to execute the operation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -116,13 +136,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Delete,
-                    GetEnrollmentUri(registrationId),
-                    null,
-                    null,
-                    new ETag(),
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Delete,
+                                GetEnrollmentUri(registrationId),
+                                null,
+                                null,
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -133,7 +160,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="individualEnrollment">The individual enrollment to delete.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="individualEnrollment"/> is null.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the client failed to send the request or service was not able to execute the operation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -143,13 +170,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Delete,
-                    GetEnrollmentUri(individualEnrollment.RegistrationId),
-                    null,
-                    null,
-                    individualEnrollment.ETag,
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Delete,
+                                GetEnrollmentUri(individualEnrollment.RegistrationId),
+                                null,
+                                null,
+                                individualEnrollment.ETag,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -167,7 +201,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>An object with the result of each operation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="individualEnrollments"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="individualEnrollments"/> is an empty collection.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the client failed to send the request or service was not able to execute the bulk operation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -186,13 +220,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 Enrollments = individualEnrollments,
             };
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Post,
-                    GetEnrollmentUri(),
-                    null,
-                    JsonConvert.SerializeObject(bulkOperation),
-                    new ETag(),
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Post,
+                                GetEnrollmentUri(),
+                                null,
+                                JsonConvert.SerializeObject(bulkOperation),
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -222,7 +265,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
-            return new Query(_serviceConnectionString, ServiceName, query, _contractApiHttp, pageSize, cancellationToken);
+            return new Query(_serviceConnectionString, ServiceName, query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
         }
 
         /// <summary>
@@ -233,7 +276,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The <see cref="AttestationMechanism"/> of the individual enrollment associated with the provided <paramref name="registrationId"/>.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
-        /// <exception cref="DeviceProvisioningServiceException">
+        /// <exception cref="ProvisioningServiceException">
         /// If the service was not able to retrieve the individual enrollment attestation information for the provided <paramref name="registrationId"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
@@ -243,13 +286,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Post,
-                    GetEnrollmentAttestationUri(registrationId),
-                    null,
-                    null,
-                    new ETag(),
+            ContractApiResponse contractApiResponse = null;
+
+            await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        contractApiResponse = await _contractApiHttp
+                            .RequestAsync(
+                                HttpMethod.Post,
+                                GetEnrollmentAttestationUri(registrationId),
+                                null,
+                                null,
+                                new ETag(),
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
 

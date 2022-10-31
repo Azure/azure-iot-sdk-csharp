@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly AmqpConnectionHandler _amqpConnection;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -30,10 +31,12 @@ namespace Microsoft.Azure.Devices
         internal FileUploadNotificationProcessorClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
-            IotHubServiceClientOptions options)
+            IotHubServiceClientOptions options,
+            RetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
+            _internalRetryHandler = retryHandler;
             _amqpConnection = new AmqpConnectionHandler(
                 credentialProvider,
                 options.Protocol,
@@ -102,7 +105,14 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -134,7 +144,14 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {

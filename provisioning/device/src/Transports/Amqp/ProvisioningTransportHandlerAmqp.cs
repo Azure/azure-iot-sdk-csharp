@@ -3,13 +3,11 @@
 
 using System;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Authentication;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -107,7 +105,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     },
                     _settings);
 
-                await authStrategy.OpenConnectionAsync(connection, useWebSocket, _settings.Proxy, _settings.RemoteCertificateValidationCallback, cancellationToken).ConfigureAwait(false);
+                await authStrategy.OpenConnectionAsync(
+                        connection,
+                        useWebSocket,
+                        _settings.Proxy,
+                        _settings.RemoteCertificateValidationCallback,
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
                 // Link the user-supplied cancellation token with a cancellation token that is cancelled
                 // when the connection is lost so that all operations stop when either the user
@@ -162,7 +166,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 linkedCancellationToken.Token)
                             .ConfigureAwait(false);
                     }
-                    catch (DeviceProvisioningClientException e) when (e.IsTransient)
+                    catch (ProvisioningClientException e) when (e.IsTransient)
                     {
                         operation.RetryAfter = _retryAfter;
                     }
@@ -188,17 +192,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // Deliberately not including the caught exception as this exception's inner exception because
                 // if the user sees an OperationCancelledException in the thrown exception, they may think they cancelled
                 // the operation even though they didn't.
-                throw new DeviceProvisioningClientException($"AMQP connection was lost during provisioning.", true);
+                throw new ProvisioningClientException($"AMQP connection was lost during provisioning.", true);
 
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
             }
-            catch (Exception ex) when (ex is not DeviceProvisioningClientException)
+            catch (Exception ex) when (ex is not ProvisioningClientException)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}", nameof(RegisterAsync));
 
-                throw new DeviceProvisioningClientException($"AMQP transport exception", ex, true);
+                throw new ProvisioningClientException($"AMQP transport exception", ex, true);
             }
             finally
             {
@@ -328,7 +332,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         _retryAfter = errorDetails.RetryAfter;
                     }
 
-                    throw new DeviceProvisioningClientException(
+                    throw new ProvisioningClientException(
                         rejected.Error.Description,
                         null,
                         isTransient,
@@ -344,7 +348,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                                 $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
                             nameof(RegisterAsync));
 
-                    throw new DeviceProvisioningClientException(
+                    throw new ProvisioningClientException(
                         $"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'",
                         ex,
                         false);

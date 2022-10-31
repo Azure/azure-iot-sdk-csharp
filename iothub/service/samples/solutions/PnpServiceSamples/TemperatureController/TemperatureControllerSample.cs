@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Samples
         public async Task RunSampleAsync()
         {
             // Get and print the device twin
-            Twin twin = await GetAndPrintDeviceTwinAsync();
+            ClientTwin twin = await GetAndPrintDeviceTwinAsync();
             _logger.LogDebug($"Model Id of {_deviceId} is: {twin.ModelId}");
 
             // Update the targetTemperature property on the thermostat1 component
@@ -43,11 +43,11 @@ namespace Microsoft.Azure.Devices.Samples
             await InvokeRebootCommandAsync();
         }
 
-        private async Task<Twin> GetAndPrintDeviceTwinAsync()
+        private async Task<ClientTwin> GetAndPrintDeviceTwinAsync()
         {
             _logger.LogDebug($"Get the {_deviceId} device twin.");
 
-            Twin twin = await _serviceClient.Twins.GetAsync(_deviceId);
+            ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
             _logger.LogDebug($"{_deviceId} twin: \n{JsonConvert.SerializeObject(twin, Formatting.Indented)}");
 
             return twin;
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             // Create command name to invoke for component. The command is formatted as <component name>*<command name>
             string commandToInvoke = $"{Thermostat1Component}*{getMaxMinReportCommandName}";
-            var commandInvocation = new DirectMethodRequest
+            var commandInvocation = new DirectMethodServiceRequest
             { 
                 MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                DirectMethodResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
+                DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on component {Thermostat1Component}." +
                     $"\nDevice returned status: {result.Status}. \nReport: {result.Payload}");
             }
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             // Create command name to invoke for component
             const string commandToInvoke = "reboot";
-            var commandInvocation = new DirectMethodRequest
+            var commandInvocation = new DirectMethodServiceRequest
             {
                 MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                DirectMethodResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
+                DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {commandToInvoke} was invoked on the {_deviceId} device twin." +
                     $"\nDevice returned status: {result.Status}.");
             }
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Samples
             var twinPatch = CreatePropertyPatch(targetTemperaturePropertyName, desiredTargetTemperature, Thermostat1Component);
             _logger.LogDebug($"Updating the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_deviceId} device twin to { desiredTargetTemperature}.");
 
-            Twin currentTwin = await _serviceClient.Twins.GetAsync(_deviceId);
+            ClientTwin currentTwin = await _serviceClient.Twins.GetAsync(_deviceId);
             twinPatch.ETag = currentTwin.ETag;
             await _serviceClient.Twins.UpdateAsync(_deviceId, twinPatch, true);
 
@@ -136,9 +136,9 @@ namespace Microsoft.Azure.Devices.Samples
          *      }
          *  }
          */
-        private static Twin CreatePropertyPatch(string propertyName, object propertyValue, string componentName)
+        private static ClientTwin CreatePropertyPatch(string propertyName, object propertyValue, string componentName)
         {
-            var twinPatch = new Twin();
+            var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[componentName] = new
             {
                 __t = "c"

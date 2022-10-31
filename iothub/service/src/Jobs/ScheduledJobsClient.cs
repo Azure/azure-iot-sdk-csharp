@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
         private readonly QueryClient _queryClient;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates client, provided for unit testing purposes only.
@@ -39,13 +40,15 @@ namespace Microsoft.Azure.Devices
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
-            QueryClient queryClient)
+            QueryClient queryClient,
+            RetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
             _queryClient = queryClient;
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>
@@ -77,7 +80,17 @@ namespace Microsoft.Azure.Devices
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
             }
@@ -152,7 +165,17 @@ namespace Microsoft.Azure.Devices
                             jobId),
                         UriKind.Relative),
                     _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
             }
@@ -193,7 +216,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<ScheduledJob> ScheduleDirectMethodAsync(
             string queryCondition,
-            DirectMethodRequest directMethodRequest,
+            DirectMethodServiceRequest directMethodRequest,
             DateTimeOffset startOnUtc,
             ScheduledJobsOptions scheduledJobsOptions,
             CancellationToken cancellationToken = default)
@@ -220,7 +243,17 @@ namespace Microsoft.Azure.Devices
                 };
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
             }
@@ -260,7 +293,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<TwinScheduledJob> ScheduleTwinUpdateAsync(
             string queryCondition,
-            Twin twin,
+            ClientTwin twin,
             DateTimeOffset startOnUtc,
             ScheduledJobsOptions scheduledJobsOptions = default,
             CancellationToken cancellationToken = default)
@@ -296,7 +329,17 @@ namespace Microsoft.Azure.Devices
                     MaxExecutionTime = scheduledJobsOptions?.MaxExecutionTime,
                 };
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<TwinScheduledJob>(response).ConfigureAwait(false);
             }

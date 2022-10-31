@@ -27,13 +27,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            Twin twin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            ClientTwin twin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, false).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
-            Twin twinUpd = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            ClientTwin twinUpd = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
@@ -51,13 +51,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            var twin = new Twin(testDevice.Id);
+            var twin = new ClientTwin(testDevice.Id);
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, false).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
-            Twin twinUpd = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            ClientTwin twinUpd = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
@@ -75,13 +75,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            ClientTwin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, false).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
-            Twin twinUpd = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            ClientTwin twinUpd = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.AreEqual(twin.ModuleId, twinUpd.ModuleId, "Module ID changed");
@@ -100,16 +100,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            var twin = new Twin(testModule.DeviceId)
+            var twin = new ClientTwin(testModule.DeviceId)
             {
                 ModuleId = testModule.Id
             };
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, false).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
-            Twin twinUpd = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            ClientTwin twinUpd = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.AreEqual(twin.ModuleId, twinUpd.ModuleId, "Module ID changed");

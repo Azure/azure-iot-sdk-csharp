@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -38,12 +39,14 @@ namespace Microsoft.Azure.Devices
             string hostName,
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
-            HttpRequestMessageFactory httpRequestMessageFactory)
+            HttpRequestMessageFactory httpRequestMessageFactory,
+            RetryHandler retryHandler)
         {
             _credentialProvider = credentialProvider;
             _hostName = hostName;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>
@@ -58,7 +61,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <typeparam name="T">
         /// The type to deserialize the set of items into. For example, when running a query like "SELECT * FROM devices",
-        /// this type should be <see cref="Twin"/>. When running a query like "SELECT * FROM devices.jobs", this type should be
+        /// this type should be <see cref="ClientTwin"/>. When running a query like "SELECT * FROM devices.jobs", this type should be
         /// <see cref="ScheduledJob"/>.
         /// </typeparam>
         /// <returns>An iterable set of the queried items.</returns>
@@ -120,7 +123,17 @@ namespace Microsoft.Azure.Devices
                     request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
                 }
 
-                using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var page = new QueriedPage<T>(response, responsePayload);
@@ -191,7 +204,17 @@ namespace Microsoft.Azure.Devices
                     request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
                 }
 
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var page = new QueriedPage<ScheduledJob>(response, responsePayload);

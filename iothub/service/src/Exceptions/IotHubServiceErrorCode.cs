@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         ArgumentNull = 400005,
 
         /// <summary>
-        /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for <see cref="TwinsClient.UpdateAsync(string, Twin, bool, System.Threading.CancellationToken)"/> is invalid.
+        /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for <see cref="TwinsClient.UpdateAsync(string, ClientTwin, bool, System.Threading.CancellationToken)"/> is invalid.
         /// </summary>
         IotHubFormatError = 400006,
 
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices
         /// The operation failed because the requested device isn't online or hasn't registered the direct method callback.
         /// </summary>
         /// <para>
-        /// May be thrown by operations such as <see cref="DirectMethodsClient.InvokeAsync(string, DirectMethodRequest, System.Threading.CancellationToken)"/>
+        /// May be thrown by operations such as <see cref="DirectMethodsClient.InvokeAsync(string, DirectMethodServiceRequest, System.Threading.CancellationToken)"/>
         /// </para>
         /// <remarks>
         /// For more information, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/troubleshoot-error-codes#404103-devicenotonline"/>.

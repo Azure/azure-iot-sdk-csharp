@@ -45,16 +45,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 2);
 
-            QueryResponse<Twin> queryResponse = await serviceClient.Query.CreateAsync<Twin>(queryText);
+            QueryResponse<ClientTwin> queryResponse = await serviceClient.Query.CreateAsync<ClientTwin>(queryText);
 
             // assert
 
             (await queryResponse.MoveNextAsync()).Should().BeTrue("Should have at least one page of jobs.");
-            Twin firstQueriedTwin = queryResponse.Current;
+            ClientTwin firstQueriedTwin = queryResponse.Current;
 
             firstQueriedTwin.DeviceId.Should().BeOneOf(testDevice1.Id, testDevice2.Id);
             (await queryResponse.MoveNextAsync()).Should().BeTrue();
-            Twin secondQueriedTwin = queryResponse.Current;
+            ClientTwin secondQueriedTwin = queryResponse.Current;
             secondQueriedTwin.DeviceId.Should().BeOneOf(testDevice1.Id, testDevice2.Id);
             secondQueriedTwin.DeviceId.Should().NotBe(firstQueriedTwin.DeviceId);
             (await queryResponse.MoveNextAsync()).Should().BeFalse();
@@ -81,12 +81,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3);
 
-            QueryResponse<Twin> queryResponse = await serviceClient.Query.CreateAsync<Twin>(queryText, firstPageOptions);
+            QueryResponse<ClientTwin> queryResponse = await serviceClient.Query.CreateAsync<ClientTwin>(queryText, firstPageOptions);
 
             // assert
 
             queryResponse.CurrentPage.Count().Should().Be(1);
-            Twin firstQueriedTwin = queryResponse.CurrentPage.First();
+            ClientTwin firstQueriedTwin = queryResponse.CurrentPage.First();
             firstQueriedTwin.DeviceId.Should().BeOneOf(testDevice1.Id, testDevice2.Id, testDevice3.Id);
 
             // consume the first page of results so the next MoveNextAsync gets a new page
@@ -99,14 +99,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             (await queryResponse.MoveNextAsync(secondPageOptions)).Should().BeTrue();
             queryResponse.CurrentPage.Count().Should().Be(2);
-            IEnumerator<Twin> secondPageEnumerator = queryResponse.CurrentPage.GetEnumerator();
+            IEnumerator<ClientTwin> secondPageEnumerator = queryResponse.CurrentPage.GetEnumerator();
             secondPageEnumerator.MoveNext().Should().BeTrue();
-            Twin secondQueriedTwin = secondPageEnumerator.Current;
+            ClientTwin secondQueriedTwin = secondPageEnumerator.Current;
             secondQueriedTwin.DeviceId.Should().BeOneOf(testDevice1.Id, testDevice2.Id, testDevice3.Id);
             secondQueriedTwin.DeviceId.Should().NotBe(firstQueriedTwin.DeviceId);
 
             secondPageEnumerator.MoveNext().Should().BeTrue();
-            Twin thirdQueriedTwin = secondPageEnumerator.Current;
+            ClientTwin thirdQueriedTwin = secondPageEnumerator.Current;
             thirdQueriedTwin.DeviceId.Should().BeOneOf(testDevice1.Id, testDevice2.Id, testDevice3.Id);
             thirdQueriedTwin.DeviceId.Should().NotBe(firstQueriedTwin.DeviceId);
             thirdQueriedTwin.DeviceId.Should().NotBe(secondQueriedTwin.DeviceId);
@@ -138,13 +138,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3);
 
-            QueryResponse<Twin> twinQuery = await serviceClient.Query.CreateAsync<Twin>(queryText, queryOptions);
+            QueryResponse<ClientTwin> twinQuery = await serviceClient.Query.CreateAsync<ClientTwin>(queryText, queryOptions);
 
             // assert
             List<string> returnedTwinDeviceIds = new();
             while (await twinQuery.MoveNextAsync())
             {
-                Twin queriedTwin = twinQuery.Current;
+                ClientTwin queriedTwin = twinQuery.Current;
                 returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
             }
 
@@ -177,13 +177,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3);
 
-            QueryResponse<Twin> twinQuery = await serviceClient.Query.CreateAsync<Twin>(queryText, queryOptions);
+            QueryResponse<ClientTwin> twinQuery = await serviceClient.Query.CreateAsync<ClientTwin>(queryText, queryOptions);
 
             // assert
             List<string> returnedTwinDeviceIds = new();
             while (await twinQuery.MoveNextAsync())
             {
-                Twin queriedTwin = twinQuery.Current;
+                ClientTwin queriedTwin = twinQuery.Current;
                 returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
             }
 
@@ -213,9 +213,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // tests in this suite are written to work even if the queried job isn't the one they created.
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
-            queriedJob.JobType.Should().NotBeNull();
+            queriedJob.JobType.Should().NotBe(JobType.Unknown);
             queriedJob.CreatedOnUtc.Should().NotBeNull();
-            queriedJob.Status.Should().NotBeNull();
+            queriedJob.Status.Should().NotBe(JobStatus.Unknown);
             if (queriedJob.Status != JobStatus.Queued
                 && queriedJob.Status != JobStatus.Scheduled
                 && queriedJob.Status != JobStatus.Cancelled
@@ -248,10 +248,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // tests in this suite are written to work even if the queried job isn't the one they created.
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
-            queriedJob.JobType.Should().NotBeNull();
+            queriedJob.JobType.Should().NotBe(JobType.Unknown);
             queriedJob.EndedOnUtc.Should().NotBeNull();
             queriedJob.CreatedOnUtc.Should().NotBeNull();
-            queriedJob.Status.Should().NotBeNull();
+            queriedJob.Status.Should().NotBe(JobStatus.Unknown);
         }
 
         [TestMethod]
@@ -275,11 +275,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
             CancellationToken cancellationToken = cancellationTokenSource.Token;
-            QueryResponse<Twin> queryResponse = await queryClient.CreateAsync<Twin>(query);
+            QueryResponse<ClientTwin> queryResponse = await queryClient.CreateAsync<ClientTwin>(query);
             while (queryResponse.CurrentPage.Count() < expectedCount)
             {
                 await Task.Delay(100).ConfigureAwait(false);
-                queryResponse = await queryClient.CreateAsync<Twin>(query);
+                queryResponse = await queryClient.CreateAsync<ClientTwin>(query);
                 cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
             }
         }
@@ -320,7 +320,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private static async Task ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
         {
-            var twinUpdate = new Twin();
+            var twinUpdate = new ClientTwin();
             twinUpdate.Properties.Desired["key"] = "value";
 
             try

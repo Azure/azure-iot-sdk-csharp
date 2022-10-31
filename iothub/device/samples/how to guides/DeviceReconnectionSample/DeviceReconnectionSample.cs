@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private readonly List<string> _deviceConnectionStrings;
         private readonly IotHubClientOptions _clientOptions;
-        private readonly IRetryPolicy _customRetryPolicy;
+        private readonly IIotHubClientRetryPolicy _customRetryPolicy;
 
         // An UnauthorizedException is handled in the connection status change handler through its corresponding status change event.
         // We will ignore this exception when thrown by client API operations.
@@ -197,10 +197,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task GetTwinAndDetectChangesAsync(CancellationToken cancellationToken)
         {
-            ClientTwin twin = await s_deviceClient.GetTwinAsync(s_appCancellation.Token);
-            _logger.LogInformation($"Device retrieving twin values: {twin.RequestsFromService.GetSerializedString()}");
+            TwinProperties twin = await s_deviceClient.GetTwinPropertiesAsync(s_appCancellation.Token);
+            _logger.LogInformation($"Device retrieving twin values: {twin.Desired.GetSerializedString()}");
 
-            DesiredPropertyCollection desiredProperties = twin.RequestsFromService;
+            DesiredProperties desiredProperties = twin.Desired;
             long serverDesiredPropertyVersion = desiredProperties.Version;
 
             // Check if the desired property version is outdated on the local side.
@@ -211,13 +211,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task HandleTwinUpdateNotificationsAsync(DesiredPropertyCollection twinUpdateRequest)
+        private async Task HandleTwinUpdateNotificationsAsync(DesiredProperties twinUpdateRequest)
         {
             CancellationToken cancellationToken = s_appCancellation.Token;
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                var reportedProperties = new ReportedPropertyCollection();
+                var reportedProperties = new ReportedProperties();
 
                 _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.GetSerializedString()}");
 

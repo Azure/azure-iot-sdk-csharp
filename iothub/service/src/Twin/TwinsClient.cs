@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -36,6 +35,7 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -48,12 +48,14 @@ namespace Microsoft.Azure.Devices
             string hostName,
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
-            HttpRequestMessageFactory httpRequestMessageFactory)
+            HttpRequestMessageFactory httpRequestMessageFactory,
+            RetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>
@@ -74,7 +76,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> GetAsync(string deviceId, CancellationToken cancellationToken = default)
+        public virtual async Task<ClientTwin> GetAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting device twin: {deviceId}", nameof(GetAsync));
@@ -85,9 +87,19 @@ namespace Microsoft.Azure.Devices
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetTwinUri(deviceId), _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<ClientTwin>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -121,7 +133,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> GetAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
+        public virtual async Task<ClientTwin> GetAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting device module twin: {deviceId}/{moduleId}", nameof(GetAsync));
@@ -137,9 +149,19 @@ namespace Microsoft.Azure.Devices
                     HttpMethod.Get,
                     GetModuleTwinRequestUri(deviceId, moduleId),
                     _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<ClientTwin>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -179,7 +201,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> UpdateAsync(string deviceId, Twin twinPatch, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task<ClientTwin> UpdateAsync(string deviceId, ClientTwin twinPatch, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(twinPatch, nameof(twinPatch));
@@ -214,10 +236,10 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> UpdateAsync(
+        public virtual async Task<ClientTwin> UpdateAsync(
             string deviceId,
             string moduleId,
-            Twin twinPatch,
+            ClientTwin twinPatch,
             bool onlyIfUnchanged = false,
             CancellationToken cancellationToken = default)
         {
@@ -239,7 +261,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Update the mutable fields for a list of module twins previously created within the system.
         /// </summary>
-        /// <param name="twins">List of <see cref="Twin"/>s with updated fields.</param>
+        /// <param name="twins">List of <see cref="ClientTwin"/>s with updated fields.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
         /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
@@ -262,7 +284,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<BulkRegistryOperationResult> UpdateAsync(IEnumerable<Twin> twins, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> UpdateAsync(IEnumerable<ClientTwin> twins, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Updating twins", nameof(UpdateAsync));
@@ -278,7 +300,17 @@ namespace Microsoft.Azure.Devices
                     onlyIfUnchanged ? ImportMode.UpdateTwinIfMatchETag : ImportMode.UpdateTwin);
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<BulkRegistryOperationResult>(response).ConfigureAwait(false);
             }
@@ -320,7 +352,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> ReplaceAsync(string deviceId, Twin newTwin, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task<ClientTwin> ReplaceAsync(string deviceId, ClientTwin newTwin, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(newTwin, nameof(newTwin));
@@ -355,7 +387,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> ReplaceAsync(string deviceId, string moduleId, Twin newTwin, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task<ClientTwin> ReplaceAsync(string deviceId, string moduleId, ClientTwin newTwin, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
@@ -364,9 +396,9 @@ namespace Microsoft.Azure.Devices
             return await UpdateInternalAsync(deviceId, moduleId, newTwin, newTwin.ETag, true, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<Twin> UpdateInternalAsync(
+        private async Task<ClientTwin> UpdateInternalAsync(
             string deviceId,
-            Twin twin,
+            ClientTwin twin,
             ETag etag,
             bool isReplace,
             bool onlyIfUnchanged = false,
@@ -387,9 +419,19 @@ namespace Microsoft.Azure.Devices
                     _credentialProvider,
                     twin);
                 HttpMessageHelper.ConditionallyInsertETag(request, etag, onlyIfUnchanged);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<ClientTwin>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -404,10 +446,10 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private async Task<Twin> UpdateInternalAsync(
+        private async Task<ClientTwin> UpdateInternalAsync(
             string deviceId,
             string moduleId,
-            Twin twin,
+            ClientTwin twin,
             ETag etag,
             bool isReplace,
             bool onlyIfUnchanged = false,
@@ -429,9 +471,19 @@ namespace Microsoft.Azure.Devices
                     _credentialProvider,
                     twin);
                 HttpMessageHelper.ConditionallyInsertETag(request, etag, onlyIfUnchanged);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<ClientTwin>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -446,14 +498,14 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForTwinBulkOperations(IEnumerable<Twin> twins, ImportMode importMode)
+        private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForTwinBulkOperations(IEnumerable<ClientTwin> twins, ImportMode importMode)
         {
             Debug.Assert(twins != null);
             Debug.Assert(twins.Any());
 
             var exportImportDeviceList = new List<ExportImportDevice>(twins.Count());
 
-            foreach (Twin twin in twins)
+            foreach (ClientTwin twin in twins)
             {
                 if (twin == null)
                 {

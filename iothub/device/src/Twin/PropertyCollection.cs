@@ -10,8 +10,8 @@ namespace Microsoft.Azure.Devices.Client
     /// The collection of twin properties.
     /// </summary>
     /// <remarks>
-    /// This abstract class is inherited by <see cref="ReportedPropertyCollection"/> to represent the collection of twin properties reported by the client.
-    /// This abstract class is inherited by <see cref="DesiredPropertyCollection"/> to represent the collection of desired property update requests received from service.
+    /// This abstract class is inherited by <see cref="ReportedProperties"/> to represent the collection of twin properties reported by the client.
+    /// This abstract class is inherited by <see cref="DesiredProperties"/> to represent the collection of desired property update requests received from service.
     /// </remarks>
     public abstract class PropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {

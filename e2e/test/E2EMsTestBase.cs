@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics.Tracing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-//Workers = 0 makes the test engine use one worker per available core. It does not mean to run serially.
+// Workers = 0 makes the test engine use one worker per available core. It does not mean to run serially.
 [assembly: Parallelize(Workers = 0, Scope = ExecutionScope.ClassLevel)]
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -31,11 +31,26 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // The test timeout for e2e tests that involve testing token refresh
         protected const int TokenRefreshTestTimeoutMilliseconds = 20 * 60 * 1000; // 20 minutes
+        
+        private const string CollectSdkLogsEnvVar = "COLLECT_SDK_LOGS";
+        public static readonly bool s_collectSdkLogs;
+
+        static E2EMsTestBase()
+        {
+            if (bool.TryParse(Environment.GetEnvironmentVariable(CollectSdkLogsEnvVar), out bool collectSdkLogs))
+            {
+                s_collectSdkLogs = collectSdkLogs;
+            }
+        }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _listener = new ConsoleEventListener();
+            VerboseTestLogger.WriteLine($"SDK logs collection is '{s_collectSdkLogs}' based on environment variable '{CollectSdkLogsEnvVar}'.");
+            if (s_collectSdkLogs)
+            {
+                _listener = new ConsoleEventListener();
+            }
         }
 
         [TestCleanup]
@@ -56,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (disposing)
             {
-                _listener.Dispose();
+                _listener?.Dispose();
             }
         }
     }

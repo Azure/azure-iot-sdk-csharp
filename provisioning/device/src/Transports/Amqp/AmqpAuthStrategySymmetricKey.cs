@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Sasl;
-using Microsoft.Azure.Devices.Authentication;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -31,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             var saslHandler = new SaslPlainHandler();
             saslHandler.AuthenticationIdentity = $"{idScope}/registrations/{_authentication.GetRegistrationId()}";
-            string key = _authentication.GetPrimaryKey();
+            string key = _authentication.PrimaryKey;
             saslHandler.Password = ProvisioningSasBuilder.BuildSasSignature(key, saslHandler.AuthenticationIdentity, TimeSpan.FromDays(1));
             saslProvider.AddHandler(saslHandler);
 

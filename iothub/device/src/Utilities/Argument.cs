@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -64,14 +63,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(
                     argumentName,
                     argumentValue,
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        "ArgumentCannotBeGreaterThanBaseline",
-                        new object[]
-                        {
-                            argumentName,
-                            ceilingValue,
-                        }));
+                    $"The value of '{argumentName}' cannot be greater than '{ceilingValue}'. It is currently '{argumentValue}'.");
             }
         }
 
@@ -87,13 +79,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(
                     argumentName,
                     argumentValue,
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        "ArgumentCannotBeNegative",
-                        new object[]
-                        {
-                            argumentName
-                        }));
+                    $"The value of '{argumentName}' cannot be negative. It is currently '{argumentValue}'.");
             }
         }
 

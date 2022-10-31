@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string jobDeviceId = "JobsSample_Device";
             string query = $"DeviceId IN ['{jobDeviceId}']";
-            var twin = new Twin(jobDeviceId);
+            var twin = new ClientTwin(jobDeviceId);
 
             try
             {

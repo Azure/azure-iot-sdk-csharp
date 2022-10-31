@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
-using Microsoft.Azure.Devices.Authentication;
-using Microsoft.Azure.Devices.Logging;
-using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
+using Microsoft.Azure.Devices.Logging;
+using Microsoft.Azure.Devices.Provisioning.Client;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -79,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 // cancellation timeout of 4 minutes: https://github.com/Azure/azure-iot-sdk-csharp/blob/64f6e9f24371bc40ab3ec7a8b8accbfb537f0fe1/iothub/device/src/InternalClient.cs#L1922
                 await deviceClient.CloseAsync(CancellationToken.None);
             }
-            catch (Exception ex) when (ex is OperationCanceledException || ex is DeviceProvisioningClientException)
+            catch (Exception ex) when (ex is OperationCanceledException || ex is ProvisioningClientException)
             {
                 // User canceled the operation. Nothing to do here.
             }

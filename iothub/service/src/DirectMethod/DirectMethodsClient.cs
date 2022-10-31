@@ -16,12 +16,14 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-direct-methods"/>
     public class DirectMethodsClient
     {
+        private const string DeviceMethodUriFormat = "/twins/{0}/methods";
+        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods";
+
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-        private const string DeviceMethodUriFormat = "/twins/{0}/methods";
-        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods";
+        private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -30,12 +32,18 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        internal DirectMethodsClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
+        internal DirectMethodsClient(
+            string hostName,
+            IotHubConnectionProperties credentialProvider,
+            HttpClient httpClient,
+            HttpRequestMessageFactory httpRequestMessageFactory,
+            RetryHandler retryHandler)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
+            _internalRetryHandler = retryHandler;
         }
 
         /// <summary>
@@ -57,7 +65,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<DirectMethodResponse> InvokeAsync(string deviceId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken = default)
+        public virtual async Task<DirectMethodClientResponse> InvokeAsync(string deviceId, DirectMethodServiceRequest directMethodRequest, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking device method for device id: {deviceId}", nameof(InvokeAsync));
@@ -70,9 +78,19 @@ namespace Microsoft.Azure.Devices
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, directMethodRequest);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<DirectMethodResponse>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<DirectMethodClientResponse>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -107,7 +125,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<DirectMethodResponse> InvokeAsync(string deviceId, string moduleId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken = default)
+        public virtual async Task<DirectMethodClientResponse> InvokeAsync(string deviceId, string moduleId, DirectMethodServiceRequest directMethodRequest, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking device method for device id: {deviceId} and module id: {moduleId}", nameof(InvokeAsync));
@@ -121,9 +139,19 @@ namespace Microsoft.Azure.Devices
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, directMethodRequest);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = null;
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<DirectMethodResponse>(response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<DirectMethodClientResponse>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class for twin scheduled job.
         /// </summary>
         /// <param name="updateTwin">The update twin tags and desired properties.</param>
-        protected internal TwinScheduledJob(Twin updateTwin)
+        protected internal TwinScheduledJob(ClientTwin updateTwin)
         {
             JobType = JobType.ScheduleUpdateTwin;
             UpdateTwin = updateTwin;
@@ -33,6 +33,6 @@ namespace Microsoft.Azure.Devices
         /// The update twin tags and desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "updateTwin", NullValueHandling = NullValueHandling.Ignore)]
-        public Twin UpdateTwin { get; }
+        public ClientTwin UpdateTwin { get; }
     }
 }

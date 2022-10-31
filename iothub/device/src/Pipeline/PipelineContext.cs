@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal Action<ConnectionStatusInfo> ConnectionStatusChangeHandler { get; set; }
 
-        internal Action<DesiredPropertyCollection> DesiredPropertyUpdateCallback { get; set; }
+        internal Action<DesiredProperties> DesiredPropertyUpdateCallback { get; set; }
 
         internal Func<DirectMethodRequest, Task> MethodCallback { get; set; }
 

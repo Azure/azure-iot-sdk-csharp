@@ -10,14 +10,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal static class Fx
     {
-        public static void AssertAndThrow(bool condition, string description)
-        {
-            if (!condition)
-            {
-                throw new InvalidOperationException(description);
-            }
-        }
-
         public static bool IsFatal(Exception ex)
         {
             while (ex != null)

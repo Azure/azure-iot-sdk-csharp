@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
         {
             SymmetricKey = new SymmetricKey();
             X509Thumbprint = new X509Thumbprint();
-            Type = AuthenticationType.Sas;
+            Type = ClientAuthenticationType.Sas;
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices
                 _symmetricKey = value;
                 if (value != null)
                 {
-                    Type = AuthenticationType.Sas;
+                    Type = ClientAuthenticationType.Sas;
                 }
             }
         }
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
                 _x509Thumbprint = value;
                 if (value != null)
                 {
-                    Type = AuthenticationType.SelfSigned;
+                    Type = ClientAuthenticationType.SelfSigned;
                 }
             }
         }
@@ -61,8 +61,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the authentication type.
         /// </summary>
-        [DefaultValue(AuthenticationType.Sas)]
+        [DefaultValue(ClientAuthenticationType.Sas)]
         [JsonProperty(PropertyName = "type", DefaultValueHandling = DefaultValueHandling.Populate)]
-        public AuthenticationType Type { get; set; }
+        public ClientAuthenticationType Type { get; set; }
     }
 }

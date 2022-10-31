@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     /// <typeparam name="T">
     /// The type of the queried items. For instance, when using a query such as "SELECT * FROM devices",
-    /// this type should be type <see cref="Twin"/>. When using a query such as "SELECT * FROM devices.jobs",
+    /// this type should be type <see cref="ClientTwin"/>. When using a query such as "SELECT * FROM devices.jobs",
     /// this type should be type <see cref="ScheduledJob"/>.
     /// </typeparam>
     public class QueryResponse<T>

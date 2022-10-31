@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
         /// Required if jobType is cloud-to-device method.
         /// </remarks>
         [JsonProperty(PropertyName = "cloudToDeviceMethod")]
-        internal DirectMethodRequest DirectMethodRequest { get; set; }
+        internal DirectMethodServiceRequest DirectMethodRequest { get; set; }
 
         /// <summary>
         /// The Update twin tags and desired properties.
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices
         /// Required if the job type is update twin.
         /// </remarks>
         [JsonProperty(PropertyName = "updateTwin")]
-        internal Twin UpdateTwin { get; set; }
+        internal ClientTwin UpdateTwin { get; set; }
 
         /// <summary>
         /// Condition for device query to get devices to execute the job on.

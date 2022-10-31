@@ -48,8 +48,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException"><paramref name="hostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="ArgumentException">Either shared access key or shared access signature were presented together with X509 certificates for authentication.</exception>
-        /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP></exception>
-        /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
+        /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> is used over a protocol other than MQTT over TCP or AMQP over TCP></exception>
+        /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
         /// <exception cref="ArgumentException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
         public IotHubDeviceClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options)
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client
 
             // Validate certificates
             if (IotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithX509Certificate x509CertificateAuth
-                && x509CertificateAuth.ChainCertificates != null)
+                && x509CertificateAuth.CertificateChain != null)
             {
                 if (_clientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
                 {

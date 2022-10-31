@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         // Telemetry uplink.
         Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken);
 
-        Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken);
+        Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken);
 
         Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
 
@@ -36,9 +36,9 @@ namespace Microsoft.Azure.Devices.Client
         Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken);
 
         // Twin.
-        Task<ClientTwin> GetTwinAsync(CancellationToken cancellationToken);
+        Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken);
 
-        Task<long> UpdateReportedPropertiesAsync(ReportedPropertyCollection reportedProperties, CancellationToken cancellationToken);
+        Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken);
 
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
