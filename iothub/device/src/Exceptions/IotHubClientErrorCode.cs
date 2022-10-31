@@ -125,5 +125,10 @@ namespace Microsoft.Azure.Devices.Client
         /// guide for more information.
         /// </remarks>
         Unauthorized,
+
+        /// <summary>
+        /// The request failed because of TLS authentication error.
+        /// </summary>
+        AuthenticationError,
     }
 }

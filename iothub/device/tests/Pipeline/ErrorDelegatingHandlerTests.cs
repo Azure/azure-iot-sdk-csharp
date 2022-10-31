@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(WebException), () => new WebException() },
             { typeof(AmqpException), () => new AmqpException(new Azure.Amqp.Framing.Error()) },
             { typeof(WebSocketException), () => new WebSocketException(1) },
-            { typeof(TestSecurityException), () => new Exception("Test top level", new Exception("Inner exception", new AuthenticationException())) },
+            { typeof(TestSecurityException), () => new IotHubClientException("TLS authentication error.", IotHubClientErrorCode.AuthenticationError) },
             { typeof(TestDerivedException), () => new TestDerivedException() },
         };
 
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ErrorHandler_SecurityErrorOccured_ChannelIsAborted()
         {
-            await TestExceptionThrown(typeof(TestSecurityException), typeof(AuthenticationException)).ConfigureAwait(false);
+            await TestExceptionThrown(typeof(TestSecurityException), typeof(IotHubClientException)).ConfigureAwait(false);
         }
 
         [TestMethod]
