@@ -17,6 +17,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
         private readonly IContractApiHttp _contractApiHttp;
+        private readonly IProvisioningServiceRetryPolicy _retryPolicy;
+        private readonly RetryHandler _retryHandler;
 
         /// <summary>
         /// Create a new instance of this client.
@@ -46,9 +48,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningConnectionString,
                 clientOptions);
 
-            IndividualEnrollments = new IndividualEnrollmentsClient(_provisioningConnectionString, _contractApiHttp);
-            EnrollmentGroups = new EnrollmentGroupsClient(_provisioningConnectionString, _contractApiHttp);
-            DeviceRegistrationStates = new DeviceRegistrationStatesClient(_provisioningConnectionString, _contractApiHttp);
+            _retryPolicy = clientOptions.RetryPolicy ?? new ProvisioningServiceNoRetry();
+            _retryHandler = new RetryHandler(_retryPolicy);
+
+            // Subclients
+            IndividualEnrollments = new IndividualEnrollmentsClient(_provisioningConnectionString, _contractApiHttp, _retryHandler);
+            EnrollmentGroups = new EnrollmentGroupsClient(_provisioningConnectionString, _contractApiHttp, _retryHandler);
+            DeviceRegistrationStates = new DeviceRegistrationStatesClient(_provisioningConnectionString, _contractApiHttp, _retryHandler);
         }
 
         /// <summary>

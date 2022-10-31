@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Provisioning.Service;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -17,14 +17,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// Retry an async operation based on the retry strategy supplied.
         /// </summary>
         /// <remarks>
-        /// This is for E2E tests of provisioning service clients.
+        /// This is for E2E tests of the provisioning service clients.
         /// </remarks>
         /// <param name="asyncOperation">The async operation to be retried.</param>
         /// <param name="retryPolicy">The retry policy of hub device/module to be applied.</param>
         /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
-        public static async Task RunWithHubClientRetryAsync(
+        public static async Task RunWithProvisioningServiceRetryAsync(
             Func<Task> asyncOperation,
-            IIotHubClientRetryPolicy retryPolicy,
+            IProvisioningServiceRetryPolicy retryPolicy,
             CancellationToken cancellationToken = default)
         {
             uint counter = 0;
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// Retry an async operation based on the retry strategy supplied.
         /// </summary>
         /// <remarks>
-        /// This is for E2E tests of provisioning service clients.
+        /// This is for E2E tests of the hub service clients.
         /// </remarks>
         /// <param name="asyncOperation">The async operation to be retried.</param>
         /// <param name="retryPolicy">The retry policy of hub service to be applied.</param>

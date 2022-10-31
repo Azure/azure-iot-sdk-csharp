@@ -328,7 +328,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
 - Added support for setting the web socket level keep alive interval for AMQP web socket connections.
 - Added support for setting the remote certificate validation callback for AMQP TCP connections.
-- The library now includes `IProvisioningClientRetryPolicy` implementations: `ProvisioningClientExponentialBackoffRetryPolicy`, `ProvisioningClientFixedDelayRetryPolicy`, `IotHubServiceIncrementalDelayRetryPolicy` and `ProvisioningClientNoRetry`,
+- The library now includes `IProvisioningClientRetryPolicy` implementations: `ProvisioningClientExponentialBackoffRetryPolicy`, `ProvisioningClientFixedDelayRetryPolicy`, `ProvisioningClientIncrementalDelayRetryPolicy` and `ProvisioningClientNoRetry`,
  which can be set via `ProvisioningClientOptions.RetryPolicy`.
 
 #### API mapping
@@ -349,6 +349,11 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
 - ETag fields on the classes `IndividualEnrollment`, `EnrollmentGroup`, and `DeviceRegistrationState` are now taken as the `Azure.ETag` type instead of strings.
 - Twin.Tags is now of type `IDictionary<string, object>`.
+
+#### Notable additions
+
+- The library now includes `IProvisioningServiceRetryPolicy` implementations: `ProvisioningServiceExponentialBackoffRetryPolicy`, `ProvisioningServiceFixedDelayRetryPolicy`, `ProvisioningServiceIncrementalDelayRetryPolicy` and `ProvisioningServiceNoRetry`,
+ which can be set via `ProvisioningServiceOptions.RetryPolicy`.
 
 #### API mapping
 

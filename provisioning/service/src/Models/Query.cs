@@ -65,9 +65,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string QueryUriFormat = "{0}/query?{1}";
 
         private readonly string _querySpecificationJson;
-        private IContractApiHttp _contractApiHttp;
+        private readonly IContractApiHttp _contractApiHttp;
         private readonly Uri _queryPath;
         private readonly CancellationToken _cancellationToken;
+        private readonly RetryHandler _internalRetryHandler;
         private bool _hasNext;
 
         internal Query(
@@ -76,6 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string query,
             IContractApiHttp contractApiHttp,
             int pageSize,
+            RetryHandler retryHandler,
             CancellationToken cancellationToken)
         {
             if (pageSize < 0)
@@ -84,16 +86,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             _contractApiHttp = contractApiHttp;
-
             PageSize = pageSize;
+            _internalRetryHandler = retryHandler;
             _cancellationToken = cancellationToken;
-
             _querySpecificationJson = JsonConvert.SerializeObject(new QuerySpecification(query));
-
             _queryPath = GetQueryUri(serviceName);
-
             ContinuationToken = null;
-
             _hasNext = true;
         }
 
@@ -164,15 +162,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 headerParameters.Add(ContinuationTokenHeaderKey, ContinuationToken);
             }
 
-            ContractApiResponse httpResponse = await _contractApiHttp
-                .RequestAsync(
-                    HttpMethod.Post,
-                    _queryPath,
-                    headerParameters,
-                    _querySpecificationJson,
-                    new ETag(),
-                    _cancellationToken)
-                .ConfigureAwait(false);
+            ContractApiResponse httpResponse = null;
+
+            await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            httpResponse = await _contractApiHttp
+                                .RequestAsync(
+                                    HttpMethod.Post,
+                                    _queryPath,
+                                    headerParameters,
+                                    _querySpecificationJson,
+                                    new ETag(),
+                                    _cancellationToken)
+                                .ConfigureAwait(false);
+                        },
+                        _cancellationToken)
+                    .ConfigureAwait(false);
 
             httpResponse.Fields.TryGetValue(ItemTypeHeaderKey, out string type);
             httpResponse.Fields.TryGetValue(ContinuationTokenHeaderKey, out string continuationToken);
