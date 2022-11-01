@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
-using NSubstitute;
 using Moq;
 
 namespace Microsoft.Azure.Devices.Client.Test
@@ -139,6 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             var message = new TelemetryMessage(new byte[] { 1, 2, 3 });
             IEnumerable<TelemetryMessage> messages = new[] { message };
+
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
