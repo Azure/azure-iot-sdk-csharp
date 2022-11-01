@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (IsSecurityExceptionChain(ex))
                     {
                         Exception innerException = (ex is IotHubClientException) ? ex.InnerException : ex;
-                        throw new IotHubClientException("TLS authentication error.", IotHubClientErrorCode.AuthenticationError, innerException);
+                        throw new IotHubClientException("TLS authentication error.", IotHubClientErrorCode.TlsAuthenticationError, innerException);
                     }
                     // For historic reasons, part of the Error handling is done within the transport handlers.
                     else if (ex is IotHubClientException hubEx

@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 if (ex is IotHubClientException hubEx)
                 {
-                    hubEx.ErrorCode.Should().Be(IotHubClientErrorCode.AuthenticationError);
+                    hubEx.ErrorCode.Should().Be(IotHubClientErrorCode.TlsAuthenticationError);
                     hubEx.IsTransient.Should().BeFalse();
                 }
             }
