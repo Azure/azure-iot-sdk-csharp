@@ -341,7 +341,15 @@ jobs:
           DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
 
         condition: always()
+        
+      - task: CopyFiles@2
+        displayName: "Copy files to the artifacts folder"
+        inputs:
+          SourceFolder: "$(Build.SourcesDirectory)"
+          Contents: "**/*.trx"
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
+        condition: always()
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
         inputs:
