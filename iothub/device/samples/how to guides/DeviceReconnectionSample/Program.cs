@@ -36,12 +36,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Set up logging
             using ILoggerFactory loggerFactory = new LoggerFactory();
-            loggerFactory.AddColorConsoleLogger(
-                new ColorConsoleLoggerConfiguration
-                {
-                    // The SDK logs are written at Trace level. Set this to LogLevel.Trace to get ALL logs.
-                    MinLogLevel = LogLevel.Debug,
-                });
+            switch (parameters.SDKTraceOn)
+            {
+                case true:
+                    loggerFactory.AddColorConsoleLogger(
+                        new ColorConsoleLoggerConfiguration {
+                            MinLogLevel = LogLevel.Trace,
+                        });
+                    break;
+
+                default:
+                    loggerFactory.AddColorConsoleLogger(
+                        new ColorConsoleLoggerConfiguration {
+                            MinLogLevel = LogLevel.Debug,
+                        });
+                    break;
+
+            }
             var logger = loggerFactory.CreateLogger<Program>();
 
             // Instantiating this seems to do all we need for outputting SDK events to our console log.

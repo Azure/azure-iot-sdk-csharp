@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -47,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static volatile ConnectionStatus s_connectionStatus = ConnectionStatus.Disconnected;
         private static String s_hub;
 
-        private static CancellationTokenSource s_appCancellation;
+        private static CancellationTokenSource s_Cancellation;
 
         // A safe initial value for caching the twin desired properties version is 1, so the client
         // will process all previous property change requests and initialize the device application
@@ -68,6 +67,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
+            _logger.LogInformation($"Sample execution started, press Control+C to quit the sample.");
+            s_Cancellation = new CancellationTokenSource(sampleRunningTime);
+            Console.CancelKeyPress += (sender, eventArgs) =>
+            {
+                eventArgs.Cancel = true;
+                s_Cancellation.Cancel();
+                _logger.LogWarning("Sample execution cancellation requested; will exit.");
+            };
+
             _logger.LogInformation($"Loading the certificate...");
             s_certificate = LoadProvisioningCertificate(_parameters.GetCertificatePath(), _parameters.CertificateName, _parameters.CertificatePassword);
             s_security = new SecurityProviderX509Certificate(s_certificate);
@@ -94,7 +102,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _logger.LogInformation($"Provisioning with Device: {s_security.GetRegistrationID()}.");
 
             DeviceRegistrationResult result = null;
-            s_appCancellation = new CancellationTokenSource(sampleRunningTime);
 
             // fixed duration loop retry for provisioning
             int tryCount = 0;
@@ -105,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogInformation($"Provisioning Attempt #{tryCount} with {_parameters.GlobalDeviceEndpoint}... ");
                     result = s_waitTIme != TimeSpan.MaxValue
                         ? await provClient.RegisterAsync(s_waitTIme).ConfigureAwait(false)
-                        : await provClient.RegisterAsync(s_appCancellation.Token).ConfigureAwait(false);
+                        : await provClient.RegisterAsync(s_Cancellation.Token).ConfigureAwait(false);
                     break;
                 }
                 // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
@@ -131,31 +138,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 result.DeviceId,
                 s_certificate);
         
-            Console.CancelKeyPress += (sender, eventArgs) =>
-            {
-                eventArgs.Cancel = true;
-                s_appCancellation.Cancel();
-                _logger.LogWarning("Sample execution cancellation requested; will exit.");
-            };
-
-            _logger.LogInformation($"Sample execution started, press Control+C to quit the sample.");
-
             try
             {
-                await InitializeAndSetupClientAsync(s_appCancellation.Token);
-                await Task.WhenAll(SendMessagesAsync(s_appCancellation.Token), ReceiveMessagesAsync(s_appCancellation.Token));
+                await InitializeAndSetupClientAsync(s_Cancellation.Token);
+                await Task.WhenAll(SendMessagesAsync(s_Cancellation.Token), ReceiveMessagesAsync(s_Cancellation.Token));
             }
             catch (OperationCanceledException) { } // User canceled the operation
             catch (Exception ex)
             {
                 _logger.LogError($"Unrecoverable exception caught, user action is required, so exiting: \n{ex}");
-                s_appCancellation.Cancel();
+                s_Cancellation.Cancel();
             }
 
             // Finally, close the client, but we can't use s_appCancellation because it has been signaled to quit the app.
             await s_deviceClient.CloseAsync(CancellationToken.None);
             s_initSemaphore.Dispose();
-            s_appCancellation.Dispose();
+            s_Cancellation.Dispose();
         }
 
         private async Task InitializeAndSetupClientAsync(CancellationToken cancellationToken)
@@ -224,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     // work on a device (e.g., get twin) when it comes online. If all the devices go offline and then come online at the same time (for example,
                     // during a servicing event) it could introduce increased latency or even throttling responses.
                     // For more information, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#traffic-shaping.
-                    await GetTwinAndDetectChangesAsync(s_appCancellation.Token);
+                    await GetTwinAndDetectChangesAsync(s_Cancellation.Token);
                     _logger.LogDebug("The client has retrieved twin values after the connection status changes into CONNECTED.");
                     break;
 
@@ -248,7 +246,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                                 try
                                 {
-                                    await InitializeAndSetupClientAsync(s_appCancellation.Token);
+                                    await InitializeAndSetupClientAsync(s_Cancellation.Token);
                                 }
                                 catch (OperationCanceledException) { } // User canceled
 
@@ -256,13 +254,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             }
 
                             _logger.LogWarning("### The supplied credentials are invalid. Update the parameters and run again.");
-                            s_appCancellation.Cancel();
+                            s_Cancellation.Cancel();
                             break;
 
                         case ConnectionStatusChangeReason.Device_Disabled:
                             _logger.LogWarning("### The device has been deleted or marked as disabled (on your hub instance)." +
                                 "\nFix the device status in Azure and then create a new device client instance.");
-                            s_appCancellation.Cancel();
+                            s_Cancellation.Cancel();
                             break;
 
                         case ConnectionStatusChangeReason.Retry_Expired:
@@ -271,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                             try
                             {
-                                await InitializeAndSetupClientAsync(s_appCancellation.Token);
+                                await InitializeAndSetupClientAsync(s_Cancellation.Token);
                             }
                             catch (OperationCanceledException) { } // User canceled
 
@@ -283,7 +281,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                             try
                             {
-                                await InitializeAndSetupClientAsync(s_appCancellation.Token);
+                                await InitializeAndSetupClientAsync(s_Cancellation.Token);
                             }
                             catch (OperationCanceledException) { } // User canceled
 
@@ -338,7 +336,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             try
             {
                 // For the purpose of this sample, we'll blindly accept all twin property write requests.
-                await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties, s_appCancellation.Token);
+                await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties, s_Cancellation.Token);
             }
             catch (OperationCanceledException)
             {
@@ -511,13 +509,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Amqp_WebSocket_Only:
+                case TransportType.Http1:
                     return true;
 
                 case TransportType.Amqp:
                 case TransportType.Amqp_Tcp_Only:
                 case TransportType.Mqtt:
                 case TransportType.Mqtt_Tcp_Only:
-                case TransportType.Http1:
                 default:
                     return false;
             }

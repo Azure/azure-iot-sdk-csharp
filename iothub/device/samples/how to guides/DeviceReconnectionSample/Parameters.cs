@@ -73,6 +73,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             HelpText = "Exponent order (x) of 2^x milliseconds backoff time for resending messages.")]
         public int ExponentOrderBackoff { get; set; }
 
+         [Option(
+            'v',
+            "SDKTraceOn",
+            Default = false,
+            HelpText = "SDK trace for logging. True to log detail SDK trace.")]
+        public bool SDKTraceOn { get; set; }       
+
         public string GetCertificatePath()
         {
             if (string.IsNullOrWhiteSpace(CertificateName))
