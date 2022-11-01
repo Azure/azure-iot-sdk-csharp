@@ -318,7 +318,7 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
 
           # Environment variables for the DevOps pipeline
-          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
+          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
@@ -341,7 +341,7 @@ jobs:
           DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
 
         condition: always()
-        
+
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
         inputs:
