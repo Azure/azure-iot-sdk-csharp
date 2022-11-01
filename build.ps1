@@ -149,11 +149,6 @@ Function RunSamples($path, $message)
 
     try {
             $sampleRunningTimeInSeconds = 30
-
-            # Run the cleanup
-            #RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-            #RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
-            #RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:FAR_AWAY_IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
             
             # Run the iot-hub\device samples
             RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"""
@@ -187,9 +182,7 @@ Function RunSamples($path, $message)
             # ComputeDerivedSymmetricKeySample uses the supplied group enrollment key to compute the SHA256 based hash of the supplied device Id.
             # For the sake of running this sample on the pipeline, we will only test the hash computation by passing in a base-64 string and a string to be hashed.
             RunSample 'provisioning\device\samples\getting started\ComputeDerivedSymmetricKeySample' "Provisioning\Device\ComputeDerivedSymmetricKeySample" "-r ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
-    
-            #RunSample 'provisioning\device\samples\how to guides\SymmetricKeySample' "Provisioning\Device\SymmetricKeySample" "-i ""$env:DPS_IDSCOPE"" -r ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
-    
+        
             # Run provisioning\service samples
             RunSample 'provisioning\service\samples\how to guides\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
             RunSample 'provisioning\service\samples\getting started\EnrollmentSample' "Provisioning\Service\EnrollmentSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
