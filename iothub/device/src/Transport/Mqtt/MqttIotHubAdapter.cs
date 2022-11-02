@@ -719,6 +719,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     case PacketType.PUBLISH:
                         ProcessPublish(context, (PublishPacket)packet);
+                        // Checking to call CompleteWorkAsync() after receiving Direct Method from Hub.
                         if (((PublishPacket)packet).TopicName.StartsWith(MqttTransportHandler.MethodPostTopicPrefix, StringComparison.OrdinalIgnoreCase))
                         {
                             await _deviceBoundTwoWayProcessor.CompleteWorkAsync(context, ((PublishPacket)packet).PacketId).ConfigureAwait(true);

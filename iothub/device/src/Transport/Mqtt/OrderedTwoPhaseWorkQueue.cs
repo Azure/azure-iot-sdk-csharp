@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -44,7 +45,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (!_incompleteQueue.Any())
             {
-                Debug.Assert(_incompleteQueue.Any(), "Nothing to complete.");
+                if (Logging.IsEnabled)
+                    Logging.Error(context, "Nothing to complete.", nameof(CompleteWorkAsync));
+
+                Debug.Fail("Nothing to complete.");
                 return TaskHelpers.CompletedTask;
             }
 
