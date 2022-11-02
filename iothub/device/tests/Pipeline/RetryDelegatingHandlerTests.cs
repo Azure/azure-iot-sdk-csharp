@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            PipelineContext contextMock = new PipelineContext();
+            var contextMock = new PipelineContext();
             contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
@@ -324,7 +324,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
 
             // act and assert
-            await sut.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
+            Func<Task> sendTelemetry = () => sut.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), cts.Token);
+
+            var result = await sendTelemetry
+                .Should().ThrowAsync<OperationCanceledException>()
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
