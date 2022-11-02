@@ -125,5 +125,15 @@ namespace Microsoft.Azure.Devices.Client
         /// guide for more information.
         /// </remarks>
         Unauthorized,
+
+        /// <summary>
+        /// The request failed because of TLS authentication error.
+        /// </summary>
+        /// <remarks>
+        /// This error may happen when the remote certificate presented could not be validated, the TLS version is different between client requested
+        /// auth and service minimum requirement, cipher suites to be used could not be agreed upon, etc. The best course of action is to check your
+        /// device certificates and ensure they are up-to-date.
+        /// </remarks>
+        TlsAuthenticationError,
     }
 }
