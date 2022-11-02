@@ -29,23 +29,23 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IotHub.GetChainDeviceCertificateWithPrivateKey();
         private readonly string _hostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_AmqpTcp()
         {
             await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_AmqpWs()
         {
             await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-// TODO: there is a problem with DotNetty on net6.0 with gatewayv2. Wait for transition to MqttNet to re-enable and try this test out.
+        // TODO: there is a problem with DotNetty on net6.0 with gatewayv2. Wait for transition to MqttNet to re-enable and try this test out.
 #if !NET6_0_OR_GREATER
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_MqttTcp()
         {
@@ -53,14 +53,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 #endif
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_MqttWs()
         {
             await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_Http()
         {
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_MqttTcp()
         {
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_MqttWs()
         {
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpTcp()
         {
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpWs()
         {
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Cert_Chain_Install_Test_MqttTcp()
         {
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ValidateCertsAreInstalled(chainCerts);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Cert_Chain_Install_Test_AmqpTcp()
         {
@@ -180,11 +180,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMessageTestAsync(ITransportSettings transportSetting)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting });
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, Logger).ConfigureAwait(false);
+            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 

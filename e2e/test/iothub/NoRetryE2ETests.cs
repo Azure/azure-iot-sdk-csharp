@@ -20,15 +20,15 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private static readonly string _devicePrefix = $"{nameof(NoRetryE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("FaultInjection")]
         public async Task FaultInjection_NoRetry_NoRecovery_OpenAsync()
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only);
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
             deviceClient.SetRetryPolicy(new NoRetry());
 
             ConnectionStatus? lastConnectionStatus = null;
@@ -43,10 +43,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 lastConnectionStatusChangeReason = reason;
             });
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
             await FaultInjection
                 .ActivateFaultInjectionAsync(
                     Client.TransportType.Amqp_Tcp_Only,
@@ -54,13 +54,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
-                    deviceClient,
-                    Logger)
+                    deviceClient)
                 .ConfigureAwait(false);
 
             await Task.Delay(FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: waiting fault injection occurs...");
+            VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: waiting fault injection occurs...");
             var sw = Stopwatch.StartNew();
             while (sw.Elapsed < FaultInjection.LatencyTimeBuffer)
             {
@@ -81,18 +80,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             disconnected.Should().Be(1, $"Should get {ConnectionStatus.Disconnected} once but got it {disconnected} times.");
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DuplicateDevice_NoRetry_NoPingpong_OpenAsync()
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: 2 device client instances with the same deviceId={testDevice.Id}.");
+            VerboseTestLogger.WriteLine($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: 2 device client instances with the same deviceId={testDevice.Id}.");
 
             using DeviceClient deviceClient1 = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only);
             using DeviceClient deviceClient2 = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only);
 
-            Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: set device client instance 1 to no retry.");
+            VerboseTestLogger.WriteLine($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: set device client instance 1 to no retry.");
             deviceClient1.SetRetryPolicy(new NoRetry());
 
             ConnectionStatus? lastConnectionStatusDevice1 = null;
@@ -115,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 lastConnectionStatusDevice2 = status;
             });
 
-            Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");
+            VerboseTestLogger.WriteLine($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");
             await deviceClient1.OpenAsync().ConfigureAwait(false);
             await deviceClient1
                 .SetMethodHandlerAsync(
@@ -124,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient1)
                 .ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 2 calling OpenAsync...");
+            VerboseTestLogger.WriteLine($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 2 calling OpenAsync...");
             await deviceClient2.OpenAsync().ConfigureAwait(false);
             await deviceClient2
                 .SetMethodHandlerAsync(
@@ -133,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient2)
                 .ConfigureAwait(false);
 
-            Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: waiting device client instance 1 to be kicked off...");
+            VerboseTestLogger.WriteLine($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: waiting device client instance 1 to be kicked off...");
             var sw = Stopwatch.StartNew();
             while (sw.Elapsed < FaultInjection.LatencyTimeBuffer)
             {

@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private const int MaxIterationWait = 30;
         private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(5);
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
         {
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await SendSingleMessageService(transportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddAndRemoveDevice_WithProxy()
         {
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await RegistryManager_AddDevice(httpTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [TestCategory("LongRunning")]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString);
             using var serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, TransportType.Amqp, transportSettings);
             (Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
                 catch (ThrottlingException) when (++tryCount < MaxIterationWait)
                 {
-                    Logger.Trace($"ThrottlingException... waiting.");
+                    VerboseTestLogger.WriteLine($"ThrottlingException... waiting.");
                     await Task.Delay(_waitDuration).ConfigureAwait(false);
                     continue;
                 }
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string payload = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
 
-            Logger.Trace($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            VerboseTestLogger.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
