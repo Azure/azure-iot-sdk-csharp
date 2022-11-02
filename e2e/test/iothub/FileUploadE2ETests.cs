@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string _devicePrefix = $"{nameof(FileUploadE2ETests)}_";
         private static readonly X509Certificate2 s_selfSignedCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [Obsolete]
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileAsync(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Http_NoFileTransportSettingSpecified()
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(Client.TransportType.Http1, smallFileBlobName).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Http_x509_NoFileTransportSettingSpecified()
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(Client.TransportType.Http1, smallFileBlobName, true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Mqtt_x509_NoFileTransportSettingSpecified()
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(Client.TransportType.Mqtt, smallFileBlobName, true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [Obsolete]
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileAsync(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [Obsolete]
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileAsync(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http_GranularSteps()
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http_GranularSteps_x509()
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, useX509auth: true).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http_GranularSteps_Proxy()
@@ -129,7 +129,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task UploadFileGranularAsync(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool useX509auth = false)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
-                Logger,
                 _devicePrefix,
                 useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
@@ -182,7 +181,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task UploadFileAsync(Client.TransportType transport, string filename, bool useX509auth = false)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
-                Logger,
                 _devicePrefix,
                 useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
@@ -218,7 +216,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(
-                    Logger,
                     _devicePrefix,
                     useX509auth
                         ? TestDeviceType.X509

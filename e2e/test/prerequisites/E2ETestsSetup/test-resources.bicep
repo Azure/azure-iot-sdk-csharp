@@ -1,5 +1,4 @@
 @description('The name of application insights.')
-param ApplicationInsightsName string = '${resourceGroup().name}-ai'
 
 @minLength(3)
 @maxLength(24)
@@ -52,15 +51,6 @@ param EnableIotHubSecuritySolution bool = false
 
 var hubKeysId = resourceId('Microsoft.Devices/IotHubs/Iothubkeys', HubName, 'iothubowner')
 var dpsKeysId = resourceId('Microsoft.Devices/ProvisioningServices/keys', DpsName, 'provisioningserviceowner')
-
-resource applicationInsights 'Microsoft.Insights/components@2015-05-01' = {
-  name: ApplicationInsightsName
-  kind: 'web'
-  location: 'WestUs'
-  properties: {
-    Application_Type: 'web'
-  }
-}
 
 resource keyVault 'Microsoft.KeyVault/vaults@2018-02-14' = {
   name: KeyVaultName
@@ -257,4 +247,3 @@ output dpsConnectionString string = 'HostName=${DpsName}.azure-devices-provision
 output storageAccountConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${StorageAccountName};AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value};EndpointSuffix=core.windows.net'
 output workspaceId string = (EnableIotHubSecuritySolution) ? '${reference(operationalInsightsWorkspaces.id, '2017-03-15-preview').customerId}' : ''
 output keyVaultName string = KeyVaultName
-output instrumentationKey string = reference(applicationInsights.id, '2015-05-01').InstrumentationKey

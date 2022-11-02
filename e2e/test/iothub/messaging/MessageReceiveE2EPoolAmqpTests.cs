@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_SingleConnection_Amqp()
         {
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_SingleConnection_AmqpWs()
         {
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_SingleConnection_Amqp()
         {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_SingleConnection_AmqpWs()
         {
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_Amqp()
         {
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
         {
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_Amqp()
         {
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
         {
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_Amqp()
         {
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_AmqpWs()
         {
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_Amqp()
         {
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_AmqpWs()
         {
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
@@ -233,11 +233,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                Logger.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
+                VerboseTestLogger.WriteLine($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
-                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2, Logger).ConfigureAwait(false);
+                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2).ConfigureAwait(false);
             }
 
             async Task CleanupOperationAsync()
@@ -257,8 +257,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     TestOperationAsync,
                     CleanupOperationAsync,
                     authScope,
-                    true,
-                    Logger)
+                    true)
                 .ConfigureAwait(false);
         }
 
@@ -273,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage();
 
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
@@ -283,7 +282,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                Logger.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
+                VerboseTestLogger.WriteLine($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
@@ -305,8 +304,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     TestOperationAsync,
                     CleanupOperationAsync,
                     authScope,
-                    true,
-                    Logger)
+                    true)
                 .ConfigureAwait(false);
         }
 
@@ -333,10 +331,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 using var cts = new CancellationTokenSource(timeout);
 
                 // Send a message to the device from the service.
-                (Message firstMessage, string payload, _) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                (Message firstMessage, string payload, _) = MessageReceiveE2ETests.ComposeC2dTestMessage();
                 testDeviceCallbackHandler.ExpectedMessageSentByService = firstMessage;
                 await serviceClient.SendAsync(testDevice.Id, firstMessage).ConfigureAwait(false);
-                Logger.Trace($"Sent 1st C2D message from service - to be received on callback: deviceId={testDevice.Id}, messageId={firstMessage.MessageId}");
+                VerboseTestLogger.WriteLine($"Sent 1st C2D message from service - to be received on callback: deviceId={testDevice.Id}, messageId={firstMessage.MessageId}");
 
                 // The message should be received on the callback, while a call to ReceiveAsync() should return null.
                 Client.Message receivedMessage = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
@@ -347,9 +345,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await deviceClient.SetReceiveMessageHandlerAsync(null, deviceClient).ConfigureAwait(false);
 
                 // Send a message to the device from the service.
-                (Message secondMessage, _, _) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                (Message secondMessage, _, _) = MessageReceiveE2ETests.ComposeC2dTestMessage();
                 await serviceClient.SendAsync(testDevice.Id, secondMessage).ConfigureAwait(false);
-                Logger.Trace($"Sent 2nd C2D message from service - to be received on polling ReceiveAsync(): deviceId={testDevice.Id}, messageId={secondMessage.MessageId}");
+                VerboseTestLogger.WriteLine($"Sent 2nd C2D message from service - to be received on polling ReceiveAsync(): deviceId={testDevice.Id}, messageId={secondMessage.MessageId}");
 
                 // This time, the message should not be received on the callback, rather it should be received on a call to ReceiveAsync().
                 Func<Task> receiveMessageOverCallback = async () =>
@@ -377,8 +375,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     TestOperationAsync,
                     CleanupOperationAsync,
                     authScope,
-                    true,
-                    Logger)
+                    true)
                 .ConfigureAwait(false);
         }
     }

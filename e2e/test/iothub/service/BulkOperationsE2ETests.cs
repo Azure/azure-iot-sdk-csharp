@@ -18,14 +18,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string DevicePrefix = $"{nameof(BulkOperationsE2ETests)}_";
         private readonly string ModulePrefix = $"{nameof(BulkOperationsE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Device_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             Twin twin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
@@ -46,14 +46,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2DevicePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             var twin = new Twin();
@@ -74,14 +74,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Module_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
             Twin twin = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
@@ -103,14 +103,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2ModulePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
 
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             var twin = new Twin();

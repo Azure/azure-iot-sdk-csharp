@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _idPrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             _ = await registryManager.GetDeviceAsync("device-that-does-not-exist").ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddAndRemoveDeviceWithScope()
         {
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddDeviceWithTwinWithDeviceCapabilities()
         {
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddDevices2Async_Works()
         {
@@ -176,12 +176,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                    VerboseTestLogger.WriteLine($"Failed to clean up devices due to {ex}");
                 }
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_UpdateDevices2Async_Works()
         {
@@ -226,12 +226,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                    VerboseTestLogger.WriteLine($"Failed to clean up devices due to {ex}");
                 }
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_UpdateTwins2Async_Works()
         {
@@ -278,12 +278,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                    VerboseTestLogger.WriteLine($"Failed to clean up devices due to {ex}");
                 }
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_RemoveDevices2Async_Works()
         {
@@ -321,12 +321,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                    VerboseTestLogger.WriteLine($"Failed to clean up devices due to {ex}");
                 }
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddDeviceWithProxy()
         {
@@ -341,7 +341,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_ConfigurationOperations_Work()
         {
@@ -410,7 +410,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Query_Works()
         {
@@ -437,7 +437,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             query.HasMoreResults.Should().BeFalse("We've processed the single, expected result");
         }
 
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_GetModulesOnDevice()
         {
@@ -490,7 +490,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         /// Test basic lifecycle of a module.
         /// This test includes CRUD operations only.
         /// </summary>
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_IdentityLifecycle()
         {
@@ -539,12 +539,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         /// <summary>
         /// Test basic operations of a module's twin.
         /// </summary>
-        [LoggedTestMethod]
+        [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_DeviceTwinLifecycle()
         {
             using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
-            TestModule module = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix, Logger).ConfigureAwait(false);
+            TestModule module = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix).ConfigureAwait(false);
 
             try
             {
