@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
@@ -43,7 +44,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (!_incompleteQueue.Any())
             {
-                throw new IotHubException("Nothing to complete.", isTransient: false);
+                Debug.Assert(_incompleteQueue.Any(), "Nothing to complete.");
+                return TaskHelpers.CompletedTask;
             }
 
             if (_incompleteQueue.TryDequeue(out IncompleteWorkItem incompleteWorkItem))
@@ -57,11 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
                     isTransient: false);
             }
-#if NET451
             return TaskHelpers.CompletedTask;
-#else
-            return Task.CompletedTask;
-#endif
         }
 
         protected override async Task DoWorkAsync(IChannelHandlerContext context, TWork work)

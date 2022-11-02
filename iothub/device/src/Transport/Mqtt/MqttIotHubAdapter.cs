@@ -719,7 +719,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     case PacketType.PUBLISH:
                         ProcessPublish(context, (PublishPacket)packet);
-                        await _deviceBoundTwoWayProcessor.CompleteWorkAsync(context, ((PubAckPacket)packet).PacketId).ConfigureAwait(true);
+                        if (((PublishPacket)packet).TopicName.StartsWith(MqttTransportHandler.MethodPostTopicPrefix, StringComparison.OrdinalIgnoreCase))
+                        {
+                            await _deviceBoundTwoWayProcessor.CompleteWorkAsync(context, ((PublishPacket)packet).PacketId).ConfigureAwait(true);
+                        }
                         break;
 
                     case PacketType.PUBACK:
