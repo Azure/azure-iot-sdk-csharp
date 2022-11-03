@@ -120,9 +120,10 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act and assert
             await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            var exception = await retryDelegatingHandler
-                .SendTelemetryAsync(message, CancellationToken.None)
-                .ExpectedAsync<NotSupportedException>()
+            Func<Task> telemetry = () => retryDelegatingHandler.SendTelemetryAsync(message, CancellationToken.None);
+            
+            var exception = await telemetry.Should()
+                .ThrowAsync<NotSupportedException>()
                 .ConfigureAwait(false);
             callCounter.Should().Be(1);
         }
@@ -222,7 +223,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // arrange
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<InvalidOperationException>().ConfigureAwait(false);
+            Func<Task> open = () => sut.OpenAsync(CancellationToken.None);
+
+            await open.Should()
+                .ThrowAsync<InvalidOperationException>()
+                .ConfigureAwait(false);
 
             // act
             callCounter.Should().Be(1);
@@ -250,13 +255,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // act and assert for exception type
-            var exception = await sut
-                .OpenAsync(CancellationToken.None)
-                .ExpectedAsync<IotHubClientException>()
+            Func<Task> open = () => sut.OpenAsync(CancellationToken.None);
+
+            var exception = await open.Should()
+                .ThrowAsync<IotHubClientException>()
                 .ConfigureAwait(false);
 
             // assert for exception status code
-            exception.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceNotFound);
+            exception.Which.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceNotFound);
 
             // assert for connection status
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Disconnected);
@@ -292,8 +298,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = new PipelineContext();
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
+            var ct = new CancellationToken(true);
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
@@ -301,7 +306,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // act and assert
-            await sut.OpenAsync(cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
+            Func<Task> open = () => sut.OpenAsync(ct);
+
+            await open.Should()
+                .ThrowAsync<OperationCanceledException>()
+                .ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -320,11 +329,10 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
+            var ct = new CancellationToken(true);
 
             // act and assert
-            Func<Task> sendTelemetry = () => sut.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), cts.Token);
+            Func<Task> sendTelemetry = () => sut.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), ct);
 
             var result = await sendTelemetry
                 .Should().ThrowAsync<OperationCanceledException>()
@@ -352,7 +360,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             var telemetry = new List<TelemetryMessage>(0);
 
             // act and assert
-            await sut.SendTelemetryBatchAsync(telemetry, ct).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
+            Func<Task> sendTelemetry = () => sut.SendTelemetryBatchAsync(telemetry, ct);
+
+            var result = await sendTelemetry
+                .Should().ThrowAsync<OperationCanceledException>()
+                .ConfigureAwait(false);
+
             nextHandlerMock.Verify(
                 x => x.SendTelemetryBatchAsync(It.IsAny<IEnumerable<TelemetryMessage>>(), It.IsAny<CancellationToken>()),
                 Times.Never());
@@ -383,15 +396,17 @@ namespace Microsoft.Azure.Devices.Client.Test
                    });
 
             // act and assert
-            var exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
-            exception.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
+            Func<Task> open = () => sut.OpenAsync(CancellationToken.None);
+
+            var exception = await open.Should().ThrowAsync<IotHubClientException>().ConfigureAwait(false);
+            exception.Which.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(2);
             retryPolicy.Counter.Should().Be(2);
 
             sut.SetRetryPolicy(new IotHubClientNoRetry());
 
-            exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
-            exception.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
+            exception = await open.Should().ThrowAsync<IotHubClientException>().ConfigureAwait(false);
+            exception.Which.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
         }
