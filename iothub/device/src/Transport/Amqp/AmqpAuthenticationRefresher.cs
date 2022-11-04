@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             // Create a linked cancellation token source which can be signaled for cancellation by both the SDK
             // and the supplied cancellation token.
-            _refresherCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _refresherCancellationTokenSource ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             if (refreshOn < DateTime.MaxValue)
             {
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(StopLoop));
 
-            _refresherCancellationTokenSource.Cancel();
+            _refresherCancellationTokenSource?.Cancel();
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(StopLoop));
@@ -156,6 +156,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         StopLoop();
                         _refresherCancellationTokenSource?.Dispose();
+                        _refresherCancellationTokenSource = null;
+
                         _amqpIotCbsTokenProvider?.Dispose();
                     }
 
