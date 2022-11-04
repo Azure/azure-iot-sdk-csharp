@@ -86,7 +86,7 @@ All of our samples are located in this repository. The samples live alongside th
 Samples for each of these categories are further separated into three sub-categories (from simplest to complex):
 
 1. `Getting Started`
-2. `How To`
+2. `How To Guides`
 3. `Solutions`
 
 If you are looking for a good device sample to get started with, please see the [device reconnection sample](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample).
