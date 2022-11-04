@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly string _audience;
         private Task _refreshLoop;
         private bool _disposed;
+        private CancellationTokenSource _refresherCancellationTokenSource;
 
         internal AmqpAuthenticationRefresher(IDeviceIdentity deviceIdentity, AmqpIotCbsLink amqpCbsLink)
         {
@@ -50,9 +51,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     cancellationToken)
                 .ConfigureAwait(false);
 
+            // Create a linked cancellation token source which can be signaled for cancellation by both the SDK
+            // and the supplied cancellation token.
+            _refresherCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
             if (refreshOn < DateTime.MaxValue)
             {
-                StartLoop(refreshOn, cancellationToken);
+                StartLoop(refreshOn, _refresherCancellationTokenSource.Token);
             }
 
             if (Logging.IsEnabled)
@@ -64,6 +69,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, refreshOn, nameof(StartLoop));
 
+            // This task runs in the background and is unmonitored.
+            // When this refresher is disposed it signals this task to be cancelled.
             _refreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
 
             if (Logging.IsEnabled)
@@ -120,7 +127,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public void StopLoop()
         {
             if (Logging.IsEnabled)
-                Logging.Info(this, nameof(StopLoop));
+                Logging.Enter(this, nameof(StopLoop));
+
+            _refresherCancellationTokenSource.Cancel();
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, nameof(StopLoop));
         }
 
         public void Dispose()
@@ -143,6 +155,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (disposing)
                     {
                         StopLoop();
+                        _refresherCancellationTokenSource?.Dispose();
                         _amqpIotCbsTokenProvider?.Dispose();
                     }
 
