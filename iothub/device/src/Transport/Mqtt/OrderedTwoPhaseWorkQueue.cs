@@ -46,9 +46,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (!_incompleteQueue.Any())
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(context, "Nothing to complete.", nameof(CompleteWorkAsync));
+                    Logging.Error(context, $"{nameof(CompleteWorkAsync)} called but there are no items in the queue to complete.", nameof(CompleteWorkAsync));
 
-                Debug.Fail("Nothing to complete.");
+                Debug.Fail($"{nameof(CompleteWorkAsync)} called but there are no items in the queue to complete.");
                 return TaskHelpers.CompletedTask;
             }
 
