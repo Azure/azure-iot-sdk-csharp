@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
         // It then sends an empty message to the topic "$iothub/twin/GET/?$rid={request id}, with a populated value for request Id.
         // The service then sends a response message containing the device twin data on topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request Id as the request.
-        
+
         private const string TwinResponseTopicFilter = "$iothub/twin/res/#";
         private const string TwinResponseTopicPrefix = "$iothub/twin/res/";
         private const string TwinGetTopic = "$iothub/twin/GET/?$rid={0}";
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // Topic names for enabling events on Modules.
 
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
-        internal const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
+        private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
         private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
         private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
@@ -546,6 +546,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     string patch = reader.ReadToEnd();
                     TwinCollection props = JsonConvert.DeserializeObject<TwinCollection>(patch);
                     await Task.Run(() => _onDesiredStatePatchListener(props)).ConfigureAwait(false);
+                    await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
                 }
             }
             finally
@@ -562,6 +563,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 using var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.GetBodyStream(), CancellationToken.None);
                 await Task.Run(() => _methodListener(mr)).ConfigureAwait(false);
+                await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
             }
             finally
             {
@@ -584,6 +586,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
             _ = _deviceMessageReceivedListener?.Invoke(message);
             await TaskHelpers.CompletedTask.ConfigureAwait(false);
+            await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, "Process C2D message via callback", nameof(HandleIncomingMessagesAsync));
@@ -607,6 +610,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     if (topic.StartsWith(TwinResponseTopicPrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         _twinResponseEvent(message);
+                        await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
                     }
                     else if (topic.StartsWith(TwinPatchTopicPrefix, StringComparison.OrdinalIgnoreCase))
                     {
@@ -650,6 +654,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, message, nameof(OnMessageReceived));
+            }
+        }
+
+        private async Task CompleteIncomingMessageAsync(Message message)
+        {
+            try
+            {
+                if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce)
+                {
+                    lock (_syncRoot)
+                    {
+                        _completionQueue.Enqueue(message.LockToken);
+                    }
+                    await CompleteAsync(_generationId + message.LockToken, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex) when (!ex.IsFatal())
+            {
+                OnError(ex);
+                throw;
             }
         }
 
