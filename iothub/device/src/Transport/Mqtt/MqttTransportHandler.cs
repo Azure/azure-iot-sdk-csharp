@@ -655,7 +655,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce)
+                if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce && message.LockToken != null)
                 {
                     _completionQueue.Enqueue(message.LockToken);
                     await CompleteAsync(_generationId + message.LockToken, CancellationToken.None).ConfigureAwait(false);
