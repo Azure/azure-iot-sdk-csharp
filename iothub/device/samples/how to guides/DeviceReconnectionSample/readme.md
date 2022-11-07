@@ -8,7 +8,7 @@ This sample code demonstrates the various connection status changes and connecti
 // Connection string:
 // Get the device connection string from Azure IoT Portal, or using Azure CLI. 
 // Azure portal - 
-// Navigate to your IoT Hub. From the left pane, under "Explorers", click on "IoT devices".
+// Navigate to your IoT Hub. From the left pane, under "Device management", click on "Devices".
 // Click and navigate to your device.
 // Copy the connection strings listed (primary and/or secondary).
 // Azure CLI - 
