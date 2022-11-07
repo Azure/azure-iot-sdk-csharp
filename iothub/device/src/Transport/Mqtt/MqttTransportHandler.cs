@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
         // It then sends an empty message to the topic "$iothub/twin/GET/?$rid={request id}, with a populated value for request Id.
         // The service then sends a response message containing the device twin data on topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request Id as the request.
-
+        
         private const string TwinResponseTopicFilter = "$iothub/twin/res/#";
         private const string TwinResponseTopicPrefix = "$iothub/twin/res/";
         private const string TwinGetTopic = "$iothub/twin/GET/?$rid={0}";
@@ -86,14 +86,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The service sends method requests to the topic "$iothub/methods/POST/{method name}/?$rid={request id}".
         // The client responds to the direct method invocation by sending a message to the topic "$iothub/methods/res/{status}/?$rid={request id}", using the same request Id as the request.
 
-        internal const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
+        private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
         // Topic names for enabling events on Modules.
 
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
-        private const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
+        internal const string ReceiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
         private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
         private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
