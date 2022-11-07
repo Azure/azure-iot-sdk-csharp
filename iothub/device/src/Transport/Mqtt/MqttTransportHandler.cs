@@ -107,12 +107,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly string _deviceboundMessagePrefix;
         private readonly string _hostName;
         private readonly Func<IPAddress[], int, Task<IChannel>> _channelFactory;
-        private readonly Queue<string> _completionQueue;
+        private readonly ConcurrentQueue<string> _completionQueue;
         private readonly MqttIotHubAdapterFactory _mqttIotHubAdapterFactory;
         private readonly QualityOfService _qosSendPacketToService;
         private readonly QualityOfService _qosReceivePacketFromService;
         private readonly bool _retainMessagesAcrossSessions;
-        private readonly object _syncRoot = new object();
         private readonly RetryPolicy _closeRetryPolicy;
         private readonly ConcurrentQueue<Message> _messageQueue;
         private readonly TaskCompletionSource _connectCompletion = new TaskCompletionSource();
@@ -161,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             _mqttIotHubAdapterFactory = new MqttIotHubAdapterFactory(settings);
             _messageQueue = new ConcurrentQueue<Message>();
-            _completionQueue = new Queue<string>();
+            _completionQueue = new ConcurrentQueue<string>();
 
             _serverAddresses = null; // this will be resolved asynchronously in OpenAsync
             _hostName = iotHubConnectionString.HostName;
@@ -355,17 +354,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Enter(this, message, $"Will begin processing received C2D message, queue size={_messageQueue.Count}", nameof(ProcessC2dMessage));
 
-                lock (_syncRoot)
+                if (_messageQueue.TryDequeue(out message))
                 {
-                    if (_messageQueue.TryDequeue(out message))
+                    if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce)
                     {
-                        if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce)
-                        {
-                            _completionQueue.Enqueue(message.LockToken);
-                        }
-
-                        message.LockToken = _generationId + message.LockToken;
+                        _completionQueue.Enqueue(message.LockToken);
                     }
+
+                    message.LockToken = _generationId + message.LockToken;
                 }
 
                 return message;
@@ -402,35 +398,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 throw new IotHubException("Complete is not allowed for QoS 0.", isTransient: false);
             }
 
-            Task completeOperationCompletion;
-            lock (_syncRoot)
+            if (!lockToken.StartsWith(_generationId, StringComparison.InvariantCulture))
             {
-                if (!lockToken.StartsWith(_generationId, StringComparison.InvariantCulture))
-                {
-                    throw new IotHubException(
-                        "Lock token is stale or never existed. The message will be redelivered. Please discard this lock token and do not retry the operation.",
-                        isTransient: false);
-                }
-
-                if (_completionQueue.Count == 0)
-                {
-                    throw new IotHubException("Unknown lock token.", isTransient: false);
-                }
-
-                string actualLockToken = _completionQueue.Peek();
-                if (lockToken.IndexOf(actualLockToken, s_generationPrefixLength, StringComparison.Ordinal) != s_generationPrefixLength ||
-                    lockToken.Length != actualLockToken.Length + s_generationPrefixLength)
-                {
-                    throw new IotHubException(
-                        $"Client must send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. Expected lock token to end with: '{actualLockToken}'; actual lock token: '{lockToken}'.",
-                        isTransient: false);
-                }
-
-                _completionQueue.Dequeue();
-                completeOperationCompletion = _channel.WriteAndFlushAsync(actualLockToken);
+                throw new IotHubException(
+                    "Lock token is stale or never existed. The message will be redelivered. Please discard this lock token and do not retry the operation.",
+                    isTransient: false);
             }
 
-            await completeOperationCompletion.ConfigureAwait(true);
+            if (_completionQueue.Count == 0)
+            {
+                throw new IotHubException("Unknown lock token.", isTransient: false);
+            }
+
+            _completionQueue.TryDequeue(out string actualLockToken);
+            if (lockToken.IndexOf(actualLockToken, s_generationPrefixLength, StringComparison.Ordinal) != s_generationPrefixLength ||
+                lockToken.Length != actualLockToken.Length + s_generationPrefixLength)
+            {
+                throw new IotHubException(
+                    $"Client must send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. Expected lock token to end with: '{actualLockToken}'; actual lock token: '{lockToken}'.",
+                    isTransient: false);
+            }
+
+            await _channel.WriteAndFlushAsync(actualLockToken).ConfigureAwait(true);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, $"Completing a message with lockToken: {lockToken}", nameof(CompleteAsync));
@@ -546,6 +535,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     string patch = reader.ReadToEnd();
                     TwinCollection props = JsonConvert.DeserializeObject<TwinCollection>(patch);
                     await Task.Run(() => _onDesiredStatePatchListener(props)).ConfigureAwait(false);
+                    // Messages with QoS = 1 need to be Acknowledged otherwise it results in mismatched Ack to IoT Hub
+                    // causing next message being replayed and all subsequent messages being queued.
                     await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
                 }
             }
@@ -563,6 +554,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 using var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.GetBodyStream(), CancellationToken.None);
                 await Task.Run(() => _methodListener(mr)).ConfigureAwait(false);
+                // Method with QoS = 1 need to be Acknowledged otherwise it results in mismatched Ack to IoT Hub
+                // causing next message being replayed and all subsequent messages being queued.
                 await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
             }
             finally
@@ -585,7 +578,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // We are intentionally not awaiting _deviceMessageReceivedListener callback.
             // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
             _ = _deviceMessageReceivedListener?.Invoke(message);
-            await TaskHelpers.CompletedTask.ConfigureAwait(false);
+            // Messages with QoS = 1 need to be Acknowledged otherwise it results in mismatched Ack to IoT Hub
+            // causing next message being replayed and all subsequent messages being queued.
             await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
@@ -663,10 +657,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce)
                 {
-                    lock (_syncRoot)
-                    {
-                        _completionQueue.Enqueue(message.LockToken);
-                    }
+                    _completionQueue.Enqueue(message.LockToken);
                     await CompleteAsync(_generationId + message.LockToken, CancellationToken.None).ConfigureAwait(false);
                 }
             }
@@ -691,10 +682,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce)
                 {
-                    lock (_syncRoot)
-                    {
-                        _completionQueue.Enqueue(message.LockToken);
-                    }
+                    _completionQueue.Enqueue(message.LockToken);
                 }
                 message.LockToken = _generationId + message.LockToken;
                 await (_moduleMessageReceivedListener?.Invoke(inputName, message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
