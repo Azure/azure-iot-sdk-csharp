@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private const int MaxTryCount = 10;
         private const string InvalidIdScope = "0neFFFFFFFF";
         private const string PayloadJsonData = "{\"testKey\":\"testValue\"}";
-        private const string InvalidGlobalAddress = "httpbin.org";
+        private const string InvalidGlobalAddress = "HopefullyAnEndpointThatDoesNotExist.azure-devices-provisioning.net";
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;

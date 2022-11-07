@@ -14,6 +14,7 @@ using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Exceptions;
+using MQTTnet.Formatter;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -99,7 +100,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 _connectionLossCause = disconnectedEventArgs.Exception;
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"MQTT connection was lost '{_connectionLossCause}'.");
+                    Logging.Error(this, $"MQTT connection was lost {disconnectedEventArgs.Reason}/{disconnectedEventArgs.ReasonString}: '{_connectionLossCause}'.");
 
                 // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
                 connectionLostCancellationToken.Cancel();
@@ -323,12 +324,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (_settings.Protocol == ProvisioningClientTransportProtocol.Tcp)
             {
                 // "ssl://" prefix is not needed here because the MQTT library adds it for us.
-                var uri = hostName;
+                string uri = hostName;
                 mqttClientOptionsBuilder.WithTcpServer(uri, MqttTcpPort);
             }
             else
             {
-                var uri = $"wss://{hostName}";
+                string uri = $"wss://{hostName}";
                 mqttClientOptionsBuilder.WithWebSocketServer(uri);
 
                 if (_settings.Proxy != null)
@@ -336,25 +337,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     Uri serviceUri = new(uri);
                     Uri proxyUri = _settings.Proxy.GetProxy(serviceUri);
 
-                    if (_settings.Proxy.Credentials != null)
+                    if (_settings.Proxy.Credentials == null)
                     {
-                        NetworkCredential credentials = _settings.Proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
-                        string proxyUsername = credentials.UserName;
-                        string proxyPassword = credentials.Password;
-                        mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri, proxyUsername, proxyPassword);
+                        mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri);
                     }
                     else
                     {
-                        mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri);
+                        NetworkCredential proxyCreds = _settings.Proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
+                        mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri, proxyCreds.UserName, proxyCreds.Password);
                     }
                 }
             }
 
-            MqttClientOptionsBuilderTlsParameters tlsParameters = new MqttClientOptionsBuilderTlsParameters();
+            var tlsParameters = new MqttClientOptionsBuilderTlsParameters();
             var password = "";
             if (provisioningRequest.Authentication is AuthenticationProviderX509 x509Auth)
             {
-                var certs = new List<X509Certificate>()
+                var certs = new List<X509Certificate>
                 {
                     x509Auth.ClientCertificate,
                 };
@@ -393,7 +392,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             tlsParameters.SslProtocol = _settings.SslProtocols;
             mqttClientOptionsBuilder
                 .WithTls(tlsParameters)
-                .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311) // 3.1.1
+                .WithProtocolVersion(MqttProtocolVersion.V311)
                 .WithKeepAlivePeriod(_settings.IdleTimeout)
                 .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
 
