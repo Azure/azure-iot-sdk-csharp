@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
+using Moq;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -94,21 +94,23 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             using var moduleClient = new IotHubModuleClient(FakeConnectionString, options);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            moduleClient.InnerHandler = innerHandler.Object;
 
             await moduleClient.SetIncomingMessageCallbackAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
 
-            await innerHandler.Received().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.EnableReceiveMessageAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
+            innerHandler.Verify(x => x.DisableReceiveMessageAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [TestMethod]
         public async Task ModuleClient_OnReceiveEventMessageCalled_DefaultCallbackCalled()
         {
             using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            moduleClient.InnerHandler = innerHandler.Object;
 
             bool isDefaultCallbackCalled = false;
             await moduleClient
