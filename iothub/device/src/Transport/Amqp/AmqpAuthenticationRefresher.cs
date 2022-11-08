@@ -51,9 +51,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            // Create a linked cancellation token source which can be signaled for cancellation by both the SDK
-            // and the supplied cancellation token.
-            _refresherCancellationTokenSource ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            // InitLoopAsync is not re-entrant, so we can initialize a new cancellation token source for each
+            // instance of AmqpAuthenticationRefresher initialized.
+            // This cancellation token source is disposed when the authentication refresher is disposed.
+            _refresherCancellationTokenSource = new CancellationTokenSource();
 
             if (refreshOn < DateTime.MaxValue)
             {
@@ -85,10 +86,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (Logging.IsEnabled)
-                    Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)}");
+                    Logging.Info(this, refreshesOn, $"{_amqpIotCbsTokenProvider} Before {nameof(RefreshLoopAsync)}");
 
                 if (waitTime > TimeSpan.Zero)
                 {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, refreshesOn, $"{_amqpIotCbsTokenProvider} Waiting {waitTime} {nameof(RefreshLoopAsync)}.");
+
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }
 
@@ -106,17 +110,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                                 cancellationToken)
                             .ConfigureAwait(false);
                     }
-                    catch (IotHubCommunicationException ex)
+                    catch (Exception ex) when (ex is IotHubCommunicationException || ex is OperationCanceledException)
                     {
+                        // In case the token refresh is not successful either due to a communication exception or cancellation token cancellation
+                        // then log the exception and continue.
+                        // This task runs on an unmonitored thread so there is no point throwing these exceptions.
                         if (Logging.IsEnabled)
                         {
-                            Logging.Error(this, refreshesOn, $"Refresh token failed {ex}");
+                            Logging.Error(this, refreshesOn, $"{_amqpIotCbsTokenProvider} Refresh token failed {ex}");
                         }
                     }
                     finally
                     {
                         if (Logging.IsEnabled)
-                            Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
+                            Logging.Info(this, refreshesOn, $"{_amqpIotCbsTokenProvider} After {nameof(RefreshLoopAsync)}");
                     }
 
                     waitTime = refreshesOn - DateTime.UtcNow;
