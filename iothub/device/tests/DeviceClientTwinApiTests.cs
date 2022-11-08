@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
+using Moq;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -20,27 +20,27 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubDeviceClient_SetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var innerHandler = new Mock<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
-            client.InnerHandler = innerHandler;
+            client.InnerHandler = innerHandler.Object;
             Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.EnableTwinPatchAsync(It.IsAny<CancellationToken>()), 
+                Times.Once);
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_DesiredPropertyUpdateCallbackUnsubscribes()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var innerHandler = new Mock<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
-            client.InnerHandler = innerHandler;
+            client.InnerHandler = innerHandler.Object;
             Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
@@ -48,19 +48,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
 
             // assert
-            await innerHandler
-                .Received(1)
-                .DisableTwinPatchAsync(Arg.Any<CancellationToken>())
-                .ConfigureAwait(false);
+            innerHandler
+                .Verify(x => x.DisableTwinPatchAsync(It.IsAny<CancellationToken>()), 
+                Times.Once);
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_SetDesiredPropertyUpdateCallbackAsyncDoesNotRegisterForPatchesAfterFirstCall()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var innerHandler = new Mock<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
-            client.InnerHandler = innerHandler;
+            client.InnerHandler = innerHandler.Object;
             Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
@@ -69,44 +68,44 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.EnableTwinPatchAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_GetTwinAsyncCallsSendTwinGetAsync()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var innerHandler = new Mock<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
-            client.InnerHandler = innerHandler;
+            client.InnerHandler = innerHandler.Object;
 
             // act
             await client.GetTwinPropertiesAsync().ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                GetTwinAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.GetTwinAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_UpdateReportedPropertiesAsyncCallsSendTwinPatchAsync()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var innerHandler = new Mock<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
-            client.InnerHandler = innerHandler;
+            client.InnerHandler = innerHandler.Object;
             var props = new ReportedProperties();
 
             // act
             await client.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                UpdateReportedPropertiesAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.UpdateReportedPropertiesAsync(props, It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [TestMethod]
@@ -114,9 +113,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubDeviceClient_UpdateReportedPropertiesAsyncThrowsIfPatchIsNull()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var innerHandler = new Mock<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
-            client.InnerHandler = innerHandler;
+            client.InnerHandler = innerHandler.Object;
 
             // act and assert
             await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
@@ -126,9 +125,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubDeviceClient_CallbackAsyncIsCalledWhenPatchIsReceived()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var innerHandler = new Mock<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
-            client.InnerHandler = innerHandler;
+            client.InnerHandler = innerHandler.Object;
             var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
