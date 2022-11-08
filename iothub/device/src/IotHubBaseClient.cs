@@ -612,7 +612,7 @@ namespace Microsoft.Azure.Devices.Client
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"User code threw exception: {ex}\nAbandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
+                    Logging.Error(this, $"Abandoning message with message Id: {message.MessageId} because user code threw exception: {ex}.", nameof(OnMessageReceivedAsync));
 
                 return MessageAcknowledgement.Abandon;
             }
