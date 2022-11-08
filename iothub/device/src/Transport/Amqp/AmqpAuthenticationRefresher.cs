@@ -59,7 +59,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled)
                     Logging.Info(this, "_refresherCancellationTokenSource was already initialized, whhich was unexpected. Canceling and disposing the previous instance.", nameof(InitLoopAsync));
 
-                _refresherCancellationTokenSource.Cancel();
+                try
+                {
+                    _refresherCancellationTokenSource.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
                 _refresherCancellationTokenSource.Dispose();
             }
             _refresherCancellationTokenSource = new CancellationTokenSource();
