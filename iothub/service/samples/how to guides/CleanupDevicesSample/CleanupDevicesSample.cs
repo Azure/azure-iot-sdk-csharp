@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Samples
                         && jobTimer.Elapsed < s_maxJobDuration)
                     {
                         importDevicesToBeDeletedJob = await _registryManager.GetJobAsync(importDevicesToBeDeletedJob.JobId);
-                        if (importDevicesToBeDeletedJob.IsFinished)
+                        if (importDevicesToBeDeletedJob.Status == JobStatus.Completed || importDevicesToBeDeletedJob.Status == JobStatus.Failed || importDevicesToBeDeletedJob.Status == JobStatus.Cancelled)
                         {
                             // Job has finished executing.
                             Console.WriteLine($"Job {importDevicesToBeDeletedJob.JobId} is {importDevicesToBeDeletedJob.Status}.");
@@ -168,7 +168,6 @@ namespace Microsoft.Azure.Devices.Samples
                 Console.WriteLine($"Failed to review errors due to [{ex.Message}].");
             }
         }
-
 
         private async Task<int> PrintDeviceCountAsync()
         {
@@ -253,4 +252,3 @@ namespace Microsoft.Azure.Devices.Samples
         }
     }
 }
-
