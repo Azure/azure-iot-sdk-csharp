@@ -81,8 +81,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// This user-supplied callback is "fire-and-forget" and the SDK doesn't wait on it.
-        /// All of requests will be processed as they arrive. Exceptions will be thrown to the users and the SDK won't
-        /// log them internally, so the user is responsible to catch and handle exceptions explicitly within their codes.
+        /// All of requests will be processed as they arrive. Exceptions thrown within the
+        /// callback will be caught and logged by the SDK internally.
         /// </remarks>
         /// <example>
         /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
@@ -202,8 +202,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageCallback">
         /// The callback to be invoked when a cloud-to-device message is received by the client.
         /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
-        /// Exceptions will be thrown to the users and the SDK won't log them internally, so the user is responsible
-        /// to catch and handle exceptions explicitly within their codes.
+        /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
         /// </param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
@@ -258,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="directMethodCallback">
         /// The callback to be invoked when any method is invoked by the cloud service.
         /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
-        /// Exceptions thrown within the callback will be handled and logged by the SDK internally.
+        /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
         /// </param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -345,8 +344,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">
         /// The callback to be invoked when a desired property update is received from the service.
         /// This user-supplied callback is "fire-and-forget" and the SDK doesn't wait on it. All of requests will be processed as they arrive.
-        /// Exceptions will be thrown to the users and the SDK won't log them internally, so the user is responsible
-        /// to catch and handle exceptions explicitly within their codes.
+        /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
         /// </param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -449,6 +447,11 @@ namespace Microsoft.Azure.Devices.Client
                     ConnectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
                 }
             }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"User code threw exception: {ex}", nameof(OnConnectionStatusChanged));
+            }
             finally
             {
                 if (Logging.IsEnabled)
@@ -508,7 +511,15 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Info(this, patch.GetSerializedString(), nameof(OnDesiredStatePatchReceived));
 
-            _ = _desiredPropertyUpdateCallback.Invoke(patch);
+            try
+            {
+                _ = _desiredPropertyUpdateCallback.Invoke(patch);
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"User code threw exception: {ex}", nameof(OnDesiredStatePatchReceived));
+            }
         }
 
         private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
@@ -595,6 +606,13 @@ namespace Microsoft.Azure.Devices.Client
                 // The SDK should only receive messages when the user sets a listener, so this should never happen.
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Received a message when no listener was set. Abandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
+
+                return MessageAcknowledgement.Abandon;
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"User code threw exception: {ex}\nAbandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
 
                 return MessageAcknowledgement.Abandon;
             }
