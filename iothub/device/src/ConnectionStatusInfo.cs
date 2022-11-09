@@ -27,11 +27,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The current connection status of the device or module.
         /// </summary>
+        /// <remarks>
+        /// Before a client is opened, this isinitialized as <see cref="ConnectionStatus.Disconnected"/>.
+        /// </remarks>
         public ConnectionStatus Status { get; }
 
         /// <summary>
         /// The reason for the current connection status change.
         /// </summary>
+        /// <remarks>
+        /// Before a client is opened, this is initialized as <see cref="ConnectionStatusChangeReason.ClientClosed"/>.
+        /// </remarks>
         public ConnectionStatusChangeReason ChangeReason { get; }
 
         /// <summary>
