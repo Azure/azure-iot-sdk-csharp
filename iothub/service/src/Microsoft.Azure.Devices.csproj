@@ -51,7 +51,7 @@
 
   <!--Nuget package dependencies-->
   <ItemGroup>
-    <PackageReference Include="Azure.Core" Version="1.25.0" />
+    <PackageReference Include="Azure.Core" Version="1.26.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
