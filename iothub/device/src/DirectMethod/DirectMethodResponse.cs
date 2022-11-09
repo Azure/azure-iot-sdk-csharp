@@ -50,18 +50,11 @@ namespace Microsoft.Azure.Devices.Client
         [JsonIgnore]
         protected internal PayloadConvention PayloadConvention { get; set; }
 
-        internal string GetPayloadAsString()
+        internal byte[] GetPayloadObjectBytes()
         {
             return Payload == null
                 ? null
-                : PayloadConvention.PayloadSerializer.SerializeToString(Payload);
-        }
-
-        internal byte[] GetPayloadAsBytes()
-        {
-            return Payload == null
-                ? null
-                : PayloadConvention.PayloadEncoder.ContentEncoding.GetBytes(GetPayloadAsString());
+                : PayloadConvention.GetObjectBytes(Payload); ;
         }
     }
 }
