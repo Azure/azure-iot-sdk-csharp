@@ -80,9 +80,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The callback to be executed each time connection status change notification is received.
         /// </summary>
         /// <remarks>
-        /// This user-supplied callback is "fire-and-forget" and the SDK doesn't wait on it.
-        /// All of requests will be processed as they arrive. Exceptions thrown within the
-        /// callback will be caught and logged by the SDK internally.
+        /// All of requests will be processed as they arrive. If you put async code within this
+        /// callback, you'll need to handle exceptions that could originate in there.
         /// </remarks>
         /// <example>
         /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
@@ -198,12 +197,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
         /// A method callback can be unset by setting <paramref name="messageCallback"/> to null.
-        /// </remarks>
-        /// <param name="messageCallback">
-        /// The callback to be invoked when a cloud-to-device message is received by the client.
         /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
         /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
-        /// </param>
+        /// </remarks>
+        /// <param name="messageCallback">The callback to be invoked when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -253,12 +250,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
         /// A method callback can be unset by setting <paramref name="directMethodCallback"/> to null.
-        /// </remarks>
-        /// <param name="directMethodCallback">
-        /// The callback to be invoked when any method is invoked by the cloud service.
         /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
         /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
-        /// </param>
+        /// </remarks>
+        /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDirectMethodCallbackAsync(
@@ -336,16 +331,14 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
+        /// This user-supplied callback is "fire-and-forget" and the SDK doesn't wait on it. All of requests will be processed as they arrive.
+        /// The users are responsible to handle exceptions within their callback implementation.
         /// A method callback can be unset by setting <paramref name="callback"/> to null.
         ///  <para>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
         ///  </para>
         /// </remarks>
-        /// <param name="callback">
-        /// The callback to be invoked when a desired property update is received from the service.
-        /// This user-supplied callback is "fire-and-forget" and the SDK doesn't wait on it. All of requests will be processed as they arrive.
-        /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
-        /// </param>
+        /// <param name="callback">The callback to be invoked when a desired property update is received from the service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
@@ -447,11 +440,6 @@ namespace Microsoft.Azure.Devices.Client
                     ConnectionStatusChangeCallback?.Invoke(ConnectionStatusInfo);
                 }
             }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"User code threw exception: {ex}", nameof(OnConnectionStatusChanged));
-            }
             finally
             {
                 if (Logging.IsEnabled)
@@ -511,15 +499,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Info(this, patch.GetSerializedString(), nameof(OnDesiredStatePatchReceived));
 
-            try
-            {
-                _ = _desiredPropertyUpdateCallback.Invoke(patch);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"User code threw exception: {ex}", nameof(OnDesiredStatePatchReceived));
-            }
+            _ = _desiredPropertyUpdateCallback.Invoke(patch);
         }
 
         private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
