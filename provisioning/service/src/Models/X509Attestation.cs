@@ -77,7 +77,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="primary">The X509Certificate2 with the primary certificate. It cannot be null.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the <paramref name="primary"/> is null.</exception>
-        /// <exception cref="CryptographicException">If the provided <paramref name="primary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the provided <paramref name="primary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromClientCertificates(X509Certificate2 primary)
         {
             Argument.AssertNotNull(primary, nameof(primary));
@@ -96,7 +98,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="secondary">The X509Certificate2 with the secondary certificate. It can be null (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the <paramref name="primary"/> is null.</exception>
-        /// <exception cref="CryptographicException">If the one of the provided <paramref name="primary"/> or <paramref name="secondary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the one of the provided <paramref name="primary"/> or <paramref name="secondary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromClientCertificates(X509Certificate2 primary, X509Certificate2 secondary)
         {
             Argument.AssertNotNull(primary, nameof(primary));
@@ -115,7 +119,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="primary"/> string is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="primary"/> string is empty or white space.</exception>
-        /// <exception cref="CryptographicException">If the provided <paramref name="primary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the provided <paramref name="primary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromClientCertificates(string primary)
         {
             Argument.AssertNotNullOrEmpty(primary, nameof(primary));
@@ -136,7 +142,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="primary"/> string is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="primary"/> string is empty or white space.</exception>
-        /// <exception cref="CryptographicException">If the one of the provided <paramref name="primary"/> or <paramref name="primary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the one of the provided <paramref name="primary"/> or <paramref name="primary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromClientCertificates(string primary, string secondary)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
@@ -155,7 +163,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="primary">The X509Certificate2 with the primary certificate. It cannot be null.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the <paramref name="primary"/> is null.</exception>
-        /// <exception cref="CryptographicException">If the provided <paramref name="primary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the provided <paramref name="primary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromRootCertificates(X509Certificate2 primary)
         {
             Argument.AssertNotNull(primary, nameof(primary));
@@ -175,7 +185,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="secondary">The X509Certificate2 with the secondary certificate. It can be null (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the <paramref name="primary"/> is null.</exception>
-        /// <exception cref="CryptographicException">If the one of the provided <paramref name="primary"/> or <paramref name="secondary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the one of the provided <paramref name="primary"/> or <paramref name="secondary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromRootCertificates(X509Certificate2 primary, X509Certificate2 secondary)
         {
             Argument.AssertNotNull(primary, nameof(primary));
@@ -195,7 +207,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="primary"/> string is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="primary"/> string is empty or white space.</exception>
-        /// <exception cref="CryptographicException">If the provided <paramref name="primary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the provided <paramref name="primary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromRootCertificates(string primary)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
@@ -217,7 +231,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="primary"/> string is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="primary"/> string is empty or white space.</exception>
-        /// <exception cref="CryptographicException">If the one of the provided <paramref name="primary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the one of the provided <paramref name="primary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromRootCertificates(string primary, string secondary)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
@@ -236,7 +252,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="primary"/> string is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="primary"/> string is empty or white space.</exception>
-        /// <exception cref="CryptographicException">If the one of the provided <paramref name="primary"/> or <paramref name="secondary"/> certificate is invalid.</exception>
+        /// <exception cref="ProvisioningServiceException">
+        /// With <see cref="HttpStatusCode.BadRequest"/> if the one of the provided <paramref name="primary"/> or <paramref name="secondary"/> certificate is invalid.
+        /// </exception>
         public static X509Attestation CreateFromCaReferences(string primary, string secondary = default)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
@@ -338,6 +356,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             catch (ArgumentException ex)
             {
                 throw new InvalidOperationException(ex.Message, ex);
+            }
+            catch (CryptographicException ex)
+            {
+                throw new ProvisioningServiceException("The provided certificate is invalid.", HttpStatusCode.BadRequest, ex);
             }
         }
     }

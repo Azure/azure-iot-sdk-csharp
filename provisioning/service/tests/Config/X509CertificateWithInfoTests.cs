@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
@@ -97,10 +99,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // act - assert
 #pragma warning disable CA1806 // Do not ignore method results
             TestAssert.Throws<ArgumentException>(() => new X509CertificateWithInfo(certificateNull));
-            TestAssert.Throws<CryptographicException>(() => new X509CertificateWithInfo(certificateEmpty));
             TestAssert.Throws<ArgumentException>(() => new X509CertificateWithInfo(certificateString));
-            TestAssert.Throws<CryptographicException>(() => new X509CertificateWithInfo(certificateStringEmpty));
-            TestAssert.Throws<CryptographicException>(() => new X509CertificateWithInfo(certificateStringInvalid));
+
+            Action act1 = () => new X509CertificateWithInfo(certificateEmpty);
+            var error1 = act1.Should().Throw<ProvisioningServiceException>();
+            error1.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error1.And.IsTransient.Should().BeFalse();
+
+            Action act2 = () => new X509CertificateWithInfo(certificateStringEmpty);
+            var error2 = act2.Should().Throw<ProvisioningServiceException>();
+            error2.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error2.And.IsTransient.Should().BeFalse();
+
+            Action act3 = () => new X509CertificateWithInfo(certificateStringInvalid);
+            var error3 = act3.Should().Throw<ProvisioningServiceException>();
+            error3.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error3.And.IsTransient.Should().BeFalse();
 #pragma warning restore CA1806 // Do not ignore method results
         }
 

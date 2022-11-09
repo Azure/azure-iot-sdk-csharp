@@ -57,6 +57,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
+        public void X509AttestationCreateFromClientCertificatesThrowsOnInvalidPrimaryCertificate()
+        {
+            // arrange
+            string primaryStr =
+                "-----BEGIN CERTIFICATE-----\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxx\n" +
+                "-----END CERTIFICATE-----\n";
+            string secondaryStr = null;
+
+            // act - assert
+            Action act1 = () => X509Attestation.CreateFromClientCertificates(primaryStr);
+            var error1 = act1.Should().Throw<ProvisioningServiceException>();
+            error1.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error1.And.IsTransient.Should().BeFalse();
+
+            Action act2 = () => X509Attestation.CreateFromClientCertificates(primaryStr, secondaryStr);
+            var error2 = act2.Should().Throw<ProvisioningServiceException>();
+            error2.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error2.And.IsTransient.Should().BeFalse();
+        }
+
+        [TestMethod]
         public void X509AttestationCreateFromRootCertificatesThrowsOnNullPrimaryCertificate()
         {
             // arrange
@@ -70,6 +100,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryCert, secondaryCert));
             TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryStr));
             TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryStr, secondaryStr));
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromRootCertificatesThrowsOnInvalidPrimaryCertificate()
+        {
+            // arrange
+            string primaryStr =
+                "-----BEGIN CERTIFICATE-----\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
+                "xxxxxxxxxxxxxxxx\n" +
+                "-----END CERTIFICATE-----\n";
+            string secondaryStr = null;
+
+            // act - assert
+            Action act1 = () => X509Attestation.CreateFromRootCertificates(primaryStr);
+            var error1 = act1.Should().Throw<ProvisioningServiceException>();
+            error1.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error1.And.IsTransient.Should().BeFalse();
+
+            Action act2 = () => X509Attestation.CreateFromRootCertificates(primaryStr, secondaryStr);
+            var error2 = act2.Should().Throw<ProvisioningServiceException>();
+            error2.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error2.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]

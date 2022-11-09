@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
 
@@ -56,18 +58,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     {
         internal X509CertificateWithInfo(X509Certificate2 certificate)
         {
-            ValidateCertificate(certificate);
+            try
+            {
+                ValidateCertificate(certificate);
 
-            Certificate = Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
-            Info = null;
+                Certificate = Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
+                Info = null;
+            }
+            catch (CryptographicException ex)
+            {
+                throw new ProvisioningServiceException("The provided certificate is invalid.", HttpStatusCode.BadRequest, ex);
+            }
         }
 
         internal X509CertificateWithInfo(string certificate)
         {
-            ValidateCertificate(certificate);
+            try
+            {
+                ValidateCertificate(certificate);
 
-            Certificate = certificate;
-            Info = null;
+                Certificate = certificate;
+                Info = null;
+            }
+            catch (CryptographicException ex)
+            {
+                throw new ProvisioningServiceException("The provided certificate is invalid.", HttpStatusCode.BadRequest, ex);
+            }
         }
 
         [JsonConstructor]
