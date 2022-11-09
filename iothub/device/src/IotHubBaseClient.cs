@@ -76,6 +76,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The callback to be executed each time connection status change notification is received.
         /// </summary>
+        /// <remarks>
+        /// All of requests will be processed as they arrive. If you put async code within this
+        /// callback, you'll need to handle exceptions that could originate in there.
+        /// </remarks>
         /// <example>
         /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
         /// //...
@@ -187,6 +191,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
         /// A method callback can be unset by setting <paramref name="messageCallback"/> to null.
+        /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
+        /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
         /// </remarks>
         /// <param name="messageCallback">The callback to be invoked when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -238,6 +244,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
         /// A method callback can be unset by setting <paramref name="directMethodCallback"/> to null.
+        /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
+        /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
         /// </remarks>
         /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -317,6 +325,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
+        /// This user-supplied callback is "fire-and-forget" and the SDK doesn't wait on it. All of requests will be processed as they arrive.
+        /// The users are responsible to handle exceptions within their callback implementation.
         /// A method callback can be unset by setting <paramref name="callback"/> to null.
         ///  <para>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
@@ -570,6 +580,13 @@ namespace Microsoft.Azure.Devices.Client
                 // The SDK should only receive messages when the user sets a listener, so this should never happen.
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Received a message when no listener was set. Abandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
+
+                return MessageAcknowledgement.Abandon;
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Abandoning message with message Id: {message.MessageId} because user code threw exception: {ex}.", nameof(OnMessageReceivedAsync));
 
                 return MessageAcknowledgement.Abandon;
             }

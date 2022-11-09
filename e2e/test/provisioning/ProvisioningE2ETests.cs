@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private const int MaxTryCount = 10;
         private const string InvalidIdScope = "0neFFFFFFFF";
         private const string PayloadJsonData = "{\"testKey\":\"testValue\"}";
-        private const string InvalidGlobalAddress = "httpbin.org";
+        private const string InvalidGlobalAddress = "HopefullyAnEndpointThatDoesNotExist.azure-devices-provisioning.net";
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
@@ -817,7 +817,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     auth,
                     clientOptions);
 
-                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+                // Needs enough time for the transport to timeout
+                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
                 VerboseTestLogger.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
 

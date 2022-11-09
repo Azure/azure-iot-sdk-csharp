@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
 
-                        var response = new Client.DirectMethodResponse(500);
+                        var response = new DirectMethodResponse(500);
 
                         return Task.FromResult(response);
                     }

@@ -147,10 +147,10 @@ Function BuildPackage($path, $message)
 
     $projectPath = Join-Path $rootDir $path
     $projectName = (Get-ChildItem (Join-Path $projectPath *.csproj))[0].BaseName
+    Set-Location $projectPath
 
     if ($sign)
     {
-        Set-Location $projectPath
         Write-Host -ForegroundColor Magenta "`tSigning binaries for: $projectName"
         $filesToSign = Get-ChildItem -Path "$projectPath\bin\$configuration\*\$projectName.dll" -Recurse
         SignDotNetBinary $filesToSign
@@ -325,7 +325,6 @@ try
 
     if ($package)
     {
-        BuildPackage authentication\src "Device Authentication Providers"
         BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
         BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
         BuildPackage provisioning\device\src "Provisioning Device Client SDK"
