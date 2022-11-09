@@ -56,6 +56,7 @@ namespace Microsoft.Azure.Devices
         /// Must not be null.
         /// </remarks>
         /// <example>
+        /// <code language="csharp">
         /// serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
         /// serviceClient.FileUploadNotificationProcessor.OpenAsync();
         ///
@@ -66,6 +67,7 @@ namespace Microsoft.Azure.Devices
         ///    Console.WriteLine($"Received file upload notification from device {fileUploadNotification.DeviceId}")
         ///    return AcknowledgementType.Complete;
         /// }
+        /// </code>
         /// </example>
         public Func<FileUploadNotification, AcknowledgementType> FileUploadNotificationProcessor { get; set; }
 
@@ -73,6 +75,7 @@ namespace Microsoft.Azure.Devices
         /// The callback to be executed when the connection is lost.
         /// </summary>
         /// <example>
+        /// <code language="csharp">
         /// serviceClient.FileUploadNotificationProcessor.ErrorProcessor = OnConnectionLost;
         /// serviceClient.FileUploadNotificationProcessor.OpenAsync();
         ///
@@ -83,6 +86,7 @@ namespace Microsoft.Azure.Devices
         ///    // Add reconnection logic as needed
         ///    Console.WriteLine("File upload notification processor connection lost")
         /// }
+        /// </code>
         /// </example>
         public Action<ErrorContext> ErrorProcessor { get; set; }
 

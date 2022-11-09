@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region AmqpMessage <--> Message
 
-        public static IncomingMessage AmqpMessageToIncomingMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
+        internal static IncomingMessage AmqpMessageToIncomingMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
         {
             Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        public static AmqpMessage OutgoingMessageToAmqpMessage(TelemetryMessage message)
+        internal static AmqpMessage OutgoingMessageToAmqpMessage(TelemetryMessage message)
         {
             Argument.AssertNotNull(message, nameof(message));
 
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the properties from the AMQP message to the Message instance.
         /// </summary>
-        public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, IncomingMessage message)
+        internal static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, IncomingMessage message)
         {
             if (amqpMessage.DeliveryTag == null)
             {
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the Message instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, TelemetryMessage data, bool copyUserProperties = true)
+        internal static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, TelemetryMessage data, bool copyUserProperties = true)
         {
             amqpMessage.Properties.MessageId = data.MessageId;
 
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region AmqpMessage <--> Methods
 
-        public static AmqpMessage ConvertDirectMethodResponseToAmqpMessage(DirectMethodResponse directMethodResponse)
+        internal static AmqpMessage ConvertDirectMethodResponseToAmqpMessage(DirectMethodResponse directMethodResponse)
         {
             AmqpMessage amqpMessage = directMethodResponse.Payload == null
                 ? AmqpMessage.Create()
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
-        public static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
+        internal static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
         {
             Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the Method instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, DirectMethodResponse DirectMethodResponse)
+        internal static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, DirectMethodResponse DirectMethodResponse)
         {
             Debug.Assert(DirectMethodResponse.RequestId != null, "Request Id is missing in the methodResponse.");
 

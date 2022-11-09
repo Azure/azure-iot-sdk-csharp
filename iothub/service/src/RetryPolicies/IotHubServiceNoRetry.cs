@@ -22,13 +22,7 @@ namespace Microsoft.Azure.Devices
                     nameof(IotHubServiceNoRetry));
         }
 
-        /// <summary>
-        /// A policy to never retry
-        /// </summary>
-        /// <param name="currentRetryCount">The current retry count.</param>
-        /// <param name="lastException">The last exception.</param>
-        /// <param name="retryInterval">The retry interval.</param>
-        /// <returns>Whether or not to retry</returns>
+        /// <inheritdoc/>
         public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
             retryInterval = TimeSpan.Zero;

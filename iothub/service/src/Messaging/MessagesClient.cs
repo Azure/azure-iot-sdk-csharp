@@ -64,6 +64,7 @@ namespace Microsoft.Azure.Devices
         /// The callback to be executed when the connection is lost.
         /// </summary>
         /// <example>
+        /// <code language="csharp">
         /// serviceClient.Messaging.ErrorProcessor = OnConnectionLost;
         /// serviceClient.Messaging.OpenAsync();
         ///
@@ -74,6 +75,7 @@ namespace Microsoft.Azure.Devices
         ///    // Add reconnection logic as needed
         ///    Console.WriteLine("Messaging client connection lost")
         /// }
+        /// </code>
         /// </example>
         public Action<ErrorContext> ErrorProcessor { get; set; }
 

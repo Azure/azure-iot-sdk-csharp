@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
         /// of the first page of results.
         /// </remarks>
         /// <example>
-        /// <c>
+        /// <code language="csharp">
         /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
         /// // This call will use the previous continuation token for you when it comes time to get the
         /// // next page of results.
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         ///     Twin queriedTwin = queriedTwins.Current;
         ///     Console.WriteLine(queriedTwin);
         /// }
-        /// </c>
+        /// </code>
         /// </example>
         public string ContinuationToken { get; set; }
 

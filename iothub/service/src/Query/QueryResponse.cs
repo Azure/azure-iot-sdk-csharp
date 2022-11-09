@@ -81,14 +81,14 @@ namespace Microsoft.Azure.Devices
         /// rather than page by page.
         /// </remarks>
         /// <example>
-        /// <c>
+        /// <code language="csharp">
         /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
         /// while (await queriedTwins.MoveNextAsync())
         /// {
         ///     Twin queriedTwin = queriedTwins.Current;
         ///     Console.WriteLine(queriedTwin);
         /// }
-        /// </c>
+        /// </code>
         /// </example>
         public IEnumerable<T> CurrentPage { get; internal set; }
 
@@ -100,14 +100,14 @@ namespace Microsoft.Azure.Devices
         /// <see cref="MoveNextAsync(QueryOptions, CancellationToken)"/> call is made.
         /// </remarks>
         /// <example>
-        /// <c>
+        /// <code language="csharp">
         /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
         /// while (await queriedTwins.MoveNextAsync()) // no item is skipped by calling this first
         /// {
         ///     Twin queriedTwin = queriedTwins.Current;
         ///     Console.WriteLine(queriedTwin);
         /// }
-        /// </c>
+        /// </code>
         /// </example>
         public T Current { get; private set; }
 
@@ -127,14 +127,14 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
-        /// <c>
+        /// <code language="csharp">
         /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
         /// while (await queriedTwins.MoveNextAsync())
         /// {
         ///     Twin queriedTwin = queriedTwins.Current;
         ///     Console.WriteLine(queriedTwin);
         /// }
-        /// </c>
+        /// </code>
         /// </example>
         /// <remarks>
         /// Like with a more typical implementation of IEnumerator, this function should be called once before checking

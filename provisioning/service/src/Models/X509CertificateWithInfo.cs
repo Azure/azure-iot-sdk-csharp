@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// The following JSON is an example of the result of this class.
-    /// <code>
+    /// <code language="json">
     ///  {
     ///      "certificate": "-----BEGIN CERTIFICATE-----\n" +
     ///                     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n" +
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// User can get this info from this class,
     ///
     /// The following JSON is an example what info the provisioning service will return for X509.
-    /// <code>
+    /// <code language="json">
     ///  {
     ///      "info": {
     ///           "subjectName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",

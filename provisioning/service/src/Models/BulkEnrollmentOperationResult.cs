@@ -19,19 +19,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     ///  The following JSON is an example of the result from a bulk operation.
-    /// <code>
+    /// <code language="json">
     /// {
-    ///     "isSuccessful":true,
+    ///     "isSuccessful": true,
     ///     "errors": [
     ///         {
-    ///             "registrationId":"validRegistrationId1",
-    ///             "errorCode":200,
-    ///             "errorStatus":"Succeeded"
+    ///             "registrationId": "validRegistrationId1",
+    ///             "errorCode": 200,
+    ///             "errorStatus": "Succeeded"
     ///         },
     ///         {
-    ///             "registrationId":"validRegistrationId2",
-    ///             "errorCode":200,
-    ///             "errorStatus":"Succeeded"
+    ///             "registrationId": "validRegistrationId2",
+    ///             "errorCode": 200,
+    ///             "errorStatus": "Succeeded"
     ///         }
     ///     ]
     /// }

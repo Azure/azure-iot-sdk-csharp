@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure that represents the message that is received from Iot hub.
+    /// The data structure that represents the message that is received from IoT hub.
     /// </summary>
     public class IncomingMessage
     {
@@ -26,11 +26,13 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// An identifier for the message used for request-reply patterns.
-        /// Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars
-        /// + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
-        /// Non-alphanumeric characters are from URN RFC.
+        /// An identifier for the message useful for avoiding reprocessing the same message again.
         /// </summary>
+        /// <remarks>
+        /// Format: A case-sensitive string (up to 128 char long) of ASCII 7-bit alphanumeric chars
+        /// plus these non-alphanumeric characters:
+        /// { '-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', ''' }.
+        /// </remarks>
         public string MessageId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId);
@@ -38,7 +40,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// A string property that typically contains the MessageId of the request, in request-reply patterns.
+        /// A string property of the request useful for tracking specific messages across device
+        /// clients, Edge modules, and service clients.
         /// </summary>
         public string CorrelationId
         {
@@ -47,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// A number (unique per device-queue) assigned by IoT Hub to each cloud-to-device message.
+        /// A number (unique per device-queue) assigned by IoT hub to each cloud-to-device message.
         /// </summary>
         public ulong SequenceNumber
         {

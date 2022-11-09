@@ -35,19 +35,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// When serialized, an EnrollmentGroup will look like the following example:
-    /// <code>
+    /// <code language="json">
     /// {
-    ///    "enrollmentGroupId":"validEnrollmentGroupId",
-    ///    "attestation":{
-    ///        "type":"x509",
-    ///        "signingCertificates":{
-    ///            "primary":{
-    ///                "certificate":"[valid certificate]"
+    ///    "enrollmentGroupId": "validEnrollmentGroupId",
+    ///    "attestation": {
+    ///        "type": "x509",
+    ///        "signingCertificates": {
+    ///            "primary": {
+    ///                "certificate": "[valid certificate]"
     ///            }
     ///        }
     ///    },
-    ///    "iotHubHostName":"ContosoIoTHub.azure-devices.net",
-    ///    "provisioningStatus":"enabled"
+    ///    "iotHubHostName": "ContosoIoTHub.azure-devices.net",
+    ///    "provisioningStatus": "enabled"
     /// }
     /// </code>
     ///
@@ -96,14 +96,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <example>
         /// When serialized, an EnrollmentGroup will look like the following example:
-        /// <code>
+        /// <code language="json">
         /// {
-        ///     "enrollmentGroupId":"validEnrollmentGroupId",
-        ///     "attestation":{
-        ///         "type":"x509",
-        ///         "signingCertificates":{
-        ///             "primary":{
-        ///                 "certificate":"[valid certificate]"
+        ///     "enrollmentGroupId": "validEnrollmentGroupId",
+        ///     "attestation": {
+        ///         "type": "x509",
+        ///         "signingCertificates": {
+        ///             "primary": {
+        ///                 "certificate": "[valid certificate]"
         ///             }
         ///         }
         ///     }
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </code>
         /// </example>
         /// <param name="enrollmentGroupId">The string that uniquely identify this enrollmentGroup in the provisioning
-        ///     service. It cannot be null or empty.</param>
+        /// service. It cannot be null or empty.</param>
         /// <param name="attestation">The <see cref="Attestation"/> object with the attestation mechanism.</param>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>

@@ -26,23 +26,23 @@ namespace Microsoft.Azure.Devices.Client
         /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSharedAccessKeyRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>,
         /// <see cref="ClientAuthenticationWithX509Certificate"/> or <see cref="EdgeModuleAuthenticationWithHsm"/>.
         /// </param>
-        /// <param name="iotHubHostName">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway (optional).</param>
         /// <returns>A new instance of the <c>IotHubConnectionCredentials</c> class with a populated connection string.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="iotHubHostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
-        /// <exception cref="ArgumentException"><paramref name="iotHubHostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="hostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
         /// <exception cref="FormatException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
-        public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string iotHubHostName, string gatewayHostName = null)
+        /// <exception cref="IotHubClientException">When <see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
+        public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string hostName, string gatewayHostName = null)
         {
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
-            Argument.AssertNotNullOrWhiteSpace(iotHubHostName, nameof(iotHubHostName));
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
 
-            IotHubHostName = iotHubHostName;
+            IotHubHostName = hostName;
             GatewayHostName = gatewayHostName;
-            HostName = gatewayHostName ?? iotHubHostName;
+            HostName = gatewayHostName ?? hostName;
 
             AuthenticationMethod = authenticationMethod;
             IotHubConnectionCredentials iotHubConnectionCredentials = this;

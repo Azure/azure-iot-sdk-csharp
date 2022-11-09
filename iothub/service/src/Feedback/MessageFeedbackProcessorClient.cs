@@ -58,6 +58,7 @@ namespace Microsoft.Azure.Devices
         /// Must not be null.
         /// </remarks>
         /// <example>
+        /// <code language="csharp">
         /// serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = OnFeedbackReceived;
         /// serviceClient.MessageFeedbackProcessor.OpenAsync();
         ///
@@ -72,6 +73,7 @@ namespace Microsoft.Azure.Devices
         ///
         ///    return AcknowledgementType.Complete;
         /// }
+        /// </code>
         /// </example>
         public Func<FeedbackBatch, AcknowledgementType> MessageFeedbackProcessor { get; set; }
 
@@ -79,6 +81,7 @@ namespace Microsoft.Azure.Devices
         /// The callback to be executed when the connection is lost.
         /// </summary>
         /// <example>
+        /// <code language="csharp">
         /// serviceClient.MessageFeedbackProcessor.ErrorProcessor = OnConnectionLost;
         /// serviceClient.MessageFeedbackProcessor.OpenAsync();
         ///
@@ -89,6 +92,7 @@ namespace Microsoft.Azure.Devices
         ///    // Add reconnection logic as needed
         ///    Console.WriteLine("Feedback message processor connection lost")
         /// }
+        /// </code>
         /// </example>
         public Action<ErrorContext> ErrorProcessor { get; set; }
 
