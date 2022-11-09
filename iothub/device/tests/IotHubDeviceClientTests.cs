@@ -267,8 +267,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             // assert
-            innerHandler
-                .Verify(x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
         }
 
         [TestMethod]
@@ -290,7 +291,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(null).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()), Times.Never);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.Never);
             isMethodHandlerCalled.Should().BeFalse();
         }
 
@@ -319,7 +322,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
         }
 
@@ -349,7 +354,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
         }
 
@@ -385,7 +392,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(payload);
@@ -423,7 +432,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().Be(boolean);
@@ -461,7 +472,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(bytes);
@@ -499,7 +512,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(list);
@@ -537,7 +552,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(map);
@@ -572,7 +589,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
         }
 
@@ -597,7 +616,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()), Times.Never);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         [TestMethod]
@@ -635,7 +656,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()), 
+                Times.AtLeastOnce);
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
             methodBody.Should().BeEquivalentTo(actualMethodBody);
@@ -665,7 +688,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             methodCallbackCalled2.Should().BeTrue();
             methodName.Should().Be(actualMethodName2);
             methodBody2.Should().BeEquivalentTo(actualMethodBody2);
@@ -706,7 +731,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
 
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
@@ -726,7 +753,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            innerHandler.Verify(x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()));
+            innerHandler.Verify(
+                x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             methodCallbackCalled.Should().BeFalse();
         }
 
@@ -740,7 +769,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler.Object;
 
             await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
-            innerHandler.Verify(x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()), Times.Never);
+            innerHandler.Verify(
+                x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         [TestMethod]
@@ -850,7 +881,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
-            innerHandler.Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(0));
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler.Object;
 
             // act
@@ -879,7 +912,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = new Mock<IDelegatingHandler>();
-            innerHandler.Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(0));
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler.Object;
 
             // act
@@ -908,7 +943,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = new Mock<IDelegatingHandler>();
-            innerHandler.Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(0));
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler.Object;
 
             // act
@@ -933,7 +970,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
-            innerHandler.Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(0));
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler.Object;
 
             // act
@@ -962,7 +1001,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = new Mock<IDelegatingHandler>();
-            innerHandler.Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(0));
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler.Object;
 
             // act
@@ -991,7 +1032,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
             var innerHandler = new Mock<IDelegatingHandler>();
-            innerHandler.Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(0));
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
             deviceClient.InnerHandler = innerHandler.Object;
 
             // act
@@ -1146,7 +1189,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             mainProtocolHandler
                 .When(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
                 .Invoking(x => { throw new OperationCanceledException(); });
-            
+
             ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
 
             deviceClient.InnerHandler = errorHandler;

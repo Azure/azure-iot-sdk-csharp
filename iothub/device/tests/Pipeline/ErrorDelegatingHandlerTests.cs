@@ -162,14 +162,16 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var message = new TelemetryMessage(new byte[0]);
             bool[] setup = { false };
-            innerHandler.Setup(x => x.SendTelemetryAsync(message, It.IsAny<CancellationToken>())).Returns(() =>
-            {
-                if (setup[0])
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(message, It.IsAny<CancellationToken>()))
+                .Returns(() =>
                 {
-                    return Task.CompletedTask;
-                }
-                throw s_exceptionFactory[thrownExceptionType]();
-            });
+                    if (setup[0])
+                    {
+                        return Task.CompletedTask;
+                    }
+                    throw s_exceptionFactory[thrownExceptionType]();
+                });
 
             //act and assert
             Func<Task> telemetry = () => sut.SendTelemetryAsync(message, CancellationToken.None);
@@ -201,14 +203,16 @@ namespace Microsoft.Azure.Devices.Client.Test
             //set initial operation result that throws
 
             bool[] setup = { false };
-            innerHandler.Setup(x => x.OpenAsync(It.IsAny<CancellationToken>())).Returns(() =>
-            {
-                if (setup[0])
+            innerHandler
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() =>
                 {
-                    return Task.FromResult(Guid.NewGuid());
-                }
-                throw s_exceptionFactory[thrownExceptionType]();
-            });
+                    if (setup[0])
+                    {
+                        return Task.FromResult(Guid.NewGuid());
+                    }
+                    throw s_exceptionFactory[thrownExceptionType]();
+                });
 
             //act
             Func<Task> open = () => sut.OpenAsync(CancellationToken.None);
