@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         public DateTimeOffset StatusLastChangedOnUtc { get; }
 
         /// <summary>
-        /// Recommended actions for users to take upon different connectio status and change reasons.
+        /// Recommended actions for users to take upon different connection status and change reasons.
         /// </summary>
         public RecommendedAction RecommendedAction { get; }
 

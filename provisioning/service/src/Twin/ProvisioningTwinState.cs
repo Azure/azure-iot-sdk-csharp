@@ -66,8 +66,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="tags">The twin collection with the initial tags state. It can be null.</param>
         /// <param name="desiredProperties">The twin collection with the initial desired properties. It can be null.</param>
         /// <example>
-        /// When serialized, this class will looks like the following example:
-        /// <code language="csharp">
+        /// When serialized, this class will look like:
+        /// <code language="json">
         /// {
         ///     "initialTwin": {
         ///         "tags": {
