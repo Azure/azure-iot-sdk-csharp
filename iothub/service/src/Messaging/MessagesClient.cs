@@ -303,8 +303,6 @@ namespace Microsoft.Azure.Devices
         /// For example, if the provided request was throttled, <see cref="IotHubServiceException"/> wit.
         /// <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
-        /// <exception cref="HttpRequestException">If the HTTP request fails due to an underlying issue such as network connectivity,
-        /// DNS failure, or server certificate validation.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken = default)
         {
@@ -337,6 +335,10 @@ namespace Microsoft.Azure.Devices
 
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<PurgeMessageQueueResult>(response).ConfigureAwait(false);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
             {

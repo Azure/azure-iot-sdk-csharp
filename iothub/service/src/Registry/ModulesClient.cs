@@ -60,10 +60,6 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Module> CreateAsync(Module module, CancellationToken cancellationToken = default)
         {
@@ -90,6 +86,10 @@ namespace Microsoft.Azure.Devices
 
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
             {
@@ -118,10 +118,6 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Module> GetAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
@@ -149,6 +145,10 @@ namespace Microsoft.Azure.Devices
 
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
             {
@@ -181,10 +181,6 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Module> SetAsync(Module module, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
@@ -213,6 +209,10 @@ namespace Microsoft.Azure.Devices
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
             }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
+            }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
@@ -238,10 +238,6 @@ namespace Microsoft.Azure.Devices
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
@@ -275,10 +271,6 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(Module module, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
@@ -305,6 +297,10 @@ namespace Microsoft.Azure.Devices
                     .ConfigureAwait(false);
 
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
             {

@@ -36,10 +36,6 @@ namespace Microsoft.Azure.Devices
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled.
         /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
         internal static HttpContent SerializePayload(object payload)
         {
             Debug.Assert(payload != null, "Upstream caller should have validated the payload.");

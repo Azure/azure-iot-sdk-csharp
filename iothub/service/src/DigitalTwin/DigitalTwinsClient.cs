@@ -69,10 +69,6 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<DigitalTwinGetResponse<T>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
         {
@@ -101,6 +97,10 @@ namespace Microsoft.Azure.Devices
                 T digitalTwin = await HttpMessageHelper.DeserializeResponseAsync<T>(response).ConfigureAwait(false);
                 ETag etag = new ETag(response.Headers.GetValues("ETag").FirstOrDefault());
                 return new DigitalTwinGetResponse<T>(digitalTwin, etag);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
             {
@@ -135,10 +135,6 @@ namespace Microsoft.Azure.Devices
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         /// <example>
@@ -196,6 +192,10 @@ namespace Microsoft.Azure.Devices
 
                 return updateResponse;
             }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
+            }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
@@ -223,10 +223,6 @@ namespace Microsoft.Azure.Devices
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<InvokeDigitalTwinCommandResponse> InvokeCommandAsync(
@@ -278,6 +274,10 @@ namespace Microsoft.Azure.Devices
                     RequestId = requestId,
                 };
             }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
+            }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
@@ -306,10 +306,6 @@ namespace Microsoft.Azure.Devices
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<InvokeDigitalTwinCommandResponse> InvokeComponentCommandAsync(
@@ -362,6 +358,10 @@ namespace Microsoft.Azure.Devices
                     Status = responseStatusCode,
                     RequestId = requestId,
                 };
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
             {

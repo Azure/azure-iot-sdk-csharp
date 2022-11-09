@@ -72,10 +72,6 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
         /// <example>
@@ -139,6 +135,10 @@ namespace Microsoft.Azure.Devices
                 var page = new QueriedPage<T>(response, responsePayload);
                 return new QueryResponse<T>(this, query, page.Items, page.ContinuationToken, options?.PageSize);
             }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
+            }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
@@ -162,10 +162,6 @@ namespace Microsoft.Azure.Devices
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
@@ -219,6 +215,10 @@ namespace Microsoft.Azure.Devices
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var page = new QueriedPage<ScheduledJob>(response, responsePayload);
                 return new QueryResponse<ScheduledJob>(this, options?.JobType, options?.JobStatus, page.Items, page.ContinuationToken, options?.PageSize);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
             {
