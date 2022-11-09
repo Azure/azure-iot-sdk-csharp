@@ -11,8 +11,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public interface IProvisioningClientRetryPolicy
     {
         /// <summary>
-        /// Method called by the client prior to a retry.
-        /// <summary>
         /// Method called by the client when an operation fails to determine if a retry should be attempted,
         /// and how long to wait until retrying the operation.
         /// </summary>
