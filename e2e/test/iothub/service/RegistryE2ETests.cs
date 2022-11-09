@@ -5,11 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
@@ -34,7 +35,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [ExpectedException(typeof(HttpRequestException))]
         public async Task DevicesClient_BadProxy_ThrowsException()
         {
             // arrange
@@ -46,7 +46,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 });
 
             // act
-            _ = await serviceClient.Devices.GetAsync("device-that-does-not-exist").ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Devices.GetAsync("device-that-does-not-exist").ConfigureAwait(false);
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.Unknown);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
