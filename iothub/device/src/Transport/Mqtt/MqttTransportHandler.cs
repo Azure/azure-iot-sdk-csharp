@@ -430,7 +430,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             string topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
-            byte[] serializedPayload = methodResponse.GetPayloadAsBytes();
+            byte[] serializedPayload = methodResponse.GetPayloadObjectBytes();
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(serializedPayload)
