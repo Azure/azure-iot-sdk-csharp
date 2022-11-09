@@ -79,22 +79,24 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
         /// <example>
-        /// <c>
+        /// Iterate twins:
+        /// <code language="csharp">
         /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
         /// while (await queriedTwins.MoveNextAsync())
         /// {
         ///     Twin queriedTwin = queriedTwins.Current;
         ///     Console.WriteLine(queriedTwin);
         /// }
-        /// </c>
-        /// <c>
+        /// </code>
+        /// Or scheduled jobs:
+        /// <code language="csharp">
         /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateAsync&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
         /// while (await queriedJobs.MoveNextAsync())
         /// {
         ///     ScheduledJob queriedJob = queriedJobs.Current;
         ///     Console.WriteLine(queriedJob);
         /// }
-        /// </c>
+        /// </code>
         /// </example>
         public virtual async Task<QueryResponse<T>> CreateAsync<T>(string query, QueryOptions options = default, CancellationToken cancellationToken = default)
         {
@@ -169,13 +171,13 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
-        /// <c>
+        /// <code language="csharp">
         /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateJobsQueryAsync();
         /// while (await queriedJobs.MoveNextAsync())
         /// {
         ///     Console.WriteLine(queriedJobs.Current.JobId);
         /// }
-        /// </c>
+        /// </code>
         /// </example>
 
         public virtual async Task<QueryResponse<ScheduledJob>> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)

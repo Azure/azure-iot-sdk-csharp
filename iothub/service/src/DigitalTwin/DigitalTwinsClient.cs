@@ -142,6 +142,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         /// <example>
+        /// <code language="csharp">
         /// string propertyName = "targetTemperature";
         /// int propertyValue = 12;
         /// var propertyValues = new Dictionary&lt;string, object&gt; { { propertyName, propertyValue } };
@@ -149,6 +150,7 @@ namespace Microsoft.Azure.Devices
         /// patchDocument.AppendAdd("/myComponentName", propertyValues);
         /// string jsonPatch = patchDocument.ToString();
         /// DigitalTwinUpdateResponse updateResponse = await serviceClient.DigitalTwins.UpdateAsync(deviceId, jsonPatch);
+        /// </code>
         /// </example>
         public virtual async Task<DigitalTwinUpdateResponse> UpdateAsync(
             string digitalTwinId,

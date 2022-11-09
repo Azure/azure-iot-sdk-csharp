@@ -31,11 +31,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>.
         /// The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
-        /// <c>
+        /// <code language="csharp">
         /// ProvisioningDeviceClient GetProvisioningDeviceClient()
         /// {
         ///     var proxy = new WebProxy("localhost", "8888");
-        ///     var mqttSettings = new ProvisioningClientMqttSettings()
+        ///     var mqttSettings = new ProvisioningClientMqttSettings
         ///     {
         ///         Proxy = proxy
         ///     };
@@ -43,12 +43,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         ///     var optionsWithProxy = new ProvisioningClientOptions(mqttSettings);
         ///
         ///     return new ProvisioningDeviceClient(
-        ///         "global endpoint",
+        ///         "the global endpoint",
         ///         "your id scope",
         ///         securityProvider,
         ///         optionsWithProxy);
         /// }
-        /// </c>
+        /// </code>
         /// </example>
         public IWebProxy Proxy { get; set; }
 

@@ -49,13 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         internal protected bool UseJitter { get; }
 
-        /// <summary>
-        /// Returns true if, based on the parameters, the operation should be retried.
-        /// </summary>
-        /// <param name="currentRetryCount">How many times the operation has been retried.</param>
-        /// <param name="lastException">Operation exception.</param>
-        /// <param name="retryInterval">Next retry should be performed after this time interval.</param>
-        /// <returns>True if the operation should be retried, false otherwise.</returns>
+        /// <inheritdoc/>
         public override bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
             if (!base.ShouldRetry(currentRetryCount, lastException, out retryInterval))

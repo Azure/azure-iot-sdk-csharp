@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// The following JSON is an example of the result of this class.
-    /// <code>
+    /// <code language="json">
     /// {
     ///     "primary": "ValidCAReference-1",
     ///     "secondary": "validCAReference-2"

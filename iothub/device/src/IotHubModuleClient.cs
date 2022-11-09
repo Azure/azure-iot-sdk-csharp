@@ -21,7 +21,7 @@ using Microsoft.Azure.Devices.Client.Transport;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
+    /// A client for a device or Edge module.
     /// </summary>
     public class IotHubModuleClient : IotHubBaseClient
     {
@@ -32,15 +32,14 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
 
         /// <summary>
-        /// Creates a disposable <c>IotHubModuleClient</c> from the specified connection string.
+        /// Creates a disposable client from the specified connection string.
         /// </summary>
         /// <param name="connectionString">The connection string based on shared access key used in API calls which allows the module to communicate with IoT Hub.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable client instance.</returns>
-        /// <exception cref="ArgumentNullException">Either <paramref name="connectionString"/> is null,
-        /// or the IoT hub host name, device Id or module Id in the connection string is null.</exception>
-        /// <exception cref="ArgumentException">Either <paramref name="connectionString"/> is an empty string or consists only of white-space characters,
-        /// or the IoT hub host name, device Id or module Id in the connection string are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="connectionString"/> is null.</exception>
+        /// <exception cref="ArgumentException">When <paramref name="connectionString"/> is empty or white-space.</exception>
+        /// <exception cref="InvalidOperationException">Required key/value pairs were missing from the connection string.</exception>
         /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         public IotHubModuleClient(string connectionString, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(connectionString), options, null)
@@ -57,10 +56,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable <c>IotHubModuleClient</c> instance.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id, module Id or <paramref name="authenticationMethod"/> is null.</exception>
-        /// <exception cref="ArgumentException"><paramref name="hostName"/>, device Id or module Id are an empty string or consist only of white-space characters.</exception>
-        /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
-        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="hostName"/> or <paramref name="authenticationMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException">When <paramref name="hostName"/>is empty or white-space.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key, shared access signature, nor X509 certificates were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature were presented together with X509 certificates for authentication.</exception>
         public IotHubModuleClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options, null)
         {

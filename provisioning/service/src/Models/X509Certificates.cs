@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// The following JSON is an example of the result of this class.
-    /// <code>
+    /// <code language="json">
     ///  {
     ///      "primary": {
     ///          "certificate": "-----BEGIN CERTIFICATE-----\n" +
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// for both primary and secondary certificate. User can get these info from this class, and once again, only
     /// the primary info is mandatory. The following JSON is an example what info the provisioning service will
     /// return for X509.
-    /// <code>
+    /// <code language="json">
     ///  {
     ///      "primary": {
     ///          "info": {

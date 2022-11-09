@@ -31,10 +31,13 @@ namespace Microsoft.Azure.Devices.Client
         /// client connection was lost and regained while receiving the message but before you could reject/abandon/complete it.
         /// </summary>
         /// <remarks>
-        /// An abandoned message will be re-enqueued in the per-device/module queue, and the <see cref="IotHubDeviceClient"/> or <see cref="IotHubModuleClient"/> instance will receive it again.
+        /// An abandoned message will be re-enqueued in the per-device/module queue, and the
+        /// <see cref="IotHubDeviceClient"/> or <see cref="IotHubModuleClient"/> instance will receive it again.
         /// A rejected message will be deleted from the queue and not received again by the device.
-        /// For more information on the cause for this error and how to resolve, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-412002-devicemessagelocklost"/>.
-        /// For more information on cloud-to-device message lifecycle, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
+        /// For more information on the cause for this error and how to resolve, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-412002-devicemessagelocklost"/>.
+        /// For more information on cloud-to-device message lifecycle, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
         /// </remarks>
         DeviceMessageLockLost,
 
@@ -50,7 +53,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remark>
         /// By default, the SDK indefinitely retries dropped connections, unless the retry policy is overridden.
-        /// For more information on the SDK's retry policy and how to override it, see <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/main/iothub/device/devdoc/retrypolicy.md"/>.
+        /// For more information on the SDK's retry policy and how to override it, see
+        /// <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/main/iothub/device/devdoc/retrypolicy.md"/>.
         /// </remark>
         NetworkErrors,
 
@@ -72,7 +76,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The request failed because the IoT hub exceed the limits based on the tier of the hub.
         /// </summary>
         /// <remark>
-        /// Retrying with exponential back-off could resolve this error. For information on the IoT hub quotas and throttling, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>.
+        /// Retrying with exponential back-off could resolve this error. For information on the IoT hub quotas and
+        /// throttling, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>.
         /// </remark>
         Throttled,
 
@@ -80,7 +85,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The ETag in the request does not match the ETag of the existing resource.
         /// </summary>
         /// <remark>
-        /// The ETag is a mechanism for protecting against the race conditions of multiple clients updating the same resource and overwriting each other.
+        /// The ETag is a mechanism for protecting against the race conditions of multiple clients updating the same
+        /// resource and overwriting each other.
         /// </remark>
         PreconditionFailed,
 
@@ -130,8 +136,9 @@ namespace Microsoft.Azure.Devices.Client
         /// The request failed because of TLS authentication error.
         /// </summary>
         /// <remarks>
-        /// This error may happen when the remote certificate presented could not be validated, the TLS version is different between client requested
-        /// auth and service minimum requirement, cipher suites to be used could not be agreed upon, etc. The best course of action is to check your
+        /// This error may happen when the remote certificate presented could not be validated, the TLS version
+        /// is different between client requested auth and service minimum requirement, cipher suites to be
+        /// used could not be agreed upon, etc. The best course of action is to check your
         /// device certificates and ensure they are up-to-date.
         /// </remarks>
         TlsAuthenticationError,

@@ -17,35 +17,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// For instance, the following is a valid twin state, represented as <c>initialTwin</c> in the rest API.
-    /// <code>
+    /// <code language="json">
     /// {
     ///     "initialTwin": {
-    ///         "tags":{
-    ///             "SpeedUnity":"MPH",
+    ///         "tags": {
+    ///             "SpeedUnity": "MPH",
     ///         }
-    ///         "properties":{
+    ///         "properties": {
     ///             "desired": {
     ///                 "MaxSpeed":{
-    ///                     "Value":500,
-    ///                     "NewValue":300
+    ///                     "Value": 500,
+    ///                     "NewValue": 300
     ///                 },
-    ///                 "$metadata":{
-    ///                     "$lastUpdated":"2017-09-21T02:07:44.238Z",
-    ///                     "$lastUpdatedVersion":4,
-    ///                     "MaxSpeed":{
-    ///                         "$lastUpdated":"2017-09-21T02:07:44.238Z",
-    ///                         "$lastUpdatedVersion":4,
-    ///                         "Value":{
-    ///                             "$lastUpdated":"2017-09-21T02:07:44.238Z",
-    ///                             "$lastUpdatedVersion":4
+    ///                 "$metadata": {
+    ///                     "$lastUpdated": "2017-09-21T02:07:44.238Z",
+    ///                     "$lastUpdatedVersion": 4,
+    ///                     "MaxSpeed": {
+    ///                         "$lastUpdated": "2017-09-21T02:07:44.238Z",
+    ///                         "$lastUpdatedVersion": 4,
+    ///                         "Value": {
+    ///                             "$lastUpdated": "2017-09-21T02:07:44.238Z",
+    ///                             "$lastUpdatedVersion": 4
     ///                         },
-    ///                         "NewValue":{
-    ///                             "$lastUpdated":"2017-09-21T02:07:44.238Z",
-    ///                             "$lastUpdatedVersion":4
+    ///                         "NewValue": {
+    ///                             "$lastUpdated": "2017-09-21T02:07:44.238Z",
+    ///                             "$lastUpdatedVersion": 4
     ///                         }
     ///                     }
     ///                 },
-    ///                 "$version":4
+    ///                 "$version": 4
     ///             }
     ///         }
     ///     }
@@ -63,29 +63,29 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// This constructor creates an instance of the TwinState with the provided twin collection tags and desired properties.
         /// </remarks>
+        /// <param name="tags">The twin collection with the initial tags state. It can be null.</param>
+        /// <param name="desiredProperties">The twin collection with the initial desired properties. It can be null.</param>
         /// <example>
-        /// When serialized, this class will looks like the following example:
-        /// <code>
+        /// When serialized, this class will look like:
+        /// <code language="json">
         /// {
         ///     "initialTwin": {
-        ///         "tags":{
-        ///             "SpeedUnity":"MPH",
+        ///         "tags": {
+        ///             "SpeedUnity": "MPH",
         ///         }
-        ///         "properties":{
-        ///             "desired":{
-        ///                 "MaxSpeed":{
-        ///                     "Value":500,
-        ///                     "NewValue":300
+        ///         "properties": {
+        ///             "desired": {
+        ///                 "MaxSpeed": {
+        ///                     "Value": 500,
+        ///                     "NewValue": 300
         ///                 },
-        ///                 "$version":4
+        ///                 "$version": 4
         ///             }
         ///         }
         ///     }
         /// }
         /// </code>
         /// </example>
-        /// <param name="tags">The twin collection with the initial tags state. It can be null.</param>
-        /// <param name="desiredProperties">The twin collection with the initial desired properties. It can be null.</param>
         public ProvisioningTwinState(IDictionary<string, object> tags, ProvisioningTwinProperties desiredProperties)
         {
             Tags = tags;

@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     as part of the <see cref="BulkEnrollmentOperationResult"/>.
     /// </remarks>
     /// <example>
-    /// The following JSON is an example of a single error operation from a Bulk operation
-    /// <code>
+    /// The following JSON is an example of a single error operation from a bulk operation:
+    /// <code language="json">
     /// {
-    ///      "registrationId":"validRegistrationId1",
-    ///      "errorCode":200,
-    ///      "errorStatus":"Succeeded"
+    ///      "registrationId": "validRegistrationId1",
+    ///      "errorCode": 200,
+    ///      "errorStatus": "Succeeded"
     /// }
     /// </code>
     /// </example>

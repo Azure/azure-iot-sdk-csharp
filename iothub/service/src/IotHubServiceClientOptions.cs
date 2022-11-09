@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>.
         /// The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
-        /// <c>
+        /// <code language="csharp">
         /// IotHubServiceClient GetServiceClient()
         /// {
         ///     var proxy = new WebProxy("localhost", "8888");
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
         ///     };
         ///     return new IotHubServiceClient("a connection string", options);
         /// }
-        /// </c>
+        /// </code>
         /// </example>
         public IWebProxy Proxy { get; set; }
 

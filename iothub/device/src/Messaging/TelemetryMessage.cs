@@ -7,18 +7,18 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure that represents the message that will be sent to IoT hub.
+    /// The data structure that represents the message to be sent to IoT hub.
     /// </summary>
     public class TelemetryMessage
     {
         /// <summary>
-        /// Default instantiation with no payload.
+        /// Crates an instance of this class with no telemetry payload.
         /// </summary>
         public TelemetryMessage()
         { }
 
         /// <summary>
-        /// Creates an outgoing message with the specified payload.
+        /// Creates an instance of this class with the specified payload.
         /// </summary>
         /// <remarks>
         /// The payload will be serialized and encoded per <see cref="IotHubClientOptions.PayloadConvention"/>.
@@ -35,11 +35,13 @@ namespace Microsoft.Azure.Devices.Client
         public object Payload { get; }
 
         /// <summary>
-        /// An identifier for the message used for request-reply patterns.
-        /// Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars
-        /// + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
-        /// Non-alphanumeric characters are from URN RFC.
+        /// An identifier for the message useful for avoiding reprocessing the same message again.
         /// </summary>
+        /// <remarks>
+        /// Format: A case-sensitive string (up to 128 char long) of ASCII 7-bit alphanumeric chars
+        /// plus these non-alphanumeric characters:
+        /// { '-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', ''' }.
+        /// </remarks>
         public string MessageId
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.MessageId);
@@ -47,7 +49,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// A string property that typically contains the MessageId of the request, in request-reply patterns.
+        /// A string property of the request useful for tracking specific messages across device
+        /// clients, Edge modules, and service clients.
         /// </summary>
         public string CorrelationId
         {

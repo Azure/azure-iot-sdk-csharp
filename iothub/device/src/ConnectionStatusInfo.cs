@@ -27,34 +27,29 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The current connection status of the device or module.
         /// </summary>
-        /// <remark>
-        /// Defaults to <see cref="ConnectionStatus.Disconnected"/>.
-        /// </remark>>
+        /// <remarks>
+        /// Before a client is opened, this isinitialized as <see cref="ConnectionStatus.Disconnected"/>.
+        /// </remarks>
         public ConnectionStatus Status { get; }
 
         /// <summary>
         /// The reason for the current connection status change.
         /// </summary>
-        /// <remark>
-        /// Defaults to <see cref="ConnectionStatusChangeReason.ClientClosed"/>.
-        /// </remark>
+        /// <remarks>
+        /// Before a client is opened, this is initialized as <see cref="ConnectionStatusChangeReason.ClientClosed"/>.
+        /// </remarks>
         public ConnectionStatusChangeReason ChangeReason { get; }
 
         /// <summary>
-        /// Timestamp in UTC when the last connection status was changed.
+        /// When the last connection status was changed, in UTC.
         /// </summary>
         public DateTimeOffset StatusLastChangedOnUtc { get; }
 
         /// <summary>
-        /// Recommended actions for users to take upon different ConnectionStatus and ConnectionStatusChangeReason.
+        /// Recommended actions for users to take upon different connection status and change reasons.
         /// </summary>
-        /// <remark>
-        /// Defaults to <see cref="RecommendedAction.OpenConnection"/>.
-        /// </remark>>
         public RecommendedAction RecommendedAction { get; }
 
-        /// Please refer to the <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/previews/v2/iothub/device/samples/DeviceReconnectionSample/DeviceReconnectionSample.cs">
-        /// DeviceReconnectionSample</see> for more details regarding how to use RecommendedAction.
         private static RecommendedAction GetRecommendedAction(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
         {
             switch (status)

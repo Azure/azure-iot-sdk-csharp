@@ -84,6 +84,7 @@ namespace Microsoft.Azure.Devices.Client
         /// callback, you'll need to handle exceptions that could originate in there.
         /// </remarks>
         /// <example>
+        /// <code language="csharp">
         /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
         /// //...
         ///
@@ -91,6 +92,7 @@ namespace Microsoft.Azure.Devices.Client
         /// {
         ///     // Add connection status changed logic as needed
         /// }
+        /// </code>
         /// </example>
         public Action<ConnectionStatusInfo> ConnectionStatusChangeCallback { get; set; }
 
