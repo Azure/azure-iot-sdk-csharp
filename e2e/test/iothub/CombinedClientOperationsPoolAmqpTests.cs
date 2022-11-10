@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
@@ -60,6 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task DeviceCombinedClientOperations_MultipleConnections_AmqpWs()

@@ -497,6 +497,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
@@ -506,6 +507,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual, "").ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization

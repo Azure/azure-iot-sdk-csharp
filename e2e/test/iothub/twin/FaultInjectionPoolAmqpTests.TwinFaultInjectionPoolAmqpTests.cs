@@ -560,6 +560,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MultipleConnections_Amqp()
@@ -573,6 +574,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MultipleConnections_AmqpWs()
