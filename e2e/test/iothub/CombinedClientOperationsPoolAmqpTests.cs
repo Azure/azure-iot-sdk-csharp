@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(
