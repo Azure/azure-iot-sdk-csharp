@@ -58,6 +58,8 @@ echo "Setup docker network"
 echo "===================="
 docker images
 docker ps -a
+docker stop invalid-gde invalid-dps invalid-hub e2etest-pxy
+docker rm invalid-gde invalid-dps invalid-hub e2etest-pxy
 docker network rm testnet
 docker network create -d ipvlan --subnet=$CVTEST_TST_NET -o ipvlan_mode=l2 -o parent=eth0 testnet
 docker network ls
