@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -144,7 +146,18 @@ namespace Microsoft.Azure.Devices.Client
             message.ContentType = _clientOptions.PayloadConvention.PayloadSerializer.ContentType;
             message.ContentEncoding = _clientOptions.PayloadConvention.PayloadEncoder.ContentEncoding.WebName;
 
-            await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (SocketException socketException)
+            {
+                throw new IotHubClientException(socketException.Message, IotHubClientErrorCode.NetworkErrors, socketException);
+            }
+            catch (WebSocketException webSocketException)
+            {
+                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
+            }
         }
 
         /// <summary>

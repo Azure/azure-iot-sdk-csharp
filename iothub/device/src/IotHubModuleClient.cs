@@ -136,6 +136,14 @@ namespace Microsoft.Azure.Devices.Client
 
                 await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
             }
+            catch (SocketException socketException)
+            {
+                throw new IotHubClientException(socketException.Message, IotHubClientErrorCode.NetworkErrors, socketException);
+            }
+            catch (WebSocketException webSocketException)
+            {
+                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
+            }
             finally
             {
                 if (Logging.IsEnabled)
