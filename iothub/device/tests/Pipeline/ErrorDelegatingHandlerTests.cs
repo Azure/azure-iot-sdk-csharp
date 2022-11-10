@@ -12,8 +12,8 @@ using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Specialized;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -24,11 +24,6 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class ErrorDelegatingHandlerTests
     {
-        internal static readonly HashSet<Type> s_nonTransientExceptions = new HashSet<Type>
-        {
-            typeof(IotHubClientException),
-        };
-
         private const string ErrorMessage = "Error occurred.";
 
         private static readonly Dictionary<Type, Func<Exception>> s_exceptionFactory = new Dictionary<Type, Func<Exception>>
@@ -113,38 +108,28 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ErrorHandler_SecurityErrorOccured_ChannelIsAborted()
         {
-            List<IotHubClientException> exceptionList = await TestExceptionThrownAsync(typeof(TestSecurityException)).ConfigureAwait(false);
+            List<IotHubClientException> actualExceptions = await TestExceptionThrownAsync(typeof(TestSecurityException)).ConfigureAwait(false);
 
-            foreach (Exception ex in exceptionList)
+            foreach (IotHubClientException hubEx in actualExceptions)
             {
-                if (ex is IotHubClientException hubEx)
-                {
-                    hubEx.ErrorCode.Should().Be(IotHubClientErrorCode.TlsAuthenticationError);
-                    hubEx.IsTransient.Should().BeFalse();
-                }
+                hubEx.ErrorCode.Should().Be(IotHubClientErrorCode.TlsAuthenticationError);
+                hubEx.IsTransient.Should().BeFalse();
             }
         }
 
         [TestMethod]
         public async Task ErrorHandler_NonTransientErrorOccured_ChannelIsRecreated()
         {
-            foreach (Type exceptionType in s_nonTransientExceptions)
-            {
-                await TestExceptionThrownAsync(exceptionType).ConfigureAwait(false);
-            }
+            await TestExceptionThrownAsync(typeof(IotHubClientException)).ConfigureAwait(false);
         }
 
         private static async Task<List<IotHubClientException>> TestExceptionThrownAsync(Type thrownExceptionType)
         {
-            var exceptionList = new List<IotHubClientException>();
-
-            exceptionList.Add(
-                await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(thrownExceptionType).ConfigureAwait(false));
-
-            exceptionList.Add(
-                await OpenAsync_ExceptionThrownAndThenSucceed_SuccessfullyOpened(thrownExceptionType).ConfigureAwait(false));
-
-            return exceptionList;
+            return new()
+            {
+                await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(thrownExceptionType).ConfigureAwait(false),
+                await OpenAsync_ExceptionThrownAndThenSucceed_SuccessfullyOpened(thrownExceptionType).ConfigureAwait(false),
+            };
         }
 
         private static async Task<IotHubClientException> OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(Type thrownExceptionType)
@@ -154,44 +139,43 @@ namespace Microsoft.Azure.Devices.Client.Test
             innerHandler.Setup(x => x.OpenAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler.Object);
 
-            //initial OpenAsync to emulate Gatekeeper behavior
+            // initial OpenAsync to emulate Gatekeeper behavior
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-            //set initial operation result that throws
+            // set initial operation result that throws
 
             var message = new TelemetryMessage(new byte[0]);
-            bool[] setup = { false };
+            bool isSetup = false;
             innerHandler
                 .Setup(x => x.SendTelemetryAsync(message, It.IsAny<CancellationToken>()))
                 .Returns(() =>
-                {
-                    if (setup[0])
-                    {
-                        return Task.CompletedTask;
-                    }
-                    throw s_exceptionFactory[thrownExceptionType]();
-                });
+                    isSetup
+                        ? Task.CompletedTask
+                        : throw s_exceptionFactory[thrownExceptionType]());
 
-            //act and assert
+            // act and assert
             Func<Task> telemetry = () => sut.SendTelemetryAsync(message, CancellationToken.None);
 
-            var ex = await telemetry.Should()
+            ExceptionAssertions<IotHubClientException> exAssert = await telemetry.Should()
                 .ThrowAsync<IotHubClientException>()
                 .ConfigureAwait(false);
 
-            //override outcome
-            setup[0] = true;//otherwise previously setup call will happen and throw;
-            innerHandler.Setup(x => x.SendTelemetryAsync(message, It.IsAny<CancellationToken>())).Returns(() => Task.CompletedTask);
+            // override outcome
+            isSetup = true; // otherwise previously setup call will happen and throw;
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(message, It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
 
-            //act
+            // act
             await sut.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
 
-            //assert
-            innerHandler.Verify(x => x.OpenAsync(It.IsAny<CancellationToken>()));
+            // assert
+            innerHandler.Verify(x => x.OpenAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             innerHandler.Verify(x => x.SendTelemetryAsync(message, It.IsAny<CancellationToken>()), Times.Exactly(2));
 
-            return ex.Which;
+            // `And` property reutrns the actual exception.
+            return exAssert.And;
         }
 
         private static async Task<IotHubClientException> OpenAsync_ExceptionThrownAndThenSucceed_SuccessfullyOpened(Type thrownExceptionType)
@@ -200,38 +184,37 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler.Object);
 
-            //set initial operation result that throws
+            // set initial operation result that throws
 
-            bool[] setup = { false };
+            bool isSetup = false;
             innerHandler
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() =>
-                {
-                    if (setup[0])
-                    {
-                        return Task.FromResult(Guid.NewGuid());
-                    }
-                    throw s_exceptionFactory[thrownExceptionType]();
-                });
+                    isSetup
+                        ? Task.FromResult(Guid.NewGuid())
+                        : throw s_exceptionFactory[thrownExceptionType]());
 
-            //act
+            // act
             Func<Task> open = () => sut.OpenAsync(CancellationToken.None);
 
-            var ex = await open.Should()
+            ExceptionAssertions<IotHubClientException> exAssert = await open.Should()
                 .ThrowAsync<IotHubClientException>()
                 .ConfigureAwait(false);
 
-            //override outcome
-            setup[0] = true;//otherwise previously setup call will happen and throw;
-            innerHandler.Setup(x => x.OpenAsync(It.IsAny<CancellationToken>())).Returns(() => Task.CompletedTask);
+            // override outcome
+            isSetup = true; // otherwise previously setup call will happen and throw;
+            innerHandler
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
 
-            //act
+            // act
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
-            //assert
+            // assert
             innerHandler.Verify(x => x.OpenAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
 
-            return ex.Which;
+            // `And` property reutrns the actual exception.
+            return exAssert.And;
         }
     }
 }
