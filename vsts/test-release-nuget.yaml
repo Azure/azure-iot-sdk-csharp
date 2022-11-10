@@ -109,7 +109,6 @@ jobs:
           MSFT_TENANT_ID: $(MSFT-TENANT-ID)
           E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
           E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
-          E2E_IKEY: $(E2E-IKEY)
 
           # Environment variables for the DevOps pipeline
           PROXY_SERVER_ADDRESS: 127.0.0.1:8888
@@ -251,7 +250,6 @@ jobs:
           MSFT_TENANT_ID: $(MSFT-TENANT-ID)
           E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
           E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
-          E2E_IKEY: $(E2E-IKEY)
 
           # Environment variables for the DevOps pipeline
           PROXY_SERVER_ADDRESS: 127.0.0.1:3128
