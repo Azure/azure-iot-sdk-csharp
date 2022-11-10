@@ -3,6 +3,9 @@
 
 using System;
 using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
@@ -156,6 +159,14 @@ namespace Microsoft.Azure.Devices.Amqp
                 await _cbsSession.OpenAsync(_connection, cancellationToken).ConfigureAwait(false);
                 await _workerSession.OpenAsync(_connection, cancellationToken).ConfigureAwait(false);
             }
+            catch (SocketException socketException)
+            {
+                throw new IotHubServiceException(socketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, socketException);
+            }
+            catch (WebSocketException webSocketException)
+            {
+                throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, webSocketException);
+            }
             finally
             {
                 _openCloseSemaphore.Release();
@@ -188,6 +199,14 @@ namespace Microsoft.Azure.Devices.Amqp
                 {
                     await _connection.CloseAsync(cancellationToken).ConfigureAwait(false);
                 }
+            }
+            catch (SocketException socketException)
+            {
+                throw new IotHubServiceException(socketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, socketException);
+            }
+            catch (WebSocketException webSocketException)
+            {
+                throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, webSocketException);
             }
             finally
             {

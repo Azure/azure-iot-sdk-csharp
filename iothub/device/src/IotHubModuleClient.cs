@@ -116,9 +116,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
-        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
-        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public async Task SendTelemetryAsync(string outputName, TelemetryMessage message, CancellationToken cancellationToken = default)
         {
@@ -137,6 +134,14 @@ namespace Microsoft.Azure.Devices.Client
                 message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
 
                 await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (SocketException socketException)
+            {
+                throw new IotHubClientException(socketException.Message, IotHubClientErrorCode.NetworkErrors, socketException);
+            }
+            catch (WebSocketException webSocketException)
+            {
+                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
             }
             finally
             {

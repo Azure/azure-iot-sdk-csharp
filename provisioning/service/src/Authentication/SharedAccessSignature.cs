@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ExpiresOnUtc = expiresOn;
             if (IsExpired())
             {
-                throw new UnauthorizedAccessException("The specified SAS token is expired");
+                throw new ProvisioningServiceException("The specified SAS token is expired", HttpStatusCode.Unauthorized);
             }
             ServiceName = serviceName;
             Signature = signature;
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (IsExpired())
             {
-                throw new UnauthorizedAccessException("The specified SAS token has expired.");
+                throw new ProvisioningServiceException("The specified SAS token has expired.", HttpStatusCode.Unauthorized);
             }
 
             if (sasAuthorizationRule.PrimaryKey != null)
@@ -125,7 +125,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 }
             }
 
-            throw new UnauthorizedAccessException("The specified SAS token has an invalid signature. It does not match either the primary or secondary key.");
+            throw new ProvisioningServiceException(
+                "The specified SAS token has an invalid signature. It does not match either the primary or secondary key.",
+                HttpStatusCode.Unauthorized);
         }
 
         internal void Authorize(string hostName)
@@ -147,7 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (!target.StartsWith(Audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
             {
-                throw new UnauthorizedAccessException("Invalid target audience.");
+                throw new ProvisioningServiceException("Invalid target audience.", HttpStatusCode.Unauthorized);
             }
         }
 

@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
                 if (headerSeparatorPosition <= 0)
                 {
-                    throw new HttpRequestException($"Header is invalid {header}.");
+                    throw new IotHubClientException($"Header is invalid {header}.", IotHubClientErrorCode.NetworkErrors);
                 }
 
                 string headerName = header.Substring(0, headerSeparatorPosition).Trim();
@@ -120,9 +120,17 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                     {
                         if (!long.TryParse(headerValue, out long contentLength))
                         {
-                            throw new HttpRequestException($"Header value is invalid for {headerName}.");
+                            throw new IotHubClientException($"Header value is invalid for {headerName}.", IotHubClientErrorCode.NetworkErrors);
                         }
-                        await httpResponse.Content.LoadIntoBufferAsync(contentLength).ConfigureAwait(false);
+
+                        try
+                        {
+                            await httpResponse.Content.LoadIntoBufferAsync(contentLength).ConfigureAwait(false);
+                        }
+                        catch (HttpRequestException ex)
+                        {
+                            throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
+                        }
                     }
 
                     httpResponse.Content.Headers.TryAddWithoutValidation(headerName, headerValue);
@@ -135,26 +143,26 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             string statusLine = await bufferedStream.ReadLineAsync(cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(statusLine))
             {
-                throw new HttpRequestException("Response is empty.");
+                throw new IotHubClientException("Response is empty.", IotHubClientErrorCode.NetworkErrors);
             }
 
             string[] statusLineParts = statusLine.Split(new[] { Space }, 3);
             if (statusLineParts.Length < 3)
             {
-                throw new HttpRequestException("Status line is not valid.");
+                throw new IotHubClientException("Status line is not valid.", IotHubClientErrorCode.NetworkErrors);
             }
 
             string[] httpVersion = statusLineParts[0].Split(new[] { ProtocolVersionSeparator }, 2);
             if (httpVersion.Length < 2 || !Version.TryParse(httpVersion[1], out Version versionNumber))
             {
-                throw new HttpRequestException($"Version is not valid {statusLineParts[0]}.");
+                throw new IotHubClientException($"Version is not valid {statusLineParts[0]}.", IotHubClientErrorCode.NetworkErrors);
             }
 
             httpResponse.Version = versionNumber;
 
             if (!Enum.TryParse(statusLineParts[1], out HttpStatusCode statusCode))
             {
-                throw new HttpRequestException($"StatusCode is not valid {statusLineParts[1]}.");
+                throw new IotHubClientException($"StatusCode is not valid {statusLineParts[1]}.", IotHubClientErrorCode.NetworkErrors);
             }
 
             httpResponse.StatusCode = statusCode;

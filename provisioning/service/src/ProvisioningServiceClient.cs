@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="FormatException">If the provided <paramref name="connectionString"/> has incorrect value for host name.</exception>
         /// <exception cref="InvalidOperationException">If the provided <paramref name="connectionString"/> is missing host name,
         /// shared access key name or either shared access key or shared access signature.</exception>
-        /// <exception cref="UnauthorizedAccessException">If the provided shared access signature is expired.</exception>
+        /// <exception cref="ProvisioningServiceException">Thrown if an error occurs when communicating with device provisioning service.</exception>
         public ProvisioningServiceClient(string connectionString, ProvisioningServiceClientOptions options = default)
         {
             ProvisioningServiceClientOptions clientOptions = options != null

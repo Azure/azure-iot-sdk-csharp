@@ -121,10 +121,6 @@ namespace Microsoft.Azure.Devices
         /// <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown. For a complete list of possible error cases,
         /// see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If this method made a request to IoT hub to get the next page of items but the HTTP request fails due to
-        /// an underlying issue such as network connectivity, DNS failure, or server certificate validation.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
         /// <code language="csharp">

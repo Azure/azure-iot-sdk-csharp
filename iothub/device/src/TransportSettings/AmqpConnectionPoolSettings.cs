@@ -46,7 +46,9 @@ namespace Microsoft.Azure.Devices.Client
 
             set => _maxPoolSize = value > 0 && value <= AbsoluteMaxPoolSize
                 ? value
-                : throw new ArgumentOutOfRangeException(nameof(value));
+                : throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    "The maximum pool size should be positive and not larger than the absolute maximum pool size");
         }
 
         /// <summary>

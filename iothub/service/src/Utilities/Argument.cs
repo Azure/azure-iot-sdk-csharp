@@ -120,13 +120,13 @@ namespace Microsoft.Azure.Devices
 
             if (offset < 0 || offset > buffer.Length || size <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                throw new ArgumentOutOfRangeException(nameof(offset), "The buffer bounds are invalid.");
             }
 
             int remainingBufferSpace = buffer.Length - offset;
             if (size > remainingBufferSpace)
             {
-                throw new ArgumentOutOfRangeException(nameof(size));
+                throw new ArgumentOutOfRangeException(nameof(size), "The buffer bounds are invalid.");
             }
         }
     }

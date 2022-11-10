@@ -157,11 +157,11 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IOException(webSocketException.Message, webSocketException);
+                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IOException(httpListenerException.Message, httpListenerException);
+                throw new IotHubClientException(httpListenerException.Message, IotHubClientErrorCode.NetworkErrors, httpListenerException);
             }
             finally
             {
@@ -202,11 +202,11 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IOException(webSocketException.Message, webSocketException);
+                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IOException(httpListenerException.Message, httpListenerException);
+                throw new IotHubClientException(httpListenerException.Message, IotHubClientErrorCode.NetworkErrors, httpListenerException);
             }
             finally
             {
@@ -352,13 +352,13 @@ namespace Microsoft.Azure.Devices.Client
 
             if (offset < 0 || offset > buffer.Length || size <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                throw new ArgumentOutOfRangeException(nameof(offset), "The buffer bounds are invalid.");
             }
 
             int remainingBufferSpace = buffer.Length - offset;
             if (size > remainingBufferSpace)
             {
-                throw new ArgumentOutOfRangeException(nameof(size));
+                throw new ArgumentOutOfRangeException(nameof(size), "The buffer bounds are invalid.");
             }
         }
 

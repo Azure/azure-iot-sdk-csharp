@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
@@ -134,9 +133,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
-        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken = default)
         {
@@ -152,7 +148,18 @@ namespace Microsoft.Azure.Devices.Client
             message.ContentType = _clientOptions.PayloadConvention.PayloadSerializer.ContentType;
             message.ContentEncoding = _clientOptions.PayloadConvention.PayloadEncoder.ContentEncoding.WebName;
 
-            await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (SocketException socketException)
+            {
+                throw new IotHubClientException(socketException.Message, IotHubClientErrorCode.NetworkErrors, socketException);
+            }
+            catch (WebSocketException webSocketException)
+            {
+                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
+            }
         }
 
         /// <summary>

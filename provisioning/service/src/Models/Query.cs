@@ -125,12 +125,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="continuationToken">the string with the previous continuationToken. It cannot be null or empty.</param>
         /// <returns>The <see cref="QueryResult"/> with the next page of items for the query.</returns>
-        /// <exception cref="IndexOutOfRangeException">If the query does no have more pages to return.</exception>
+        /// <exception cref="InvalidOperationException">If the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync(string continuationToken)
         {
             if (string.IsNullOrWhiteSpace(continuationToken))
             {
-                throw new IndexOutOfRangeException($"There is no {nameof(continuationToken)} to get pending elements.");
+                throw new InvalidOperationException($"There is no {nameof(continuationToken)} to get pending elements.");
             }
 
             ContinuationToken = continuationToken;
@@ -143,12 +143,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Return the next page of result for the query.
         /// </summary>
         /// <returns>The <see cref="QueryResult"/> with the next page of items for the query.</returns>
-        /// <exception cref="IndexOutOfRangeException">If the query does no have more pages to return.</exception>
+        /// <exception cref="InvalidOperationException">If the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync()
         {
             if (!_hasNext)
             {
-                throw new IndexOutOfRangeException("There are no more pending elements");
+                throw new InvalidOperationException("There are no more pending elements");
             }
 
             IDictionary<string, string> headerParameters = new Dictionary<string, string>();

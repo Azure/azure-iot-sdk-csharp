@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
@@ -86,11 +85,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IOException(webSocketException.Message, webSocketException);
+                throw new ProvisioningClientException(webSocketException.Message, webSocketException, true);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IOException(httpListenerException.Message, httpListenerException);
+                throw new ProvisioningClientException(httpListenerException.Message, httpListenerException, true);
             }
             finally
             {
@@ -138,11 +137,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IOException(webSocketException.Message, webSocketException);
+                throw new ProvisioningClientException(webSocketException.Message, webSocketException, true);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IOException(httpListenerException.Message, httpListenerException);
+                throw new ProvisioningClientException(httpListenerException.Message, httpListenerException, true);
             }
             finally
             {

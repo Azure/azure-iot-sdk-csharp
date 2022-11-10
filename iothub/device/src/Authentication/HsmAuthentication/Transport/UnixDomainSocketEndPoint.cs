@@ -3,10 +3,8 @@
 // See the thirdpartynotice.txt file for more information.
 
 using System;
-using System.Diagnostics;
 using System.Text;
 using System.Net;
-using System.Net.Sockets;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 {
