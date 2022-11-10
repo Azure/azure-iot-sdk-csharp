@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        // ignoring the test as they repeatedly timed out on prod hub. Revert later
         [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -61,6 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        // ignoring the test as they repeatedly timed out on prod hub. Revert later
         [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]

@@ -560,6 +560,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
+        // ignoring the test as they repeatedly timed out on prod hub. Revert later
         [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -574,6 +575,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
+        // ignoring the test as they repeatedly timed out on prod hub. Revert later
         [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
