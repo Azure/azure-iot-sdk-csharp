@@ -498,7 +498,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Amqp_Tpm_InvalidIdScope_RegisterFail()
@@ -507,7 +507,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time as tpm only accepts one connection at a time
         public async Task DPS_Registration_AmqpWs_Tpm_InvalidIdScope_Register_Fail()
