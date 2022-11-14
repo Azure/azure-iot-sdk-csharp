@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             var tlsSettings = new ClientTlsSettings(
                 TlsVersions.Instance.Preferred,
-                true,
+                TlsVersions.Instance.CertificateRevocationCheck,
                 new List<X509Certificate> { clientCertificate },
                 message.GlobalDeviceEndpoint);
 
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             var tlsSettings = new ClientTlsSettings(
                 TlsVersions.Instance.Preferred,
-                false,
+                TlsVersions.Instance.CertificateRevocationCheck,
                 new List<X509Certificate>(0),
                 message.GlobalDeviceEndpoint);
 
