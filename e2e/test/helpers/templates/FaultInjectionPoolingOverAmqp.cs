@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 await cleanupOperation(deviceClients, testDeviceCallbackHandlers).ConfigureAwait(false);
 
                 testDeviceCallbackHandlers.ForEach(x => x.Dispose());
-                deviceClients.ForEach(x => x.Dispose());
+                await Task.WhenAll(deviceClients.Select(x => x.DisposeAsync().AsTask())).ConfigureAwait(false);
                 await Task.WhenAll(testDevices.Select(x => x.RemoveDeviceAsync())).ConfigureAwait(false);
 
                 if (!FaultInjection.FaultShouldDisconnect(faultType))

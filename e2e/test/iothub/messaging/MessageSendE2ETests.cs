@@ -169,33 +169,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await SendSingleMessageAsync(deviceClient, messageSize).ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendBatchMessages(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await SendBatchMessagesAsync(deviceClient).ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendSingleMessageModule(IotHubClientTransportSettings transportSettings)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
+            await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
             await SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
-            await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
         public static async Task SendSingleMessageAsync(IotHubDeviceClient deviceClient, int messageSize = 0)
@@ -232,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             // Close and re-open the client under test.
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -241,8 +238,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // The re-opened client under test should still be able to send telemetry.
             await SendSingleMessageAsync(deviceClient, messageSize).ConfigureAwait(false);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         public static TelemetryMessage ComposeD2cTestMessage(out string payload, out string p1Value)

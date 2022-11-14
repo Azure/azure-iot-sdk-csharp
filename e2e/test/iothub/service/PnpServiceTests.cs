@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 ModelId = TestModelId,
             };
-            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Act
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string hostName = HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString);
             X509Certificate2 authCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
             var auth = new ClientAuthenticationWithX509Certificate(authCertificate, testDevice.Id);
-            using var deviceClient = new IotHubDeviceClient(hostName, auth, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, auth, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Act
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 ModelId = TestModelId,
             };
-            using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
+            await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             // Act

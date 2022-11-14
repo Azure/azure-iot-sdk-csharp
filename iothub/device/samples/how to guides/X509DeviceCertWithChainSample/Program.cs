@@ -43,7 +43,7 @@ namespace X509DeviceCertWithChainSample
             var auth = new ClientAuthenticationWithX509Certificate(deviceCert, chainCerts, parameters.DeviceName);
 
             var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
-            using var deviceClient = new IotHubDeviceClient(
+            await using var deviceClient = new IotHubDeviceClient(
                 parameters.HostName,
                 auth,
                 options);

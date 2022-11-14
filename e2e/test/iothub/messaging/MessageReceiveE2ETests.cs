@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
             using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -199,7 +199,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
             finally
             {
-                await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -220,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // Now dispose and then reinitialize the client instance.
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            deviceClient.Dispose();
+            await deviceClient.DisposeAsync();
 
             testDeviceCallbackHandler.Dispose();
             testDeviceCallbackHandler = null;
@@ -251,14 +250,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            deviceClient.Dispose();
             testDeviceCallbackHandler.Dispose();
         }
 
         private async Task ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
             using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
 
             // Close and re-open the client under test.
@@ -287,7 +285,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
             finally
             {
-                await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -298,7 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;
 
             void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)

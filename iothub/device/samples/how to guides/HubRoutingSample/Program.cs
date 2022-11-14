@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Routing Tutorial: Simulated device");
                 var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
 
-                using var deviceClient = new IotHubDeviceClient(
+                await using var deviceClient = new IotHubDeviceClient(
                     parameters.PrimaryConnectionString,
                     options);
 

@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
-            using var deviceClient = new IotHubDeviceClient(
+            await using var deviceClient = new IotHubDeviceClient(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
 
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
-            using var deviceClient = new IotHubDeviceClient(
+            await using var deviceClient = new IotHubDeviceClient(
                 $"HostName={config.IotHubHostName};DeviceId={config.DeviceId};SharedAccessKey={invalidKey}",
                 options);
 
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var auth = new ClientAuthenticationWithSharedAccessSignature(builder.ToSignature(), deviceId);
 
-            using var deviceClient = new IotHubDeviceClient(iotHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
+            await using var deviceClient = new IotHubDeviceClient(iotHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
             VerboseTestLogger.WriteLine($"{deviceId}: Created {nameof(IotHubDeviceClient)}");
 
             VerboseTestLogger.WriteLine($"{deviceId}: DeviceClient OpenAsync.");
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
-            using IotHubDeviceClient deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, auth, options);
+            await using IotHubDeviceClient deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, auth, options);
             VerboseTestLogger.WriteLine($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
             void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 buffer,
                 transportSettings);
 
-            using var deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
+            await using var deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
             VerboseTestLogger.WriteLine($"Created {nameof(IotHubDeviceClient)}");
 
             if (transportSettings is IotHubClientMqttSettings

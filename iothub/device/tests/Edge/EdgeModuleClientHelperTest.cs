@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromConnectionStringEnvironment_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
-            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync();
+            await using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync();
 
             Assert.IsNotNull(dc);
 
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
 
             // act
-            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(clientOptions);
+            await using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(clientOptions);
 
             Assert.IsNotNull(dc);
 
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
+            await using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
+            await using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
 
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             ICertificateValidator certValidator = await EdgeModuleClientHelper
                 .CreateCertificateValidatorFromEnvironmentAsync(trustBundle.Object, options)
                 .ConfigureAwait(false);
-            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
+            await using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             dc.Should().NotBeNull();
 
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             ICertificateValidator certValidator = await EdgeModuleClientHelper
                 .CreateCertificateValidatorFromEnvironmentAsync(trustBundle.Object, options)
                 .ConfigureAwait(false);
-            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
+            await using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             Assert.IsNotNull(dc);
 
