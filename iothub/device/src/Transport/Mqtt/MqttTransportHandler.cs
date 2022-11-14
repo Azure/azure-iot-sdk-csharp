@@ -310,33 +310,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // The timer would invoke callback after every hour.
                 _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
             }
-            catch (MqttConnectingFailedException cfe)
+            catch (MqttConnectingFailedException ex)
             {
-                MqttClientConnectResultCode connectCode = cfe.ResultCode;
+                MqttClientConnectResultCode connectCode = ex.ResultCode;
                 switch (connectCode)
                 {
                     case MqttClientConnectResultCode.BadUserNameOrPassword:
                     case MqttClientConnectResultCode.NotAuthorized:
                     case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", IotHubClientErrorCode.Unauthorized, cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", IotHubClientErrorCode.Unauthorized, ex);
                     case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                         // Should never happen since the protocol version (3.1.1) is hardcoded
-                        throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", ex);
                     case MqttClientConnectResultCode.ServerUnavailable:
-                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", IotHubClientErrorCode.ServerBusy, cfe);
+                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", IotHubClientErrorCode.ServerBusy, ex);
                     default:
-                        if (cfe.InnerException is MqttCommunicationTimedOutException)
+                        if (ex.InnerException is MqttCommunicationTimedOutException)
                         {
                             if (cancellationToken.IsCancellationRequested)
                             {
                                 // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
                                 // when the cancellation token requests cancellation.
-                                throw new OperationCanceledException(ConnectTimedOutErrorMessage, cfe);
+                                throw new OperationCanceledException(ConnectTimedOutErrorMessage, ex);
                             }
 
                             // This execption may be thrown even if cancellation has not been requested yet.
                             // This case is treated as a timeout error rather than an OperationCanceledException
-                            throw new IotHubClientException(ConnectTimedOutErrorMessage, IotHubClientErrorCode.Timeout, cfe);
+                            throw new IotHubClientException(ConnectTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
                         }
 
                         // MQTT 3.1.1 only supports the above connect return codes, so this default case
@@ -344,8 +344,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
                         // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
                         // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
-                        throw new IotHubClientException("Failed to open the MQTT connection", cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection", ex);
                 }
+            }
+            catch (MqttCommunicationTimedOutException ex)
+            {
+                throw new IotHubClientException(ConnectTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
             }
         }
 
