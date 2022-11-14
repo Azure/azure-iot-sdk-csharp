@@ -1,4 +1,12 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+- name: maxParallelJobs
+  displayName: Maximum jobs to run in parallel. Change maxParallel to 1 make OS builds run in serial rather than in parallel.
+  type: number
+  # Reasonable target to avoid throttling and contention with several PRs running.
+  default: 3
+
 resources:
   - repo: self
     clean: true
@@ -49,8 +57,7 @@ jobs:
     timeoutInMinutes: 180
 
     strategy:
-      # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 10
+      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
         .Net 6.0:
           FRAMEWORK: net6.0
@@ -218,8 +225,7 @@ jobs:
     timeoutInMinutes: 180
 
     strategy:
-      # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 10
+      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
         .Net 6.0:
           FRAMEWORK: net6.0
