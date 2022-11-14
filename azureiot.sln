@@ -196,6 +196,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricKeySample", "provi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TpmSample", "provisioning\device\samples\how to guides\TpmSample\TpmSample.csproj", "{B0562F71-1772-4451-9379-EC42D2A57C96}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{89643F18-7B22-41BD-8342-49251943C984}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -425,6 +429,10 @@ Global
 		{B0562F71-1772-4451-9379-EC42D2A57C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0562F71-1772-4451-9379-EC42D2A57C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0562F71-1772-4451-9379-EC42D2A57C96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -514,6 +522,8 @@ Global
 		{D67D8B88-B321-4B6D-8780-9C432BC7C98A} = {E6205B13-D163-4247-80F5-905ACC7F0977}
 		{EA555DE1-04E9-4741-BC78-5E9BBB03A939} = {464E5F28-748B-4A6C-94B8-A5725F57F62C}
 		{B0562F71-1772-4451-9379-EC42D2A57C96} = {464E5F28-748B-4A6C-94B8-A5725F57F62C}
+		{89643F18-7B22-41BD-8342-49251943C984} = {4CF9A9B8-9D3F-44F6-B965-DF2B7EEA024E}
+		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F} = {89643F18-7B22-41BD-8342-49251943C984}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

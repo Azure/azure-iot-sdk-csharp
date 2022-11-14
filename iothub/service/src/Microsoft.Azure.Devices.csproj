@@ -54,7 +54,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net5.0|AnyCPU'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net5.0'">
     <NoWarn>1701;1702;1138</NoWarn>
   </PropertyGroup>
 
