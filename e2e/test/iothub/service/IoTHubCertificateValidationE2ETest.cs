@@ -75,7 +75,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             var options = new IotHubServiceClientOptions
             {
-                Protocol = protocol
+                Protocol = protocol,
+                RetryPolicy = new IotHubServiceNoRetry(),
             };
             using var service = new IotHubServiceClient(
                 TestConfiguration.IotHub.ConnectionStringInvalidServiceCertificate, options);
@@ -177,7 +178,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var deviceClient =
                 new IotHubDeviceClient(
                     TestConfiguration.IotHub.DeviceConnectionStringInvalidServiceCertificate,
-                    new IotHubClientOptions(transportSettings));
+                    new IotHubClientOptions(transportSettings)
+                    {
+                        RetryPolicy = new IotHubClientNoRetry(),
+                    });
             var testMessage = new TelemetryMessage();
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
