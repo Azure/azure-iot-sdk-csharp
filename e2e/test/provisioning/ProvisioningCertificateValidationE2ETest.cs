@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Security.Authentication;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -12,6 +14,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MQTTnet.Exceptions;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
@@ -34,73 +37,113 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
-            using var provisioningServiceClient = new ProvisioningServiceClient(
-                TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
+            // arrange
+            using var provisioningServiceClient =
+                new ProvisioningServiceClient(
+                    TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate,
+                    new ProvisioningServiceClientOptions()
+                    {
+                        RetryPolicy = new ProvisioningServiceNoRetry(),
+                    });
             Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery(
                 "SELECT * FROM enrollmentGroups");
 
+            // act
             Func<Task> act = async () => await q.NextAsync();
 
+            // assert
             var error = await act.Should().ThrowAsync<ProvisioningServiceException>().ConfigureAwait(false);
-#if NET472
-                Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#else
-            Assert.IsInstanceOfType(error.And.InnerException.InnerException, typeof(AuthenticationException));
-#endif
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeTrue();
+            error.And.InnerException.Should().BeOfType<HttpRequestException>();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp));
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
+            // arrange
+            var clientOptions =
+                new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp))
+                {
+                    RetryPolicy = new ProvisioningClientNoRetry(),
+                };
 
+            // act
+            Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
+
+
+            //assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-            Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeTrue();
+            error.And.InnerException.Should().BeOfType<SocketException>();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp));
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
+            // arrange
+            var clientOptions =
+                new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp))
+                {
+                    RetryPolicy = new ProvisioningClientNoRetry(),
+                };
 
+            // act
+            Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
+
+            // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-            if (error.And.InnerException == null)
-            {
-                Assert.AreEqual("MQTT Protocol Exception: Channel closed.", error.And.Message);
-            }
-            else
-            {
-                Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
-            }
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeTrue();
+            error.And.InnerException.Should().BeOfType<MqttCommunicationTimedOutException>();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
+            // arrange
+            var clientOptions =
+                new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket))
+                {
+                    RetryPolicy = new ProvisioningClientNoRetry(),
+                };
 
+            // act
+            Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
+
+            // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-            Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeTrue();
+            error.And.InnerException.Should().BeOfType<WebSocketException>();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket));
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
+            // arrange
+            var clientOptions =
+                new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket))
+                {
+                    RetryPolicy = new ProvisioningClientNoRetry(),
+                };
 
+            // act
+            Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
+
+            // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-            Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeTrue();
+            error.And.InnerException.Should().BeOfType<MqttCommunicationException>();
         }
 
-        private async Task TestInvalidServiceCertificate(ProvisioningClientOptions clientOptions)
+        private static async Task TestInvalidServiceCertificateAsync(ProvisioningClientOptions clientOptions)
         {
             // Shorten the file name to avoid overall file path become too long and cause error in the test
             string certificateSubject = "cert-" + Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace('+', '-').Replace('/', '.').Trim('=');
