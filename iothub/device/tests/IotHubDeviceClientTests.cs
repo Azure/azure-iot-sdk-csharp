@@ -12,7 +12,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using NSubstitute;
+using Moq;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -21,23 +21,16 @@ namespace Microsoft.Azure.Devices.Client.Test
     public class IotHubDeviceClientTests
     {
         private const string FakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
-        private const string FakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
-        private const string TestModelId = "dtmi:com:example:testModel;1";
         private const string FakeHostName = "acme.azure-devices.net";
-
-        private const int DefaultSasRenewalBufferPercentage = 15;
-        private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
 
         private static readonly IotHubConnectionCredentials s_iotHubConnectionCredentials = new(FakeConnectionString);
 
-        private DirectMethodResponse directMethodResponseWithPayload = new DirectMethodResponse(200)
+        private DirectMethodResponse _directMethodResponseWithPayload = new(200)
         {
             Payload = 123,
         };
 
-        private DirectMethodResponse directMethodResponseWithNoPayload = new DirectMethodResponse(200);
-
-        private DirectMethodResponse directMethodResponseWithEmptyByteArrayPayload = new DirectMethodResponse(200)
+        private DirectMethodResponse _directMethodResponseWithEmptyByteArrayPayload = new(200)
         {
             Payload = new byte[0]
         };
@@ -244,7 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
-            Action act = () => new IotHubDeviceClient(FakeConnectionStringWithModuleId);
+            Action act = () => new IotHubDeviceClient("HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1");
             act.Should().Throw<InvalidOperationException>();
         }
 
@@ -253,13 +246,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
 
             // act
             await deviceClient
                 .SetDirectMethodCallbackAsync(
-                    (payload) => Task.FromResult(directMethodResponseWithPayload))
+                    (payload) => Task.FromResult(_directMethodResponseWithPayload))
                 .ConfigureAwait(false);
 
             await deviceClient
@@ -267,10 +260,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             // assert
-            await innerHandler
-                .Received()
-                .DisableMethodsAsync(Arg.Any<CancellationToken>())
-                .ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
         }
 
         [TestMethod]
@@ -278,21 +270,23 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
 
             bool isMethodHandlerCalled = false;
             await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(directMethodResponseWithPayload);
+                return Task.FromResult(_directMethodResponseWithPayload);
             }).ConfigureAwait(false);
 
             // act
             await deviceClient.OnMethodCalledAsync(null).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.Never);
             isMethodHandlerCalled.Should().BeFalse();
         }
 
@@ -301,14 +295,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
 
             bool isMethodHandlerCalled = false;
             await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(directMethodResponseWithPayload);
+                return Task.FromResult(_directMethodResponseWithPayload);
             }).ConfigureAwait(false);
 
             var DirectMethodRequest = new DirectMethodRequest
@@ -321,7 +315,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
         }
 
@@ -330,13 +326,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
             await deviceClient.SetDirectMethodCallbackAsync((payload) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(directMethodResponseWithPayload);
+                return Task.FromResult(_directMethodResponseWithPayload);
             }).ConfigureAwait(false);
 
             CustomDirectMethodPayload payload = new CustomDirectMethodPayload { Grade = "good" };
@@ -351,7 +347,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
         }
 
@@ -360,8 +358,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             string response = null;
@@ -371,7 +369,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         isMethodHandlerCalled = true;
                         responseReceivedAsExpected = payload.TryGetPayload(out response);
-                        return Task.FromResult(directMethodResponseWithPayload);
+                        return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
 
@@ -387,7 +385,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(payload);
@@ -398,8 +398,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             bool response = false;
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         isMethodHandlerCalled = true;
                         responseReceivedAsExpected = payload.TryGetPayload(out response);
-                        return Task.FromResult(directMethodResponseWithPayload);
+                        return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
 
@@ -425,7 +425,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().Be(boolean);
@@ -436,8 +438,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             byte[] response = null;
@@ -447,7 +449,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         isMethodHandlerCalled = true;
                         responseReceivedAsExpected = payload.TryGetPayload(out response);
-                        return Task.FromResult(directMethodResponseWithPayload);
+                        return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
 
@@ -463,7 +465,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(bytes);
@@ -474,8 +478,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             List<double> response = null;
@@ -485,7 +489,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         isMethodHandlerCalled = true;
                         responseReceivedAsExpected = payload.TryGetPayload(out response);
-                        return Task.FromResult(directMethodResponseWithPayload);
+                        return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
 
@@ -501,7 +505,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(list);
@@ -512,8 +518,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
             bool responseReceivedAsExpected = false;
             Dictionary<string, object> response = null;
@@ -523,7 +529,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         isMethodHandlerCalled = true;
                         responseReceivedAsExpected = payload.TryGetPayload(out response);
-                        return Task.FromResult(directMethodResponseWithPayload);
+                        return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
 
@@ -539,7 +545,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
             response.Should().BeEquivalentTo(map);
@@ -550,15 +558,15 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
             await deviceClient
                 .SetDirectMethodCallbackAsync(
                     (payload) =>
                     {
                         isMethodHandlerCalled = true;
-                        return Task.FromResult(directMethodResponseWithNoPayload);
+                        return Task.FromResult(new DirectMethodResponse(200));
                     })
                 .ConfigureAwait(false);
 
@@ -574,7 +582,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
         }
 
@@ -584,8 +594,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
 
             CustomDirectMethodPayload payload = new CustomDirectMethodPayload { Grade = "good" };
             var directMethodRequest = new DirectMethodRequest
@@ -599,7 +609,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         [TestMethod]
@@ -609,8 +621,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = new IotHubDeviceClient(connectionString);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
 
             bool methodCallbackCalled = false;
             string actualMethodName = string.Empty;
@@ -620,7 +632,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodName = methodRequest.MethodName;
                 bool methodReceived = methodRequest.TryGetPayload(out actualMethodBody);
                 methodCallbackCalled = true;
-                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
+                return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";
@@ -637,7 +649,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
             methodBody.Should().BeEquivalentTo(actualMethodBody);
@@ -651,7 +665,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodName2 = methodRequest.MethodName;
                 bool methodReceived = methodRequest.TryGetPayload(out actualMethodBody2);
                 methodCallbackCalled2 = true;
-                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
+                return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
             };
 
             CustomDirectMethodPayload methodBody2 = new CustomDirectMethodPayload { Grade = "bad" };
@@ -667,7 +681,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             methodCallbackCalled2.Should().BeTrue();
             methodName.Should().Be(actualMethodName2);
             methodBody2.Should().BeEquivalentTo(actualMethodBody2);
@@ -680,8 +696,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = new IotHubDeviceClient(connectionString);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
 
             bool methodCallbackCalled = false;
             string actualMethodName = string.Empty;
@@ -691,7 +707,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodName = methodRequest.MethodName;
                 bool methodReceived = methodRequest.TryGetPayload(out actualMethodBody);
                 methodCallbackCalled = true;
-                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
+                return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";
@@ -708,7 +724,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
 
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
@@ -728,7 +746,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
 
             // assert
-            await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
             methodCallbackCalled.Should().BeFalse();
         }
 
@@ -738,11 +758,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = new IotHubDeviceClient(connectionString);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
 
             await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
-            await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         [TestMethod]
@@ -817,8 +839,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_OnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
         {
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
             var sender = new object();
             bool handlerCalled = false;
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
@@ -851,9 +873,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             var messageId = Guid.NewGuid().ToString();
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler.Object;
 
             // act
             var messageWithoutId = new TelemetryMessage();
@@ -880,9 +904,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler.Object;
 
             // act
             var messageWithoutId = new TelemetryMessage();
@@ -909,9 +935,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler.Object;
 
             // act
             var messageWithoutId = new TelemetryMessage();
@@ -934,9 +962,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             var messageId = Guid.NewGuid().ToString();
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler.Object;
 
             // act
             var messageWithoutId = new TelemetryMessage();
@@ -963,9 +993,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler.Object;
 
             // act
             var messageWithoutId = new TelemetryMessage();
@@ -992,9 +1024,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString, options);
 
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
-            deviceClient.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
+            deviceClient.InnerHandler = innerHandler.Object;
 
             // act
             var messageWithoutId = new TelemetryMessage();
@@ -1119,37 +1153,21 @@ namespace Microsoft.Azure.Devices.Client.Test
             IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        private void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(IotHubClientTransportSettings transportSettings)
-        {
-            // arrange
-
-            var clientOptions = new IotHubClientOptions(transportSettings)
-            {
-                ModelId = TestModelId,
-            };
-
-            // act and assert
-            FluentActions
-                .Invoking(() => { using var deviceClient = new IotHubDeviceClient(FakeConnectionString, clientOptions); })
-                .Should()
-                .NotThrow();
-        }
-
         [TestMethod]
         public async Task IotHubDeviceClient_SendTelemetryAsync_Cancelled_ThrowsOperationCanceledException()
         {
             //arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+            var mainProtocolHandler = new Mock<IDelegatingHandler>();
 
-            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
+            // We will setup the main handler which can be either MQTT or AMQP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.SendTelemetryAsync(Arg.Any<TelemetryMessage>(), Arg.Any<CancellationToken>()))
-                .Do(x => { throw new OperationCanceledException(); });
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException());
 
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
 
             deviceClient.InnerHandler = errorHandler;
 
@@ -1157,10 +1175,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
             // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
+            var ct = new CancellationToken(true);
 
-            Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new TelemetryMessage(), cts.Token);
+            Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new TelemetryMessage(), ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -1218,15 +1235,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+            var mainProtocolHandler = new Mock<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.OpenAsync(Arg.Any<CancellationToken>()))
-                .Do(x => { throw new OperationCanceledException(); });
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException());
 
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
 
             deviceClient.InnerHandler = errorHandler;
 
@@ -1234,10 +1251,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
             // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
+            var ct = new CancellationToken(true);
 
-            Func<Task> act = async () => await deviceClient.OpenAsync(cts.Token);
+            Func<Task> act = async () => await deviceClient.OpenAsync(ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -1249,15 +1265,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+            var mainProtocolHandler = new Mock<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.UpdateReportedPropertiesAsync(Arg.Any<ReportedProperties>(), Arg.Any<CancellationToken>()))
-                .Do(x => { throw new OperationCanceledException(); });
+                .Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<ReportedProperties>(), It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException());
 
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
 
             deviceClient.InnerHandler = errorHandler;
 
@@ -1265,10 +1281,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
             // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
+            var ct = new CancellationToken(true);
 
-            Func<Task> act = async () => await deviceClient.UpdateReportedPropertiesAsync(new ReportedProperties(), cts.Token);
+            Func<Task> act = async () => await deviceClient.UpdateReportedPropertiesAsync(new ReportedProperties(), ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -1280,15 +1295,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+            var mainProtocolHandler = new Mock<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.GetTwinAsync(Arg.Any<CancellationToken>()))
-                .Do(x => { throw new OperationCanceledException(); });
+                .Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException());
 
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
 
             deviceClient.InnerHandler = errorHandler;
 
@@ -1296,10 +1311,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
             // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
+            var ct = new CancellationToken(true);
 
-            Func<Task> act = async () => await deviceClient.GetTwinPropertiesAsync(cts.Token);
+            Func<Task> act = async () => await deviceClient.GetTwinPropertiesAsync(ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -1311,15 +1325,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+            var mainProtocolHandler = new Mock<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.CloseAsync(Arg.Any<CancellationToken>()))
-                .Do(x => { throw new OperationCanceledException(); });
+                .Setup(x => x.CloseAsync(It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException());
 
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
 
             deviceClient.InnerHandler = errorHandler;
 
@@ -1327,10 +1341,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
             // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
+            var ct = new CancellationToken(true);
 
-            Func<Task> act = async () => await deviceClient.CloseAsync(cts.Token);
+            Func<Task> act = async () => await deviceClient.CloseAsync(ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -1342,19 +1355,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
+            var mainProtocolHandler = new Mock<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
             // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
-                .When(x => x.EnableTwinPatchAsync(Arg.Any<CancellationToken>()))
-                .Do(x => { throw new OperationCanceledException(); });
+                .Setup(x => x.EnableTwinPatchAsync(It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException());
 
             mainProtocolHandler
-                .When(x => x.DisableTwinPatchAsync(Arg.Any<CancellationToken>()))
-                .Do(x => { throw new OperationCanceledException(); });
+                .Setup(x => x.DisableTwinPatchAsync(It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException());
 
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler);
+            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
 
             deviceClient.InnerHandler = errorHandler;
 
@@ -1362,15 +1375,28 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
             // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
-            using var cts = new CancellationTokenSource();
-            cts.Cancel();
+            var ct = new CancellationToken(true);
 
-            Func<Task> act = async () => await deviceClient.SetDesiredPropertyUpdateCallbackAsync(
-                (patch) => Task.FromResult(true),
-                cts.Token);
+            Func<Task> act = async () => await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch) => Task.FromResult(true), ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
+        }
+
+        private void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(IotHubClientTransportSettings transportSettings)
+        {
+            // arrange
+
+            var clientOptions = new IotHubClientOptions(transportSettings)
+            {
+                ModelId = "dtmi:com:example:testModel;1",
+            };
+
+            // act
+            Action act = () => { using var deviceClient = new IotHubDeviceClient(FakeConnectionString, clientOptions); };
+
+            // assert
+            act.Should().NotThrow();
         }
 
         private class TestDeviceAuthenticationWithTokenRefresh : ClientAuthenticationWithTokenRefresh
