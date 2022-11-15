@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
-            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             (Message testMessage, string messageId, string payload, string p1Value) = ComposeTelemetryMessage();
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);

@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -50,34 +51,34 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ModuleClient_CreateFromConnectionString_NullConnectionStringThrows()
+        public async Task ModuleClient_CreateFromConnectionString_NullConnectionStringThrows()
         {
-            using var mc = new IotHubModuleClient(null);
+            await using var moduleClient = new IotHubModuleClient(null);
         }
 
         [TestMethod]
-        public void ModuleClient_CreateFromConnectionString_WithModuleId()
+        public async Task ModuleClient_CreateFromConnectionString_WithModuleId()
         {
-            using var moduleClient = new IotHubModuleClient(ConnectionStringWithModuleId);
-            Assert.IsNotNull(moduleClient);
+            await using var moduleClient = new IotHubModuleClient(ConnectionStringWithModuleId);
+            moduleClient.Should().NotBeNull();
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidOperationException))]
-        public void ModuleClient_CreateFromConnectionString_WithNoModuleIdThrows()
+        public async Task ModuleClient_CreateFromConnectionString_WithNoModuleIdThrows()
         {
-            using var mc = new IotHubModuleClient(ConnectionStringWithoutModuleId);
+            await using var moduleClient = new IotHubModuleClient(ConnectionStringWithoutModuleId);
         }
 
         [TestMethod]
-        public void ModuleClient_CreateFromConnectionString_NoTransportSettings()
+        public async Task ModuleClient_CreateFromConnectionString_NoTransportSettings()
         {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            Assert.IsNotNull(moduleClient);
+            await using var moduleClient = new IotHubModuleClient(FakeConnectionString);
+            moduleClient.Should().NotBeNull();
         }
 
         [TestMethod]
-        public void ModuleClient_CreateFromConnectionStringWithClientOptions_DoesNotThrow()
+        public async Task ModuleClient_CreateFromConnectionStringWithClientOptions_DoesNotThrow()
         {
             // setup
             var clientOptions = new IotHubClientOptions(new IotHubClientMqttSettings())
@@ -86,14 +87,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString, clientOptions);
+            await using var moduleClient = new IotHubModuleClient(FakeConnectionString, clientOptions);
         }
 
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString, options);
+            await using var moduleClient = new IotHubModuleClient(FakeConnectionString, options);
             var innerHandler = new Mock<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler.Object;
 
@@ -108,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_OnReceiveEventMessageCalled_DefaultCallbackCalled()
         {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(FakeConnectionString);
             var innerHandler = new Mock<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler.Object;
 

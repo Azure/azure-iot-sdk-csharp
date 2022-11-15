@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_chainCertificateWithPrivateKey,
                 chainCerts,
                 TestConfiguration.IotHub.X509ChainDeviceName);
-            using var deviceClient = new IotHubDeviceClient(
+            await using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
                 new IotHubClientOptions(new IotHubClientMqttSettings()));
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_chainCertificateWithPrivateKey,
                 chainCerts,
                 TestConfiguration.IotHub.X509ChainDeviceName);
-            using var deviceClient = new IotHubDeviceClient(
+            await using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
                 new IotHubClientOptions(new IotHubClientAmqpSettings()));
@@ -175,9 +175,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSetting));
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSetting));
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            var message = MessageSendE2ETests.ComposeD2cTestMessage(out string _, out string _);
+            var message = TelemetryE2ETests.ComposeD2cTestMessage(out string _, out string _);
             await deviceClient.SendTelemetryAsync(message).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             var auth = new ClientAuthenticationWithX509Certificate(s_selfSignedCertificateWithPrivateKey, deviceName);
-            using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
+            await using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             try
             {
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             var auth = new ClientAuthenticationWithX509Certificate(s_selfSignedCertificateWithPrivateKey, deviceName);
-            using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
+            await using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             for (int i = 0; i < 2; i++)
             {

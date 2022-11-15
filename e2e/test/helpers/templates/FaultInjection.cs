@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     await cleanupOperation().ConfigureAwait(false);
                 }
-                deviceClient.Dispose();
+                await deviceClient.DisposeAsync();
                 await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
 
                 if (!FaultShouldDisconnect(faultType))

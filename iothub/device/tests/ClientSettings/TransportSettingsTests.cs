@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -125,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void IotHubDeviceClient_NullX509Certificate()
+        public async Task IotHubDeviceClient_NullX509Certificate()
         {
             // arrange
             const string hostName = "acme.azure-devices.net";
@@ -133,12 +134,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act
-            using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void IotHubDeviceClient_NullX509CertificateChain()
+        public async Task IotHubDeviceClient_NullX509CertificateChain()
         {
             // arrange
             const string hostName = "acme.azure-devices.net";
@@ -148,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act
-            using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
     }
 }

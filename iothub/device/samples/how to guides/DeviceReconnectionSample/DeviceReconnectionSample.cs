@@ -92,6 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 s_appCancellation.Cancel();
             }
 
+            await s_deviceClient.DisposeAsync();
             s_initSemaphore.Dispose();
             s_appCancellation.Dispose();
         }

@@ -55,8 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using var service = new IotHubServiceClient(
-                TestConfiguration.IotHub.ConnectionStringInvalidServiceCertificate, options);
+            using var service = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionStringInvalidServiceCertificate, options);
             var testMessage = new Message();
             await service.Messages.OpenAsync().ConfigureAwait(false);
             await service.Messages.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
@@ -126,14 +125,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private static async Task TestDeviceClientInvalidServiceCertificate(IotHubClientTransportSettings transportSettings)
         {
-            using var deviceClient =
-                new IotHubDeviceClient(
-                    TestConfiguration.IotHub.DeviceConnectionStringInvalidServiceCertificate,
-                    new IotHubClientOptions(transportSettings));
+            await using var deviceClient = new IotHubDeviceClient(
+                TestConfiguration.IotHub.DeviceConnectionStringInvalidServiceCertificate,
+                new IotHubClientOptions(transportSettings));
             var testMessage = new TelemetryMessage();
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
     }
 }

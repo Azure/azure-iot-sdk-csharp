@@ -20,6 +20,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable client from the specified connection string.
         /// </summary>
+        /// <remarks>
+        /// This client is safe to cache and use for the lifetime of an application. Calling <see cref="IotHubBaseClient.DisposeAsync" /> as the application is shutting down
+        /// will ensure that network resources and other unmanaged objects are properly cleaned up.
+        /// </remarks>
         /// <param name="connectionString">The connection string based on shared access key used in API calls which allows the device to communicate with IoT Hub.</param>
         /// <param name="options">The optional configuration of the device client instance.</param>
         /// <returns>A disposable client instance.</returns>
@@ -37,6 +41,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable client from the specified parameters.
         /// </summary>
+        /// <remarks>
+        /// This client is safe to cache and use for the lifetime of an application. Calling <see cref="IotHubBaseClient.DisposeAsync" /> as the application is shutting down
+        /// will ensure that network resources and other unmanaged objects are properly cleaned up.
+        /// </remarks>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="authenticationMethod">
         /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSharedAccessKeyRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>

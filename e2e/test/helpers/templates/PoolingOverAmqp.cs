@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 
@@ -82,7 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     await cleanupOperation().ConfigureAwait(false);
                 }
 
-                deviceClients.ForEach(deviceClient => deviceClient.Dispose());
+                await Task.WhenAll(deviceClients.Select(x => x.DisposeAsync().AsTask())).ConfigureAwait(false);
                 testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());
 
                 // Clean up the local lists

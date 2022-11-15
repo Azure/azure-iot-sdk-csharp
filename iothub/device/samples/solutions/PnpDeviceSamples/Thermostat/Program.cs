@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             try
             {
-                using IotHubDeviceClient deviceClient = await SetupDeviceClientAsync(parameters, logger, cts.Token);
+                await using IotHubDeviceClient deviceClient = await SetupDeviceClientAsync(parameters, logger, cts.Token);
                 var sample = new ThermostatSample(deviceClient, logger);
                 await sample.PerformOperationsAsync(cts.Token);
 

@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             Console.WriteLine($"Testing the provisioned device with IoT Hub...");
             IotHubClientTransportSettings transportSettings = _parameters.GetHubTransportSettings();
             var hubOptions = new IotHubClientOptions(transportSettings);
-            using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
+            await using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
             await iotClient.OpenAsync();
 
             Console.WriteLine("Sending a telemetry message...");
