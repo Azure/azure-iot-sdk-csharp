@@ -108,45 +108,42 @@ jobs:
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
-      # Linux requires .NET 6.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
-        condition: eq(variables.SHOULD_RUN, 'True')
+        # Linux requires .NET 6.0 install for tests to run, no matter which framework target is being tested
+        condition: always()
         inputs:
          packageType: sdk
          version: 6.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNet50'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK 5.0'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            packageType: sdk
-            version: 5.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcore31'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET Core SDK 3.1'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            packageType: sdk
-            version: 3.1.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcore21'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET Core SDK 2.1'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            packageType: sdk
-            version: 2.1.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: Docker@2
         displayName: "Login to ACR"
@@ -394,42 +391,38 @@ jobs:
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
-      - ${{ if eq(variables['testNet60'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK 6.0'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            packageType: sdk
-            version: 6.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNet50'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK 5.0'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            packageType: sdk
-            version: 5.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcore31'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET Core SDK 3.1'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            packageType: sdk
-            version: 3.1.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcore21'], 'True') }}:
-        - task: CmdLine@2
-          displayName: 'Install .NET Core 2.1'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            script: 'choco install dotnetcore-2.1-sdk'
+      - task: CmdLine@2
+        displayName: 'Install .NET Core 2.1'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          script: 'choco install dotnetcore-2.1-sdk'
 
       - ${{ if eq(variables['testNet472'], 'True') }}:
         - task: CmdLine@2
