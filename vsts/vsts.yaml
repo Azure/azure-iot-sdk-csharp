@@ -111,6 +111,7 @@ jobs:
       # Linux requires .NET 6.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
          packageType: sdk
          version: 6.x
@@ -120,6 +121,7 @@ jobs:
       - ${{ if eq(variables['testNet50'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET SDK 5.0'
+          condition: eq(variables.SHOULD_RUN, 'True')
           inputs:
             packageType: sdk
             version: 5.x
@@ -129,6 +131,7 @@ jobs:
       - ${{ if eq(variables['testNetcore31'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET Core SDK 3.1'
+          condition: eq(variables.SHOULD_RUN, 'True')
           inputs:
             packageType: sdk
             version: 3.1.x
@@ -138,6 +141,7 @@ jobs:
       - ${{ if eq(variables['testNetcore21'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET Core SDK 2.1'
+          condition: eq(variables.SHOULD_RUN, 'True')
           inputs:
             packageType: sdk
             version: 2.1.x
@@ -146,17 +150,20 @@ jobs:
 
       - task: Docker@2
         displayName: "Login to ACR"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           command: "login"
           containerRegistry: "Azure IoT ACR"
 
       - task: DockerInstaller@0
         displayName: "Cert Validation - Install Docker CLI"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           dockerVersion: '20.10.17'
 
       - task: PowerShell@2
         displayName: 'Cert Validation - Setup Certificate Proxy'
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: 'inline'
           script: |
@@ -182,6 +189,7 @@ jobs:
       - task: Bash@3
         displayName: 'Cert Validation - Setup local hostname'
         name: CVTEST_NET
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: 'inline'
           script: |
@@ -259,6 +267,7 @@ jobs:
 
       - task: Docker@1
         displayName: "Start Test Proxy"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           containerregistrytype: "Container Registry"
           command: "Run an image"
@@ -270,6 +279,7 @@ jobs:
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
+        condition: eq(variables.SHOULD_RUN, 'True')
         env:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
@@ -313,36 +323,33 @@ jobs:
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
-        condition: always()
-
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
 
-        condition: always()
-
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           testRunner: VSTest
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
-
-        condition: always()
         
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
           alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
-        condition: always()
 
   ### Windows build ###
   - job: WINDOWS
@@ -390,6 +397,7 @@ jobs:
       - ${{ if eq(variables['testNet60'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET SDK 6.0'
+          condition: eq(variables.SHOULD_RUN, 'True')
           inputs:
             packageType: sdk
             version: 6.x
@@ -399,6 +407,7 @@ jobs:
       - ${{ if eq(variables['testNet50'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET SDK 5.0'
+          condition: eq(variables.SHOULD_RUN, 'True')
           inputs:
             packageType: sdk
             version: 5.x
@@ -408,6 +417,7 @@ jobs:
       - ${{ if eq(variables['testNetcore31'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET Core SDK 3.1'
+          condition: eq(variables.SHOULD_RUN, 'True')
           inputs:
             packageType: sdk
             version: 3.1.x
@@ -417,12 +427,14 @@ jobs:
       - ${{ if eq(variables['testNetcore21'], 'True') }}:
         - task: CmdLine@2
           displayName: 'Install .NET Core 2.1'
+          condition: eq(variables.SHOULD_RUN, 'True')
           inputs:
             script: 'choco install dotnetcore-2.1-sdk'
 
       - ${{ if eq(variables['testNet472'], 'True') }}:
         - task: CmdLine@2
           displayName: 'Install .NET 4.7.2'
+          condition: eq(variables.SHOULD_RUN, 'True')
           inputs:
             script: 'choco install netfx-4.7.2-devpack'
 
@@ -430,9 +442,11 @@ jobs:
           choco install -y squid
 
         displayName: "Install Squid"
+        condition: eq(variables.SHOULD_RUN, 'True')
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
+        condition: eq(variables.SHOULD_RUN, 'True')
         env:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
@@ -476,31 +490,29 @@ jobs:
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
-        condition: always()
-
       - task: CopyFiles@2
         displayName: "Copy ETL files to the artifacts folder"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.etl"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
-        condition: always()
-
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           ArtifactName: testresults_windows_$(FRAMEWORK)
 
-        condition: always()
-
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           testRunner: VSTest
           testResultsFiles: "**/*.trx"
@@ -508,15 +520,13 @@ jobs:
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
 
-        condition: always()
-
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
           alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
-        condition: always()
 
   ### .Net SDL Analyzers ###
   - job: DOTNet_SDL_Analyzers
