@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
-            await using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
-            await using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
 
         [TestMethod]
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
-            await using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
 
             // should not throw
         }
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
-            await using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
 
             // should not throw
         }
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_CreateFromConnectionString_WithModuleIdThrows()
+        public void IotHubDeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
             Action act = () => new IotHubDeviceClient("HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1");
             act.Should().Throw<InvalidOperationException>();
@@ -1045,7 +1045,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_CreateWithConnectionString_InvalidSasTimeToLive_ThrowsException()
+        public void IotHubDeviceClient_CreateWithConnectionString_InvalidSasTimeToLive_ThrowsException()
         {
             // arrange
             // act
@@ -1056,7 +1056,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_CreateWithConnectionString_InvalidSasRenewalBuffer_ThrowsException()
+        public void IotHubDeviceClient_CreateWithConnectionString_InvalidSasRenewalBuffer_ThrowsException()
         {
             // arrange
             // act
@@ -1077,7 +1077,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            await using IotHubDeviceClient deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
+            await using var deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
 
             // assert
             var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
@@ -1109,7 +1109,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            await using IotHubDeviceClient deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
+            await using var deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
 
             // assert
             var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
@@ -1130,25 +1130,25 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_InitWithMqttTcpTransportAndModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithMqttTcpTransportAndModelId_DoesNotThrow()
         {
             IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings());
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_InitWithMqttWsTransportAndModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithMqttWsTransportAndModelId_DoesNotThrow()
         {
             IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_InitWithAmqpTcpTransportAndModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithAmqpTcpTransportAndModelId_DoesNotThrow()
         {
             IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings());
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_InitWithAmqpWsTransportAndModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithAmqpWsTransportAndModelId_DoesNotThrow()
         {
             IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
         }

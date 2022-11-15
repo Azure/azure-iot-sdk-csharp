@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act
-            await using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
 
         [TestMethod]
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act
-            await using var dc = new IotHubDeviceClient(hostName, authMethod, options);
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
     }
 }

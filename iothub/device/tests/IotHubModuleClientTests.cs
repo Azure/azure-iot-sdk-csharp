@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task ModuleClient_CreateFromConnectionString_NullConnectionStringThrows()
         {
-            await using var mc = new IotHubModuleClient(null);
+            await using var moduleClient = new IotHubModuleClient(null);
         }
 
         [TestMethod]
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(InvalidOperationException))]
         public async Task ModuleClient_CreateFromConnectionString_WithNoModuleIdThrows()
         {
-            await using var mc = new IotHubModuleClient(ConnectionStringWithoutModuleId);
+            await using var moduleClient = new IotHubModuleClient(ConnectionStringWithoutModuleId);
         }
 
         [TestMethod]

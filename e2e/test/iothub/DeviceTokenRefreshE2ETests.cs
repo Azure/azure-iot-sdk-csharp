@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
-            await using IotHubDeviceClient deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, auth, options);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, auth, options);
             VerboseTestLogger.WriteLine($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
             void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
