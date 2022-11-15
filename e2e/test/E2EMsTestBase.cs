@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // Workers = 0 makes the test engine use one worker per available core. It does not mean to run serially.
@@ -31,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // The test timeout for e2e tests that involve testing token refresh
         protected const int TokenRefreshTestTimeoutMilliseconds = 20 * 60 * 1000; // 20 minutes
-        
+
         private const string CollectSdkLogsEnvVar = "COLLECT_SDK_LOGS";
         public static readonly bool s_collectSdkLogs;
 
@@ -72,6 +73,25 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (disposing)
             {
                 _listener?.Dispose();
+            }
+        }
+
+        protected static async Task CleanupAsync(IotHubServiceClient serviceClient, string deviceId)
+        {
+            if (deviceId == null)
+            {
+                return;
+            }
+
+            // cleanup
+            try
+            {
+                await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Test clean up of device {deviceId} failed due to {ex}.");
+
             }
         }
     }
