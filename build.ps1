@@ -140,6 +140,65 @@ Function BuildProject($path, $message)
     }
 }
 
+Function RunSamples($path, $message)
+{
+    $label = "RUNNING SAMPLES: --- $message $configuration ---"
+
+    Write-Host
+    Write-Host -ForegroundColor Cyan $label
+
+    try {
+            $sampleRunningTimeInSeconds = 30
+
+            # Run the iot-hub\device samples
+            RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"""
+            RunSample 'iothub\device\samples\getting started\MessageReceiveSample' "IoTHub\Device\MessageReceiveSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
+            RunSample 'iothub\device\samples\getting started\MethodSample' "IoTHub\Device\MethodSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
+            RunSample 'iothub\device\samples\getting started\TwinSample' "IoTHub\Device\TwinSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
+
+            $pnpDeviceSecurityType = "connectionString"
+            RunSample iothub\device\samples\solutions\PnpDeviceSamples\TemperatureController "IoTHub\Device\PnpDeviceSamples\TemperatureController" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_TC_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
+            RunSample iothub\device\samples\solutions\PnpDeviceSamples\Thermostat "IoTHub\Device\PnpDeviceSamples\Thermostat" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_THERMOSTAT_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
+            # Run the iot-hub\service samples
+            $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | Where-Object {$_ -like "DeviceId=*"}).Split("=")[1]
+            $iothubHost = ($Env:IOTHUB_CONNECTION_STRING.Split(';') | Where-Object {$_ -like "HostName=*"}).Split("=")[1]
+            RunSample 'iothub\service\samples\how to guides\AutomaticDeviceManagementSample' "IoTHub\Service\AutomaticDeviceManagementSample" "-c ""$env:IOTHUB_CONNECTION_STRING"""
+
+            Write-Warning "Using device $deviceId for the AzureSasCredentialAuthenticationSample."
+            RunSample 'iothub\service\samples\how to guides\AzureSasCredentialAuthenticationSample' "IoTHub\Service\AzureSasCredentialAuthenticationSample" "-r $iothubHost -d $deviceId -s ""$env:IOTHUB_SAS_KEY"" -n ""$env:IOTHUB_SAS_KEY_NAME"""
+
+            RunSample 'iothub\service\samples\getting started\EdgeDeploymentSample' "IoTHub\Service\EdgeDeploymentSample"
+            RunSample 'iothub\service\samples\getting started\JobsSample' "IoTHub\Service\JobsSample"
+            RunSample 'iothub\service\samples\how to guides\RegistryManagerSample' "IoTHub\Service\RegistryManagerSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -p ""$env:IOTHUB_X509_DEVICE_PFX_THUMBPRINT"""
+
+            Write-Warning "Using device $deviceId for the RoleBasedAuthenticationSample."
+            RunSample 'iothub\service\samples\how to guides\RoleBasedAuthenticationSample' "IoTHub\Service\RoleBasedAuthenticationSample" "-h $iothubHost -d $deviceId --ClientId ""$env:E2E_TEST_AAD_APP_CLIENT_ID"" --TenantId ""$env:MSFT_TENANT_ID"" --ClientSecret ""$env:E2E_TEST_AAD_APP_CLIENT_SECRET"""
+
+            Write-Warning "Using device $deviceId for the ServiceClientSample."
+            RunSample 'iothub\service\samples\getting started\ServiceClientSample' "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -d $deviceId -r $sampleRunningTimeInSeconds"
+
+            # Run provisioning\device samples
+
+            # ComputeDerivedSymmetricKeySample uses the supplied group enrollment key to compute the SHA256 based hash of the supplied device Id.
+            # For the sake of running this sample on the pipeline, we will only test the hash computation by passing in a base-64 string and a string to be hashed.
+            RunSample 'provisioning\device\samples\getting started\ComputeDerivedSymmetricKeySample' "Provisioning\Device\ComputeDerivedSymmetricKeySample" "-r ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
+
+            # Run provisioning\service samples
+            RunSample 'provisioning\service\samples\how to guides\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+            RunSample 'provisioning\service\samples\getting started\EnrollmentSample' "Provisioning\Service\EnrollmentSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+
+            # Run the cleanup again so that identities and enrollments created for the samples are cleaned up.
+            RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+            RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
+    }  
+    catch [Exception]{
+        throw "Running Samples Failed: $label"
+    }
+    finally {
+        Set-Location $rootDir
+    }
+}
+
 Function BuildPackage($path, $message)
 {
     $label = "PACK: --- $message $configuration ---"
@@ -221,65 +280,6 @@ Function RunApp($path, $message, $framework = "netcoreapp3.1")
     if ($LASTEXITCODE -ne 0)
     {
         throw "Tests failed: $label"
-    }
-}
-
-Function RunSamples($path, $message)
-{
-    $label = "RUNNING SAMPLES: --- $message $configuration ---"
-
-    Write-Host
-    Write-Host -ForegroundColor Cyan $label
-
-    try {
-            $sampleRunningTimeInSeconds = 30
-
-            # Run the iot-hub\device samples
-            RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"""
-            RunSample 'iothub\device\samples\getting started\MessageReceiveSample' "IoTHub\Device\MessageReceiveSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
-            RunSample 'iothub\device\samples\getting started\MethodSample' "IoTHub\Device\MethodSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
-            RunSample 'iothub\device\samples\getting started\TwinSample' "IoTHub\Device\TwinSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
-
-            $pnpDeviceSecurityType = "connectionString"
-            RunSample iothub\device\samples\solutions\PnpDeviceSamples\TemperatureController "IoTHub\Device\PnpDeviceSamples\TemperatureController" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_TC_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
-            RunSample iothub\device\samples\solutions\PnpDeviceSamples\Thermostat "IoTHub\Device\PnpDeviceSamples\Thermostat" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_THERMOSTAT_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
-            # Run the iot-hub\service samples
-            $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | Where-Object {$_ -like "DeviceId=*"}).Split("=")[1]
-            $iothubHost = ($Env:IOTHUB_CONNECTION_STRING.Split(';') | Where-Object {$_ -like "HostName=*"}).Split("=")[1]
-            RunSample 'iothub\service\samples\how to guides\AutomaticDeviceManagementSample' "IoTHub\Service\AutomaticDeviceManagementSample"
-
-            Write-Warning "Using device $deviceId for the AzureSasCredentialAuthenticationSample."
-            RunSample 'iothub\service\samples\how to guides\AzureSasCredentialAuthenticationSample' "IoTHub\Service\AzureSasCredentialAuthenticationSample" "-r $iothubHost -d $deviceId -s ""$env:IOTHUB_SAS_KEY"" -n ""$env:IOTHUB_SAS_KEY_NAME"""
-
-            RunSample 'iothub\service\samples\getting started\EdgeDeploymentSample' "IoTHub\Service\EdgeDeploymentSample"
-            RunSample 'iothub\service\samples\getting started\JobsSample' "IoTHub\Service\JobsSample"
-            RunSample 'iothub\service\samples\how to guides\RegistryManagerSample' "IoTHub\Service\RegistryManagerSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -p ""$env:IOTHUB_X509_DEVICE_PFX_THUMBPRINT"""
-
-            Write-Warning "Using device $deviceId for the RoleBasedAuthenticationSample."
-            RunSample 'iothub\service\samples\how to guides\RoleBasedAuthenticationSample' "IoTHub\Service\RoleBasedAuthenticationSample" "-h $iothubHost -d $deviceId --ClientId ""$env:E2E_TEST_AAD_APP_CLIENT_ID"" --TenantId ""$env:MSFT_TENANT_ID"" --ClientSecret ""$env:E2E_TEST_AAD_APP_CLIENT_SECRET"""
-
-            Write-Warning "Using device $deviceId for the ServiceClientSample."
-            RunSample 'iothub\service\samples\getting started\ServiceClientSample' "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -d $deviceId -r $sampleRunningTimeInSeconds"
-
-            # Run provisioning\device samples
-
-            # ComputeDerivedSymmetricKeySample uses the supplied group enrollment key to compute the SHA256 based hash of the supplied device Id.
-            # For the sake of running this sample on the pipeline, we will only test the hash computation by passing in a base-64 string and a string to be hashed.
-            RunSample 'provisioning\device\samples\getting started\ComputeDerivedSymmetricKeySample' "Provisioning\Device\ComputeDerivedSymmetricKeySample" "-r ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
-
-            # Run provisioning\service samples
-            RunSample 'provisioning\service\samples\how to guides\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-            RunSample 'provisioning\service\samples\getting started\EnrollmentSample' "Provisioning\Service\EnrollmentSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-
-            # Run the cleanup again so that identities and enrollments created for the samples are cleaned up.
-            RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-            RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
-    }  
-    catch [Exception]{
-        throw "Running Samples Failed: $label"
-    }
-    finally {
-        Set-Location $rootDir
     }
 }
 
