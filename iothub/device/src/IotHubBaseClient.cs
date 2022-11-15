@@ -404,9 +404,25 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc/>
         public async ValueTask DisposeAsync()
         {
-            await CloseAsync(CancellationToken.None).ConfigureAwait(false);
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (Logging.IsEnabled)
+                Logging.Enter(this, "Closing and disposing", nameof(DisposeAsync));
+
+            try
+            {
+                await CloseAsync(CancellationToken.None).ConfigureAwait(false);
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            catch (Exception ex) when (Logging.IsEnabled)
+            {
+                Logging.Error(this, ex, nameof(DisposeAsync));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, "Closing and disposing", nameof(DisposeAsync));
+            }
         }
 
         /// <summary>
