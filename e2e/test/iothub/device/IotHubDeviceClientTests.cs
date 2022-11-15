@@ -8,19 +8,18 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub.twin
+namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("E2E")]
     [TestCategory("IoTHub")]
+    [TestCategory("E2E")]
     public class IotHubDeviceClientTests
     {
-
         [TestMethod]
         public async Task IotHubDeviceClient_SendTelemetryAsync_AfterExplicitOpenAsync_DoesNotThrow()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests)).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests));
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
 
             // act

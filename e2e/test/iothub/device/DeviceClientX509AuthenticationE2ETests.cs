@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSetting));
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            var message = MessageSendE2ETests.ComposeD2cTestMessage(out string _, out string _);
+            var message = TelemetryE2ETests.ComposeD2cTestMessage(out string _, out string _);
             await deviceClient.SendTelemetryAsync(message).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }

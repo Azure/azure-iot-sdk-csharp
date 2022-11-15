@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public partial class MessageSendE2ETests : E2EMsTestBase
+    public partial class TelemetryE2ETests : E2EMsTestBase
     {
         private const int MessageBatchCount = 5;
 
@@ -32,8 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // the message size is less than 1 MB.
         private const int OverlyExceedAllowedMessageSizeInBytes = 3000 * 1024;
 
-        private readonly string _devicePrefix = $"{nameof(MessageSendE2ETests)}_";
-        private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
+        private readonly string _devicePrefix = $"{nameof(TelemetryE2ETests)}_";
+        private readonly string _modulePrefix = $"{nameof(TelemetryE2ETests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
         [TestMethod]
