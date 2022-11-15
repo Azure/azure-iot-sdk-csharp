@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
 
             // Connect to the IoT hub using the MQTT protocol by default
-            using var deviceClient = new IotHubDeviceClient(
+            await using var deviceClient = new IotHubDeviceClient(
                 parameters.DeviceConnectionString,
                 options);
 

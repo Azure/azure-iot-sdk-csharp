@@ -138,6 +138,11 @@ Find a client you currently use below, read the table of API name changes and us
   - The supported workaround is to provide a client web socket instance in the client options.
 - The authentication classes for devices and modules have been consolidated.
 - Reduced access levels to classes and methods that were never intended to be public where possible.
+- The device and module clients now only support `IAsyncDisposable`, which will ensure `CloseAsync()` is called before disposing.
+  - The syntax for this might be quite new for some and feel awkward. You can choose from the following options:
+    1. Manually call `await client.DisposeAsync();`.
+    1. Initialize the client with the **await** keyword: `await using client = new IotHubDeviceClient(...);`. The client will be disposed when it goes out of scope.
+  - For more information, see <https://learn.microsoft.com/dotnet/api/system.iasyncdisposable>.
 
 #### Notable additions
 
@@ -154,6 +159,7 @@ Find a client you currently use below, read the table of API name changes and us
 | v1 API | Equivalent v2 API | Notes |
 |:---|:---|:---|
 | `DeviceClient` | `IotHubDeviceClient` | Specify the service it is a device client for. |
+| `DeviceClient.Dispose()` | `IotHubDeviceClient.DisposeAsync()` | Ensures the client is closed before disposing. |
 | `DeviceClient.SendEventAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(...)` | Even our public documentation calls this telemetry, so we renamed the method to describe this better.¹ |
 | `DeviceClient.SendEventBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` | See¹ |
 | `DeviceClient.SetConnectionStatusChangesHandler(...)` | `IotHubDeviceClient.ConnectionStatusChangeCallback` | Local operation doesn't require being a method. |

@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var fileUploadSasUriRequest = new FileUploadSasUriRequest(filename);
 
-            using (deviceClient)
+            await using (deviceClient)
             {
                 FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
 
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             }
 
-            using (deviceClient)
+            await using (deviceClient)
             {
                 FileUploadSasUriResponse sasUriResponse = await deviceClient
                     .GetFileUploadSasUriAsync(new FileUploadSasUriRequest(blobName))

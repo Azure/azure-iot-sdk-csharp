@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             const string commandName = "Reboot";
             bool deviceMethodCalledSuccessfully = false;
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync("NullMethodPayloadTest").ConfigureAwait(false);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
             try
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -241,7 +241,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 // clean up
 
                 await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
-                await deviceClient.CloseAsync().ConfigureAwait(false);
                 await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
             }
         }
@@ -463,7 +462,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             await subscribeAndUnsubscribeMethod(deviceClient, MethodName).ConfigureAwait(false);
@@ -474,8 +473,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     responseTimeout,
                     serviceClientTransportSettings)
                 .ConfigureAwait(false);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondAsync(
@@ -486,7 +483,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
@@ -499,8 +496,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 serviceClientTransportSettings);
 
             await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task OpenCloseOpenThenSendMethodAndRespondAsync(
@@ -511,7 +506,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
             // Close and re-open the client under test.
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -543,8 +538,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     methodReceivedTask.IsCompleted.Should().BeTrue("Timed out waiting on the device to receive the expected direct method.");
                 }
             }
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondAsync(
@@ -555,7 +548,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
+            await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(moduleClient, MethodName).ConfigureAwait(false);
@@ -572,8 +565,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         serviceClientTransportSettings),
                     methodReceivedTask)
                 .ConfigureAwait(false);
-
-            await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
         internal class DeviceResponsePayload

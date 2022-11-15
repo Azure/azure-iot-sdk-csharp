@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private bool _isOpen;
         private SemaphoreSlim _handlerSemaphore = new(1, 1);
-        private bool _wasOpenCalled;
         private bool _methodsEnabled;
         private bool _twinEnabled;
         private bool _deviceReceiveMessageEnabled;
@@ -417,7 +416,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (!_isDisposed)
                     {
                         _isOpen = true;
-                        _wasOpenCalled = true;
 
                         // Send the request for transport close notification.
                         _transportClosedTask = HandleDisconnectAsync();
@@ -442,13 +440,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
-            _isOpen = false;
+            if (!_isOpen)
+            {
+                // Already closed so gracefully exit, instead of throw.
+                return;
+            }
 
             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                if (!_wasOpenCalled)
+                if (!_isOpen)
                 {
                     // Already closed so gracefully exit, instead of throw.
                     return;
@@ -459,6 +461,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
+                _isOpen = false;
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
@@ -474,10 +478,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (!_isOpen)
                 {
-                    throw new InvalidOperationException(
-                        _wasOpenCalled
-                            ? $"The transport has disconnected; call '{nameof(OpenAsync)}' to reconnect."
-                            : $"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
+                    throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
                 }
             }
             finally
@@ -585,7 +586,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                    var tasks = new List<Task>(4);
+                    var tasks = new List<Task>(3);
 
                     // This is to ensure that, if previously enabled, the callback to receive direct methods is recovered.
                     if (_methodsEnabled)

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 RetryPolicy = new IotHubClientNoRetry(),
             };
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
 

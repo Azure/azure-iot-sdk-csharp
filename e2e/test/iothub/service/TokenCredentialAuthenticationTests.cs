@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 ModelId = thermostatModelId,
             };
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             await deviceClient.OpenAsync().ConfigureAwait(false);

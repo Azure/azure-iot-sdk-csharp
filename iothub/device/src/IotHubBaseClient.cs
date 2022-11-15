@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a client can use to send messages to and receive messages from the service,
     /// respond to direct method invocations from the service, and send and receive twin property updates.
     /// </summary>
-    public abstract class IotHubBaseClient : IDisposable
+    public abstract class IotHubBaseClient : IAsyncDisposable
     {
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
@@ -401,16 +401,28 @@ namespace Microsoft.Azure.Devices.Client
             await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Releases the unmanaged resources used by the client and optionally disposes of the managed resources.
-        /// </summary>
-        /// <remarks>
-        /// The method <see cref="CloseAsync(CancellationToken)"/> should be called before disposing.
-        /// </remarks>
-        public void Dispose()
+        /// <inheritdoc/>
+        public async ValueTask DisposeAsync()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (Logging.IsEnabled)
+                Logging.Enter(this, "Closing and disposing", nameof(DisposeAsync));
+
+            try
+            {
+                await CloseAsync(CancellationToken.None).ConfigureAwait(false);
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            catch (Exception ex) when (Logging.IsEnabled)
+            {
+                Logging.Error(this, ex, nameof(DisposeAsync));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, "Closing and disposing", nameof(DisposeAsync));
+            }
         }
 
         /// <summary>

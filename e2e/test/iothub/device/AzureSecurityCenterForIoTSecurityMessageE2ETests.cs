@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -122,16 +121,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task TestSecurityMessageAsync(IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
-
-            try
-            {
-                await SendSingleSecurityMessageAsync(deviceClient).ConfigureAwait(false);
-            }
-            finally
-            {
-                await deviceClient.CloseAsync().ConfigureAwait(false);
-            }
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await SendSingleSecurityMessageAsync(deviceClient).ConfigureAwait(false);
         }
 
         private async Task TestSecurityMessageModuleAsync(IotHubClientTransportSettings transportSettings)
@@ -139,15 +130,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
 
             var options = new IotHubClientOptions(transportSettings);
-            using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
-            try
-            {
-                await SendSingleSecurityMessageModuleAsync(moduleClient).ConfigureAwait(false);
-            }
-            finally
-            {
-                await moduleClient.CloseAsync().ConfigureAwait(false);
-            }
+            await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
+            await SendSingleSecurityMessageModuleAsync(moduleClient).ConfigureAwait(false);
         }
 
         private async Task SendSingleSecurityMessageAsync(
