@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Metadata for properties in a <see cref="ProvisioningTwinProperties"/>.
     /// </summary>
-    public sealed class ProvisioningTwinMetadata
+    public class ProvisioningTwinMetadata
     {
         /// <summary>
         /// Creates an instance of this class.
@@ -24,11 +24,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Wwhen a property was last updated.
         /// </summary>
-        public DateTimeOffset LastUpdatedOnUtc { get; set; }
+        public DateTimeOffset LastUpdatedOnUtc { get; protected internal set; }
 
         /// <remarks>
         /// This should be null for Reported properties metadata and must not be null for Desired properties metadata.
         /// </remarks>
-        public long? LastUpdatedVersion { get; set; }
+        public long? LastUpdatedVersion { get; protected internal set; }
     }
 }
