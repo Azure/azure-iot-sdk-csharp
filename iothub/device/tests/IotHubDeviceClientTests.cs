@@ -18,12 +18,16 @@ namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class IotHubDeviceClientTests
+    public class IotHubDeviceClientTests : IDisposable
     {
         private const string FakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
         private const string FakeHostName = "acme.azure-devices.net";
 
         private static readonly IotHubConnectionCredentials s_iotHubConnectionCredentials = new(FakeConnectionString);
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+        private static readonly X509Certificate2 s_cert = new();
+#pragma warning restore SYSLIB0026 // Type or member is obsolete
+        private static readonly X509Certificate2Collection s_certs = new();
 
         private DirectMethodResponse _directMethodResponseWithPayload = new(200)
         {
@@ -45,11 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificateChain_Throws()
-        {
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
-            using var cert = new X509Certificate2();
-
-            Action act = () => new ClientAuthenticationWithX509Certificate(cert, certificateChain: null, "device1");
+        {            Action act = () => new ClientAuthenticationWithX509Certificate(s_cert, certificateChain: null, "device1");
 
             act.Should().Throw<ArgumentException>();
         }
@@ -60,11 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string hostName = "acme.azure-devices.net";
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
-            using var cert = new X509Certificate2();
-#pragma warning restore SYSLIB0026 // Type or member is obsolete
-            var certs = new X509Certificate2Collection();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certs, "fakeDeviceId");
+            var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
@@ -77,11 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string hostName = "acme.azure-devices.net";
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
-            using var cert = new X509Certificate2();
-#pragma warning restore SYSLIB0026 // Type or member is obsolete
-            var certs = new X509Certificate2Collection();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certs, "fakeDeviceId");
+            var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
@@ -93,11 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string hostName = "acme.azure-devices.net";
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
-            using var cert = new X509Certificate2();
-#pragma warning restore SYSLIB0026 // Type or member is obsolete
-            var certs = new X509Certificate2Collection();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certs, "fakeDeviceId");
+            var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
@@ -111,11 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string hostName = "acme.azure-devices.net";
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
-            using var cert = new X509Certificate2();
-#pragma warning restore SYSLIB0026 // Type or member is obsolete
-            var certs = new X509Certificate2Collection();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certs, "fakeDeviceId");
+            var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
@@ -274,11 +258,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler.Object;
 
             bool isMethodHandlerCalled = false;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(_directMethodResponseWithPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        return Task.FromResult(_directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
 
             // act
             await deviceClient.OnMethodCalledAsync(null).ConfigureAwait(false);
@@ -299,11 +286,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler.Object;
 
             bool isMethodHandlerCalled = false;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(_directMethodResponseWithPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        return Task.FromResult(_directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
 
             var DirectMethodRequest = new DirectMethodRequest
             {
@@ -329,13 +319,16 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
-            await deviceClient.SetDirectMethodCallbackAsync((payload) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(_directMethodResponseWithPayload);
-            }).ConfigureAwait(false);
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        return Task.FromResult(_directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
 
-            CustomDirectMethodPayload payload = new CustomDirectMethodPayload { Grade = "good" };
+            var payload = new CustomDirectMethodPayload { Grade = "good" };
             var DirectMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
@@ -597,7 +590,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler.Object;
 
-            CustomDirectMethodPayload payload = new CustomDirectMethodPayload { Grade = "good" };
+            var payload = new CustomDirectMethodPayload { Grade = "good" };
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
@@ -636,7 +629,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             string methodName = "TestMethodName";
-            CustomDirectMethodPayload methodBody = new CustomDirectMethodPayload { Grade = "good" };
+            var methodBody = new CustomDirectMethodPayload { Grade = "good" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
             var directMethodRequest = new DirectMethodRequest
             {
@@ -668,7 +661,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
             };
 
-            CustomDirectMethodPayload methodBody2 = new CustomDirectMethodPayload { Grade = "bad" };
+            var methodBody2 = new CustomDirectMethodPayload { Grade = "bad" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback2).ConfigureAwait(false);
             directMethodRequest = new DirectMethodRequest
             {
@@ -772,7 +765,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
+            var connectionStatusInfo = new ConnectionStatusInfo();
             Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
@@ -793,7 +786,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
+            var connectionStatusInfo = new ConnectionStatusInfo();
             Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
@@ -813,7 +806,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
+            var connectionStatusInfo = new ConnectionStatusInfo();
             Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
             {
                 handlerCalled = true;
@@ -1130,27 +1123,19 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_InitWithMqttTcpTransportAndModelId_DoesNotThrow()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public void IotHubDeviceClient_InitWithMqttTransportAndModelId_DoesNotThrow(IotHubClientTransportProtocol protocol)
         {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings());
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(protocol));
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_InitWithMqttWsTransportAndModelId_DoesNotThrow()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public void IotHubDeviceClient_InitWithAmqpTransportAndModelId_DoesNotThrow(IotHubClientTransportProtocol protocol)
         {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
-        }
-
-        [TestMethod]
-        public void IotHubDeviceClient_InitWithAmqpTcpTransportAndModelId_DoesNotThrow()
-        {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings());
-        }
-
-        [TestMethod]
-        public void IotHubDeviceClient_InitWithAmqpWsTransportAndModelId_DoesNotThrow()
-        {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(protocol));
         }
 
         [TestMethod]
@@ -1159,24 +1144,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             //arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = new Mock<IDelegatingHandler>();
-
-            // We will setup the main handler which can be either MQTT or AMQP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
-            mainProtocolHandler
-                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
-                .Throws(new OperationCanceledException());
-
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
-
-            deviceClient.InnerHandler = errorHandler;
-
             // act
-
-            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
-            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
             var ct = new CancellationToken(true);
-
             Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new TelemetryMessage(), ct);
 
             // assert
@@ -1197,62 +1166,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_SendTelemetryAsync_BeforeExplicitOpenAsync_ThrowsInvalidOperationException()
-        {
-            // arrange
-            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-
-            // act
-            Func<Task> act = async () =>
-            {
-                await deviceClient.SendTelemetryAsync(new TelemetryMessage());
-                await deviceClient.OpenAsync();
-            };
-
-            // assert
-            await act.Should().ThrowAsync<InvalidOperationException>();
-        }
-
-        [TestMethod]
-        public async Task IotHubDeviceClient_SendTelemetryAsync_AfterExplicitOpenAsync_DoesNotThrow()
-        {
-            // arrange
-            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-
-            // act
-            Func<Task> act = async () =>
-            {
-                await deviceClient.OpenAsync();
-                await deviceClient.SendTelemetryAsync(new TelemetryMessage());
-            };
-
-            // should not throw
-        }
-
-        [TestMethod]
         public async Task IotHubDeviceClient_OpenAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = new Mock<IDelegatingHandler>();
-
-            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
-            mainProtocolHandler
-                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-                .Throws(new OperationCanceledException());
-
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
-
-            deviceClient.InnerHandler = errorHandler;
-
             // act
-
-            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
-            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
             var ct = new CancellationToken(true);
-
             Func<Task> act = async () => await deviceClient.OpenAsync(ct);
 
             // assert
@@ -1265,24 +1185,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = new Mock<IDelegatingHandler>();
-
-            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
-            mainProtocolHandler
-                .Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<ReportedProperties>(), It.IsAny<CancellationToken>()))
-                .Throws(new OperationCanceledException());
-
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
-
-            deviceClient.InnerHandler = errorHandler;
-
             // act
-
-            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
-            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
             var ct = new CancellationToken(true);
-
             Func<Task> act = async () => await deviceClient.UpdateReportedPropertiesAsync(new ReportedProperties(), ct);
 
             // assert
@@ -1295,24 +1199,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = new Mock<IDelegatingHandler>();
-
-            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
-            mainProtocolHandler
-                .Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>()))
-                .Throws(new OperationCanceledException());
-
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
-
-            deviceClient.InnerHandler = errorHandler;
-
             // act
-
-            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
-            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
             var ct = new CancellationToken(true);
-
             Func<Task> act = async () => await deviceClient.GetTwinPropertiesAsync(ct);
 
             // assert
@@ -1325,24 +1213,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = new Mock<IDelegatingHandler>();
-
-            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
-            mainProtocolHandler
-                .Setup(x => x.CloseAsync(It.IsAny<CancellationToken>()))
-                .Throws(new OperationCanceledException());
-
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
-
-            deviceClient.InnerHandler = errorHandler;
-
             // act
-
-            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
-            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
             var ct = new CancellationToken(true);
-
             Func<Task> act = async () => await deviceClient.CloseAsync(ct);
 
             // assert
@@ -1355,28 +1227,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
-            var mainProtocolHandler = new Mock<IDelegatingHandler>();
-
-            // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
-            mainProtocolHandler
-                .Setup(x => x.EnableTwinPatchAsync(It.IsAny<CancellationToken>()))
-                .Throws(new OperationCanceledException());
-
-            mainProtocolHandler
-                .Setup(x => x.DisableTwinPatchAsync(It.IsAny<CancellationToken>()))
-                .Throws(new OperationCanceledException());
-
-            ErrorDelegatingHandler errorHandler = new ErrorDelegatingHandler(null, mainProtocolHandler.Object);
-
-            deviceClient.InnerHandler = errorHandler;
-
             // act
-
-            // We will pass in an expired token to make sure the ErrorDelegationHandler or the InternalClient will not throw a different type of exception.
-            // This can happen if the ErrorDelegationHandler or the InternalClient checks the token for expiry before calling into the protocol specific delegate.
             var ct = new CancellationToken(true);
-
             Func<Task> act = async () => await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch) => Task.FromResult(true), ct);
 
             // assert
@@ -1397,6 +1249,11 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // assert
             act.Should().NotThrowAsync();
+        }
+
+        public void Dispose()
+        {
+            s_cert.Dispose();
         }
 
         private class TestDeviceAuthenticationWithTokenRefresh : ClientAuthenticationWithTokenRefresh

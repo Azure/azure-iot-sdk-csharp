@@ -14,11 +14,6 @@
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="ClientWebSocketTransportTests.cs" />
-    <Compile Remove="Mqtt\ClientWebSocketChannelTests.cs" />
-  </ItemGroup>
-
   <!--Project reference dependencies-->
   <ItemGroup>
     <ProjectReference Include="..\src\Microsoft.Azure.Devices.Client.csproj" />
@@ -35,7 +30,6 @@
 
   <!--Conditional package dependencies-->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <Reference Include="System.Web" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 </Project>
