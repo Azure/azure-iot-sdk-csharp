@@ -11,6 +11,11 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class ExceptionHandlingHelper
     {
+        /// <summary>
+        /// Mapper to map IoT hub service returned 6 digit error codes to <see cref="IotHubClientException.ErrorCode"/>.
+        /// </summary>
+        /// <param name="errorCode">The 6 digit error code returned by IoT hub service.</param>
+        /// <returns>The IotHubClientErrorCode that is returned as a part of IotHubClientException.</returns>
         internal static IotHubClientErrorCode GetIotHubClientErrorCode(string errorCode)
         {
             return errorCode switch
