@@ -83,6 +83,7 @@ namespace Microsoft.Azure.Devices.Samples
 
         private static void CreateMetricsAndTargetCondition(Configuration configuration)
         {
+            configuration.Metrics = new ConfigurationMetrics();
             configuration.Metrics.Queries.Add("waterSettingsPending", "SELECT deviceId FROM devices WHERE properties.reported.chillerWaterSettings.status=\'pending\'");
             configuration.TargetCondition = "properties.reported.chillerProperties.model=\'4000x\'";
             configuration.Priority = 20;
