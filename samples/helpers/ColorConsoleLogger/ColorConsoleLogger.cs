@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using System;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 
@@ -46,6 +47,29 @@ namespace Microsoft.Azure.Devices.Logging
             return logLevel >= _config.MinLogLevel;
         }
 
+        public String logLevelColor(LogLevel logLevel)
+        {
+            switch (logLevel)
+            {
+                case LogLevel.Error:
+                    return "\x1b[0;31m";
+                    //return "\u001b[31m";
+                case LogLevel.Debug:
+                    return "\x1b[0;33m";
+                case LogLevel.Warning:
+                    return "\x1b[4;33m";
+                case LogLevel.Information:
+                    return "\x1b[0;32m";
+                case LogLevel.Critical:
+                    return "\x1b[4;31m";
+                case LogLevel.Trace:
+                    return "\x1b[0;36m";
+
+                default:
+                    return "";
+            }
+        }
+
         /// <summary>
         /// Writes the log entry to console output.
         /// </summary>
@@ -55,24 +79,29 @@ namespace Microsoft.Azure.Devices.Logging
         /// <param name="state">The log entry to be written.</param>
         /// <param name="exception">The exception related to the log entry.</param>
         /// <param name="formatter">The formatter to be used for formatting the log message.</param>
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        ///         Trace,        Debug,        Information,        Warning,        Error,        Critical,        None
+   
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
                 return;
             }
 
-            ConsoleColor color = _config.LogLevelToColorMapping[logLevel];
+            String color = logLevelColor(logLevel);
+            //ConsoleColor color = _config.LogLevelToColorMapping[logLevel];
             if (_config.EventIds.Contains(ColorConsoleLoggerConfiguration.DefaultEventId) || _config.EventIds.Contains(eventId.Id))
             {
-                ConsoleColor initialColor = Console.ForegroundColor;
+                //ConsoleColor initialColor = Console.ForegroundColor;
 
-                lock (s_lockObject)
-                {
-                    Console.ForegroundColor = color;
-                    Console.WriteLine($"{DateTime.Now:G}> {logLevel} - {formatter(state, exception)}");
-                    Console.ForegroundColor = initialColor;
-                }
+                //this lock interfere with consoleEvent lock
+                //lock (s_lockObject)
+                //{
+                //    Console.ForegroundColor = color;
+                Console.WriteLine($"{color}{DateTime.Now:G} {logLevel} - {formatter(state, exception)}" + "\x1b[0m");
+                //    Console.WriteLine($"{DateTime.Now:G} {logLevel} - {formatter(state, exception)}");
+                //    Console.ForegroundColor = initialColor;
+                //}
             }
         }
     }

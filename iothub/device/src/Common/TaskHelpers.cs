@@ -24,14 +24,22 @@ namespace Microsoft.Azure.Devices.Client
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
+#if NET451
                         TaskContinuationOptions.ExecuteSynchronously,
+#else
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
+#endif
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<object>(state);
+            var tcs = new TaskCompletionSource<object>(state
+#if !NET451
+                , TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+                );
             task.ContinueWith(
                 _ =>
                 {
@@ -51,7 +59,11 @@ namespace Microsoft.Azure.Devices.Client
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+#if NET451
+                        TaskContinuationOptions.ExecuteSynchronously,
+#else
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
+#endif
                 TaskScheduler.Default);
 
             return tcs.Task;
@@ -66,14 +78,22 @@ namespace Microsoft.Azure.Devices.Client
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
+#if NET451
                         TaskContinuationOptions.ExecuteSynchronously,
+#else
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
+#endif
                         TaskScheduler.Default);
                 }
 
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<TResult>(state);
+            var tcs = new TaskCompletionSource<TResult>(state
+#if !NET451
+                , TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+                );
             task.ContinueWith(
                 _ =>
                 {
@@ -96,7 +116,11 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+#if NET451
+                        TaskContinuationOptions.ExecuteSynchronously,
+#else
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
+#endif
                 TaskScheduler.Default);
 
             return tcs.Task;

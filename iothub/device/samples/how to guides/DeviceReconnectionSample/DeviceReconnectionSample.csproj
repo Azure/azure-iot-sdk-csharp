@@ -14,16 +14,25 @@
     <!-- Working around a bug between DotNetty and .NET 5.0+ by specifying the exact version of DotNetty.Common that has the fix -->
     <PackageReference Include="DotNetty.Common" Version="0.7.4" />
 
+<!--
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.19.2" />
-
+-->
     <!-- Note: Applications should not need to import all 3 protocols. This was done to simplify protocol selection within the sample.-->
+<!--
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.16.4" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.15.2" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.17.2" />
+-->
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\..\azure-iot-sdk-csharp\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\..\..\azure-iot-sdk-csharp\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+	<ProjectReference Include="..\..\..\..\..\..\azure-iot-sdk-csharp\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
+	<ProjectReference Include="..\..\..\..\..\..\azure-iot-sdk-csharp\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
+	<ProjectReference Include="..\..\..\..\..\..\azure-iot-sdk-csharp\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
+	<ProjectReference Include="..\..\..\..\..\..\azure-iot-sdk-csharp\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
     <ProjectReference Include="..\..\..\..\..\samples\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
   </ItemGroup>
 

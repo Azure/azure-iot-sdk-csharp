@@ -67,6 +67,7 @@ namespace Microsoft.Azure.Devices.Logging
         {
             if (_eventFilters == null) return;
 
+            //this lock interfere with colorlogging lock
             lock (_lock)
             {
                 if (_eventFilters.Any(ef => eventData.EventSource.Name.StartsWith(ef, StringComparison.Ordinal)))
