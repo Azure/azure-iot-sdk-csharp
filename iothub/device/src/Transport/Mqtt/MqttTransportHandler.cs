@@ -674,7 +674,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (patchTwinResponse.Status != 204)
                 {
-                    throw new IotHubClientException(patchTwinResponse.Message, IotHubClientErrorCode.NetworkErrors);
+                    throw new IotHubClientException(
+                        patchTwinResponse.ErrorResponseMessage.Message,
+                        patchTwinResponse.ErrorResponseMessage.TrackingId,
+                        ExceptionHandlingHelper.GetIotHubClientErrorCode(patchTwinResponse.ErrorResponseMessage.ErrorCode));
                 }
 
                 return patchTwinResponse.Version;
@@ -1034,7 +1037,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         Status = status,
                         Version = version,
-                        Message = Encoding.UTF8.GetString(payloadBytes), // This will only ever contain an error message which is encoded based on service contract (UTF-8).
+                        ErrorResponseMessage = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(Encoding.UTF8.GetString(payloadBytes)), // This will only ever contain an error message which is encoded based on service contract (UTF-8).
                     };
 
                     patchTwinCompletion.TrySetResult(patchTwinResponse);

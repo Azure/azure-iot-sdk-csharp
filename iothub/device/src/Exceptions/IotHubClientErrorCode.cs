@@ -9,9 +9,9 @@ namespace Microsoft.Azure.Devices.Client
     public enum IotHubClientErrorCode
     {
         /// <summary>
-        /// The request completed without exception.
+        /// Used when the error code returned by the hub is unrecognized. If encountered, please report the issue so it can be added here.
         /// </summary>
-        Ok,
+        Unknown,
 
         /// <summary>
         /// The request failed because the quota for such operations has been exceeded.
@@ -135,5 +135,15 @@ namespace Microsoft.Azure.Devices.Client
         /// device certificates and ensure they are up-to-date.
         /// </remarks>
         TlsAuthenticationError,
+
+        /// <summary>
+        /// Something in the request payload is invalid. Check the error message for more information about what
+        /// is invalid.
+        /// </summary>
+        /// <remarks>
+        /// One example when this error is encountered is when the twin property patch does not meet the specified restrictions.
+        /// For twin properties format see <see chef="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins#tags-and-properties-format"/>.
+        /// </remarks>
+        ArgumentInvalid,
     }
 }

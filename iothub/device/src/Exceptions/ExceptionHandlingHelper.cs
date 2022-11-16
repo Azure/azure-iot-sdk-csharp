@@ -11,7 +11,16 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class ExceptionHandlingHelper
     {
-        public static IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping()
+        internal static IotHubClientErrorCode GetIotHubClientErrorCode(string errorCode)
+        {
+            return errorCode switch
+            {
+                "400004" => IotHubClientErrorCode.ArgumentInvalid,
+                _ => IotHubClientErrorCode.Unknown,
+            };
+        }
+
+        internal static IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping()
         {
             var mappings = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
@@ -89,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
             return mappings;
         }
 
-        public static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
+        internal static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
         {
             return response.Content.ReadAsStringAsync();
         }
