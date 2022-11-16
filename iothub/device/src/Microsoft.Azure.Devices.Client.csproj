@@ -37,7 +37,7 @@
     <Description>Device SDK for Azure IoT Hub</Description>
     <PackageIcon>nugetIcon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
-    <Copyright>Â© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>IoT Microsoft Azure IoTHub Device Client .NET AMQP MQTT HTTP</PackageTags>
   </PropertyGroup>
 
