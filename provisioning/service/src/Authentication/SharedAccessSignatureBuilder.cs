@@ -12,8 +12,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal sealed class SharedAccessSignatureBuilder
     {
-        private string _key;
-
         internal SharedAccessSignatureBuilder()
         {
             TimeToLive = TimeSpan.FromMinutes(20);
@@ -21,11 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public string KeyName { get; set; }
 
-        public string Key
-        {
-            get => _key;
-            set => _key = value;
-        }
+        public string Key { get; set; }
 
         public string Target { get; set; }
 
@@ -40,9 +34,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
-            var fields = new List<string>();
-            fields.Add(audience);
-            fields.Add(expiresOn);
+            var fields = new List<string>
+            {
+                audience,
+                expiresOn,
+            };
 
             // Example string to be signed:
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a

@@ -8,16 +8,11 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage(
-    "Globalization",
-    "CA1303:Do not pass literals as localized parameters",
-    Justification = "Not localizing")]
-
-[assembly: SuppressMessage(
     "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "SDK hides non-actionable errors from user")]
+    "IDE1006:Naming rule violation: Missing suffix: 'Async'",
+    Justification = "We don't use Async suffix on test methods")]
 
 [assembly: SuppressMessage(
     "Design",
     "IDE0079:Remove unnecessary suppression",
-    Justification = "Removing it results in other warnings")]
+    Justification = "Removing suppression brings other unwanted warnings")]

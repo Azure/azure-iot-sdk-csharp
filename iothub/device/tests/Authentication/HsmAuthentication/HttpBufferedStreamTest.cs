@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             string expected = "GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
             byte[] expectedBytes = Encoding.UTF8.GetBytes(expected);
             var memory = new MemoryStream(expectedBytes, true);
-            var buffered = new HttpBufferedStream(memory);
+            using var buffered = new HttpBufferedStream(memory);
 
             var allLines = new List<string>(5);
 

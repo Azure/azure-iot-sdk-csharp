@@ -3,10 +3,11 @@
   <PropertyGroup>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net7.0;net6.0;netcoreapp3.1;net472</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net7.0;net6.0;netcoreapp3.1</TargetFrameworks>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <IsPackable>false</IsPackable>
-    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-    <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
+
     <!-- We will turn on this suppression once we are ready to GA-->
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <!-- <CheckEolTargetFramework>false</CheckEolTargetFramework> -->

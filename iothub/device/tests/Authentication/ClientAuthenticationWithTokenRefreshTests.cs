@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private class TestImplementation : ClientAuthenticationWithTokenRefresh
         {
-            private int _callCount = 0;
+            private int _callCount;
 
             public int SafeCreateNewTokenCallCount => _callCount;
 

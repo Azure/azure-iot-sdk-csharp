@@ -37,12 +37,9 @@ namespace Microsoft.Azure.Devices.Common
                 return PropertyValueType.Null;
             }
 
-            if (s_typeToIntMap.TryGetValue(value.GetType(), out PropertyValueType typeId))
-            {
-                return typeId;
-            }
-
-            return PropertyValueType.Unknown;
+            return s_typeToIntMap.TryGetValue(value.GetType(), out PropertyValueType typeId)
+                ? typeId
+                : PropertyValueType.Unknown;
         }
     }
 }

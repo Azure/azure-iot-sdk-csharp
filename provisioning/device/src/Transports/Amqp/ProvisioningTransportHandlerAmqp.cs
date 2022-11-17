@@ -118,10 +118,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // Link the user-supplied cancellation token with a cancellation token that is cancelled
                 // when the connection is lost so that all operations stop when either the user
                 // cancels the token or when the connection is lost.
-                using CancellationTokenSource linkedCancellationToken =
-                    CancellationTokenSource.CreateLinkedTokenSource(
-                        cancellationToken,
-                        connectionLostCancellationToken.Token);
+                using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken,
+                    connectionLostCancellationToken.Token);
 
                 await CreateLinksAsync(
                         connection,

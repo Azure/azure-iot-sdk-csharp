@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices
 
             if (IsEnabled)
             {
-                var buffer = new byte[Math.Min(count, MaxDumpSize)];
+                byte[] buffer = new byte[Math.Min(count, MaxDumpSize)];
                 fixed (byte* targetPtr = buffer)
                 {
                     Buffer.MemoryCopy((byte*)bufferPtr, targetPtr, buffer.Length, buffer.Length);
@@ -429,14 +429,14 @@ namespace Microsoft.Azure.Devices
         {
             if (!IsEnabled)
             {
-                Debug.Assert(!(arg is ValueType), $"Should not be passing value type {arg?.GetType()} to logging without IsEnabled check");
-                Debug.Assert(!(arg is FormattableString), $"Should not be formatting FormattableString \"{arg}\" if tracing isn't enabled");
+                Debug.Assert(arg is not ValueType, $"Should not be passing value type {arg?.GetType()} to logging without IsEnabled check");
+                Debug.Assert(arg is not FormattableString, $"Should not be formatting FormattableString '{arg}' if tracing isn't enabled");
             }
         }
 
         private static void DebugValidateArg(FormattableString arg)
         {
-            Debug.Assert(IsEnabled || arg == null, $"Should not be formatting FormattableString \"{arg}\" if tracing isn't enabled");
+            Debug.Assert(IsEnabled || arg == null, $"Should not be formatting FormattableString '{arg}' if tracing isn't enabled");
         }
 
         public static new bool IsEnabled => Log.IsEnabled();

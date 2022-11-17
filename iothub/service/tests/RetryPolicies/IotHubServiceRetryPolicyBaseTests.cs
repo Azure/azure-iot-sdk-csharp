@@ -27,8 +27,8 @@ namespace Microsoft.Azure.Devices.Tests
             var ex = new IotHubServiceException("") { IsTransient = true };
 
             // act and assert
-            retryPolicy.ShouldRetry(maxRetries - 1, ex, out TimeSpan delay).Should().BeTrue();
-            retryPolicy.ShouldRetry(maxRetries, ex, out delay).Should().BeFalse();
+            retryPolicy.ShouldRetry(maxRetries - 1, ex, out TimeSpan _).Should().BeTrue();
+            retryPolicy.ShouldRetry(maxRetries, ex, out _).Should().BeFalse();
         }
 
         [TestMethod]
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Tests
             var ex = new IotHubServiceException("") { IsTransient = true };
 
             // act and assert
-            retryPolicy.ShouldRetry(uint.MaxValue, ex, out TimeSpan delay).Should().BeTrue();
+            retryPolicy.ShouldRetry(uint.MaxValue, ex, out TimeSpan _).Should().BeTrue();
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Tests
             var ex = new IotHubServiceException("") { IsTransient = isTransient };
 
             // act and assert
-            retryPolicy.ShouldRetry(1, ex, out TimeSpan delay).Should().Be(isTransient);
+            retryPolicy.ShouldRetry(1, ex, out TimeSpan _).Should().Be(isTransient);
         }
 
         [TestMethod]
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Tests
             var ex = Activator.CreateInstance(exceptionType, "exParam") as Exception;
 
             // act and assert
-            retryPolicy.ShouldRetry(1, ex, out TimeSpan delay).Should().BeFalse();
+            retryPolicy.ShouldRetry(1, ex, out TimeSpan _).Should().BeFalse();
         }
 
         [TestMethod]

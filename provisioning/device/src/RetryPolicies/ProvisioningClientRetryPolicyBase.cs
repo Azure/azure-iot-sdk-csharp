@@ -35,8 +35,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             retryDelay = TimeSpan.Zero;
 
-            return (lastException is ProvisioningClientException ex
-                    && ex.IsTransient)
+            return lastException is ProvisioningClientException ex
+                    && ex.IsTransient
                 && (MaxRetries == 0
                 || currentRetryCount < MaxRetries);
         }

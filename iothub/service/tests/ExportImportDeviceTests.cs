@@ -3,7 +3,6 @@
 
 using Azure;
 using FluentAssertions;
-using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Api.Test
@@ -13,45 +12,20 @@ namespace Microsoft.Azure.Devices.Api.Test
     public class ExportImportDeviceTests
     {
         [TestMethod]
-        public void ExportImportDeviceTakingDeviceWithEtagWithoutQuotes()
+        [DataRow("MA==")]
+        [DataRow("\"MA==\"")]
+        [DataRow("")]
+        public void ExportImportDeviceTakingDeviceWithEtag(string eTag)
         {
-            // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag("MA==") }, ImportMode.Create);
-            exportimportDevice.TwinETag = new ETag("MA==");
+            // arrange
+            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag(eTag) }, ImportMode.Create)
+            {
+                TwinETag = new ETag(eTag),
+            };
 
-            // nothing to Act on
-
-            // Assert
-            Assert.IsTrue(exportimportDevice.ETag.ToString() == "MA==", "ETag was not set correctly");
-            Assert.IsTrue(exportimportDevice.TwinETag.ToString() == "MA==", "Twin ETag was not set correctly");
-        }
-
-        [TestMethod]
-        public void ExportImportDeviceTakingDeviceWithEtagWithQuotes()
-        {
-            // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag("\"MA==\"") }, ImportMode.Create);
-            exportimportDevice.TwinETag = new ETag("\"MA==\"");
-
-            // nothing to Act on
-
-            // Assert
-            Assert.IsTrue(exportimportDevice.ETag.ToString() == "\"MA==\"", "ETag was not set correctly");
-            Assert.IsTrue(exportimportDevice.TwinETag.ToString() == "\"MA==\"", "Twin ETag was not set correctly");
-        }
-
-        [TestMethod]
-        public void ExportImportDeviceTakingDeviceWithEmptyEtag()
-        {
-            // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag(string.Empty) }, ImportMode.Create);
-            exportimportDevice.TwinETag = new ETag(string.Empty);
-
-            // nothing to Act on
-
-            // Assert
-            Assert.IsTrue(exportimportDevice.ETag.ToString() == string.Empty, "ETag was not set correctly");
-            Assert.IsTrue(exportimportDevice.TwinETag.ToString() == string.Empty, "Twin ETag was not set correctly");
+            // assert
+            exportimportDevice.ETag.ToString().Should().Be(eTag);
+            exportimportDevice.TwinETag.ToString().Should().Be(eTag);
         }
     }
 }

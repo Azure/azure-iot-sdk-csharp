@@ -14,6 +14,9 @@
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+
+    <!-- We choose not to use braces in our many logging enabled checks -->
+    <NoWarn>IDE0011</NoWarn>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->

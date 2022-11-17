@@ -34,12 +34,11 @@ namespace ImportExportDevicesWithManagedIdentitySample
 
             var sample = new ImportExportDevicesWithManagedidentitySample();
 
-            await sample.RunSampleAsync(
+            await ImportExportDevicesWithManagedidentitySample.RunSampleAsync(
                 parameters.SourceHubConnectionString,
                 parameters.DestinationHubConnectionString,
                 new Uri(parameters.BlobContainerUri),
                 parameters.UserDefinedManagedIdentityResourceId);
         }
-
     }
 }

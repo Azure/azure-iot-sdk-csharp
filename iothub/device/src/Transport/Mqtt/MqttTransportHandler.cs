@@ -1267,11 +1267,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return property.Value;
             }
 
-            if (property.Key == IotHubWirePropertyNames.AbsoluteExpiryTime ||
-                property.Key == IotHubWirePropertyNames.CreationTimeUtc)
+#pragma warning disable IDE0046 // More readable this way
+            if (property.Key == IotHubWirePropertyNames.AbsoluteExpiryTime
+                || property.Key == IotHubWirePropertyNames.CreationTimeUtc)
             {
                 return DateTime.ParseExact(property.Value, "o", CultureInfo.InvariantCulture);
             }
+#pragma warning restore IDE0046
 
             return property.Value;
         }

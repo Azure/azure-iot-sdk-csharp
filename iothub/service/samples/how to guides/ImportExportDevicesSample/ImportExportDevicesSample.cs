@@ -335,7 +335,7 @@ namespace Microsoft.Azure.Devices.Samples
                 IncludeConfigurations = includeConfigurations,
                 ConfigurationsBlobName = _destHubConfigsImportBlobName
             };
-            var jobResponse = await devicesClient.ImportAsync(importJob);
+            ImportJobProperties jobResponse = await devicesClient.ImportAsync(importJob);
             await WaitForJobAsync(devicesClient, jobResponse);
 
             // Read from error logs to see if there were any failures
@@ -412,8 +412,8 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 InputBlobName = _hubDevicesCleanupBlobName,
             };
-            ImportJobProperties ImportJobResponse = await hubClient.Devices.ImportAsync(importJob);
-            await WaitForJobAsync(hubClient.Devices, ImportJobResponse);
+            ImportJobProperties importJobResponse = await hubClient.Devices.ImportAsync(importJob);
+            await WaitForJobAsync(hubClient.Devices, importJobResponse);
 
             // Step 4: delete configurations
             if (includeConfigurations)

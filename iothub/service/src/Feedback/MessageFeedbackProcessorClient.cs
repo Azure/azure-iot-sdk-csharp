@@ -180,6 +180,7 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _amqpConnection?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private async void OnFeedbackMessageReceivedAsync(AmqpMessage amqpMessage)

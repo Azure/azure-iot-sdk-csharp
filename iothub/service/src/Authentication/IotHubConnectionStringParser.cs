@@ -80,13 +80,10 @@ namespace Microsoft.Azure.Devices
 
         private static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
         {
-            if (!map.TryGetValue(propertyName, out string value))
-            {
-                throw new FormatException(
+            return map.TryGetValue(propertyName, out string value)
+                ? value
+                : throw new FormatException(
                     $"The connection string is missing the property: {propertyName}.");
-            }
-
-            return value;
         }
 
         private static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)

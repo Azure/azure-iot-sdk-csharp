@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task TestCbsTokenGeneration_Succeeds()
         {
             // arrange
-            DateTime epochTime = new DateTime(1970, 1, 1);
+            var epochTime = new DateTime(1970, 1, 1);
             DateTime expiresAt = DateTime.UtcNow.Add(TimeSpan.FromHours(1));
             TimeSpan secondsFromEpochTime = expiresAt.Subtract(epochTime);
             long seconds = Convert.ToInt64(secondsFromEpochTime.TotalSeconds, CultureInfo.InvariantCulture);

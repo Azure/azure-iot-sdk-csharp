@@ -10,15 +10,25 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage(
     "Globalization",
     "CA1303:Do not pass literals as localized parameters",
-    Justification = "Not localizing",
-    Scope = "module")]
+    Justification = "Not localizing")]
+
 [assembly: SuppressMessage(
     "Design",
     "CA1031:Do not catch general exception types",
-    Justification = "SDK hides non-actionable errors from user",
-    Scope = "module")]
+    Justification = "SDK hides non-actionable errors from user")]
 
-[assembly: SuppressMessage("XmlDocumentationComments", "RS0010: Avoid using cref tags with a prefix", Justification = "We have a lot of documentation pointing to external links.")]
+[assembly: SuppressMessage(
+    "XmlDocumentationComments",
+    "RS0010: Avoid using cref tags with a prefix",
+    Justification = "We have a lot of documentation pointing to external links.")]
 
 // TODO #177 Remove localization.
-[assembly: SuppressMessage("Microsoft.Performance", "CA1824:MarkAssembliesWithNeutralResourcesLanguage.", Justification = "The SDKs are not localized.")]
+[assembly: SuppressMessage(
+    "Microsoft.Performance",
+    "CA1824:MarkAssembliesWithNeutralResourcesLanguage.",
+    Justification = "The SDKs are not localized.")]
+
+[assembly: SuppressMessage(
+    "CodeQuality",
+    "IDE0079:Remove unnecessary suppression",
+    Justification = "Removing this results in warnings we don't want.")]

@@ -15,8 +15,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class SharedAccessSignatureBuilder
     {
-        private string _key;
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -33,11 +31,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The shared access key value.
         /// </summary>
-        public string Key
-        {
-            get => _key;
-            set => _key = value;
-        }
+        public string Key { get; set; }
 
         /// <summary>
         /// The resource Id being accessed.

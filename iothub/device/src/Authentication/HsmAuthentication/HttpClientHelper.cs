@@ -36,12 +36,9 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
         internal static string GetBaseUrl(Uri providerUri)
         {
-            if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
-            {
-                return $"{HttpScheme}://{providerUri.Segments.Last()}";
-            }
-
-            return providerUri.OriginalString;
+            return providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase)
+                ? $"{HttpScheme}://{providerUri.Segments.Last()}"
+                : providerUri.OriginalString;
         }
     }
 }

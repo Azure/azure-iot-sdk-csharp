@@ -2,24 +2,25 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// return the provided delay + extra jitter ranging from 0 seconds to 5 seconds
+    /// Return the provided delay + extra jitter ranging from 0 seconds to 5 seconds.
     /// </summary>
-    internal class RetryJitter
+    internal static class RetryJitter
     {
-        public static TimeSpan GenerateDelayWithJitterForRetry(TimeSpan defaultDelay)
+        internal const double MaxJitter = 5D;
+
+        private static readonly Random s_random = new();
+
+        internal static TimeSpan GenerateDelayWithJitterForRetry(TimeSpan defaultDelay)
         {
-            const int jitterMax = 5;
-            const int jitterMin = 0;
+            Debug.Assert(defaultDelay!= null);
 
-            var random = new Random();
-            double jitterSeconds = random.NextDouble() * jitterMax + jitterMin;
-            TimeSpan defaultDelayWithJitter = defaultDelay.Add(TimeSpan.FromSeconds(jitterSeconds));
-
-            return defaultDelayWithJitter;
+            double jitterSeconds = Math.Min(s_random.NextDouble() * MaxJitter, MaxJitter);
+            return defaultDelay.Add(TimeSpan.FromSeconds(jitterSeconds));
         }
     }
 }

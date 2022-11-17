@@ -7,22 +7,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal sealed class SharedAccessSignatureAuthorizationRule : IEquatable<SharedAccessSignatureAuthorizationRule>
     {
-        private string _primaryKey;
-        private string _secondaryKey;
-
         public string KeyName { get; set; }
 
-        public string PrimaryKey
-        {
-            get => _primaryKey;
-            set => _primaryKey = value;
-        }
+        public string PrimaryKey { get; set; }
 
-        public string SecondaryKey
-        {
-            get => _secondaryKey;
-            set => _secondaryKey = value;
-        }
+        public string SecondaryKey { get; set; }
 
         public AccessRights Rights { get; set; }
 
@@ -48,7 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override int GetHashCode()
         {
-            return (_primaryKey + _secondaryKey).GetHashCode();
+            return (PrimaryKey + SecondaryKey).GetHashCode();
         }
     }
 }

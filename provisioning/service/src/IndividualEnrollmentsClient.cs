@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net.Http;
 using System.Net;
-using System.Threading.Tasks;
+using System.Net.Http;
 using System.Threading;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
 using Azure;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -27,7 +27,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string EnrollmentAttestationUriFormat = "{0}/{1}/{2}?{3}";
 
         private readonly IContractApiHttp _contractApiHttp;
-        private readonly ServiceConnectionString _serviceConnectionString;
         private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
@@ -37,9 +36,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal IndividualEnrollmentsClient(ServiceConnectionString serviceConnectionString, IContractApiHttp contractApiHttp, RetryHandler retryHandler)
+        internal IndividualEnrollmentsClient(IContractApiHttp contractApiHttp, RetryHandler retryHandler)
         {
-            _serviceConnectionString = serviceConnectionString;
             _contractApiHttp = contractApiHttp;
             _internalRetryHandler = retryHandler;
         }
@@ -265,7 +263,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
-            return new Query(_serviceConnectionString, ServiceName, query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
+            return new Query(ServiceName, query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
         }
 
         /// <summary>

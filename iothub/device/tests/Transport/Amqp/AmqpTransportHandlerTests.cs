@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 IotHubClientTransportSettings = transportSettings1,
             };
 
-            var amqpTransportHandler1 = new AmqpTransportHandler(
+            using var amqpTransportHandler1 = new AmqpTransportHandler(
                 pipelineContext1,
                 transportSettings1);
 
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     IotHubClientTransportSettings = transportSettings2,
                 };
 
-                var amqpTransportHandler2 = new AmqpTransportHandler(
+                using var amqpTransportHandler2 = new AmqpTransportHandler(
                     pipelineContext2,
                     transportSettings2);
             }

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Samples
 {
     internal class ExceptionHelper
     {
-        private static readonly HashSet<Type> s_networkExceptions = new HashSet<Type>
+        private static readonly HashSet<Type> s_networkExceptions = new()
         {
             typeof(IOException),
             typeof(SocketException),

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Logging
     {
         private readonly string[] _eventFilters;
         private readonly ILogger _logger;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         public ConsoleEventListener(string filter, ILogger logger)
         {
@@ -29,7 +29,10 @@ namespace Microsoft.Azure.Devices.Logging
         public ConsoleEventListener(string[] filters, ILogger logger)
         {
             _eventFilters = filters ?? throw new ArgumentNullException(nameof(filters));
-            if (_eventFilters.Length == 0) throw new ArgumentException("Filters cannot be empty", nameof(filters));
+            if (!_eventFilters.Any())
+            {
+                throw new ArgumentException("Filters cannot be empty", nameof(filters));
+            }
 
             foreach (string filter in _eventFilters)
             {
@@ -54,30 +57,22 @@ namespace Microsoft.Azure.Devices.Logging
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
             base.OnEventSourceCreated(eventSource);
-            EnableEvents(
-                eventSource,
-                EventLevel.LogAlways
-#if !NET451
-                , EventKeywords.All
-#endif
-                );
+            EnableEvents(eventSource, EventLevel.LogAlways, EventKeywords.All);
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
-            if (_eventFilters == null) return;
+            if (_eventFilters == null)
+            {
+                return;
+            }
 
             lock (_lock)
             {
                 if (_eventFilters.Any(ef => eventData.EventSource.Name.StartsWith(ef, StringComparison.Ordinal)))
                 {
                     string eventIdent;
-#if NET451
-                    // net451 doesn't have EventName, so we'll settle for EventId
-                    eventIdent = eventData.EventId.ToString(CultureInfo.InvariantCulture);
-#else
                     eventIdent = eventData.EventName;
-#endif
                     string text = $"[{eventData.EventSource.Name}-{eventIdent}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
                     _logger.LogTrace(text);
                 }

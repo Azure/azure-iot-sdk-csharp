@@ -379,61 +379,59 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             IList<string> iothubs)
         {
             string groupId = s_devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
+            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
+            EnrollmentGroup enrollmentGroup = null;
+
+            try
             {
-                EnrollmentGroup enrollmentGroup = null;
+                enrollmentGroup = await CreateEnrollmentGroupAsync(
+                        provisioningServiceClient,
+                        attestationType,
+                        groupId,
+                        reprovisionPolicy,
+                        allocationPolicy,
+                        customAllocationDefinition,
+                        iothubs,
+                        null)
+                    .ConfigureAwait(false);
 
-                try
+                EnrollmentGroup enrollmentGroupResult = null;
+                await RetryOperationHelper
+                    .RunWithProvisioningServiceRetryAsync(
+                        async () =>
+                        {
+                            enrollmentGroupResult = await provisioningServiceClient.EnrollmentGroups.GetAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                        },
+                        s_provisioningServiceRetryPolicy,
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+
+                if (enrollmentGroupResult == null)
                 {
-                    enrollmentGroup = await CreateEnrollmentGroupAsync(
-                            provisioningServiceClient,
-                            attestationType,
-                            groupId,
-                            reprovisionPolicy,
-                            allocationPolicy,
-                            customAllocationDefinition,
-                            iothubs,
-                            null)
-                        .ConfigureAwait(false);
-
-                    EnrollmentGroup enrollmentGroupResult = null;
-                    await RetryOperationHelper
-                        .RunWithProvisioningServiceRetryAsync(
-                            async () =>
-                            {
-                                enrollmentGroupResult = await provisioningServiceClient.EnrollmentGroups.GetAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
-                            },
-                            s_provisioningServiceRetryPolicy,
-                            CancellationToken.None)
-                        .ConfigureAwait(false);
-
-                    if (enrollmentGroupResult == null)
-                    {
-                        throw new ArgumentException($"The enrollment group with group Id {enrollmentGroup.EnrollmentGroupId} could not retrieved, exiting test.");
-                    }
-
-                    Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
-
-                    if (reprovisionPolicy != null)
-                    {
-                        Assert.AreEqual(reprovisionPolicy.MigrateDeviceData, enrollmentGroupResult.ReprovisionPolicy.MigrateDeviceData);
-                        Assert.AreEqual(reprovisionPolicy.UpdateHubAssignment, enrollmentGroupResult.ReprovisionPolicy.UpdateHubAssignment);
-                    }
-
-                    if (customAllocationDefinition != null)
-                    {
-                        Assert.AreEqual(customAllocationDefinition.WebhookUrl, enrollmentGroupResult.CustomAllocationDefinition.WebhookUrl);
-                        Assert.AreEqual(customAllocationDefinition.ApiVersion, enrollmentGroupResult.CustomAllocationDefinition.ApiVersion);
-                    }
-
-                    Assert.AreEqual(allocationPolicy, enrollmentGroup.AllocationPolicy);
+                    throw new ArgumentException($"The enrollment group with group Id {enrollmentGroup.EnrollmentGroupId} could not retrieved, exiting test.");
                 }
-                finally
+
+                Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
+
+                if (reprovisionPolicy != null)
                 {
-                    if (enrollmentGroup != null)
-                    {
-                        await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
-                    }
+                    Assert.AreEqual(reprovisionPolicy.MigrateDeviceData, enrollmentGroupResult.ReprovisionPolicy.MigrateDeviceData);
+                    Assert.AreEqual(reprovisionPolicy.UpdateHubAssignment, enrollmentGroupResult.ReprovisionPolicy.UpdateHubAssignment);
+                }
+
+                if (customAllocationDefinition != null)
+                {
+                    Assert.AreEqual(customAllocationDefinition.WebhookUrl, enrollmentGroupResult.CustomAllocationDefinition.WebhookUrl);
+                    Assert.AreEqual(customAllocationDefinition.ApiVersion, enrollmentGroupResult.CustomAllocationDefinition.ApiVersion);
+                }
+
+                Assert.AreEqual(allocationPolicy, enrollmentGroup.AllocationPolicy);
+            }
+            finally
+            {
+                if (enrollmentGroup != null)
+                {
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
                 }
             }
         }
@@ -543,12 +541,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     CancellationToken.None)
                .ConfigureAwait(false);
 
-            if (createdEnrollmentGroup == null)
-            {
-                throw new ArgumentException($"The enrollment entry with group Id {groupId} could not be created, exiting test.");
-            }
-
-            return createdEnrollmentGroup;
+            return createdEnrollmentGroup
+                ?? throw new ArgumentException($"The enrollment entry with group Id {groupId} could not be created, exiting test.");
         }
 
         public static async Task DeleteCreatedEnrollmentAsync(

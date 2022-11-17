@@ -21,26 +21,19 @@ namespace Microsoft.Azure.Devices.Amqp
 
         internal static Exception ToIotHubClientContract(Exception exception)
         {
-            switch (exception)
+            return exception switch
             {
-                case TimeoutException:
-                    return new IotHubServiceException(
-                        exception.Message,
-                        HttpStatusCode.RequestTimeout,
-                        IotHubServiceErrorCode.Unknown);
-
-                case UnauthorizedAccessException:
-                    return new IotHubServiceException(
-                        exception.Message,
-                        HttpStatusCode.Unauthorized,
-                        IotHubServiceErrorCode.IotHubUnauthorizedAccess);
-
-                case AmqpException amqpException:
-                    return ToIotHubClientContract(amqpException.Error, amqpException);
-
-                default:
-                    return exception;
-            }
+                TimeoutException => new IotHubServiceException(
+                    exception.Message,
+                    HttpStatusCode.RequestTimeout,
+                    IotHubServiceErrorCode.Unknown),
+                UnauthorizedAccessException => new IotHubServiceException(
+                    exception.Message,
+                    HttpStatusCode.Unauthorized,
+                    IotHubServiceErrorCode.IotHubUnauthorizedAccess),
+                AmqpException amqpException => ToIotHubClientContract(amqpException.Error, amqpException),
+                _ => exception,
+            };
         }
 
         internal static void ValidateContentType(AmqpMessage amqpMessage, string expectedContentType)

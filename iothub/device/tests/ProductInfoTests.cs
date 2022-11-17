@@ -17,9 +17,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ToString_IsValidHttpHeaderFormat()
         {
-            var httpRequestMessage = new HttpRequestMessage();
-            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd((new ProductInfo()).ToString()));
-            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd((new ProductInfo()).ToString(UserAgentFormats.Http)));
+            using var httpRequestMessage = new HttpRequestMessage();
+            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd(new ProductInfo().ToString()));
+            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd(new ProductInfo().ToString(UserAgentFormats.Http)));
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ToString_ReturnsProductNameAndVersion()
         {
-            Assert.AreEqual(ExpectedUserAgentString(), new ProductInfo().ToString());
+            Assert.AreEqual(ProductInfoTests.ExpectedUserAgentString(), new ProductInfo().ToString());
         }
 
         [TestMethod]
@@ -46,18 +46,20 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Extra = extra,
             };
 
-            Assert.AreEqual($"{ExpectedUserAgentString()} {extra}", info.ToString());
-            Assert.AreEqual($"{ExpectedHttpUserAgentString()} {extra}", info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual($"{ProductInfoTests.ExpectedUserAgentString()} {extra}", info.ToString());
+            Assert.AreEqual($"{ProductInfoTests.ExpectedHttpUserAgentString()} {extra}", info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
         public void ToString_DoesNotAppendWhenExtraIsNull()
         {
-            var info = new ProductInfo();
-            info.Extra = null;
+            var info = new ProductInfo
+            {
+                Extra = null
+            };
 
-            Assert.AreEqual(ExpectedUserAgentString(), info.ToString());
-            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual(ProductInfoTests.ExpectedUserAgentString(), info.ToString());
+            Assert.AreEqual(ProductInfoTests.ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
@@ -68,8 +70,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Extra = "\t  ",
             };
 
-            Assert.AreEqual(ExpectedUserAgentString(), info.ToString());
-            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual(ProductInfoTests.ExpectedUserAgentString(), info.ToString());
+            Assert.AreEqual(ProductInfoTests.ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
@@ -82,8 +84,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Extra = extra,
             };
 
-            Assert.AreEqual($"{ExpectedUserAgentString()} {extra.Trim()}", info.ToString());
-            Assert.AreEqual($"{ExpectedHttpUserAgentString()} {extra.Trim()}", info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual($"{ProductInfoTests.ExpectedUserAgentString()} {extra.Trim()}", info.ToString());
+            Assert.AreEqual($"{ProductInfoTests.ExpectedHttpUserAgentString()} {extra.Trim()}", info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
@@ -91,13 +93,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var info = new ProductInfo();
 
-            Assert.AreEqual(ExpectedUserAgentString(), info.ToString(UserAgentFormats.Default));
+            Assert.AreEqual(ProductInfoTests.ExpectedUserAgentString(), info.ToString(UserAgentFormats.Default));
 
             // HTTP user agent string should not include SQM ID
-            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual(ProductInfoTests.ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
-        private string ExpectedUserAgentString()
+        private static string ExpectedUserAgentString()
         {
             string version = typeof(IotHubDeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
@@ -119,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             return $".NET/{version} ({string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)))})";
         }
 
-        private string ExpectedHttpUserAgentString()
+        private static string ExpectedHttpUserAgentString()
         {
             string version = typeof(IotHubDeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             string runtime = RuntimeInformation.FrameworkDescription.Trim();

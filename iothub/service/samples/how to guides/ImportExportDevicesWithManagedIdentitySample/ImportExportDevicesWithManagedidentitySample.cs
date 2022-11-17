@@ -18,7 +18,7 @@ namespace ImportExportDevicesWithManagedIdentitySample
     /// </summary>
     internal class ImportExportDevicesWithManagedidentitySample
     {
-        public async Task RunSampleAsync(string sourceHubConnectionString,
+        public static async Task RunSampleAsync(string sourceHubConnectionString,
             string destinationHubConnectionString,
             Uri blobContainerUri,
             string userDefinedManagedIdentityResourceId = null)
@@ -37,7 +37,7 @@ namespace ImportExportDevicesWithManagedIdentitySample
             Console.WriteLine("Importing devices completed.");
         }
 
-        public async Task ExportDevicesAsync(string hubConnectionString,
+        public static async Task ExportDevicesAsync(string hubConnectionString,
             Uri blobContainerUri,
             string userDefinedManagedIdentityResourceId = null)
         {
@@ -87,7 +87,7 @@ namespace ImportExportDevicesWithManagedIdentitySample
             }
         }
 
-        public async Task ImportDevicesAsync(string hubConnectionString,
+        public static async Task ImportDevicesAsync(string hubConnectionString,
             Uri blobContainerUri,
             string userDefinedManagedIdentityResourceId = null)
         {

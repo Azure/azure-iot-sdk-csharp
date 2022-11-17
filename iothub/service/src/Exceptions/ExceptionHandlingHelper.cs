@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices
                 const char errorFieldsDelimiter = ';';
                 string[] messageFields = exResult.Message?.Split(errorFieldsDelimiter);
 
-                if (messageFields == null || messageFields.Count() < 2)
+                if (messageFields == null || messageFields.Length < 2)
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(

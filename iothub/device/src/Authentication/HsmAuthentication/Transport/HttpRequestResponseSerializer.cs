@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             }
             if (request.RequestUri == null)
             {
-                throw new ArgumentNullException(nameof(request.RequestUri));
+                throw new ArgumentException($"{nameof(request.RequestUri)} cannot be null", nameof(request));
             }
 
             PreProcessRequest(request);

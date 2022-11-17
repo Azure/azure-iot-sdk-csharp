@@ -20,7 +20,9 @@ namespace Microsoft.Azure.Devices.Tests
             var options = new IotHubServiceClientOptions
             {
                 Proxy = new WebProxy("localhost"),
+#pragma warning disable CA2000 // handler disposal responsibility has been moved to HttpClient
                 HttpClient = new HttpClient(new HttpClientHandler(), true),
+#pragma warning restore CA2000
                 Protocol = IotHubTransportProtocol.WebSocket,
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
                 CertificateRevocationCheck = true,
@@ -28,16 +30,19 @@ namespace Microsoft.Azure.Devices.Tests
                 AmqpConnectionKeepAlive = TimeSpan.FromSeconds(1),
             };
 
-            // act
-            var clone = options.Clone();
+            using (options.HttpClient)
+            {
+                // act
+                IotHubServiceClientOptions clone = options.Clone();
 
-            // asssert
-            options.Should().NotBeSameAs(clone);
-            options.Should().BeEquivalentTo(clone);
+                // asssert
+                options.Should().NotBeSameAs(clone);
+                options.Should().BeEquivalentTo(clone);
 
-            // change one property to validate 'NotEquivalent' works
-            clone.Protocol = IotHubTransportProtocol.Tcp;
-            options.Should().NotBeEquivalentTo(clone);
+                // change one property to validate 'NotEquivalent' works
+                clone.Protocol = IotHubTransportProtocol.Tcp;
+                options.Should().NotBeEquivalentTo(clone);
+            }
         }
     }
 }

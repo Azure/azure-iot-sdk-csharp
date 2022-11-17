@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal static class CertificateInstaller
     {
-        private static readonly object s_certOperationsLock = new object();
+        private static readonly object s_certOperationsLock = new();
 
         /// <summary>
         /// Ensures the specified certs (presumably in a chain) are in the cert store.

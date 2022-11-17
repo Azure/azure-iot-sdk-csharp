@@ -363,6 +363,7 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _amqpConnection?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
@@ -378,7 +379,7 @@ namespace Microsoft.Azure.Devices
             else
             {
                 var defaultException = new IotHubServiceException("AMQP connection was lost", ((AmqpObject)sender).TerminalException);
-                ErrorContext errorContext = new ErrorContext(defaultException);
+                var errorContext = new ErrorContext(defaultException);
                 ErrorProcessor?.Invoke(errorContext);
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
