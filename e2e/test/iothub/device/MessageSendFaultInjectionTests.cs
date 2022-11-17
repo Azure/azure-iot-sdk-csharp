@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -237,20 +236,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DoNotParallelize]
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendMessageRecoveryAsync(
-                        new IotHubClientAmqpSettings(),
-                        FaultInjectionConstants.FaultType_QuotaExceeded,
-                        FaultInjectionConstants.FaultCloseReason_Boom)
+            await SendMessageRecoveryAsync(
+                    new IotHubClientAmqpSettings(),
+                    FaultInjectionConstants.FaultType_QuotaExceeded,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded);
-            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
@@ -258,25 +248,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DoNotParallelize]
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendMessageRecoveryAsync(
-                        new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                        FaultInjectionConstants.FaultType_QuotaExceeded,
-                        FaultInjectionConstants.FaultCloseReason_Boom)
+            await SendMessageRecoveryAsync(
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                    FaultInjectionConstants.FaultType_QuotaExceeded,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded);
-            error.And.IsTransient.Should().BeFalse();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AuthenticationRecovery_Amqp()
+        public async Task Message_AuthenticationNoRecovery_Amqp()
         {
             // act
             Func<Task> act = async () =>
@@ -296,7 +277,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AuthenticationRecovery_AmqpWs()
+        public async Task Message_AuthenticationNoRecovery_AmqpWs()
         {
             // act
             Func<Task> act = async () =>
