@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Amqp
 {
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Amqp
         {
             using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
             string jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<T>(jsonString);
+            return JsonSerializer.Deserialize<T>(jsonString);
         }
 
         internal static Exception GetExceptionFromOutcome(Outcome outcome)
