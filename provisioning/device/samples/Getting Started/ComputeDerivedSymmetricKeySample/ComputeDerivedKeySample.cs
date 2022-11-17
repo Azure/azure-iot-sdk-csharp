@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         /// <param name="registrationId">The registration Id of the key to create.</param>
         /// <returns>The key for the specified device Id registration in the enrollment group.</returns>
         /// <seealso>
-        /// https://docs.microsoft.com/en-us/azure/iot-edge/how-to-auto-provision-symmetric-keys?view=iotedge-2018-06#derive-a-device-key
+        /// https://docs.microsoft.com/azure/iot-edge/how-to-auto-provision-symmetric-keys#derive-a-device-key
         /// </seealso>
         private static string ComputeDerivedSymmetricKey(string enrollmentKey, string registrationId)
         {
