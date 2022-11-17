@@ -1119,12 +1119,34 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.");
 
+                    IotHubClientErrorResponseMessage errorResponse = null;
+
+                    // This will only ever contain an error message which is encoded based on service contract (UTF-8).
+                    if (payloadBytes.Length > 0)
+                    {
+                        string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
+                        try
+                        {
+                            errorResponse = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                        }
+                        catch (JsonException ex)
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Error(this, $"Failed to parse twin patch error response JSON: {ex}. Message body: '{errorResponseString}'");
+
+                            errorResponse = new IotHubClientErrorResponseMessage()
+                            {
+                                Message = errorResponseString,
+                            };
+                        }
+                    }
+
                     // This received message is in response to an update reported properties request.
                     var patchTwinResponse = new PatchTwinResponse
                     {
                         Status = status,
                         Version = version,
-                        ErrorResponseMessage = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(Encoding.UTF8.GetString(payloadBytes)), // This will only ever contain an error message which is encoded based on service contract (UTF-8).
+                        ErrorResponseMessage = errorResponse,
                     };
 
                     patchTwinCompletion.TrySetResult(patchTwinResponse);
