@@ -157,11 +157,11 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
+                throw new IotHubClientException(webSocketException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: webSocketException);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IotHubClientException(httpListenerException.Message, IotHubClientErrorCode.NetworkErrors, httpListenerException);
+                throw new IotHubClientException(httpListenerException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: httpListenerException);
             }
             finally
             {
@@ -202,11 +202,11 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
+                throw new IotHubClientException(webSocketException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: webSocketException);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IotHubClientException(httpListenerException.Message, IotHubClientErrorCode.NetworkErrors, httpListenerException);
+                throw new IotHubClientException(httpListenerException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: httpListenerException);
             }
             finally
             {

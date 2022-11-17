@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
                         new IotHubClientException(
                             CreateMessageWhenDeviceNotFound(await GetExceptionMessageAsync(response).ConfigureAwait(false)),
                             trackingId: null,
-                            IotHubClientErrorCode.DeviceNotFound)
+                            errorCode:IotHubClientErrorCode.DeviceNotFound)
                 },
                 { 
                     HttpStatusCode.NotFound,
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client
                         new IotHubClientException(
                             CreateMessageWhenDeviceNotFound(await GetExceptionMessageAsync(response).ConfigureAwait(false)),
                             trackingId: null,
-                            IotHubClientErrorCode.DeviceNotFound)
+                            errorCode:IotHubClientErrorCode.DeviceNotFound)
                 },
                 { 
                     HttpStatusCode.BadRequest,
@@ -55,49 +55,49 @@ namespace Microsoft.Azure.Devices.Client
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
-                            IotHubClientErrorCode.Unauthorized)
+                            errorCode:IotHubClientErrorCode.Unauthorized)
                 },
                 { 
                     HttpStatusCode.Forbidden,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
-                            IotHubClientErrorCode.QuotaExceeded)
+                            errorCode:IotHubClientErrorCode.QuotaExceeded)
                 },
                 { 
                     HttpStatusCode.PreconditionFailed,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
-                            IotHubClientErrorCode.DeviceMessageLockLost)
+                            errorCode:IotHubClientErrorCode.DeviceMessageLockLost)
                 },
                 { 
                     HttpStatusCode.RequestEntityTooLarge,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
-                            IotHubClientErrorCode.MessageTooLarge)
+                            errorCode:IotHubClientErrorCode.MessageTooLarge)
                 },
                 { 
                     HttpStatusCode.InternalServerError,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
-                            IotHubClientErrorCode.ServerError)
+                            errorCode:IotHubClientErrorCode.ServerError)
                 },
                 { 
                     HttpStatusCode.ServiceUnavailable,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
-                            IotHubClientErrorCode.ServerBusy)
+                            errorCode:IotHubClientErrorCode.ServerBusy)
                 },
                 { 
                     (HttpStatusCode)429,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
-                            IotHubClientErrorCode.Throttled)
+                            errorCode:IotHubClientErrorCode.Throttled)
                 }
             };
             return mappings;

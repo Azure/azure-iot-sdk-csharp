@@ -180,26 +180,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // TODO: pradeepc - need to confirm this with ASP.NET team
                 if (innerExceptions.Any(e => e is TimeoutException))
                 {
-                    throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
+                    throw new IotHubClientException(ex.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: ex);
                 }
 
-                throw new IotHubClientException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, innerException: ex);
             }
             catch (TimeoutException ex)
             {
-                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
+                throw new IotHubClientException(ex.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: ex);
             }
             catch (IOException ex)
             {
-                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
+                throw new IotHubClientException(ex.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: ex);
             }
             catch (HttpRequestException ex)
             {
-                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
+                throw new IotHubClientException(ex.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: ex);
             }
             catch (Exception ex) when (!Fx.IsFatal(ex) && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, innerException: ex);
             }
 
             if (!responseMsg.IsSuccessStatusCode)

@@ -41,61 +41,16 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected internal IotHubClientException(string message, Exception innerException = null)
-            : this(message, false, string.Empty, innerException)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected internal IotHubClientException(string message, bool isTransient, Exception innerException = null)
-            : this(message, isTransient, trackingId: string.Empty, innerException)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="errorCode">The specific error code.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected internal IotHubClientException(string message, IotHubClientErrorCode errorCode, Exception innerException = null)
-            : this(message, trackingId: string.Empty, errorCode, innerException)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected internal IotHubClientException(string message, bool isTransient, string trackingId, Exception innerException = null)
-            : base(message, innerException)
-        {
-            IsTransient = isTransient;
-            TrackingId = trackingId;
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         /// <param name="errorCode">The specific error code.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected internal IotHubClientException(string message, string trackingId, IotHubClientErrorCode errorCode, Exception innerException = null)
+        protected internal IotHubClientException(string message, bool? isTransient = null, string trackingId = null, IotHubClientErrorCode errorCode = IotHubClientErrorCode.Unknown, Exception innerException = null)
             : base(message, innerException)
         {
-            IsTransient = DetermineIfTransient(errorCode);
-            TrackingId = trackingId;
             ErrorCode = errorCode;
+            IsTransient = isTransient ?? DetermineIfTransient(errorCode);
+            TrackingId = trackingId ?? string.Empty;
         }
 
         /// <summary>
@@ -111,12 +66,6 @@ namespace Microsoft.Azure.Devices.Client
                 IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
                 TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
             }
-        }
-
-        internal IotHubClientException(IotHubClientErrorCode errorCode) : base()
-        {
-            IsTransient = DetermineIfTransient(errorCode);
-            ErrorCode = errorCode;
         }
 
         /// <summary>

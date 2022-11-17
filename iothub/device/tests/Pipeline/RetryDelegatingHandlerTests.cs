@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-                .Returns(() => throw new IotHubClientException(IotHubClientErrorCode.DeviceNotFound));
+                .Returns(() => throw new IotHubClientException(message: null, errorCode: IotHubClientErrorCode.DeviceNotFound));
 
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
             Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
@@ -392,7 +392,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Returns(() =>
                    {
                        nextHandlerCallCounter++;
-                       throw new IotHubClientException(IotHubClientErrorCode.NetworkErrors);
+                       throw new IotHubClientException(message: null, errorCode: IotHubClientErrorCode.NetworkErrors);
                    });
 
             // act and assert
