@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.ResourceLimitExceeded, amqpSymbol))
             {
-                retException = new IotHubClientException(message, IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded, amqpException);
+                retException = new IotHubClientException(message, IotHubClientErrorCode.QuotaExceeded, amqpException);
             }
             else if (Equals(AmqpErrorCode.ResourceLocked, amqpSymbol))
             {
