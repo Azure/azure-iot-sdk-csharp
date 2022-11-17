@@ -710,6 +710,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     case PacketType.PUBLISH:
                         ProcessPublish(context, (PublishPacket)packet);
+                        // Checking if acknowledgement is needed after receiving direct method from Hub with QoS = 1,
+                        // otherwise its not acknowledged because direct method response does not require CompleteAsync() call.
+                        // Other messages with QoS = 1 are acknowledged from WriteAsync() after CompleteAsync() call.
+                        if (((PublishPacket)packet).QualityOfService == QualityOfService.AtLeastOnce &&
+                            ((PublishPacket)packet).TopicName.StartsWith(MqttTransportHandler.MethodPostTopicPrefix, StringComparison.OrdinalIgnoreCase))
+                        {
+                            await AcknowledgeAsync(context, ((PublishPacket)packet).PacketId.ToString()).ConfigureAwait(false);
+                        }
                         break;
 
                     case PacketType.PUBACK:
