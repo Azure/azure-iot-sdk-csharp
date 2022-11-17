@@ -144,6 +144,6 @@ namespace Microsoft.Azure.Devices.Client
         /// One example when this error is encountered is when the twin property patch does not meet the specified restrictions.
         /// For twin properties format see <see chef="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins#tags-and-properties-format"/>.
         /// </remarks>
-        ArgumentInvalid,
+        ArgumentInvalid = 400004,
     }
 }

@@ -157,11 +157,17 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IotHubClientException(webSocketException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: webSocketException);
+                throw new IotHubClientException(webSocketException.Message, webSocketException)
+                {
+                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                };
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IotHubClientException(httpListenerException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: httpListenerException);
+                throw new IotHubClientException(httpListenerException.Message, httpListenerException)
+                {
+                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                };
             }
             finally
             {
@@ -202,11 +208,17 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IotHubClientException(webSocketException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: webSocketException);
+                throw new IotHubClientException(webSocketException.Message, webSocketException)
+                {
+                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                };
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IotHubClientException(httpListenerException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: httpListenerException);
+                throw new IotHubClientException(httpListenerException.Message, httpListenerException)
+                {
+                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                };
             }
             finally
             {

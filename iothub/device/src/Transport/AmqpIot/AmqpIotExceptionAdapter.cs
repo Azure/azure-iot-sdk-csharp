@@ -14,17 +14,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 && source.IsClosing()
                 && exception is InvalidOperationException)
             {
-                return new IotHubClientException("AMQP resource is disconnected.", errorCode: IotHubClientErrorCode.NetworkErrors, innerException: exception);
+                return new IotHubClientException("AMQP resource is disconnected.", exception)
+                {
+                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                };
             }
 
             if (exception is TimeoutException)
             {
-                return new IotHubClientException(exception.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: exception);
+                return new IotHubClientException(exception.Message, exception)
+                {
+                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                };
             }
 
             if (exception is UnauthorizedAccessException)
             {
-                return new IotHubClientException(exception.Message, errorCode: IotHubClientErrorCode.Unauthorized, innerException: exception);
+                return new IotHubClientException(exception.Message, exception)
+                {
+                    ErrorCode = IotHubClientErrorCode.Unauthorized,
+                };
             }
 
             if (exception is OperationCanceledException

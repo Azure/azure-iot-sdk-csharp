@@ -54,7 +54,10 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
                 if (length == 0)
                 {
-                    throw new IotHubClientException("Unexpected end of stream.", errorCode: IotHubClientErrorCode.NetworkErrors);
+                    throw new IotHubClientException("Unexpected end of stream.")
+                    {
+                        ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                    };
                 }
 
                 if (crFound && (char)buffer[position] == LF)

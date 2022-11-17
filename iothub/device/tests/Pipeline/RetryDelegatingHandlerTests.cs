@@ -38,7 +38,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Returns(() =>
                     {
                         return ++callCounter == 1
-                            ? throw new IotHubClientException("Test transient exception", isTransient: true)
+                            ? throw new IotHubClientException("Test transient exception")
+                            {
+                                IsTransient = true,
+                            }
                             : Task.CompletedTask;
                     });
             nextHandlerMock
@@ -77,7 +80,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage)
+                            {
+                                IsTransient = true,
+                            };
                         }
                         return Task.CompletedTask;
                     });
@@ -149,7 +155,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage)
+                            {
+                                IsTransient = true,
+                            };
                         }
                         return Task.CompletedTask;
                     });
@@ -185,7 +194,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage)
+                            {
+                                IsTransient = true,
+                            };
                         }
                         return Task.CompletedTask;
                     });
@@ -242,7 +254,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-                .Returns(() => throw new IotHubClientException(message: null, errorCode: IotHubClientErrorCode.DeviceNotFound));
+                .Returns(() => throw new IotHubClientException()
+                {
+                    ErrorCode = IotHubClientErrorCode.DeviceNotFound,
+                });
 
             ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
             Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
@@ -279,7 +294,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
                 .Setup(x => x.OpenAsync(cts.Token))
-                .Returns(() => throw new IotHubClientException(TestExceptionMessage, isTransient: true));
+                .Returns(() => throw new IotHubClientException(TestExceptionMessage)
+                {
+                    IsTransient = true,
+                });
 
             var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
@@ -392,7 +410,10 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Returns(() =>
                    {
                        nextHandlerCallCounter++;
-                       throw new IotHubClientException(message: null, errorCode: IotHubClientErrorCode.NetworkErrors);
+                       throw new IotHubClientException()
+                       {
+                           ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                       };
                    });
 
             // act and assert

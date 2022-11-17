@@ -144,11 +144,17 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (SocketException socketException)
             {
-                throw new IotHubClientException(socketException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: socketException);
+                throw new IotHubClientException(socketException.Message, socketException)
+                {
+                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                };
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IotHubClientException(webSocketException.Message, errorCode: IotHubClientErrorCode.NetworkErrors, innerException: webSocketException);
+                throw new IotHubClientException(webSocketException.Message, webSocketException)
+                {
+                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
+                };
             }
             finally
             {

@@ -20,6 +20,9 @@ namespace Microsoft.Azure.Devices.Client
         [NonSerialized]
         private const string TrackingIdValueSerializationStoreName = "IotHubClientException-TrackingId";
 
+        private IotHubClientErrorCode _errorCode;
+        private bool? _isTransient;
+
         private static readonly HashSet<IotHubClientErrorCode> s_transientErrorCodes = new()
         {
             IotHubClientErrorCode.QuotaExceeded,
@@ -41,16 +44,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
-        /// <param name="errorCode">The specific error code.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected internal IotHubClientException(string message, bool? isTransient = null, string trackingId = null, IotHubClientErrorCode errorCode = IotHubClientErrorCode.Unknown, Exception innerException = null)
+        protected internal IotHubClientException(string message, Exception innerException = null)
             : base(message, innerException)
         {
-            ErrorCode = errorCode;
-            IsTransient = isTransient ?? DetermineIfTransient(errorCode);
-            TrackingId = trackingId ?? string.Empty;
         }
 
         /// <summary>
@@ -69,19 +66,31 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Indicates if the error is transient and should be retried.
-        /// </summary>
-        public bool IsTransient { get; protected internal set; }
-
-        /// <summary>
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
-        public string TrackingId { get; protected internal set; }
+        public string TrackingId { get; protected internal set; } = string.Empty;
+
+        /// <summary>
+        /// Indicates if the error is transient and should be retried.
+        /// </summary>
+        public bool IsTransient
+        {
+            get => (bool)_isTransient;
+            protected internal set => _isTransient = value;
+        }
 
         /// <summary>
         /// The specific error code.
         /// </summary>
-        public IotHubClientErrorCode ErrorCode { get; protected internal set; }
+        public IotHubClientErrorCode ErrorCode
+        {
+            get => _errorCode;
+            protected internal set
+            {
+                _errorCode = value;
+                _isTransient ??= DetermineIfTransient(_errorCode);
+            }
+        }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.

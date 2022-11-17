@@ -212,7 +212,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         error = reader.ReadToEnd();
 
                         // Retry for Http status code request timeout, Too many requests and server errors
-                        var exception = new IotHubClientException(error, status >= 500 || status == 429 || status == 408);
+                        var exception = new IotHubClientException(error)
+                        {
+                            IsTransient = status >= 500 || status == 429 || status == 408,
+                        };
                         _onTwinMessageReceived.Invoke(null, correlationId, exception);
                     }
                 }
