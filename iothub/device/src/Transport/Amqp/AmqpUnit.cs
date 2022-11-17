@@ -128,10 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (_isClosed)
             {
-                throw new IotHubClientException("Device is now offline.")
-                {
-                    IsTransient = false,
-                };
+                throw new IotHubClientException("Device is now offline.");
             }
 
             cancellationToken.ThrowIfCancellationRequested();
