@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public bool IsTransient
         {
-            get => (bool)_isTransient;
+            get => _isTransient != null && (bool)_isTransient;
             protected internal set => _isTransient = value;
         }
 
