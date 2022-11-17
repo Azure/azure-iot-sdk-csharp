@@ -129,11 +129,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "getting started", "getting 
 		provisioning\device\samples\readme.md = provisioning\device\samples\readme.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComputeDerivedSymmetricKeySample", "provisioning\device\samples\Getting Started\ComputeDerivedSymmetricKeySample\ComputeDerivedSymmetricKeySample.csproj", "{2E8CF29C-75D9-4700-A774-00E40A1A53F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComputeDerivedSymmetricKeySample", "provisioning\device\samples\getting started\ComputeDerivedSymmetricKeySample\ComputeDerivedSymmetricKeySample.csproj", "{2E8CF29C-75D9-4700-A774-00E40A1A53F8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X509Sample", "provisioning\device\samples\Getting Started\X509Sample\X509Sample.csproj", "{071A6BA6-1C2B-4E05-A80C-03B6F73B9979}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X509Sample", "provisioning\device\samples\getting started\X509Sample\X509Sample.csproj", "{071A6BA6-1C2B-4E05-A80C-03B6F73B9979}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how to", "how to", "{8415821D-5A32-4CE7-8203-CF457229F2A9}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how to guides", "how to guides", "{8415821D-5A32-4CE7-8203-CF457229F2A9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{82088ECF-6C0D-4249-B40E-B0EF2D9A1436}"
 	ProjectSection(SolutionItems) = preProject
@@ -142,23 +142,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8208
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "getting started", "getting started", "{01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how to", "how to", "{23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how to guides", "how to guides", "{23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanupEnrollmentsSample", "provisioning\service\samples\Getting Started\CleanupEnrollmentsSample\CleanupEnrollmentsSample.csproj", "{DCBD8161-B03B-48E7-8827-7E5D271181AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanupEnrollmentsSample", "provisioning\service\samples\getting started\CleanupEnrollmentsSample\CleanupEnrollmentsSample.csproj", "{DCBD8161-B03B-48E7-8827-7E5D271181AD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkOperationSample", "provisioning\service\samples\How To\BulkOperationSample\BulkOperationSample.csproj", "{ED719662-D4F8-4014-951F-418169AEB876}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BulkOperationSample", "provisioning\service\samples\how to guides\BulkOperationSample\BulkOperationSample.csproj", "{ED719662-D4F8-4014-951F-418169AEB876}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupCertificateVerificationSample", "provisioning\service\samples\How To\GroupCertificateVerificationSample\GroupCertificateVerificationSample.csproj", "{4D529C9A-6644-4222-95C8-87EA17B8D37A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupCertificateVerificationSample", "provisioning\service\samples\how to guides\GroupCertificateVerificationSample\GroupCertificateVerificationSample.csproj", "{4D529C9A-6644-4222-95C8-87EA17B8D37A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricKeySample", "provisioning\device\samples\How To\SymmetricKeySample\SymmetricKeySample.csproj", "{094C77B4-5921-439B-91CB-74555275C2B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricKeySample", "provisioning\device\samples\how to guides\SymmetricKeySample\SymmetricKeySample.csproj", "{094C77B4-5921-439B-91CB-74555275C2B8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvokeDeviceMethod", "iothub\service\samples\getting started\InvokeDeviceMethod\InvokeDeviceMethod.csproj", "{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupX509Sample", "provisioning\service\samples\Getting Started\EnrollmentGroupX509Sample\EnrollmentGroupX509Sample.csproj", "{83170B36-375E-40A9-B25D-999072362626}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupX509Sample", "provisioning\service\samples\getting started\EnrollmentGroupX509Sample\EnrollmentGroupX509Sample.csproj", "{83170B36-375E-40A9-B25D-999072362626}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentX509Sample", "provisioning\service\samples\Getting Started\IndividualEnrollmentX509Sample\IndividualEnrollmentX509Sample.csproj", "{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentX509Sample", "provisioning\service\samples\getting started\IndividualEnrollmentX509Sample\IndividualEnrollmentX509Sample.csproj", "{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentTpmSample", "provisioning\service\samples\Getting Started\IndividualEnrollmentTpmSample\IndividualEnrollmentTpmSample.csproj", "{705C5B5A-6166-4566-B167-4401491D7650}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentTpmSample", "provisioning\service\samples\getting started\IndividualEnrollmentTpmSample\IndividualEnrollmentTpmSample.csproj", "{705C5B5A-6166-4566-B167-4401491D7650}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\getting started\SimulatedDevice\SimulatedDevice.csproj", "{D3A771DC-1763-4A14-952C-CD69433FEC74}"
 EndProject
