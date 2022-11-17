@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.Client
                     async (response) =>
                         new IotHubClientException(
                             CreateMessageWhenDeviceNotFound(await GetExceptionMessageAsync(response).ConfigureAwait(false)),
-                            trackingId: null,
                             errorCode:IotHubClientErrorCode.DeviceNotFound)
                 },
                 { 
@@ -42,7 +41,6 @@ namespace Microsoft.Azure.Devices.Client
                     async (response) =>
                         new IotHubClientException(
                             CreateMessageWhenDeviceNotFound(await GetExceptionMessageAsync(response).ConfigureAwait(false)),
-                            trackingId: null,
                             errorCode:IotHubClientErrorCode.DeviceNotFound)
                 },
                 { 
