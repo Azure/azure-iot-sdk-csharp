@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The type of registry operation and ETag preferences.
         /// </summary>
-        [JsonPropertyName("importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("importMode")]
         public ConfigurationImportMode ImportMode { get; set; }
     }
 }

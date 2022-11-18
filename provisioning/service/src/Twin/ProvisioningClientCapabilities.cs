@@ -14,6 +14,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// IoT Edge capability.
         /// </summary>
         [JsonPropertyName("iotEdge")]
-        public bool IotEdge { get; set; }
+        public bool IsIotEdge { get; set; }
     }
 }

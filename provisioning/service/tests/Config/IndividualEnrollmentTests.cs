@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private readonly DateTime _sampleLastUpdatedDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private static ETag SampleEtag = new ETag("00000000-0000-0000-0000-00000000000");
-        private readonly ProvisioningClientCapabilities _sampleEdgeCapabilityTrue = new() { IotEdge = true };
-        private readonly ProvisioningClientCapabilities _sampleEdgeCapabilityFalse = new() { IotEdge = false };
+        private readonly ProvisioningClientCapabilities _sampleEdgeCapabilityTrue = new() { IsIotEdge = true };
+        private readonly ProvisioningClientCapabilities _sampleEdgeCapabilityFalse = new() { IsIotEdge = false };
 
         private const string SampleEndorsementKey =
             "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedOnUtc);
             Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedOnUtc);
             Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
-            Assert.AreEqual(_sampleEdgeCapabilityTrue.IotEdge, individualEnrollment.Capabilities.IotEdge);
+            Assert.AreEqual(_sampleEdgeCapabilityTrue.IsIotEdge, individualEnrollment.Capabilities.IsIotEdge);
         }
 
         [TestMethod]
@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedOnUtc);
             Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedOnUtc);
             Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
-            Assert.AreEqual(_sampleEdgeCapabilityFalse.IotEdge, individualEnrollment.Capabilities.IotEdge);
+            Assert.AreEqual(_sampleEdgeCapabilityFalse.IsIotEdge, individualEnrollment.Capabilities.IsIotEdge);
         }
 
         [TestMethod]

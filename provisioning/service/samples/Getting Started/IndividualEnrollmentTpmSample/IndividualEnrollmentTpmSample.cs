@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IndividualEnrollmentTpmSample;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -19,8 +18,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly string _deviceId;
 
         private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
-        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityEnabled = new() { IotEdge = true };
-        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityDisabled = new() { IotEdge = false };
+        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityEnabled = new() { IsIotEdge = true };
+        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityDisabled = new() { IsIotEdge = false };
 
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
@@ -96,7 +95,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             IndividualEnrollment individualEnrollment = await GetIndividualEnrollmentInfoAsync();
             Console.WriteLine($"Initial device twin state is {individualEnrollment.InitialTwinState}.");
-            Console.WriteLine($"IoT Edge device set to '{individualEnrollment.Capabilities.IotEdge}'.");
+            Console.WriteLine($"IoT Edge device set to '{individualEnrollment.Capabilities.IsIotEdge}'.");
             individualEnrollment.InitialTwinState.DesiredProperties["Color"] = "Yellow";
             individualEnrollment.Capabilities = _optionalEdgeCapabilityDisabled;
 
@@ -104,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             IndividualEnrollment individualEnrollmentResult =
                 await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
             Console.WriteLine($"Updated initial device twin state is {individualEnrollmentResult.InitialTwinState}.");
-            Console.WriteLine($"Updated IoT Edge device to '{individualEnrollmentResult.Capabilities.IotEdge}'.");
+            Console.WriteLine($"Updated IoT Edge device to '{individualEnrollmentResult.Capabilities.IsIotEdge}'.");
             Console.WriteLine($"Successfully updated the individual enrollment '{_registrationId}'.");
         }
 

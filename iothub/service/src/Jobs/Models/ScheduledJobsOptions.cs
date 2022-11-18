@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Unique Id for the job.
         /// </summary>
-        [JsonPropertyName("jobId", Required = Required.Default)]
+        [JsonPropertyName("jobId")]
         public string JobId { get; set; }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public TimeSpan MaxExecutionTime { get; set; }
 
-        [JsonPropertyName("maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("maxExecutionTimeInSeconds")]
         internal long MaxExecutionTimeInSeconds
         {
             get => (long)MaxExecutionTime.TotalSeconds;

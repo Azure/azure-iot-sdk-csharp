@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// If false, not all operations in the bulk enrollment succeeded.
         /// </summary>
-        [JsonPropertyName("isSuccessful", Required = Required.Always)]
+        [JsonPropertyName("isSuccessful")]
         public bool IsSuccessful { get; protected internal set; }
 
         /// <summary>

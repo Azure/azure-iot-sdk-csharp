@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// and update it if necessary for any provisioning requests beyond the first from a given device.
         /// If set to false, the device will stay assigned to its current IoT hub.
         /// </summary>
-        [JsonPropertyName("updateHubAssignment", DefaultValueHandling = DefaultValueHandling.Include)]
+        [JsonPropertyName("updateHubAssignment")]
         public bool UpdateHubAssignment { get; set; }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// If set to false, the Device Provisioning Service will reset the device's data to the initial desired
         /// configuration stored in the provisioning service's enrollment list.
         /// </summary>
-        [JsonPropertyName("migrateDeviceData", DefaultValueHandling = DefaultValueHandling.Include)]
+        [JsonPropertyName("migrateDeviceData")]
         public bool MigrateDeviceData { get; set; }
     }
 }

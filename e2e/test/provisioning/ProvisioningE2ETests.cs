@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = true })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IsIotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -385,7 +385,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = true })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IsIotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = false })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IsIotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = false })
+                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IsIotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -911,7 +911,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             IAuthenticationMethod auth,
             ProvisioningClientCapabilities capabilities)
         {
-            if (capabilities != null && capabilities.IotEdge)
+            if (capabilities != null && capabilities.IsIotEdge)
             {
                 //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
                 var iotHubConnectionCredentials = new IotHubConnectionCredentials(auth, result.AssignedHub);
