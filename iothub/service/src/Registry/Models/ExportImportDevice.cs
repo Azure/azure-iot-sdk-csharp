@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The unique identifier of the device.
         /// </summary>
-        [JsonPropertyName("id", Required = Required.Always)]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The type of registry operation and ETag preferences.
         /// </summary>
-        [JsonPropertyName("importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("importMode")]
         public ImportMode ImportMode { get; set; }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// If disabled, it cannot connect to the service.
         /// </remarks>
-        [JsonPropertyName("status", Required = Required.Always)]
+        [JsonPropertyName("status")]
         public ClientStatus Status { get; set; }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices
         /// For more information, see
         /// <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonPropertyName("deviceScope", NullValueHandling = NullValueHandling.Include)]
+        [JsonPropertyName("deviceScope")]
         public string DeviceScope { get; set; }
     }
 }

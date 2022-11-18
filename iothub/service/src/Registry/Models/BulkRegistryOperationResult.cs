@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Whether or not the operation was successful.
         /// </summary>
-        [JsonPropertyName("isSuccessful", Required = Required.Always)]
+        [JsonPropertyName("isSuccessful")]
         public bool IsSuccessful { get; protected internal set; }
 
         /// <summary>

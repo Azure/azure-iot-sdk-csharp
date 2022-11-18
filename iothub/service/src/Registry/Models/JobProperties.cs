@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is set by this client depending on which job method is called.
         /// </remarks>
-        [JsonPropertyName("type", Required = Required.Always)]
+        [JsonPropertyName("type")]
         public JobType JobType { get; protected internal set; }
 
         /// <summary>

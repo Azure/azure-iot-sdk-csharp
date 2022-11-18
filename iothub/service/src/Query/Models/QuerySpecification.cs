@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices
 {
     internal class QuerySpecification
     {
-        [JsonPropertyName("query", Required = Required.Always)]
+        [JsonPropertyName("query")]
         internal string Sql { get; set; }
     }
 }

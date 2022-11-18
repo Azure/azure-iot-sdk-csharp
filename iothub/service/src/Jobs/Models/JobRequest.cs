@@ -14,13 +14,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Job identifier.
         /// </summary>
-        [JsonPropertyName("jobId", Required = Required.Always)]
+        [JsonPropertyName("jobId")]
         internal string JobId { get; set; }
 
         /// <summary>
         /// [Required] The type of job to execute.
         /// </summary>
-        [JsonPropertyName("type", Required = Required.Always)]
+        [JsonPropertyName("type")]
         internal JobType JobType { get; set; }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         internal TimeSpan? MaxExecutionTime { get; set; }
 
-        [JsonPropertyName("maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("maxExecutionTimeInSeconds")]
         internal long? MaxExecutionTimeInSeconds
         {
             get => MaxExecutionTime != null ? (long)MaxExecutionTime?.TotalSeconds : null;
