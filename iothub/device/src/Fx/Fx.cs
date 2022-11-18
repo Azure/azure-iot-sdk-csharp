@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal static class Fx
     {
-        public static bool IsFatal(Exception ex)
+        internal static bool IsFatal(Exception ex)
         {
             while (ex != null)
             {
