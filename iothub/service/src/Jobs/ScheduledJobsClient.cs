@@ -92,6 +92,10 @@ namespace Microsoft.Azure.Devices
             }
             catch (HttpRequestException ex)
             {
+                if (Fx.ContainsAuthenticationException(ex))
+                {
+                    throw new IotHubServiceException(ex.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, ex);
+                }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
@@ -173,6 +177,10 @@ namespace Microsoft.Azure.Devices
             }
             catch (HttpRequestException ex)
             {
+                if (Fx.ContainsAuthenticationException(ex))
+                {
+                    throw new IotHubServiceException(ex.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, ex);
+                }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)
@@ -251,6 +259,10 @@ namespace Microsoft.Azure.Devices
             }
             catch (HttpRequestException ex)
             {
+                if (Fx.ContainsAuthenticationException(ex))
+                {
+                    throw new IotHubServiceException(ex.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, ex);
+                }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
             catch (Exception ex)

@@ -214,6 +214,10 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             catch (WebSocketException webSocketException)
             {
+                if (Fx.ContainsAuthenticationException(webSocketException))
+                {
+                    throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, webSocketException);
+                }
                 throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, webSocketException);
             }
             finally
