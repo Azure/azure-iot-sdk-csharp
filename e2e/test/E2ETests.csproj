@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.30;net472</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.30</TargetFrameworks>
-    <!-- By setting this as not a test project for other frameworks, we can run "dotnet test" for a specific framework from the root directory without dotnet throwing if any test project in the solution doesn't support that framework -->
-    <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net5.0' And '$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'netcoreapp2.1.30'">False</IsTestProject>
+    <TargetFrameworks>net6.0;netcoreapp3.1</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
+    <!-- We will turn on this suppression once we are ready to GA-->
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <!-- <CheckEolTargetFramework>false</CheckEolTargetFramework> -->
   </PropertyGroup>
 
   <!-- All Platforms -->

@@ -19,10 +19,7 @@ parameters:
     - all
     - min-matrix
     - net6.0
-    - net5.0
     - netcore3.1
-    - netcore2.1
-    - net4.7.2
   default: default
 
 variables:
@@ -43,9 +40,7 @@ variables:
   testNetcore31: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
 
 # The remaining build/test targets.
-  testNet50: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net5.0')) }}
-  testNetcore21: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore2.1')) }}
-  testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
+  # Add remaining targets in here
 
 trigger:
   batch: true
@@ -75,15 +70,9 @@ jobs:
           FRAMEWORK: net6.0
           # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 5.0:
-          FRAMEWORK: net5.0
-          SHOULD_RUN: ${{ eq(variables['testNet50'], 'True') }}
         .NET CoreApp 3.1:
           FRAMEWORK: netcoreapp3.1
           SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
-        .NET CoreApp 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
-          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -101,10 +90,6 @@ jobs:
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNet50: ${{ variables.testNet50 }}"
-            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
-            Write-Host "testNet472: ${{ variables.testNet472 }}"
-            Write-Host "testNet451: ${{ variables.testNet451 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
@@ -119,29 +104,11 @@ jobs:
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          packageType: sdk
-          version: 5.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 3.1'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           packageType: sdk
           version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          packageType: sdk
-          version: 2.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -369,18 +336,9 @@ jobs:
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 5.0:
-          FRAMEWORK: net5.0
-          SHOULD_RUN: ${{ eq(variables['testNet50'], 'True') }}
         .NET CoreApp 3.1:
           FRAMEWORK: netcoreapp3.1
           SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
-        .NET CoreApp 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
-          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
-        .NET 4.7.2:
-          FRAMEWORK: net472
-          SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -398,9 +356,6 @@ jobs:
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNet50: ${{ variables.testNet50 }}"
-            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
-            Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
@@ -412,15 +367,6 @@ jobs:
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          packageType: sdk
-          version: 5.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 3.1'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
@@ -428,19 +374,6 @@ jobs:
           version: 3.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: CmdLine@2
-        displayName: 'Install .NET Core 2.1'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          script: 'choco install dotnetcore-2.1-sdk'
-
-      - ${{ if eq(variables['testNet472'], 'True') }}:
-        - task: CmdLine@2
-          displayName: 'Install .NET 4.7.2'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            script: 'choco install netfx-4.7.2-devpack'
 
       - script: |
           choco install -y squid
