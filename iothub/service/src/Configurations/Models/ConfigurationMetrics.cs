@@ -28,35 +28,5 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonPropertyName("queries")]
         public IDictionary<string, string> Queries { get; set; } = new Dictionary<string, string>();
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <remarks>
-        /// To give the properties above a default instance to prevent <see cref="NullReferenceException"/> but
-        /// avoid serializing them when the dictionary is empty, we use this feature of Newtonsoft.Json, which must
-        /// be public, and hide it from web docs and intellisense using the EditorBrowsable attribute.
-        /// </remarks>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeResults()
-        {
-            return Results != null && Results.Any();
-        }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <remarks>
-        /// To give the properties above a default instance to prevent <see cref="NullReferenceException"/> but
-        /// avoid serializing them when the dictionary is empty, we use this feature of Newtonsoft.Json, which must
-        /// be public, and hide it from web docs and intellisense using the EditorBrowsable attribute.
-        /// </remarks>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeQueries()
-        {
-            return Queries != null && Queries.Any();
-        }
     }
 }

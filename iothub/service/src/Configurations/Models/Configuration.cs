@@ -106,15 +106,5 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonPropertyName("etag")]
         public ETag ETag { get; set; }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeLabels()
-        {
-            return Labels != null && Labels.Any();
-        }
     }
 }
