@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             foreach (T item in items)
             {
-                itemsFileSb.AppendLine(JsonConvert.SerializeObject(item));
+                itemsFileSb.AppendLine(JsonSerializer.Serialize(item));
             }
 
             byte[] itemsFileInBytes = Encoding.Default.GetBytes(itemsFileSb.ToString());

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -46,13 +46,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Primary reference.
         /// </summary>
-        [JsonProperty(PropertyName = "primary", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("primary")]
         public string Primary { get; private set; }
 
         /// <summary>
         /// Secondary reference.
         /// </summary>
-        [JsonProperty(PropertyName = "secondary", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("secondary")]
         public string Secondary { get; private set; }
     }
 }

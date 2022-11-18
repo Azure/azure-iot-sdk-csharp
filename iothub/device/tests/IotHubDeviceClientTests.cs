@@ -3,15 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using Moq;
 
 namespace Microsoft.Azure.Devices.Client.Test
@@ -332,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var DirectMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -370,7 +369,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -410,7 +409,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(boolean)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(boolean)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -450,7 +449,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(bytes)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(bytes)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -490,7 +489,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(list)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(list)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -530,7 +529,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(map)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(map)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -567,7 +566,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -594,7 +593,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = "TestMethodName",
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -634,7 +633,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(methodBody)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -666,7 +665,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody2)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(methodBody2)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -709,7 +708,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(methodBody)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -731,7 +730,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             directMethodRequest = new DirectMethodRequest
             {
                 MethodName = methodName,
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(methodBody)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -1273,7 +1272,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private class CustomDirectMethodPayload
         {
-            [JsonProperty(PropertyName = "grade")]
+            [JsonPropertyName("grade")]
             public string Grade { get; set; }
         }
     }

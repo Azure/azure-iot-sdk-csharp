@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
@@ -232,13 +232,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal static int GetStatus(AmqpMessage response)
         {
-            if (response != null
-                && response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status))
-            {
-                return status;
-            }
-
-            return -1;
+            return response == null
+                    || !response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status)
+                ? -1
+                : status;
         }
     }
 }

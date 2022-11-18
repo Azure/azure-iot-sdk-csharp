@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -54,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </example>
     public class ProvisioningTwinState
     {
-        [JsonProperty(PropertyName = "properties", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("properties")]
         private ProvisioningTwinDocument _properties;
 
         /// <summary>
@@ -102,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Getter and setter the for tags.
         /// </summary>
-        [JsonProperty(PropertyName = "tags", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("tags")]
         public IDictionary<string, object> Tags { get; set; }
 
         /// <summary>
@@ -120,15 +121,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         Desired = value,
                         Reported = null,
                     };
-        }
-
-        /// <summary>
-        /// Convert this object in a pretty print format.
-        /// </summary>
-        /// <returns>The string with the content of this class in a pretty print format.</returns>
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
     }
 }

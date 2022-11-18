@@ -11,9 +11,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private static StringContent CreateContent<T>(T entity)
         {
-            return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
+            return new StringContent(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
         }
 
         private static async Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)

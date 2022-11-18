@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
@@ -80,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             string eventId = Guid.NewGuid().ToString();
             string p1Value = eventId;
-            string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
+            string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString();
 
             var message = new TelemetryMessage(payload)
             {

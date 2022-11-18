@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -11,16 +11,16 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class CustomType
     {
-        [JsonProperty("stringAttri")]
+        [JsonPropertyName("stringAttri")]
         public string StringAttri;
 
-        [JsonProperty("intAttri")]
+        [JsonPropertyName("intAttri")]
         public int IntAttri;
 
-        [JsonProperty("boolAttri")]
+        [JsonPropertyName("boolAttri")]
         public bool BoolAttri;
 
-        [JsonProperty("nestedCustomType")]
+        [JsonPropertyName("nestedCustomType")]
         public NestedCustomType NestedCustomType;
 
         public CustomType(string stringAttri, int intAttri, bool boolAttri, NestedCustomType nestedCustomType)

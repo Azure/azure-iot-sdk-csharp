@@ -6,15 +6,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
@@ -354,9 +350,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 try
                 {
-                    // The response here is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
-                    // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                    TwinDocument clientTwinProperties = JsonConvert.DeserializeObject<TwinDocument>(body);
+                    // The response here is deserialized into an SDK-defined type based on service-defined System.Text.Json-based json property name.
+                    // For this reason, we use System.Text.Json serializer for this deserialization.
+                    TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(body);
 
                     var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
                     {
@@ -370,7 +366,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                     return new TwinProperties(twinDesiredProperties, twinReportedProperties);
                 }
-                catch (JsonReaderException ex)
+                catch (JsonException ex)
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");

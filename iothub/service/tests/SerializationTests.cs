@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Tests
  ""lastActivityTime"": ""2018-06-29T21:17:08.7759733"",
 }";
 
-            JsonConvert.DeserializeObject<ClientTwin>(jsonString);
+            JsonSerializer.Deserialize<ClientTwin>(jsonString);
         }
 
         [TestMethod]
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Tests
   }
 }";
 
-            JsonConvert.DeserializeObject<Configuration>(jsonString);
+            JsonSerializer.Deserialize<Configuration>(jsonString);
         }
 
         [TestMethod]
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Tests
   }
 }";
 
-            JsonConvert.DeserializeObject<Configuration>(jsonString);
+            JsonSerializer.Deserialize<Configuration>(jsonString);
         }
     }
 }

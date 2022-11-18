@@ -3,10 +3,10 @@
 
 using System;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -50,7 +50,12 @@ namespace Microsoft.Azure.Devices.Samples
                 .DigitalTwins
                 .GetAsync<T>(_digitalTwinId);
             T thermostatTwin = getDigitalTwinResponse.DigitalTwin;
-            _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonConvert.SerializeObject(thermostatTwin, Formatting.Indented)}");
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+            _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonSerializer.Serialize(thermostatTwin, options)}");
 
             return thermostatTwin;
         }
@@ -155,7 +160,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 var options = new InvokeDigitalTwinCommandOptions
                 {
-                    Payload = JsonConvert.SerializeObject(since),
+                    Payload = JsonSerializer.Serialize(since),
                 };
 
                 InvokeDigitalTwinCommandResponse invokeCommandResponse = await _serviceClient

@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            BulkEnrollmentOperationError bulkError = JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(erroJson);
+            BulkEnrollmentOperationError bulkError = JsonSerializer.Deserialize<BulkEnrollmentOperationError>(erroJson);
 
             // assert
             Assert.IsNotNull(bulkError);
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            BulkEnrollmentOperationError bulkError = JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(erroJson);
+            BulkEnrollmentOperationError bulkError = JsonSerializer.Deserialize<BulkEnrollmentOperationError>(erroJson);
 
             // assert
             Assert.IsNotNull(bulkError);

@@ -11,10 +11,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Authentication;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 try
                 {
-                    ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(response.Body);
+                    ResponseBody responseBody = JsonSerializer.Deserialize<ResponseBody>(response.Body);
 
                     if (response.StatusCode >= HttpStatusCode.Ambiguous)
                     {

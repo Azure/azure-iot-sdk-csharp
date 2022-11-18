@@ -3,8 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -85,15 +84,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             switch (QueryType)
             {
                 case QueryResultType.Enrollment:
-                    Items = JsonConvert.DeserializeObject<IEnumerable<IndividualEnrollment>>(bodyString);
+                    Items = JsonSerializer.Deserialize<IEnumerable<IndividualEnrollment>>(bodyString);
                     break;
 
                 case QueryResultType.EnrollmentGroup:
-                    Items = JsonConvert.DeserializeObject<IEnumerable<EnrollmentGroup>>(bodyString);
+                    Items = JsonSerializer.Deserialize<IEnumerable<EnrollmentGroup>>(bodyString);
                     break;
 
                 case QueryResultType.DeviceRegistration:
-                    Items = JsonConvert.DeserializeObject<IEnumerable<DeviceRegistrationState>>(bodyString);
+                    Items = JsonSerializer.Deserialize<IEnumerable<DeviceRegistrationState>>(bodyString);
                     break;
 
                 default:
@@ -105,24 +104,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     {
                         try
                         {
-                            Items = JsonConvert.DeserializeObject<IEnumerable<JObject>>(bodyString);
+                            Items = JsonSerializer.Deserialize<IEnumerable<JObject>>(bodyString);
                         }
                         catch (ArgumentException)
                         {
                             try
                             {
-                                Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString);
+                                Items = JsonSerializer.Deserialize<IEnumerable<object>>(bodyString);
                             }
                             catch (ArgumentException)
                             {
                                 Items = new string[] { bodyString };
                             }
                         }
-                        catch (JsonSerializationException)
+                        catch (JsonException)
                         {
-                            Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString);
+                            Items = JsonSerializer.Deserialize<IEnumerable<object>>(bodyString);
                         }
-                        catch (JsonReaderException)
+                        catch (JsonException)
                         {
                             Items = new string[] { bodyString };
                         }
@@ -137,7 +136,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The string with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, Formatting.Indented);
         }
     }
 }

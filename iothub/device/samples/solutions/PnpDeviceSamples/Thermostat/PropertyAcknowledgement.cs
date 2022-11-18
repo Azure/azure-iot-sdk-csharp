@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -13,25 +13,25 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// <summary>
         /// The unserialized property value.
         /// </summary>
-        [JsonProperty(PropertyName = "value")]
+        [JsonPropertyName("value")]
         public object Value { get; set; }
 
         /// <summary>
         /// The acknowledgment code, usually an HTTP Status Code e.g. 200, 400.
         /// </summary>
-        [JsonProperty(PropertyName = "ac")]
+        [JsonPropertyName("ac")]
         public int AckCode { get; set; }
 
         /// <summary>
         /// The acknowledgment version, as supplied in the property update request.
         /// </summary>
-        [JsonProperty(PropertyName = "av")]
+        [JsonPropertyName("av")]
         public long AckVersion { get; set; }
 
         /// <summary>
         /// The acknowledgment description, an optional, human-readable message about the result of the property update.
         /// </summary>
-        [JsonProperty(PropertyName = "ad")]
+        [JsonPropertyName("ad")]
         public string AckDescription { get; set; }
     }
 }

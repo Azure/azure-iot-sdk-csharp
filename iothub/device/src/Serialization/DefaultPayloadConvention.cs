@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     /// The default implementation of the <see cref="PayloadConvention"/> class.
     /// </summary>
     /// <remarks>
-    /// This class makes use of the <see cref="NewtonsoftJsonPayloadSerializer"/> serializer and the <see cref="Utf8PayloadEncoder"/>.
+    /// This class makes use of the <see cref="SystemTextJsonPayloadSerializer"/> serializer and the <see cref="Utf8PayloadEncoder"/>.
     /// </remarks>
     public sealed class DefaultPayloadConvention : PayloadConvention
     {
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         public static DefaultPayloadConvention Instance { get; } = new DefaultPayloadConvention();
 
         /// <inheritdoc/>
-        public override PayloadSerializer PayloadSerializer { get; } = NewtonsoftJsonPayloadSerializer.Instance;
+        public override PayloadSerializer PayloadSerializer { get; } = SystemTextJsonPayloadSerializer.Instance;
 
         /// <inheritdoc/>
         public override PayloadEncoder PayloadEncoder { get; } = Utf8PayloadEncoder.Instance;

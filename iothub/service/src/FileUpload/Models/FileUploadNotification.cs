@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -24,38 +24,38 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Id of the device which uploaded the file.
         /// </summary>
-        [JsonProperty(PropertyName = "deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("deviceId")]
         public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// URI path of the uploaded file.
         /// </summary>
         // TODO: consider changing this to System.Uri before GA
-        [JsonProperty(PropertyName = "blobUri", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("blobUri")]
         public string BlobUriPath { get; protected internal set; }
 
         /// <summary>
         /// Name of the uploaded file.
         /// </summary>
-        [JsonProperty(PropertyName = "blobName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("blobName")]
         public string BlobName { get; protected internal set; }
 
         /// <summary>
         /// Date and time indicating when the file was last updated in UTC.
         /// </summary>
-        [JsonProperty(PropertyName = "lastUpdatedTime", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("lastUpdatedTime")]
         public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Size of the uploaded file in bytes.
         /// </summary>
-        [JsonProperty(PropertyName = "blobSizeInBytes", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("blobSizeInBytes")]
         public long BlobSizeInBytes { get; protected internal set; }
 
         /// <summary>
         /// Date and time indicating when the notification was created in UTC.
         /// </summary>
-        [JsonProperty(PropertyName = "enqueuedTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("enqueuedTimeUtc")]
         public DateTimeOffset EnqueuedOnUtc { get; protected internal set; }
     }
 }

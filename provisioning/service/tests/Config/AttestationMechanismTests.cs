@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
 using System.Text;
-using Newtonsoft.Json;
-using FluentAssertions;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
@@ -89,7 +87,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void AttestationMechanismConstructorJsonSucceedForX509()
         {
             // arrange
-            AttestationMechanism attestationMechanism = JsonConvert.DeserializeObject<AttestationMechanism>(SampleX509AttestationJson);
+            AttestationMechanism attestationMechanism = JsonSerializer.Deserialize<AttestationMechanism>(SampleX509AttestationJson);
 
             // act - assert
             Assert.IsNotNull(attestationMechanism);
@@ -113,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "}";
 
             // act
-            AttestationMechanism attestationMechanism = JsonConvert.DeserializeObject<AttestationMechanism>(symmetricKeyJson);
+            AttestationMechanism attestationMechanism = JsonSerializer.Deserialize<AttestationMechanism>(symmetricKeyJson);
             
             //assert
             Assert.IsNotNull(attestationMechanism);

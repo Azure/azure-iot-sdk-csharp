@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -92,22 +92,27 @@ namespace Microsoft.Azure.Devices.Samples
         private async Task DeleteConfigurationAsync(string configurationId)
         {
             await _hubServiceClient.Configurations.DeleteAsync(configurationId);
-            Console.WriteLine($"Configuration deleted, id: {configurationId}");
+            Console.WriteLine($"Configuration Id {configurationId} deleted");
         }
 
         private async Task GetConfigurationsAsync(int count)
         {
             IEnumerable<Configuration> configurations = await _hubServiceClient.Configurations.GetAsync(count);
 
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+
             // Check configuration's metrics for expected conditions
             foreach (Configuration configuration in configurations)
             {
-                string configurationString = JsonConvert.SerializeObject(configuration, Formatting.Indented);
+                string configurationString = JsonSerializer.Serialize(configuration, options);
                 Console.WriteLine(configurationString);
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
             }
 
-            Console.WriteLine("Configurations received");
+            Console.WriteLine("Configurations received.");
         }
     }
 }

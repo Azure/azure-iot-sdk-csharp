@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -18,14 +18,14 @@ namespace Microsoft.Azure.Devices
         // in an async function.
         internal QueriedPage(HttpResponseMessage response, string payload)
         {
-            Items = JsonConvert.DeserializeObject<IEnumerable<T>>(payload);
+            Items = JsonSerializer.Deserialize<IEnumerable<T>>(payload);
             ContinuationToken = response.Headers.GetFirstValueOrNull(ContinuationTokenHeader);
         }
 
-        [JsonProperty(PropertyName = "items", Required = Required.Always)]
+        [JsonPropertyName("items", Required = Required.Always)]
         internal IEnumerable<T> Items { get; set; }
 
-        [JsonProperty(PropertyName = "continuationToken", Required = Required.AllowNull)]
+        [JsonPropertyName("continuationToken", Required = Required.AllowNull)]
         internal string ContinuationToken { get; set; }
     }
 }

@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -114,13 +114,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Primary certificate.
         /// </summary>
-        [JsonProperty(PropertyName = "primary")]
+        [JsonPropertyName("primary")]
         public X509CertificateWithInfo Primary { get; private set; }
 
         /// <summary>
         /// Secondary certificate.
         /// </summary>
-        [JsonProperty(PropertyName = "secondary", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("secondary")]
         public X509CertificateWithInfo Secondary { get; private set; }
     }
 }

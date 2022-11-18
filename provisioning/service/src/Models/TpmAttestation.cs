@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -38,13 +38,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the endorsement key used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "endorsementKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("endorsementKey")]
         public string EndorsementKey { get; }
 
         /// <summary>
         /// Gets the storage key used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "storageRootKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("storageRootKey")]
         public string StorageRootKey { get; }
     }
 }

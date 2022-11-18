@@ -5,10 +5,10 @@
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.OpenAsync(ct);
                     // Send the telemetry message
                     await deviceClient.SendTelemetryAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonSerializer.Serialize(telemetryDataPoint)}");
 
                     await Task.Delay(1000, ct);
                 }

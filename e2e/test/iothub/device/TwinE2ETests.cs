@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -11,7 +12,6 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
@@ -452,12 +452,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             bool propertyFound = deviceTwin.Reported.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actual).Should().Be(JsonSerializer.Serialize(propValue));
 
             // Validate the updated twin from the service-client
             ClientTwin completeTwin = await _serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Reported[propName];
-            JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actualProp).Should().Be(JsonSerializer.Serialize(propValue));
             completeTwin.Properties.Reported.Version.Should().Be(newTwinVersion);
         }
 
@@ -506,12 +506,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actual).Should().Be(JsonSerializer.Serialize(propValue));
 
             // Validate the updated twin from the service-client
             ClientTwin completeTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Desired[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+            Assert.AreEqual(JsonSerializer.Serialize(actualProp), JsonSerializer.Serialize(propValue));
 
             await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -533,7 +533,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                             bool containsProperty = patch.TryGetValue(expectedPropName, out T propertyValue);
                             containsProperty.Should().BeTrue($"Expecting property update patch received to be {expectedPropName} but was: {patch.GetSerializedString()}");
                             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-                            JsonConvert.SerializeObject(propertyValue).Should().Be(JsonConvert.SerializeObject(expectedPropValue), "The property value should match what was set by service");
+                            JsonSerializer.Serialize(propertyValue).Should().Be(JsonSerializer.Serialize(expectedPropValue), "The property value should match what was set by service");
                         }
                         catch (Exception e)
                         {
@@ -620,12 +620,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actual).Should().Be(JsonSerializer.Serialize(propValue));
 
             // Validate the updated twin from the service-client
             ClientTwin completeTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Desired[propName];
-            JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actualProp).Should().Be(JsonSerializer.Serialize(propValue));
 
             await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -10,7 +11,6 @@ using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -314,7 +314,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(respJson));
+            JsonSerializer.Serialize(response.Payload).Should().Be(JsonSerializer.Serialize(respJson));
         }
 
         public static async Task ServiceSendMethodAndVerifyResponseAsync(
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(respJson));
+            JsonSerializer.Serialize(response.Payload).Should().Be(JsonSerializer.Serialize(respJson));
         }
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName)
@@ -569,13 +569,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         internal class DeviceResponsePayload
         {
-            [JsonProperty(PropertyName = "currentState")]
+            [JsonPropertyName("currentState")]
             public string CurrentState { get; set; }
         }
 
         internal class ServiceRequestPayload
         {
-            [JsonProperty(PropertyName = "desiredState")]
+            [JsonPropertyName("desiredState")]
             public string DesiredState { get; set; }
         }
     }

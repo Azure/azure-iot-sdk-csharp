@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
         /// By default, the client assumes payloads are serialized using JSON and encoded to/from UTF-8;
         /// it only needs to be set if there are objects that have special serialization rules or require a specific byte encoding.
         /// <para>
-        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="NewtonsoftJsonPayloadSerializer"/>
+        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="SystemTextJsonPayloadSerializer"/>
         /// serializer and <see cref="Utf8PayloadEncoder"/> encoder.
         /// </para>
         /// </remarks>

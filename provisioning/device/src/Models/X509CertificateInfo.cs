@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -21,49 +21,49 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// The certificate subject name.
         /// </summary>
-        [JsonProperty(PropertyName = "subjectName")]
+        [JsonPropertyName("subjectName")]
         public string SubjectName { get; internal set; }
 
         /// <summary>
         /// The certificate SHA1 thumbprint.
         /// </summary>
-        [JsonProperty(PropertyName = "sha1Thumbprint")]
+        [JsonPropertyName("sha1Thumbprint")]
         public string Sha1Thumbprint { get; internal set; }
 
         /// <summary>
         /// The certificate SHA256 thumbprint.
         /// </summary>
-        [JsonProperty(PropertyName = "sha256Thumbprint")]
+        [JsonPropertyName("sha256Thumbprint")]
         public string Sha256Thumbprint { get; internal set; }
 
         /// <summary>
         /// The certificate issuer name.
         /// </summary>
-        [JsonProperty(PropertyName = "issuerName")]
+        [JsonPropertyName("issuerName")]
         public string IssuerName { get; internal set; }
 
         /// <summary>
         /// The certificate invalidity before date in UTC.
         /// </summary>
-        [JsonProperty(PropertyName = "notBeforeUtc")]
+        [JsonPropertyName("notBeforeUtc")]
         public DateTimeOffset? NotBeforeUtc { get; internal set; }
 
         /// <summary>
         /// The certificate invalidity after date in UTC.
         /// </summary>
-        [JsonProperty(PropertyName = "notAfterUtc")]
+        [JsonPropertyName("notAfterUtc")]
         public DateTimeOffset? NotAfterUtc { get; internal set; }
 
         /// <summary>
         /// The certificate serial number.
         /// </summary>
-        [JsonProperty(PropertyName = "serialNumber")]
+        [JsonPropertyName("serialNumber")]
         public string SerialNumber { get; internal set; }
 
         /// <summary>
         /// The certficiate version.
         /// </summary>
-        [JsonProperty(PropertyName = "version")]
+        [JsonPropertyName("version")]
         public int? Version { get; internal set; }
     }
 }

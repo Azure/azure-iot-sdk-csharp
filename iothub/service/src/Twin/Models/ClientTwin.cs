@@ -6,8 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Azure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -88,72 +87,71 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Twin's ETag.
         /// </summary>
-        [JsonProperty(PropertyName = "etag")]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        [JsonPropertyName("etag")]
         public ETag ETag { get; set; }
 
         /// <summary>
         /// Twin's version.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public long? Version { get; set; }
 
         /// <summary>
         /// Gets the corresponding device's status.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public ClientStatus? Status { get; internal set; }
 
         /// <summary>
         /// Reason, if any, for the corresponding device to be in specified status.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string StatusReason { get; internal set; }
 
         /// <summary>
         /// Time when the corresponding device's status was last updated.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public DateTimeOffset? StatusUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Corresponding device's connection state.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ClientConnectionState? ConnectionState { get; internal set; }
 
         /// <summary>
         /// Time when the corresponding device was last active.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public DateTimeOffset? LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the corresponding device from the cloud.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public int? CloudToDeviceMessageCount { get; internal set; }
 
         /// <summary>
         /// Corresponding device's authentication type.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public ClientAuthenticationType? AuthenticationType { get; internal set; }
 
         /// <summary>
         /// Corresponding device's X509 thumbprint.
         /// </summary>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public X509Thumbprint X509Thumbprint { get; internal set; }
 
         /// <summary>
@@ -163,7 +161,7 @@ namespace Microsoft.Azure.Devices
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
         [DefaultValue(null)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string DeviceScope { get; internal set; }
 
         /// <summary>
@@ -172,7 +170,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName(NullValueHandling = NullValueHandling.Ignore)]
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
 
         /// <summary>

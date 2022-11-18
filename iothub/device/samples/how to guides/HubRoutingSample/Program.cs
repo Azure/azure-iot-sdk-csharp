@@ -4,11 +4,10 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -149,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.SendTelemetryAsync(message, token);
 
                     // Print out the message.
-                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, JsonConvert.SerializeObject(telemetryDataPoint));
+                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, JsonSerializer.Serialize(telemetryDataPoint));
                 }
                 catch (OperationCanceledException) { }
 

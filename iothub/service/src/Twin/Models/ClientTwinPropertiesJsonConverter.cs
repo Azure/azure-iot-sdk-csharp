@@ -3,14 +3,24 @@
 
 using System;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
-    internal class ClientTwinPropertiesJsonConverter : JsonConverter
+    internal class ClientTwinPropertiesJsonConverter : JsonConverter<ClientTwinProperties>
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        /// <inheritdoc/>
+        public override bool CanConvert(Type objectType) => typeof(ClientTwinProperties).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
+
+        /// <inheritdoc/>
+        public override ClientTwinProperties? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return new ClientTwinProperties(JToken.ReadFrom(reader) as JObject);
+        }
+
+        /// <inheritdoc/>
+        public override void Write(Utf8JsonWriter writer, ClientTwinProperties value, JsonSerializerOptions options)
         {
             if (value == null)
             {
@@ -24,13 +34,6 @@ namespace Microsoft.Azure.Devices
             }
 
             serializer.Serialize(writer, properties.JObject);
-        }
-
-        public override bool CanConvert(Type objectType) => typeof(ClientTwinProperties).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            return new ClientTwinProperties(JToken.ReadFrom(reader) as JObject);
         }
     }
 }

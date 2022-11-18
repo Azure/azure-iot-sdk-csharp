@@ -1,55 +1,55 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
     internal class TemperatureControllerTwin
     {
-        [JsonProperty("$dtId")]
+        [JsonPropertyName("$dtId")]
         public string Id { get; set; }
 
-        [JsonProperty("$metadata")]
+        [JsonPropertyName("$metadata")]
         public TemperatureControllerMetadata Metadata { get; set; }
 
-        [JsonProperty("serialNumber")]
+        [JsonPropertyName("serialNumber")]
         public string SerialNumber { get; set; }
 
-        [JsonProperty("thermostat1")]
+        [JsonPropertyName("thermostat1")]
         public Thermostat Thermostat1 { get; set; }
 
-        [JsonProperty("thermostat2")]
+        [JsonPropertyName("thermostat2")]
         public Thermostat Thermostat2 { get; set; }
     }
 
     internal class TemperatureControllerMetadata
     {
-        [JsonProperty("$model")]
+        [JsonPropertyName("$model")]
         public string ModelId { get; set; }
 
-        [JsonProperty("serialNumber")]
+        [JsonPropertyName("serialNumber")]
         public ReportedPropertyMetadata SerialNumber { get; set; }
     }
 
     internal class Thermostat
     {
-        [JsonProperty("$metadata")]
+        [JsonPropertyName("$metadata")]
         public ThermostatComponentMetadata Metadata { get; set; }
 
-        [JsonProperty("maxTempSinceLastReboot")]
+        [JsonPropertyName("maxTempSinceLastReboot")]
         public double MaxTempSinceLastReboot { get; set; }
 
-        [JsonProperty("targetTemperature")]
+        [JsonPropertyName("targetTemperature")]
         public double TargetTemperature { get; set; }
     }
 
     internal class ThermostatComponentMetadata
     {
-        [JsonProperty("maxTempSinceLastReboot")]
+        [JsonPropertyName("maxTempSinceLastReboot")]
         public ReportedPropertyMetadata MaxTempSinceLastReboot { get; set; }
 
-        [JsonProperty("targetTemperature")]
+        [JsonPropertyName("targetTemperature")]
         public WritableProperty TargetTemperature { get; set; }
     }
 }

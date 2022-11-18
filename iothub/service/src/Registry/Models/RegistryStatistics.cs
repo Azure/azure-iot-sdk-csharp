@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -22,19 +22,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the count of all devices.
         /// </summary>
-        [JsonProperty(PropertyName = "totalDeviceCount")]
+        [JsonPropertyName("totalDeviceCount")]
         public long TotalDeviceCount { get; protected internal set; }
 
         /// <summary>
         /// Gets or sets the count of all enabled devices.
         /// </summary>
-        [JsonProperty(PropertyName = "enabledDeviceCount")]
+        [JsonPropertyName("enabledDeviceCount")]
         public long EnabledDeviceCount { get; protected internal set; }
 
         /// <summary>
         /// Gets or sets the count of all disabled devices.
         /// </summary>
-        [JsonProperty(PropertyName = "disabledDeviceCount")]
+        [JsonPropertyName("disabledDeviceCount")]
         public long DisabledDeviceCount { get; protected internal set; }
     }
 }

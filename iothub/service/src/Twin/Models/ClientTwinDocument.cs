@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,13 +13,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets and sets the twin desired properties.
         /// </summary>
-        [JsonProperty(PropertyName = "desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("desired")]
         public ClientTwinProperties Desired { get; set; } = new();
 
         /// <summary>
         /// Gets and sets the twin reported properties.
         /// </summary>
-        [JsonProperty(PropertyName = "reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("reported")]
         public ClientTwinProperties Reported { get; set; } = new();
     }
 }

@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json.Serialization;
 using System.Threading;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided registrationId does not fit the registration Id requirements</exception>
-        [JsonProperty(PropertyName = "registrationId", Required = Required.Always)]
+        [JsonPropertyName("registrationId", Required = Required.Always)]
         public string RegistrationId { get; private set; }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Report any error during the operation for the specific registrationId.
         /// </remarks>
-        [JsonProperty(PropertyName = "errorCode", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("errorCode")]
         public int? ErrorCode { get; private set; }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Describe any error during the operation for the specific registrationId.
         /// </remarks>
-        [JsonProperty(PropertyName = "errorStatus", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("errorStatus")]
         public string ErrorStatus { get; private set; }
     }
 }

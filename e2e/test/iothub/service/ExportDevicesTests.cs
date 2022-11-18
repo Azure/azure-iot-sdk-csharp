@@ -4,11 +4,11 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
 
-                ExportImportDevice exportedDevice = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDevice);
+                ExportImportDevice exportedDevice = JsonSerializer.Deserialize<ExportImportDevice>(serializedDevice);
 
                 if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge1.Id) && exportedDevice.Capabilities.IsIotEdge)
                 {
@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             bool foundConfig = false;
             foreach (string serializedConfig in serializedConfigs)
             {
-                Configuration exportedConfig = JsonConvert.DeserializeObject<Configuration>(serializedConfig);
+                Configuration exportedConfig = JsonSerializer.Deserialize<Configuration>(serializedConfig);
                 if (StringComparer.Ordinal.Equals(exportedConfig.Id, configuration.Id))
                 {
                     VerboseTestLogger.WriteLine($"Found config in export as [{serializedConfig}]");

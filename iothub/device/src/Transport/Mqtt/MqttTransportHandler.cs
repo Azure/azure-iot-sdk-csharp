@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,6 @@ using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -988,14 +988,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         try
                         {
                             // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
-                            // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
-                            // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                            TwinDocument clientTwinProperties = JsonConvert
-                                .DeserializeObject<TwinDocument>(
-                                    _payloadConvention
-                                    .PayloadEncoder
-                                    .ContentEncoding
-                                    .GetString(payloadBytes));
+                            // The response is deserialized into an SDK-defined type based on service-defined System.Text.Json-based json property name.
+                            // For this reason, we use System.Text.Json serializer for this deserialization.
+                            TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(
+                                _payloadConvention
+                                .PayloadEncoder
+                                .ContentEncoding
+                                .GetString(payloadBytes));
 
                             var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
                             {
@@ -1015,7 +1014,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                             getTwinCompletion.TrySetResult(getTwinResponse);
                         }
-                        catch (JsonReaderException ex)
+                        catch (JsonException ex)
                         {
                             if (Logging.IsEnabled)
                                 Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{Encoding.UTF8.GetString(payloadBytes)}'");
@@ -1141,14 +1140,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private static string ConvertFromSystemProperties(object systemProperty)
         {
-            if (systemProperty is string)
+            if (systemProperty is string stringProperty)
             {
-                return (string)systemProperty;
+                return stringProperty;
             }
-            if (systemProperty is DateTime)
+
+            if (systemProperty is DateTime timeProperty)
             {
-                return ((DateTime)systemProperty).ToString("o", CultureInfo.InvariantCulture);
+                return timeProperty.ToString("o", CultureInfo.InvariantCulture);
             }
+
             return systemProperty?.ToString();
         }
 

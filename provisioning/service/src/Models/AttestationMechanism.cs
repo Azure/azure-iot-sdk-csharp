@@ -4,8 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Net;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -89,14 +88,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///  Attestation Type.
         /// </summary>
         [DefaultValue(AttestationMechanismType.None)]
-        [JsonProperty(PropertyName = "type")]
-        [JsonConverter(typeof(StringEnumConverter), true)]
+        [JsonPropertyName("type")]
+        [JsonConverter(typeof(JsonStringEnumConverter), true)]
         public AttestationMechanismType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the instance used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "x509", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("x509")]
         private X509Attestation X509
         {
             get => _x509;
@@ -110,7 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        [JsonProperty(PropertyName = "symmetricKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("symmetricKey")]
         private SymmetricKeyAttestation SymmetricKey
         {
             get => _symmetricKey;
@@ -127,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets or sets the instance used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "tpm", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("tpm")]
         private TpmAttestation Tpm
         {
             get => _tpm;

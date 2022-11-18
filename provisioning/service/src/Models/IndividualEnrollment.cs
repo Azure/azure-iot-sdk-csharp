@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using Azure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -100,25 +100,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided string does not fit the registration Id requirements</exception>
-        [JsonProperty(PropertyName = "registrationId")]
+        [JsonPropertyName("registrationId")]
         public string RegistrationId { get; internal set; }
 
         /// <summary>
         /// Desired IoT hub device Id (optional).
         /// </summary>
-        [JsonProperty(PropertyName = "deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("deviceId")]
         public string DeviceId { get; set; }
 
         /// <summary>
         /// Current registration state.
         /// </summary>
-        [JsonProperty(PropertyName = "registrationState", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("registrationState")]
         public DeviceRegistrationState RegistrationState { get; internal set; }
 
         /// <summary>
         /// Attestation mechanism.
         /// </summary>
-        [JsonProperty(PropertyName = "attestation")]
+        [JsonPropertyName("attestation")]
         private AttestationMechanism _attestation;
 
         /// <summary>
@@ -150,69 +150,68 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Desired IoT hub to assign the device to.
         /// </summary>
-        [JsonProperty(PropertyName = "iotHubHostName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("iotHubHostName")]
         public string IotHubHostName { get; set; }
 
         /// <summary>
         /// Initial twin state.
         /// </summary>
-        [JsonProperty(PropertyName = "initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("initialTwin")]
         public ProvisioningTwinState InitialTwinState { get; set; }
 
         /// <summary>
         /// The provisioning status.
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        [JsonProperty(PropertyName = "provisioningStatus", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonPropertyName("provisioningStatus")]
         public ProvisioningStatus? ProvisioningStatus { get; set; }
 
         /// <summary>
         /// The DateTime this resource was created.
         /// </summary>
-        [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("createdDateTimeUtc")]
         public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
-        [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("lastUpdatedDateTimeUtc")]
         public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Enrollment's ETag.
         /// </summary>
-        [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        [JsonPropertyName("etag")]
         public ETag ETag { get; set; }
 
         /// <summary>
         /// Capabilities of the device.
         /// </summary>
-        [JsonProperty(PropertyName = "capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("capabilities")]
         public ProvisioningClientCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The behavior when a device is re-provisioned to an IoT hub.
         /// </summary>
-        [JsonProperty(PropertyName = "reprovisionPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("reprovisionPolicy")]
         public ReprovisionPolicy ReprovisionPolicy { get; set; }
 
         /// <summary>
         /// Custom allocation definition.
         /// </summary>
-        [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("customAllocationDefinition")]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
 
         /// <summary>
         /// The allocation policy of this resource. Overrides the tenant level allocation policy.
         /// </summary>
-        [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("allocationPolicy")]
         public AllocationPolicy? AllocationPolicy { get; set; }
 
         /// <summary>
         /// The list of names of IoT hubs the device in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs.
         /// </summary>
-        [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("iotHubs")]
         public IList<string> IotHubs { get; set; } = new List<string>();
 
         /// <summary>
@@ -221,7 +220,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The string with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, Formatting.Indented);
         }
 
         /// <summary>

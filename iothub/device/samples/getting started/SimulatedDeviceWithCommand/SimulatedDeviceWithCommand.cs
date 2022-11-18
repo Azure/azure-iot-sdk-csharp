@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     // Send the telemetry message.
                     await _deviceClient.SendTelemetryAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonSerializer.Serialize(telemetryDataPoint)}");
 
                     await Task.Delay(s_telemetryInterval, ct);
                 }
