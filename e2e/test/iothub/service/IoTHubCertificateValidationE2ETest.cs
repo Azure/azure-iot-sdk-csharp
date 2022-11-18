@@ -2,14 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net.Http;
-using System.Net.Sockets;
-using System.Net.WebSockets;
+using System.Net;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MQTTnet.Exceptions;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
@@ -29,10 +27,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.StatusCode.Should().Be(System.Net.HttpStatusCode.RequestTimeout);
-            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.Unknown);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<HttpRequestException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.IotHubUnauthorizedAccess);
+            error.And.IsTransient.Should().BeFalse();
+#if NET472
+            error.And.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
+#else
+            error.And.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
+#endif
         }
 
         [TestMethod]
@@ -47,10 +49,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.StatusCode.Should().Be(System.Net.HttpStatusCode.RequestTimeout);
-            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.Unknown);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<SocketException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.IotHubUnauthorizedAccess);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
@@ -65,10 +67,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             
             //assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.StatusCode.Should().Be(System.Net.HttpStatusCode.RequestTimeout);
-            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.Unknown);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<WebSocketException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.IotHubUnauthorizedAccess);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         private static async Task TestServiceClientInvalidServiceCertificateAsync(IotHubTransportProtocol protocol)
@@ -76,7 +78,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol,
-                RetryPolicy = new IotHubServiceNoRetry(),
             };
             using var service = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionStringInvalidServiceCertificate, options);
             var testMessage = new Message();
@@ -108,10 +109,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.StatusCode.Should().Be(System.Net.HttpStatusCode.RequestTimeout);
-            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.Unknown);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<HttpRequestException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.IotHubUnauthorizedAccess);
+            error.And.IsTransient.Should().BeFalse();
+#if NET472
+            error.And.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
+#else
+            error.And.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
+#endif
         }
 
         [TestMethod]
@@ -123,9 +128,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<SocketException>();
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.TlsAuthenticationError);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
@@ -137,9 +142,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Timeout);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<MqttCommunicationTimedOutException>();
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.TlsAuthenticationError);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
@@ -152,9 +157,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<WebSocketException>();
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.TlsAuthenticationError);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
@@ -167,9 +172,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<MqttCommunicationException>();
+            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.TlsAuthenticationError);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         private static async Task TestDeviceClientInvalidServiceCertificateAsync(IotHubClientTransportSettings transportSettings)
@@ -177,10 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await using var deviceClient =
                 new IotHubDeviceClient(
                     TestConfiguration.IotHub.DeviceConnectionStringInvalidServiceCertificate,
-                    new IotHubClientOptions(transportSettings)
-                    {
-                        RetryPolicy = new IotHubClientNoRetry(),
-                    });
+                    new IotHubClientOptions(transportSettings));
             var testMessage = new TelemetryMessage();
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);

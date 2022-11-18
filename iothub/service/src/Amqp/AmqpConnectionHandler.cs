@@ -159,12 +159,20 @@ namespace Microsoft.Azure.Devices.Amqp
                 await _cbsSession.OpenAsync(_connection, cancellationToken).ConfigureAwait(false);
                 await _workerSession.OpenAsync(_connection, cancellationToken).ConfigureAwait(false);
             }
+            catch (AuthenticationException authException)
+            {
+                throw new IotHubServiceException(authException.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, authException);
+            }
             catch (SocketException socketException)
             {
                 throw new IotHubServiceException(socketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, socketException);
             }
             catch (WebSocketException webSocketException)
             {
+                if (Fx.ContainsAuthenticationException(webSocketException))
+                {
+                    throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, webSocketException);
+                }
                 throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, webSocketException);
             }
             finally
