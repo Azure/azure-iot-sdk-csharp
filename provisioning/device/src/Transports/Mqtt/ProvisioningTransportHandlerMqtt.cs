@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -118,6 +119,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"MQTT connect responded with status code '{connectResult.ResultCode}'");
                     mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
+                }
+                catch (MqttCommunicationException ex)
+                {
+                    if (ContainsAuthenticationException(ex))
+                    {
+                        throw new ProvisioningClientException(ex.Message, ex, false);
+                    }
+                    throw new ProvisioningClientException(ex.Message, ex, true);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -464,6 +473,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             // Otherwise throw operation cancelled exception since the cancellation token was cancelled before the task finished.
             throw new OperationCanceledException(timeoutErrorMessage);
+        }
+
+        private static bool ContainsAuthenticationException(Exception ex)
+        {
+            while (ex != null)
+            {
+                return ex is AuthenticationException || ContainsAuthenticationException(ex.InnerException);
+            }
+
+            return false;
         }
     }
 }
