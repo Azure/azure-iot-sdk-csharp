@@ -64,7 +64,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // act
             Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
 
-
             //assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             error.And.ErrorCode.Should().Be(0);
@@ -77,10 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
             // arrange
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp))
-            {
-                RetryPolicy = new ProvisioningClientNoRetry(),
-            };
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp));
 
             // act
             Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
@@ -97,10 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             // arrange
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket))
-            {
-                RetryPolicy = new ProvisioningClientNoRetry(),
-            };
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
 
             // act
             Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
