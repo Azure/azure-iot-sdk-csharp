@@ -4,16 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using Azure;
 using System.Text.Json.Serialization;
+using Azure;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Properties of a device or module stored on the service.
+    /// Properties of a device or module stored at the service.
     /// </summary>
-    [JsonConverter(typeof(ClientTwinJsonConverter))]
     public class ClientTwin
     {
         /// <summary>
@@ -42,30 +40,35 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets and sets the twin Id.
         /// </summary>
+        [JsonPropertyName("deviceId")]
         public string DeviceId { get; set; }
 
         /// <summary>
         /// The DTDL model Id of the device or module.
         /// </summary>
         /// <remarks>
-        /// The value will be null for a non-pnp device.
-        /// The value will be null for a pnp device until the device connects and registers with the model Id.
+        /// The value will be null for a non-plug-and-play device.
+        /// The value will be null for a plug-and-play device until the device connects and registers with the model Id.
         /// </remarks>
+        [JsonPropertyName("modelId")]
         public string ModelId { get; set; }
 
         /// <summary>
         /// Gets and sets the twin module Id.
         /// </summary>
+        [JsonPropertyName("moduleId")]
         public string ModuleId { get; set; }
 
         /// <summary>
         /// Gets and sets the twin tags.
         /// </summary>
+        [JsonPropertyName("tags")]
         public IDictionary<string, object> Tags { get; protected internal set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets and sets the twin properties.
         /// </summary>
+        [JsonPropertyName("properties")]
         public ClientTwinDocument Properties { get; set; } = new();
 
         /// <summary>
@@ -74,6 +77,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Configuration properties are read only.
         /// </remarks>
+        [JsonPropertyName("configurations")]
         public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; } = new Dictionary<string, ConfigurationInfo>();
 
         /// <summary>
@@ -82,6 +86,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Twin capabilities are read only.
         /// </remarks>
+        [JsonPropertyName("capabilities")]
         public ClientCapabilities Capabilities { get; internal set; }
 
         /// <summary>
@@ -94,35 +99,35 @@ namespace Microsoft.Azure.Devices
         /// Twin's version.
         /// </summary>
         [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("version")]
         public long? Version { get; set; }
 
         /// <summary>
         /// Gets the corresponding device's status.
         /// </summary>
-        [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("status")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ClientStatus? Status { get; internal set; }
 
         /// <summary>
         /// Reason, if any, for the corresponding device to be in specified status.
         /// </summary>
         [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("statusReason")]
         public string StatusReason { get; internal set; }
 
         /// <summary>
         /// Time when the corresponding device's status was last updated.
         /// </summary>
         [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("statusUpdatedTime")]
         public DateTimeOffset? StatusUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Corresponding device's connection state.
         /// </summary>
         [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("connectionState")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public ClientConnectionState? ConnectionState { get; internal set; }
 
@@ -130,28 +135,28 @@ namespace Microsoft.Azure.Devices
         /// Time when the corresponding device was last active.
         /// </summary>
         [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("lastActivityTime")]
         public DateTimeOffset? LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the corresponding device from the cloud.
         /// </summary>
         [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("cloudtoDeviceMessageCount")]
         public int? CloudToDeviceMessageCount { get; internal set; }
 
         /// <summary>
         /// Corresponding device's authentication type.
         /// </summary>
-        [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("authenticationType")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ClientAuthenticationType? AuthenticationType { get; internal set; }
 
         /// <summary>
         /// Corresponding device's X509 thumbprint.
         /// </summary>
         [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("x509Thumbprint")]
         public X509Thumbprint X509Thumbprint { get; internal set; }
 
         /// <summary>
@@ -161,7 +166,7 @@ namespace Microsoft.Azure.Devices
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
         [DefaultValue(null)]
-        [JsonPropertyName(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("deviceScope")]
         public string DeviceScope { get; internal set; }
 
         /// <summary>
@@ -170,7 +175,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonPropertyName(NullValueHandling = NullValueHandling.Ignore)]
+        [DefaultValue(null)]
+        [JsonPropertyName("parentScopes")]
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
     }
 }

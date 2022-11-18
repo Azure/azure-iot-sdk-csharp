@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The method name to run.
         /// </summary>
-        [JsonPropertyName("methodName", Required = Required.Always)]
+        [JsonPropertyName("methodName")]
         public string MethodName { get; set; }
 
         /// <summary>

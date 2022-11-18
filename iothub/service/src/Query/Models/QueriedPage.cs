@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -22,10 +23,10 @@ namespace Microsoft.Azure.Devices
             ContinuationToken = response.Headers.GetFirstValueOrNull(ContinuationTokenHeader);
         }
 
-        [JsonPropertyName("items", Required = Required.Always)]
+        [JsonPropertyName("items")]
         internal IEnumerable<T> Items { get; set; }
 
-        [JsonPropertyName("continuationToken", Required = Required.AllowNull)]
+        [JsonPropertyName("continuationToken")]
         internal string ContinuationToken { get; set; }
     }
 }

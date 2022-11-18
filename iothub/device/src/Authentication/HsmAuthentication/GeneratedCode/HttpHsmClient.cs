@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _data;
 
         /// <summary>Name of key to perform sign operation.</summary>
-        [JsonPropertyName("keyId", Required = Required.Always)]
+        [JsonPropertyName("keyId")]
         public string KeyId
         {
             get { return _keyId; }
@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Sign algorithm to be used.</summary>
-        [JsonPropertyName("algo", Required = Required.Always)]
+        [JsonPropertyName("algo")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public SignRequestAlgo Algo
         {
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Data to be signed.</summary>
-        [JsonPropertyName("data", Required = Required.Always)]
+        [JsonPropertyName("data")]
         public byte[] Data
         {
             get { return _data; }
@@ -334,7 +334,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _digest;
 
         /// <summary>Signature of the data.</summary>
-        [JsonPropertyName("digest", Required = Required.Always)]
+        [JsonPropertyName("digest")]
         public byte[] Digest
         {
             get { return _digest; }
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _initializationVector;
 
         /// <summary>The data to be encrypted.</summary>
-        [JsonPropertyName("plaintext", Required = Required.Always)]
+        [JsonPropertyName("plaintext")]
         public byte[] Plaintext
         {
             get { return _plaintext; }
@@ -390,7 +390,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>An initialization vector used to encrypt the data.</summary>
-        [JsonPropertyName("initializationVector", Required = Required.Always)]
+        [JsonPropertyName("initializationVector")]
         public byte[] InitializationVector
         {
             get { return _initializationVector; }
@@ -430,7 +430,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _ciphertext;
 
         /// <summary>The encrypted form of the data encoded in base 64.</summary>
-        [JsonPropertyName("ciphertext", Required = Required.Always)]
+        [JsonPropertyName("ciphertext")]
         public byte[] Ciphertext
         {
             get { return _ciphertext; }
@@ -470,7 +470,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _initializationVector;
 
         /// <summary>The data to be decrypted.</summary>
-        [JsonPropertyName("ciphertext", Required = Required.Always)]
+        [JsonPropertyName("ciphertext")]
         public byte[] Ciphertext
         {
             get { return _ciphertext; }
@@ -485,7 +485,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>An initialization vector used to decrypt the data.</summary>
-        [JsonPropertyName("initializationVector", Required = Required.Always)]
+        [JsonPropertyName("initializationVector")]
         public byte[] InitializationVector
         {
             get { return _initializationVector; }
@@ -524,7 +524,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _plaintext;
 
         /// <summary>The decrypted form of the data encoded in base 64.</summary>
-        [JsonPropertyName("plaintext", Required = Required.Always)]
+        [JsonPropertyName("plaintext")]
         public byte[] Plaintext
         {
             get { return _plaintext; }
@@ -564,7 +564,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private DateTime _expiration;
 
         /// <summary>Subject common name</summary>
-        [JsonPropertyName("commonName", Required = Required.Always)]
+        [JsonPropertyName("commonName")]
         public string CommonName
         {
             get { return _commonName; }
@@ -579,7 +579,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Certificate expiration date-time (ISO 8601)</summary>
-        [JsonPropertyName("expiration", Required = Required.Always)]
+        [JsonPropertyName("expiration")]
         public DateTime Expiration
         {
             get { return _expiration; }
@@ -619,7 +619,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private string _certificate;
         private System.DateTime _expiration;
 
-        [JsonPropertyName("privateKey", Required = Required.Always)]
+        [JsonPropertyName("privateKey")]
         public PrivateKey PrivateKey
         {
             get { return _privateKey; }
@@ -634,7 +634,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Base64 encoded PEM formatted byte array containing the certificate and its chain.</summary>
-        [JsonPropertyName("certificate", Required = Required.Always)]
+        [JsonPropertyName("certificate")]
         public string Certificate
         {
             get { return _certificate; }
@@ -649,7 +649,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Certificate expiration date-time (ISO 8601)</summary>
-        [JsonPropertyName("expiration", Required = Required.Always)]
+        [JsonPropertyName("expiration")]
         public DateTime Expiration
         {
             get { return _expiration; }
@@ -688,7 +688,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private string _certificate;
 
         /// <summary>Base64 encoded PEM formatted byte array containing the trusted certificates.</summary>
-        [JsonPropertyName("certificate", Required = Required.Always)]
+        [JsonPropertyName("certificate")]
         public string Certificate
         {
             get { return _certificate; }
@@ -729,7 +729,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private string _bytes;
 
         /// <summary>Indicates format of the key (present in PEM formatted bytes or a reference)</summary>
-        [JsonPropertyName("type", Required = Required.Always)]
+        [JsonPropertyName("type")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public PrivateKeyType Type
         {
@@ -745,7 +745,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Reference to private key.</summary>
-        [JsonPropertyName("ref", Required = Required.Default)]
+        [JsonPropertyName("ref")]
         public string Ref
         {
             get { return _ref; }
@@ -760,7 +760,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Base64 encoded PEM formatted byte array</summary>
-        [JsonPropertyName("bytes", Required = Required.Default)]
+        [JsonPropertyName("bytes")]
         public string Bytes
         {
             get { return _bytes; }
@@ -798,7 +798,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
     {
         private string _message;
 
-        [JsonPropertyName("message", Required = Required.Always)]
+        [JsonPropertyName("message")]
         public string Message
         {
             get { return _message; }

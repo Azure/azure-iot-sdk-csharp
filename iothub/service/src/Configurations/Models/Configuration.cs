@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The unique identifier of the configuration.
         /// </summary>
-        [JsonPropertyName("id", Required = Required.Always)]
+        [JsonPropertyName("id")]
         public string Id { get; internal set; }
 
         /// <summary>

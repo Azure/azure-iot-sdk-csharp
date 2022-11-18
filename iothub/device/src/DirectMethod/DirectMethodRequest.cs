@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The method name to invoke.
         /// </summary>
-        [JsonPropertyName("methodName", Required = Required.Always)]
+        [JsonPropertyName("methodName")]
         public string MethodName { get; set; }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The JSON payload in JRaw type.
         /// </summary>
-        [JsonPropertyName("payload", NullValueHandling = NullValueHandling.Include)]
+        [JsonPropertyName("payload")]
         protected internal JRaw JsonPayload { get; set; }
 
         /// <summary>
