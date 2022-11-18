@@ -4,9 +4,8 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Sockets;
-using System.Net.WebSockets;
+using System.Net;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -14,7 +13,6 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MQTTnet.Exceptions;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
@@ -38,23 +36,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
             // arrange
-            using var provisioningServiceClient = new ProvisioningServiceClient(
-                TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate,
-                new ProvisioningServiceClientOptions()
-                {
-                    RetryPolicy = new ProvisioningServiceNoRetry(),
-                });
-            Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery(
-                "SELECT * FROM enrollmentGroups");
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
+            Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups");
 
             // act
             Func<Task> act = async () => await q.NextAsync();
 
             // assert
             var error = await act.Should().ThrowAsync<ProvisioningServiceException>().ConfigureAwait(false);
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             error.And.ErrorCode.Should().Be(0);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<HttpRequestException>();
+            error.And.IsTransient.Should().BeFalse();
+#if NET472
+            error.And.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
+#else
+            error.And.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
+#endif
         }
 
         [TestMethod]
@@ -62,10 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
             // arrange
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp))
-            {
-                RetryPolicy = new ProvisioningClientNoRetry(),
-            };
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp));
 
             // act
             Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
@@ -74,8 +68,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             //assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             error.And.ErrorCode.Should().Be(0);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<SocketException>();
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
@@ -94,8 +88,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             error.And.ErrorCode.Should().Be(0);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<MqttCommunicationTimedOutException>();
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
@@ -114,8 +108,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             error.And.ErrorCode.Should().Be(0);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<WebSocketException>();
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
@@ -123,10 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             // arrange
-            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket))
-            {
-                RetryPolicy = new ProvisioningClientNoRetry(),
-            };
+            var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket));
 
             // act
             Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
@@ -134,8 +125,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
             error.And.ErrorCode.Should().Be(0);
-            error.And.IsTransient.Should().BeTrue();
-            error.And.InnerException.Should().BeOfType<MqttCommunicationException>();
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         private static async Task TestInvalidServiceCertificateAsync(ProvisioningClientOptions clientOptions)

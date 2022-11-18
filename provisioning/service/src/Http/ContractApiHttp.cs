@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -170,6 +171,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 }
                 catch (HttpRequestException ex)
                 {
+                    if (ContainsAuthenticationException(ex))
+                    {
+                        throw new ProvisioningServiceException(ex.Message, HttpStatusCode.Unauthorized, ex);
+                    }
                     throw new ProvisioningServiceException(ex.Message, ex, true);
                 }
                 catch (TaskCanceledException ex)
@@ -187,6 +192,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ValidateHttpResponse(response);
 
             return response;
+        }
+
+        private static bool ContainsAuthenticationException(Exception ex)
+        {
+            while (ex != null)
+            {
+                return ex is AuthenticationException || ContainsAuthenticationException(ex.InnerException);
+            }
+
+            return false;
         }
 
         private static void ValidateHttpResponse(ContractApiResponse response)
