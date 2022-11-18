@@ -318,15 +318,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case MqttClientConnectResultCode.BadUserNameOrPassword:
                     case MqttClientConnectResultCode.NotAuthorized:
                     case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", cfe)
+                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", ex)
                         {
                             ErrorCode = IotHubClientErrorCode.Unauthorized,
                         };
                     case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                         // Should never happen since the protocol version (3.1.1) is hardcoded
-                        throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", innerException: cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", innerException: ex);
                     case MqttClientConnectResultCode.ServerUnavailable:
-                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", cfe)
+                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", ex)
                         {
                             ErrorCode = IotHubClientErrorCode.ServerBusy,
                         };
@@ -342,7 +342,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                             // This execption may be thrown even if cancellation has not been requested yet.
                             // This case is treated as a timeout error rather than an OperationCanceledException
-                            throw new IotHubClientException(ConnectTimedOutErrorMessage, cfe)
+                            throw new IotHubClientException(ConnectTimedOutErrorMessage, ex)
                             {
                                 ErrorCode = IotHubClientErrorCode.Timeout,
                             };
@@ -353,12 +353,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
                         // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
                         // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
-                        throw new IotHubClientException("Failed to open the MQTT connection", innerException: cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection", innerException: ex);
                 }
             }
             catch (MqttCommunicationTimedOutException ex)
             {
-                throw new IotHubClientException(ConnectTimedOutErrorMessage, IotHubClientErrorCode.Timeout, ex);
+                throw new IotHubClientException(ConnectTimedOutErrorMessage, ex)
+                {
+                    ErrorCode = IotHubClientErrorCode.Timeout,
+                };
             }
         }
 
