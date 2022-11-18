@@ -288,15 +288,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonPropertyName("customAllocationDefinition")]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeIotHubs()
-        {
-            return IotHubs != null && IotHubs.Any();
-        }
     }
 }
