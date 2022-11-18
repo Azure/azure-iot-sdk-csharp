@@ -8,7 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
 using Azure;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body);
+            return JsonSerializer.Deserialize<DeviceRegistrationState>(contractApiResponse.Body);
         }
 
         /// <summary>

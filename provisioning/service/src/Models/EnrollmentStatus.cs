@@ -3,17 +3,14 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// Enrollment status
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1717:OnlyFlagsEnumsShouldHavePluralNames",
-        Justification = "Public API cannot change name.")]
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum EnrollmentStatus
     {
         /// <summary>

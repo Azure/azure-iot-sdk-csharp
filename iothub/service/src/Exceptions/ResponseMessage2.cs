@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -17,10 +17,10 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     internal class ResponseMessage2
     {
-        [JsonProperty("Message")]
+        [JsonPropertyName("Message")]
         internal string Message { get; set; }
 
-        [JsonProperty("ExceptionMessage")]
+        [JsonPropertyName("ExceptionMessage")]
         internal string ExceptionMessage { get; set; }
 
         public IotHubServiceErrorCode ErrorCode { get; set; }

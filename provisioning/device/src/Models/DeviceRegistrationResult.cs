@@ -3,8 +3,7 @@
 
 using System;
 using Azure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -24,86 +23,85 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// This id is used to uniquely identify a device registration of an enrollment.
         /// </summary>
-        [JsonProperty(PropertyName = "registrationId")]
+        [JsonPropertyName("registrationId")]
         public string RegistrationId { get; protected internal set; }
 
         /// <summary>
         /// Registration create date time (in UTC).
         /// </summary>
-        [JsonProperty(PropertyName = "createdDateTimeUtc")]
+        [JsonPropertyName("createdDateTimeUtc")]
         public DateTimeOffset? CreatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// The assigned Azure IoT hub.
         /// </summary>
-        [JsonProperty(PropertyName = "assignedHub")]
+        [JsonPropertyName("assignedHub")]
         public string AssignedHub { get; protected internal set; }
 
         /// <summary>
         /// The Device Id.
         /// </summary>
-        [JsonProperty(PropertyName = "deviceId")]
+        [JsonPropertyName("deviceId")]
         public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// The status of the operation.
         /// </summary>
-        [JsonProperty(PropertyName = "status")]
+        [JsonPropertyName("status")]
         public ProvisioningRegistrationStatusType Status { get; protected internal set; }
 
         /// <summary>
         /// The substatus of the operation.
         /// </summary>
-        [JsonProperty(PropertyName = "substatus")]
+        [JsonPropertyName("substatus")]
         public ProvisioningRegistrationSubstatusType Substatus { get; protected internal set; }
 
         /// <summary>
         /// The generation Id.
         /// </summary>
-        [JsonProperty(PropertyName = "generationId")]
+        [JsonPropertyName("generationId")]
         public string GenerationId { get; protected internal set; }
 
         /// <summary>
         /// The time when the device last refreshed the registration.
         /// </summary>
-        [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc")]
+        [JsonPropertyName("lastUpdatedDateTimeUtc")]
         public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Error code.
         /// </summary>
-        [JsonProperty(PropertyName = "errorCode")]
+        [JsonPropertyName("errorCode")]
         public int? ErrorCode { get; protected internal set; }
 
         /// <summary>
         /// Error message.
         /// </summary>
-        [JsonProperty(PropertyName = "errorMessage")]
+        [JsonPropertyName("errorMessage")]
         public string ErrorMessage { get; protected internal set; }
 
         /// <summary>
         /// The entity tag associated with the resource.
         /// </summary>
-        [JsonProperty(PropertyName = "etag")]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        [JsonPropertyName("etag")]
         public ETag ETag { get; protected internal set; }
 
         /// <summary>
         /// The custom data returned from the webhook to the device.
         /// </summary>
-        [JsonProperty(PropertyName = "payload")]
+        [JsonPropertyName("payload")]
         public JRaw Payload { get; protected internal set; }
 
         /// <summary>
         /// The registration result for X.509 certificate authentication.
         /// </summary>
-        [JsonProperty(PropertyName = "x509")]
+        [JsonPropertyName("x509")]
         public X509RegistrationResult X509 { get; protected internal set; }
 
         /// <summary>
         /// The registration result for symmetric key authentication.
         /// </summary>
-        [JsonProperty(PropertyName = "symmetricKey")]
+        [JsonPropertyName("symmetricKey")]
         public SymmetricKeyRegistrationResult SymmetricKey { get; protected internal set; }
     }
 }

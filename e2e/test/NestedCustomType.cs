@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -11,10 +11,10 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class NestedCustomType
     {
-        [JsonProperty("stringAttri")]
+        [JsonPropertyName("stringAttri")]
         private string StringAttri;
 
-        [JsonProperty("intAttri")]
+        [JsonPropertyName("intAttri")]
         private int IntAttri;
 
         public NestedCustomType(string stringAttri, int intAttri)
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public override string ToString()
         {
-            Dictionary<string, object> dict = new Dictionary<string, object>()
+            var dict = new Dictionary<string, object>()
             {
                 { "stringAttri", StringAttri },
                 { "intAttri", IntAttri },

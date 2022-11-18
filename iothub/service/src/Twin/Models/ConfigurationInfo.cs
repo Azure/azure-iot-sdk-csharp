@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Configuration status.
         /// </summary>
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public ConfigurationStatus Status { get; set; }
     }
 }

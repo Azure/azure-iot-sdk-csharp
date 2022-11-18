@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
@@ -94,13 +93,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
                 var requestOptions = new InvokeDigitalTwinCommandOptions
                 {
-                    Payload = JsonConvert.SerializeObject(since)
+                    Payload = JsonSerializer.Serialize(since)
                 };
                 InvokeDigitalTwinCommandResponse commandResponse = await serviceClient.DigitalTwins
                     .InvokeCommandAsync(deviceId, commandName, requestOptions)
                     .ConfigureAwait(false);
                 commandResponse.Status.Should().Be(expectedCommandStatus);
-                commandResponse.Payload.Should().Be(JsonConvert.SerializeObject(commandName));
+                commandResponse.Payload.Should().Be(JsonSerializer.Serialize(commandName));
             }
             finally
             {
@@ -193,27 +192,27 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 int delay = 1;
                 var requestOptions = new InvokeDigitalTwinCommandOptions()
                 {
-                    Payload = JsonConvert.SerializeObject(delay)
+                    Payload = JsonSerializer.Serialize(delay)
                 };
                 InvokeDigitalTwinCommandResponse rootCommandResponse = await serviceClient.DigitalTwins
                     .InvokeCommandAsync(deviceId, rootCommandName, requestOptions)
                     .ConfigureAwait(false);
 
                 rootCommandResponse.Status.Should().Be(expectedCommandStatus);
-                rootCommandResponse.Payload.Should().Be(JsonConvert.SerializeObject(rootCommandName));
+                rootCommandResponse.Payload.Should().Be(JsonSerializer.Serialize(rootCommandName));
 
                 // Invoke the command "getMaxMinReport" under component "thermostat1" on the digital twin.
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
                 requestOptions = new InvokeDigitalTwinCommandOptions()
                 {
-                    Payload = JsonConvert.SerializeObject(since)
+                    Payload = JsonSerializer.Serialize(since)
                 };
                 InvokeDigitalTwinCommandResponse componentCommandResponse = await serviceClient.DigitalTwins
                     .InvokeComponentCommandAsync(deviceId, componentName, componentCommandName, requestOptions)
                     .ConfigureAwait(false);
 
                 componentCommandResponse.Status.Should().Be(expectedCommandStatus);
-                componentCommandResponse.Payload.Should().Be(JsonConvert.SerializeObject(componentCommandNamePnp));
+                componentCommandResponse.Payload.Should().Be(JsonSerializer.Serialize(componentCommandNamePnp));
             }
             finally
             {

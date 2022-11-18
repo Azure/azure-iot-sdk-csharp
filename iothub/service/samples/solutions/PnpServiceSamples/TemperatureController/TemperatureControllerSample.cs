@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -48,7 +48,12 @@ namespace Microsoft.Azure.Devices.Samples
             _logger.LogDebug($"Get the {_deviceId} device twin.");
 
             ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
-            _logger.LogDebug($"{_deviceId} twin: \n{JsonConvert.SerializeObject(twin, Formatting.Indented)}");
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin, options)}");
 
             return twin;
         }
@@ -90,7 +95,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
-                Payload = JsonConvert.SerializeObject(3),
+                Payload = JsonSerializer.Serialize(3),
             };
 
             _logger.LogDebug($"Invoke the {commandToInvoke} command on the {_deviceId} device twin." +
@@ -143,7 +148,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 __t = "c"
             };
-            twinPatch.Properties.Desired[componentName][propertyName] = JsonConvert.SerializeObject(propertyValue);
+            twinPatch.Properties.Desired[componentName][propertyName] = JsonSerializer.Serialize(propertyValue);
             return twinPatch;
         }
     }

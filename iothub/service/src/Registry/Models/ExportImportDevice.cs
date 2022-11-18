@@ -2,11 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Azure;
-using Azure.Core.Serialization;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -32,7 +30,7 @@ namespace Microsoft.Azure.Devices
             /// exclude UNICODE control characters (segments C0 and C1), '.', '$' and space. The
             /// desired porperty values are JSON objects, up-to 4KB in length.
             /// </remarks>
-            [JsonProperty(PropertyName = "desired", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("desired")]
             public ClientTwinProperties DesiredProperties { get; set; }
 
             /// <summary>
@@ -43,7 +41,7 @@ namespace Microsoft.Azure.Devices
             /// exclude UNICODE control characters (segments C0 and C1), '.', '$' and space. The
             /// reported property values are JSON objects, up-to 4KB in length.
             /// </remarks>
-            [JsonProperty(PropertyName = "reported", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("reported")]
             public ClientTwinProperties ReportedProperties { get; set; }
         }
 
@@ -79,13 +77,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The unique identifier of the device.
         /// </summary>
-        [JsonProperty(PropertyName = "id", Required = Required.Always)]
+        [JsonPropertyName("id", Required = Required.Always)]
         public string Id { get; set; }
 
         /// <summary>
         /// The unique identifier of the module, if applicable.
         /// </summary>
-        [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("moduleId")]
         public string ModuleId { get; set; }
 
         /// <summary>
@@ -95,14 +93,13 @@ namespace Microsoft.Azure.Devices
         ///  The value is only used if import mode is updateIfMatchETag, in that case the import operation is performed
         ///  only if this ETag matches the value maintained by the server.
         /// </remarks>
-        [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        [JsonPropertyName("eTag")]
         public ETag ETag { get; set; }
 
         /// <summary>
         /// The type of registry operation and ETag preferences.
         /// </summary>
-        [JsonProperty(PropertyName = "importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public ImportMode ImportMode { get; set; }
 
         /// <summary>
@@ -111,7 +108,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// If disabled, it cannot connect to the service.
         /// </remarks>
-        [JsonProperty(PropertyName = "status", Required = Required.Always)]
+        [JsonPropertyName("status", Required = Required.Always)]
         public ClientStatus Status { get; set; }
 
         /// <summary>
@@ -120,7 +117,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// All UTF-8 characters are allowed.
         /// </remarks>
-        [JsonProperty(PropertyName = "statusReason", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("statusReason")]
         public string StatusReason { get; set; }
 
         /// <summary>
@@ -130,7 +127,7 @@ namespace Microsoft.Azure.Devices
         /// This parameter is optional and defaults to SAS if not provided. In that case, primary/secondary
         /// access keys are auto-generated.
         /// </remarks>
-        [JsonProperty(PropertyName = "authentication")]
+        [JsonPropertyName("authentication")]
         public AuthenticationMechanism Authentication { get; set; }
 
         /// <summary>
@@ -140,26 +137,25 @@ namespace Microsoft.Azure.Devices
         /// The value is only used if import mode is updateIfMatchETag, in that case the import operation is
         /// performed only if this ETag matches the value maintained by the server.
         /// </remarks>
-        [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        [JsonPropertyName("twinETag")]
         public ETag TwinETag { get; set; }
 
         /// <summary>
         /// The JSON document read and written by the solution back end. The tags are not visible to device apps.
         /// </summary>
-        [JsonProperty(PropertyName = "tags", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("tags")]
         public IDictionary<string, object> Tags { get; internal set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The desired and reported properties for the device or module.
         /// </summary>
-        [JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("properties")]
         public PropertyContainer Properties { get; set; }
 
         /// <summary>
         /// Status of capabilities enabled on the device or module.
         /// </summary>
-        [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("capabilities")]
         public ClientCapabilities Capabilities { get; set; }
 
         /// <summary>
@@ -172,7 +168,7 @@ namespace Microsoft.Azure.Devices
         /// For more information, see
         /// <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Include)]
+        [JsonPropertyName("deviceScope", NullValueHandling = NullValueHandling.Include)]
         public string DeviceScope { get; set; }
     }
 }

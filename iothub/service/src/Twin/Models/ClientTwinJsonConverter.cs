@@ -7,16 +7,15 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Azure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Converts a twin to JSON.
     /// </summary>
-    internal sealed class ClientTwinJsonConverter : JsonConverter
+    internal sealed class ClientTwinJsonConverter : JsonConverter<ClientTwin>
     {
         private const string DeviceIdJsonTag = "deviceId";
         private const string ModuleIdJsonTag = "moduleId";
@@ -39,163 +38,9 @@ namespace Microsoft.Azure.Devices
         private const string X509ThumbprintTag = "x509Thumbprint";
         private const string ModelId = "modelId";
         private const string DeviceScope = "deviceScope";
-        private const string ParentScopes = "parentScopes";
 
-        /// <summary>
-        /// Converts twin to its equivalent JSON representation.
-        /// </summary>
-        /// <param name="writer">the JSON writer.</param>
-        /// <param name="value">the <see cref="ClientTwin"/> to convert.</param>
-        /// <param name="serializer">the JSON serializer.</param>
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            if (value == null)
-            {
-                return;
-            }
-
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (serializer == null)
-            {
-                throw new ArgumentNullException(nameof(serializer));
-            }
-
-            var twin = value as ClientTwin;
-
-            if (twin == null)
-            {
-                throw new InvalidOperationException("Object passed is not of type Twin.");
-            }
-
-            writer.WriteStartObject();
-
-            if (!string.IsNullOrWhiteSpace(twin.ModelId))
-            {
-                writer.WritePropertyName(ModelId);
-                writer.WriteValue(twin.ModelId);
-            }
-
-            writer.WritePropertyName(DeviceIdJsonTag);
-            writer.WriteValue(twin.DeviceId);
-
-            if (!string.IsNullOrWhiteSpace(twin.ModuleId))
-            {
-                writer.WritePropertyName(ModuleIdJsonTag);
-                writer.WriteValue(twin.ModuleId);
-            }
-
-            writer.WritePropertyName(ETagJsonTag);
-            writer.WriteValue(twin.ETag.ToString());
-
-            writer.WritePropertyName(VersionTag);
-            writer.WriteValue(twin.Version);
-
-            if (twin.Status != null)
-            {
-                writer.WritePropertyName(StatusTag);
-                writer.WriteRawValue(JsonConvert.SerializeObject(twin.Status));
-            }
-
-            if (!string.IsNullOrWhiteSpace(twin.StatusReason))
-            {
-                writer.WritePropertyName(StatusReasonTag);
-                writer.WriteValue(twin.StatusReason);
-            }
-
-            if (twin.StatusUpdatedOnUtc != null)
-            {
-                writer.WritePropertyName(StatusUpdateTimeTag);
-                writer.WriteValue(twin.StatusUpdatedOnUtc);
-            }
-
-            if (twin.ConnectionState != null)
-            {
-                writer.WritePropertyName(ConnectionStateTag);
-                writer.WriteRawValue(JsonConvert.SerializeObject(twin.ConnectionState, new StringEnumConverter()));
-            }
-
-            if (twin.LastActiveOnUtc != null)
-            {
-                writer.WritePropertyName(LastActivityTimeTag);
-                writer.WriteValue(twin.LastActiveOnUtc);
-            }
-
-            if (twin.CloudToDeviceMessageCount != null)
-            {
-                writer.WritePropertyName(CloudToDeviceMessageCountTag);
-                writer.WriteValue(twin.CloudToDeviceMessageCount);
-            }
-
-            if (twin.AuthenticationType != null)
-            {
-                writer.WritePropertyName(AuthenticationTypeTag);
-                writer.WriteRawValue(JsonConvert.SerializeObject(twin.AuthenticationType));
-            }
-
-            if (twin.X509Thumbprint != null)
-            {
-                writer.WritePropertyName(X509ThumbprintTag);
-                serializer.Serialize(writer, twin.X509Thumbprint);
-            }
-
-            if (twin.Configurations != null)
-            {
-                writer.WritePropertyName(ConfigurationsJsonTag);
-                serializer.Serialize(writer, twin.Configurations, typeof(IDictionary<string, ConfigurationInfo>));
-            }
-
-            if (twin.Tags != null && twin.Tags.Count > 0)
-            {
-                writer.WritePropertyName(TagsJsonTag);
-                serializer.Serialize(writer, twin.Tags, typeof(IDictionary<string, object>));
-            }
-
-            if (twin.Properties?.Desired != null || twin.Properties?.Reported != null)
-            {
-                writer.WritePropertyName(PropertiesJsonTag);
-                writer.WriteStartObject();
-                if (twin.Properties.Desired != null)
-                {
-                    writer.WritePropertyName(DesiredPropertiesJsonTag);
-                    serializer.Serialize(writer, twin.Properties.Desired, typeof(ClientTwinProperties));
-                }
-
-                if (twin.Properties.Reported != null)
-                {
-                    writer.WritePropertyName(ReportedPropertiesJsonTag);
-                    serializer.Serialize(writer, twin.Properties.Reported, typeof(ClientTwinProperties));
-                }
-
-                writer.WriteEndObject();
-            }
-
-            if (twin.DeviceScope != null)
-            {
-                writer.WritePropertyName(DeviceScope);
-                serializer.Serialize(writer, twin.DeviceScope, typeof(string));
-            }
-
-            if (twin.ParentScopes != null && twin.ParentScopes.Any())
-            {
-                writer.WritePropertyName(ParentScopes);
-                serializer.Serialize(writer, twin.ParentScopes, typeof(IList<string>));
-            }
-
-            writer.WriteEndObject();
-        }
-
-        /// <summary>
-        /// Converts JSON to its equivalent <see cref="ClientTwin"/> representation.
-        /// </summary>
-        /// <param name="reader">the JSON reader.</param>
-        /// <param name="objectType">object type</param>
-        /// <param name="existingValue">exisiting value</param>
-        /// <param name="serializer">the JSON serializer.</param>
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        /// <inheritdoc/>
+        public override ClientTwin? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader == null)
             {
@@ -278,7 +123,7 @@ namespace Microsoft.Azure.Devices
 
                     case StatusTag:
                         string status = reader.Value as string;
-                        twin.Status = status?[0] == '\"' ? JsonConvert.DeserializeObject<ClientStatus>(status) : serializer.Deserialize<ClientStatus>(reader);
+                        twin.Status = status?[0] == '\"' ? JsonSerializer.Deserialize<ClientStatus>(status) : serializer.Deserialize<ClientStatus>(reader);
                         break;
 
                     case StatusReasonTag:
@@ -292,7 +137,7 @@ namespace Microsoft.Azure.Devices
                     case ConnectionStateTag:
                         string connectionState = reader.Value as string;
                         twin.ConnectionState = connectionState?[0] == '\"'
-                            ? JsonConvert.DeserializeObject<ClientConnectionState>(connectionState)
+                            ? JsonSerializer.Deserialize<ClientConnectionState>(connectionState)
                             : serializer.Deserialize<ClientConnectionState>(reader);
                         break;
 
@@ -307,7 +152,7 @@ namespace Microsoft.Azure.Devices
                     case AuthenticationTypeTag:
                         string authenticationType = reader.Value as string;
                         twin.AuthenticationType = authenticationType?[0] == '\"'
-                            ? JsonConvert.DeserializeObject<ClientAuthenticationType>(authenticationType)
+                            ? JsonSerializer.Deserialize<ClientAuthenticationType>(authenticationType)
                             : serializer.Deserialize<ClientAuthenticationType>(reader);
                         break;
 
@@ -333,22 +178,155 @@ namespace Microsoft.Azure.Devices
             return twin;
         }
 
-        /// <summary>
-        /// Converter can read flag
-        /// </summary>
-        public override bool CanRead => true;
+        /// <inheritdoc/>
 
-        /// <summary>
-        /// Value indicating whether this TwinJsonConverter can read JSON
-        /// </summary>
-        public override bool CanWrite => true;
+        public override void Write(Utf8JsonWriter writer, ClientTwin clientTwinValue, JsonSerializerOptions options)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (serializer == null)
+            {
+                throw new ArgumentNullException(nameof(serializer));
+            }
+
+            var twin = value as ClientTwin;
+
+            if (twin == null)
+            {
+                throw new InvalidOperationException("Object passed is not of type Twin.");
+            }
+
+            writer.WriteStartObject();
+
+            if (!string.IsNullOrWhiteSpace(twin.ModelId))
+            {
+                writer.WritePropertyName(ModelId);
+                writer.WriteValue(twin.ModelId);
+            }
+
+            writer.WritePropertyName(DeviceIdJsonTag);
+            writer.WriteValue(twin.DeviceId);
+
+            if (!string.IsNullOrWhiteSpace(twin.ModuleId))
+            {
+                writer.WritePropertyName(ModuleIdJsonTag);
+                writer.WriteValue(twin.ModuleId);
+            }
+
+            writer.WritePropertyName(ETagJsonTag);
+            writer.WriteValue(twin.ETag.ToString());
+
+            writer.WritePropertyName(VersionTag);
+            writer.WriteValue(twin.Version);
+
+            if (twin.Status != null)
+            {
+                writer.WritePropertyName(StatusTag);
+                writer.WriteRawValue(JsonSerializer.Serialize(twin.Status));
+            }
+
+            if (!string.IsNullOrWhiteSpace(twin.StatusReason))
+            {
+                writer.WritePropertyName(StatusReasonTag);
+                writer.WriteValue(twin.StatusReason);
+            }
+
+            if (twin.StatusUpdatedOnUtc != null)
+            {
+                writer.WritePropertyName(StatusUpdateTimeTag);
+                writer.WriteValue(twin.StatusUpdatedOnUtc);
+            }
+
+            if (twin.ConnectionState != null)
+            {
+                writer.WritePropertyName(ConnectionStateTag);
+                writer.WriteRawValue(JsonSerializer.Serialize(twin.ConnectionState, new JsonStringEnumConverter()));
+            }
+
+            if (twin.LastActiveOnUtc != null)
+            {
+                writer.WritePropertyName(LastActivityTimeTag);
+                writer.WriteValue(twin.LastActiveOnUtc);
+            }
+
+            if (twin.CloudToDeviceMessageCount != null)
+            {
+                writer.WritePropertyName(CloudToDeviceMessageCountTag);
+                writer.WriteValue(twin.CloudToDeviceMessageCount);
+            }
+
+            if (twin.AuthenticationType != null)
+            {
+                writer.WritePropertyName(AuthenticationTypeTag);
+                writer.WriteRawValue(JsonSerializer.Serialize(twin.AuthenticationType));
+            }
+
+            if (twin.X509Thumbprint != null)
+            {
+                writer.WritePropertyName(X509ThumbprintTag);
+                serializer.Serialize(writer, twin.X509Thumbprint);
+            }
+
+            if (twin.Configurations != null)
+            {
+                writer.WritePropertyName(ConfigurationsJsonTag);
+                serializer.Serialize(writer, twin.Configurations, typeof(IDictionary<string, ConfigurationInfo>));
+            }
+
+            if (twin.Tags != null && twin.Tags.Count > 0)
+            {
+                writer.WritePropertyName(TagsJsonTag);
+                serializer.Serialize(writer, twin.Tags, typeof(IDictionary<string, object>));
+            }
+
+            if (twin.Properties?.Desired != null || twin.Properties?.Reported != null)
+            {
+                writer.WritePropertyName(PropertiesJsonTag);
+                writer.WriteStartObject();
+                if (twin.Properties.Desired != null)
+                {
+                    writer.WritePropertyName(DesiredPropertiesJsonTag);
+                    serializer.Serialize(writer, twin.Properties.Desired, typeof(ClientTwinProperties));
+                }
+
+                if (twin.Properties.Reported != null)
+                {
+                    writer.WritePropertyName(ReportedPropertiesJsonTag);
+                    serializer.Serialize(writer, twin.Properties.Reported, typeof(ClientTwinProperties));
+                }
+
+                writer.WriteEndObject();
+            }
+
+            if (twin.DeviceScope != null)
+            {
+                writer.WritePropertyName(DeviceScope);
+                serializer.Serialize(writer, twin.DeviceScope, typeof(string));
+            }
+
+            if (twin.ParentScopes != null && twin.ParentScopes.Any())
+            {
+                writer.WritePropertyName(ParentScopes);
+                serializer.Serialize(writer, twin.ParentScopes, typeof(IList<string>));
+            }
+
+            writer.WriteEndObject();
+        }
 
         /// <summary>
         /// Value indicating whether this TwinJsonConverter can write JSON
         /// </summary>
         public override bool CanConvert(Type objectType) => typeof(ClientTwin).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
 
-        private static Dictionary<string, object> GetTagsForTwin(JsonReader reader)
+        private static Dictionary<string, object> GetTagsForTwin(ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonToken.StartObject)
             {
@@ -401,7 +379,7 @@ namespace Microsoft.Azure.Devices
                 : null;
         }
 
-        private static void PopulatePropertiesForTwin(ClientTwin twin, JsonReader reader)
+        private static void PopulatePropertiesForTwin(ClientTwin twin, Utf8JsonReader reader)
         {
             if (twin == null)
             {

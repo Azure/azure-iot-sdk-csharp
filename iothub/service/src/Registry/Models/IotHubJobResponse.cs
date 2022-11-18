@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("jobId")]
         public string JobId { get; protected internal set; }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("startTimeUtc")]
         public DateTimeOffset? StartedOnUtc { get; protected internal set; }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("endTimeUtc")]
         public DateTimeOffset? EndedOnUtc { get; protected internal set; }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("status")]
         public JobStatus Status { get; protected internal set; }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty(PropertyName = "failureReason", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("failureReason")]
         public string FailureReason { get; protected internal set; }
 
         /// <summary>

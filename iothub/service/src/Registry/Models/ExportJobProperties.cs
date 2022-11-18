@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// If not specified, the service defaults to "devices.txt".
         /// </remarks>
-        [JsonProperty(PropertyName = "outputBlobName", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("outputBlobName")]
         public string OutputBlobName { get; set; }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Optional parameter. The service defaults to false.
         /// </remarks>
-        [JsonProperty(PropertyName = "excludeKeysInExport", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("excludeKeysInExport")]
         public bool ExcludeKeysInExport { get; set; }
     }
 }

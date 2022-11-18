@@ -4,8 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {

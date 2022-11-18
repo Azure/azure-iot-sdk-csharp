@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             { "ConsumeUnity", "MPG" },
         };
 
-        private readonly ProvisioningTwinProperties _sampleDesiredProperties = new ProvisioningTwinProperties
+        private readonly ProvisioningTwinProperties _sampleDesiredProperties = new()
         {
             ["Brand"] = "NiceCar",
             ["Model"] = "SNC4",
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
 
             // act
-            string jsonResult = JsonConvert.SerializeObject(initialTwin);
+            string jsonResult = JsonSerializer.Serialize(initialTwin);
 
             // assert
             TestAssert.AreEqualJson(OnlyTagsInitialTwinJSON, jsonResult);
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
 
             // act
-            string jsonResult = JsonConvert.SerializeObject(initialTwin);
+            string jsonResult = JsonSerializer.Serialize(initialTwin);
 
             // assert
             TestAssert.AreEqualJson(OnlyDesiredPropertiesInitialTwinJSON, jsonResult);
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
 
             // act
-            string jsonResult = JsonConvert.SerializeObject(initialTwin);
+            string jsonResult = JsonSerializer.Serialize(initialTwin);
 
             // assert
             TestAssert.AreEqualJson(FullInitialTwinJSON, jsonResult);
@@ -170,10 +170,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TwinStateSucceedOnFromJson()
         {
             // act
-            ProvisioningTwinState initialTwin = JsonConvert.DeserializeObject<ProvisioningTwinState>(FullInitialTwinJSON);
+            ProvisioningTwinState initialTwin = JsonSerializer.Deserialize<ProvisioningTwinState>(FullInitialTwinJSON);
 
             // assert
-            TestAssert.AreEqualJson(FullInitialTwinJSON, JsonConvert.SerializeObject(initialTwin));
+            TestAssert.AreEqualJson(FullInitialTwinJSON, JsonSerializer.Serialize(initialTwin));
         }
     }
 }

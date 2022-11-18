@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             PageSize = pageSize;
             _internalRetryHandler = retryHandler;
             _cancellationToken = cancellationToken;
-            _querySpecificationJson = JsonConvert.SerializeObject(new QuerySpecification(query));
+            _querySpecificationJson = JsonSerializer.Serialize(new QuerySpecification(query));
             _queryPath = GetQueryUri(serviceName);
             ContinuationToken = null;
             _hasNext = true;

@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -21,26 +20,26 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The job Id.
         /// </summary>
-        [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("jobId")]
         public string JobId { get; internal set; }
 
         /// <summary>
         /// Status of the job.
         /// </summary>
-        [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonPropertyName("status")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public JobStatus Status { get; internal set; }
 
         /// <summary>
         /// Scheduled job start time in UTC.
         /// </summary>
-        [JsonProperty(PropertyName = "createdDateTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("createdDateTimeUtc")]
         public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
         // This private field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
         // as the created time value for this class and expose it either way as CreatedTimeUtc.
-        [JsonProperty(PropertyName = "createdTime", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("createdTime")]
         internal DateTimeOffset? AlternateCreatedOnUtc
         {
             get => CreatedOnUtc;
@@ -50,19 +49,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Represents the time the job started processing.
         /// </summary>
-        [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("startTimeUtc")]
         public DateTimeOffset? StartedOnUtc { get; internal set; }
 
         /// <summary>
         /// Represents the time the job stopped processing.
         /// </summary>
-        [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("endTimeUtc")]
         public DateTimeOffset? EndedOnUtc { get; internal set; }
 
         // Some service Jobs APIs use "endTime" as the key for this value and some others use "endTimeUtc".
         // This private field is a workaround that allows us to deserialize either "endTime" or "endTimeUtc"
         // as the created time value for this class and expose it either way as EndTimeUtc.
-        [JsonProperty(PropertyName = "endTime")]
+        [JsonPropertyName("endTime")]
         internal DateTimeOffset? AlternateEndedOnUtc
         {
             get => EndedOnUtc;
@@ -75,13 +74,13 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// If status is <see cref="JobStatus.Failed"/>, this represents a string containing the reason.
         /// </remarks>
-        [JsonProperty(PropertyName = "failureReason", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("failureReason")]
         public string FailureReason { get; internal set; }
 
         /// <summary>
         /// Represents a string containing a message with status about the job execution.
         /// </summary>
-        [JsonProperty(PropertyName = "statusMessage", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("statusMessage")]
         public string StatusMessage { get; internal set; }
     }
 }

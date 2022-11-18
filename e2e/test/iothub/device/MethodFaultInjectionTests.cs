@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -12,7 +13,6 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
                     response.Status.Should().Be(200);
-                    JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(deviceResponsePayload));
+                    JsonSerializer.Serialize(response.Payload).Should().Be(JsonSerializer.Serialize(deviceResponsePayload));
 
                     done = true;
                 }

@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -25,15 +24,15 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The type of job to execute.
         /// </summary>
-        [JsonProperty(PropertyName = "jobType", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonPropertyName("jobType")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public JobType JobType { get; protected internal set; }
 
         // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
         // This private field is a workaround that allows us to deserialize either "type" or "jobType"
         // as the created time value for this class and expose it either way as JobType.
-        [JsonProperty(PropertyName = "type", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonPropertyName("type")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         internal JobType AlternateJobType
         {
             get => JobType;
@@ -43,7 +42,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Device query condition.
         /// </summary>
-        [JsonProperty(PropertyName = "queryCondition", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("queryCondition")]
         public string QueryCondition { get; protected internal set; }
 
         /// <summary>
@@ -53,7 +52,7 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public TimeSpan MaxExecutionTime { get; set; }
 
-        [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         internal long MaxExecutionTimeInSeconds
         {
             get => (long)MaxExecutionTime.TotalSeconds;
@@ -63,7 +62,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Different number of devices in the job.
         /// </summary>
-        [JsonProperty(PropertyName = "deviceJobStatistics", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("deviceJobStatistics")]
         public DeviceJobStatistics DeviceJobStatistics { get; protected internal set; }
 
         /// <summary>
@@ -72,13 +71,13 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// It can be null (e.g., in case of a parent orchestration).
         /// </remarks>
-        [JsonProperty(PropertyName = "deviceId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("deviceId")]
         public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// The job Id of the parent orchestration, if any.
         /// </summary>
-        [JsonProperty(PropertyName = "parentJobId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("parentJobId")]
         public string ParentJobId { get; protected internal set; }
     }
 }

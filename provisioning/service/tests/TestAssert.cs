@@ -3,17 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Globalization;
+using System.Text.Json;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
-    using System;
-    using System.Globalization;
-    using System.Threading.Tasks;
-
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class TestAssert
     {
@@ -60,8 +55,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 Assert.AreEqual(actualJson.Length, 0, FormatExpectedActual("empty string", actualJson));
             }
 
-            JObject expectedJObject = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(expectedJson);
-            JObject actualJObject = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(actualJson);
+            JObject expectedJObject = JsonSerializer.Deserialize<JObject>(expectedJson);
+            JObject actualJObject = JsonSerializer.Deserialize<JObject>(actualJson);
 
             AreEqual(expectedJObject, actualJObject);
         }

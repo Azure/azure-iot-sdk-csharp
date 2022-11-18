@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Azure;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -35,31 +35,31 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The unique identifier of the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "id", Required = Required.Always)]
+        [JsonPropertyName("id", Required = Required.Always)]
         public string Id { get; internal set; }
 
         /// <summary>
         /// The schema version of the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "schemaVersion", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("schemaVersion")]
         public string SchemaVersion { get; } = "1.0";
 
         /// <summary>
         /// The key-value pairs used to describe the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "labels", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("labels")]
         public IDictionary<string, string> Labels { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// The content of the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "content", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("content")]
         public ConfigurationContent Content { get; set; }
 
         /// <summary>
         /// Gets the content type for configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "contentType")]
+        [JsonPropertyName("contentType")]
         public string ContentType { get; } = "assignment";
 
         /// <summary>
@@ -68,44 +68,43 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// The query is based on twin tags and/or reported properties.
         /// </remarks>
-        [JsonProperty(PropertyName = "targetCondition")]
+        [JsonPropertyName("targetCondition")]
         public string TargetCondition { get; set; }
 
         /// <summary>
         /// The creation date and time of the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "createdTimeUtc")]
+        [JsonPropertyName("createdTimeUtc")]
         public DateTimeOffset CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The update date and time of the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "lastUpdatedTimeUtc")]
+        [JsonPropertyName("lastUpdatedTimeUtc")]
         public DateTimeOffset LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The priority number assigned to the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "priority")]
+        [JsonPropertyName("priority")]
         public int Priority { get; set; }
 
         /// <summary>
         /// The system metrics computed by the IoT hub that cannot be customized.
         /// </summary>
-        [JsonProperty(PropertyName = "systemMetrics", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("systemMetrics")]
         public ConfigurationMetrics SystemMetrics { get; set; }
 
         /// <summary>
         /// The custom metrics specified by the developer as queries against twin reported properties.
         /// </summary>
-        [JsonProperty(PropertyName = "metrics", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("metrics")]
         public ConfigurationMetrics Metrics { get; set; }
 
         /// <summary>
         /// The ETag of the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "etag")]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        [JsonPropertyName("etag")]
         public ETag ETag { get; set; }
 
         /// <summary>

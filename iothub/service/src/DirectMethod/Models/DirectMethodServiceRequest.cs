@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The method name to run.
         /// </summary>
-        [JsonProperty("methodName", Required = Required.Always)]
+        [JsonPropertyName("methodName", Required = Required.Always)]
         public string MethodName { get; set; }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices
                 _payload = value;
                 if (value != null)
                 {
-                    PayloadAsJsonString = JsonConvert.SerializeObject(value);
+                    PayloadAsJsonString = JsonSerializer.Serialize(value);
                     JsonPayload = new JRaw(PayloadAsJsonString);
                 }
             }
@@ -86,13 +86,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The JSON payload in JRaw type.
         /// </summary>
-        [JsonProperty("payload")]
+        [JsonPropertyName("payload")]
         internal JRaw JsonPayload { get; set; }
 
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("responseTimeoutInSeconds")]
         internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
 
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("connectTimeoutInSeconds")]
         internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The JSON payload in custom type.</returns>
         public T GetPayload<T>()
         {
-            return JsonConvert.DeserializeObject<T>(PayloadAsJsonString);
+            return JsonSerializer.Deserialize<T>(PayloadAsJsonString);
         }
     }
 }

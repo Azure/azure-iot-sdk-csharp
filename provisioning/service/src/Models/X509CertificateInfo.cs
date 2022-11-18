@@ -3,7 +3,7 @@
 
 using System;
 using System.Net;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -68,49 +68,49 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Distinguished name from the certificate.
         /// </summary>
-        [JsonProperty(PropertyName = "subjectName")]
+        [JsonPropertyName("subjectName")]
         public string SubjectName { get; protected private set; }
 
         /// <summary>
         /// SHA-1 hash value of the certificate as a hexadecimal string.
         /// </summary>
-        [JsonProperty(PropertyName = "sha1Thumbprint")]
+        [JsonPropertyName("sha1Thumbprint")]
         public string Sha1Thumbprint { get; protected private set; }
 
         /// <summary>
         /// SHA-256 hash value of the certificate as a hexadecimal string.
         /// </summary>
-        [JsonProperty(PropertyName = "sha256Thumbprint")]
+        [JsonPropertyName("sha256Thumbprint")]
         public string Sha256Thumbprint { get; protected private set; }
 
         /// <summary>
         /// Issuer distinguished name.
         /// </summary>
-        [JsonProperty(PropertyName = "issuerName")]
+        [JsonPropertyName("issuerName")]
         public string IssuerName { get; protected private set; }
 
         /// <summary>
         /// The date on which the certificate becomes valid.
         /// </summary>
-        [JsonProperty(PropertyName = "notBeforeUtc")]
+        [JsonPropertyName("notBeforeUtc")]
         public DateTimeOffset NotBeforeUtc { get; protected private set; }
 
         /// <summary>
         /// The date on which the certificate is no longer valid.
         /// </summary>
-        [JsonProperty(PropertyName = "notAfterUtc")]
+        [JsonPropertyName("notAfterUtc")]
         public DateTimeOffset NotAfterUtc { get; protected private set; }
 
         /// <summary>
         /// The serial number.
         /// </summary>
-        [JsonProperty(PropertyName = "serialNumber")]
+        [JsonPropertyName("serialNumber")]
         public string SerialNumber { get; protected private set; }
 
         /// <summary>
         /// The X509 format version.
         /// </summary>
-        [JsonProperty(PropertyName = "version")]
+        [JsonPropertyName("version")]
         public int Version { get; protected private set; }
     }
 }

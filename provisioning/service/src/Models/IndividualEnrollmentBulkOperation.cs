@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -14,13 +14,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Operation mode
         /// </summary>
-        [JsonProperty(PropertyName = "mode", Required = Required.Always)]
+        [JsonPropertyName("mode", Required = Required.Always)]
         internal BulkOperationMode Mode { get; set; }
 
         /// <summary>
         /// Enrollments for bulk operation
         /// </summary>
-        [JsonProperty(PropertyName = "enrollments", Required = Required.Always)]
+        [JsonPropertyName("enrollments", Required = Required.Always)]
         internal IEnumerable<IndividualEnrollment> Enrollments { get; set; }
     }
 }

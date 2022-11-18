@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -56,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 Enrollments = s_individualEnrollments,
             };
 
-            string bulkJson = JsonConvert.SerializeObject(operation);
+            string bulkJson = JsonSerializer.Serialize(operation);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, bulkJson);

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the status of device method invocation.
         /// </summary>
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public int Status { get; protected internal set; }
 
         /// <summary>
@@ -34,9 +34,9 @@ namespace Microsoft.Azure.Devices
         /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
         /// </remarks>
         [JsonIgnore]
-        public object Payload => JsonConvert.DeserializeObject((string)JsonPayload.Value);
+        public object Payload => JsonSerializer.Deserialize((string)JsonPayload.Value);
 
-        [JsonProperty("payload")]
+        [JsonPropertyName("payload")]
         internal JRaw JsonPayload { get; set; }
     }
 }

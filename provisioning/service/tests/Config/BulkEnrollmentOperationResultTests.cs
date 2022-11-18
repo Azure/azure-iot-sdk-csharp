@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -40,10 +40,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            TestAssert.Throws<JsonSerializationException>(() => 
-                JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(nonRegistrationId));
-            TestAssert.Throws<JsonSerializationException>(() => 
-                JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(NonStatus));
+            TestAssert.Throws<JsonException>(() => JsonSerializer.Deserialize<BulkEnrollmentOperationResult>(nonRegistrationId));
+            TestAssert.Throws<JsonException>(() => JsonSerializer.Deserialize<BulkEnrollmentOperationResult>(NonStatus));
         }
 
         /* SRS_BULK_ENROLLMENT_OPERATION_RESULT_21_002: [The BulkEnrollmentOperationResult shall store the provided information.] */
@@ -57,8 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            BulkEnrollmentOperationResult bulkErrors =
-                JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(validJson);
+            BulkEnrollmentOperationResult bulkErrors = JsonSerializer.Deserialize<BulkEnrollmentOperationResult>(validJson);
 
             // assert
             Assert.IsNotNull(bulkErrors);

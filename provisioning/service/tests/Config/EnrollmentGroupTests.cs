@@ -3,10 +3,10 @@
 
 using System;
 using System.Net;
+using System.Text.Json;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            Action act = () => JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson);
+            Action act = () => JsonSerializer.Deserialize<EnrollmentGroup>(invalidJson);
             FluentAssertions.Specialized.ExceptionAssertions<ProvisioningServiceException> error = act.Should().Throw<ProvisioningServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.And.IsTransient.Should().BeFalse();
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void EnrollmentGroupConstructorJsonSucceed()
         {
             // arrange
-            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(s_sampleEnrollmentGroupJson);
+            EnrollmentGroup enrollmentGroup = JsonSerializer.Deserialize<EnrollmentGroup>(s_sampleEnrollmentGroupJson);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "   },\n" +
                 "   \"etag\": \"" + SampleEtag + "\"\n" +
                 "}";
-            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(minJson);
+            EnrollmentGroup enrollmentGroup = JsonSerializer.Deserialize<EnrollmentGroup>(minJson);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);

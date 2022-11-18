@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Threading;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The type of registry operation and ETag preferences.
         /// </summary>
-        [JsonProperty(PropertyName = "importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public ConfigurationImportMode ImportMode { get; set; }
     }
 }

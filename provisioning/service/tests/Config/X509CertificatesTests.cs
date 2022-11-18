@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 using FluentAssertions;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            X509Certificates x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
+            X509Certificates x509Certificates = JsonSerializer.Deserialize<X509Certificates>(json);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act
-            X509Certificates x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
+            X509Certificates x509Certificates = JsonSerializer.Deserialize<X509Certificates>(json);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "}";
 
             // act - assert
-            Action act = () => JsonConvert.DeserializeObject<X509Certificates>(json);
+            Action act = () => JsonSerializer.Deserialize<X509Certificates>(json);
             var error = act.Should().Throw<ProvisioningServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.And.IsTransient.Should().BeFalse();

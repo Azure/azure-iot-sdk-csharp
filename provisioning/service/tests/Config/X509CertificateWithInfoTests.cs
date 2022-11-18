@@ -3,8 +3,8 @@
 
 using System;
 using System.Net;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             @"/yAQNj2Vji9RthQ33HG/QdL12b1ABU5UXgIhAPJujG/c/S+7vcREWI7bQcCb31JI" +
             @"BDhWZbt4eyCvXZtZ";
 
-        private string makeJson(
+        private string MakeJson(
             string subjectName, string sha1Thumbprint, string sha256Thumbprint,
             string issuerName, string notBeforeUtcString, string notAfterUtcString, string serialNumber, int version)
         {
@@ -70,8 +70,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             return json;
         }
-
-        /* SRS_X509_CERTIFICATE_WITH_INFO_21_001: [The public constructor shall throws ArgumentException if the provided certificate is null or InvalidOperationException if it is invalid.] */
 
         [TestMethod]
         public void X509CertificateWithInfoConstructorThrowsOnNullX509Certificate()
@@ -118,9 +116,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 #pragma warning restore CA1806 // Do not ignore method results
         }
 
-        // SRS_X509_CERTIFICATE_WITH_INFO_21_002: [The public constructor shall store the provided certificate as Base64 string.]
-        // SRS_X509_CERTIFICATE_WITH_INFO_21_003: [The public constructor shall set the Info to null.]
-
         [TestMethod]
         public void X509CertificateWithInfoConstructorSucceedOnValidX509Certificate()
         {
@@ -149,17 +144,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNull(x509CertificateWithInfo.Info);
         }
 
-        /* SRS_X509_CERTIFICATE_WITH_INFO_21_005: [The constructor for JSON shall store the provided Info.] */
-        /* SRS_X509_CERTIFICATE_WITH_INFO_21_006: [The constructor for JSON shall store the provided certificate as X509Certificate2.] */
 
         [TestMethod]
         public void X509CertificateWithInfoSucceedOnJsonWithInfo()
         {
             // arrange
-            string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION);
+            string json = MakeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION);
 
             // act
-            X509CertificateWithInfo x509CertificateWithInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateWithInfo>(json);
+            X509CertificateWithInfo x509CertificateWithInfo = JsonSerializer.Deserialize<X509CertificateWithInfo>(json);
 
             // assert
             Assert.IsNotNull(x509CertificateWithInfo.Info);

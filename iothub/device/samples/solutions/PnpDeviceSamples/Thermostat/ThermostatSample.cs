@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug($"Command: No relevant readings found, cannot generate any report.");
                 return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
             }
-            catch (JsonReaderException ex)
+            catch (JsonException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
                 return Task.FromResult(new DirectMethodResponse((int)StatusCode.BadRequest));

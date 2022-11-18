@@ -3,14 +3,21 @@
 
 using System;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class ProvisioningTwinPropertiesJsonConverter : JsonConverter
+    internal class ProvisioningTwinPropertiesJsonConverter : JsonConverter<ProvisioningTwinProperties>
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override bool CanConvert(Type objectType) => typeof(ProvisioningTwinProperties).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
+
+        public override ProvisioningTwinProperties? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return new ProvisioningTwinProperties(JToken.ReadFrom(reader) as JObject);
+        }
+
+        public override void Write(Utf8JsonWriter writer, ProvisioningTwinProperties value, JsonSerializerOptions options)
         {
             if (value == null)
             {
@@ -18,20 +25,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return;
             }
 
-            var properties = value as ProvisioningTwinProperties;
+            var properties = value;
             if (properties == null)
             {
                 throw new InvalidOperationException("Object passed is not of type TwinCollection.");
             }
 
             serializer.Serialize(writer, properties.JObject);
-        }
-
-        public override bool CanConvert(Type objectType) => typeof(ProvisioningTwinProperties).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            return new ProvisioningTwinProperties(JToken.ReadFrom(reader) as JObject);
         }
     }
 }

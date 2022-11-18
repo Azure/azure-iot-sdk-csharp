@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -29,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The method name to invoke.
         /// </summary>
-        [JsonProperty("methodName", Required = Required.Always)]
+        [JsonPropertyName("methodName", Required = Required.Always)]
         public string MethodName { get; set; }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The JSON payload in JRaw type.
         /// </summary>
-        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
+        [JsonPropertyName("payload", NullValueHandling = NullValueHandling.Include)]
         protected internal JRaw JsonPayload { get; set; }
 
         /// <summary>
@@ -93,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Method timeout, in seconds.
         /// </summary>
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("responseTimeoutInSeconds")]
         internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
             ? (int)ResponseTimeout.Value.TotalSeconds
             : null;
@@ -101,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Connection timeout, in seconds.
         /// </summary>
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("connectTimeoutInSeconds")]
         internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
             ? (int)ConnectionTimeout.Value.TotalSeconds
             : null;

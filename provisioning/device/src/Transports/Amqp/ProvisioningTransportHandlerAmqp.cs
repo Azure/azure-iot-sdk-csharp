@@ -4,12 +4,11 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -247,7 +246,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 }
                 else
                 {
-                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(deviceRegistration)));
                     amqpMessage = AmqpMessage.Create(customContentStream, true);
                 }
 
@@ -271,7 +270,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 string jsonResponse = await streamReader
                     .ReadToEndAsync()
                     .ConfigureAwait(false);
-                RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+                RegistrationOperationStatus status = JsonSerializer.Deserialize<RegistrationOperationStatus>(jsonResponse);
                 status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
                 return status;
             }
@@ -310,7 +309,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             using var streamReader = new StreamReader(amqpResponse.BodyStream);
             string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-            RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+            RegistrationOperationStatus status = JsonSerializer.Deserialize<RegistrationOperationStatus>(jsonResponse);
             status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
 
             return status;
@@ -322,7 +321,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 try
                 {
-                    ProvisioningErrorDetailsAmqp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
+                    ProvisioningErrorDetailsAmqp errorDetails = JsonSerializer.Deserialize<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
                     // status code has an extra 3 trailing digits as a sub-code, so turn this into a standard 3 digit status code
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode == 429;

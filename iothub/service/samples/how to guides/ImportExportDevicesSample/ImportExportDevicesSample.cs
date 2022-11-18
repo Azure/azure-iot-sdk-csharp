@@ -8,11 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Samples
                 };
 
                 // Add device to the list as a serialized object.
-                serializedDevices.Add(JsonConvert.SerializeObject(deviceToAdd));
+                serializedDevices.Add(JsonSerializer.Serialize(deviceToAdd));
 
                 // Not real progress as you write the new devices, but will at least show *some* progress.
                 interimProgressCount++;
@@ -395,11 +395,11 @@ namespace Microsoft.Azure.Devices.Samples
             serializedDevices.ForEach(serializedEntity =>
             {
                 // Deserialize back to an ExportImportDevice and change import mode.
-                ExportImportDevice device = JsonConvert.DeserializeObject<ExportImportDevice>(serializedEntity);
+                ExportImportDevice device = JsonSerializer.Deserialize<ExportImportDevice>(serializedEntity);
                 device.ImportMode = ImportMode.Delete;
 
                 // Reserialize the object now that we've updated the property.
-                sb.AppendLine(JsonConvert.SerializeObject(device));
+                sb.AppendLine(JsonSerializer.Serialize(device));
             });
 
             // Step 2: Write the list in memory to the blob.
@@ -424,7 +424,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     try
                     {
-                        Configuration config = JsonConvert.DeserializeObject<Configuration>(serializedConfig);
+                        Configuration config = JsonSerializer.Deserialize<Configuration>(serializedConfig);
                         await hubClient.Configurations.DeleteAsync(config.Id);
                     }
                     catch (Exception ex)
@@ -454,11 +454,11 @@ namespace Microsoft.Azure.Devices.Samples
                 // Deserialize back to an ExportImportDevice and update the import mode property.
                 try
                 {
-                    ExportImportDevice device = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDevice);
+                    ExportImportDevice device = JsonSerializer.Deserialize<ExportImportDevice>(serializedDevice);
                     device.ImportMode = ImportMode.Create;
 
                     // Reserialize the object now that we've updated the property.
-                    sb.AppendLine(JsonConvert.SerializeObject(device));
+                    sb.AppendLine(JsonSerializer.Serialize(device));
                 }
                 catch
                 {
@@ -490,11 +490,11 @@ namespace Microsoft.Azure.Devices.Samples
                 // Deserialize back to an ExportImportDevice and update the import mode property.
                 try
                 {
-                    ImportConfiguration config = JsonConvert.DeserializeObject<ImportConfiguration>(serializedConfig);
+                    ImportConfiguration config = JsonSerializer.Deserialize<ImportConfiguration>(serializedConfig);
                     config.ImportMode = ConfigurationImportMode.CreateOrUpdateIfMatchETag;
 
                     // Reserialize the object now that we've updated the property.
-                    sb.AppendLine(JsonConvert.SerializeObject(config));
+                    sb.AppendLine(JsonSerializer.Serialize(config));
                 }
                 catch
                 {

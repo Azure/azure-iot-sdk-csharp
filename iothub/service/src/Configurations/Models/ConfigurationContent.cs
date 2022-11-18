@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -24,19 +24,19 @@ namespace Microsoft.Azure.Devices
         /// For Edge deployments, this should have a key of <c>"$edgeAgent"</c>.
         /// </para>
         /// </remarks>
-        [JsonProperty(PropertyName = "modulesContent")]
+        [JsonPropertyName("modulesContent")]
         public IDictionary<string, IDictionary<string, object>> ModulesContent { get; set; } = new Dictionary<string, IDictionary<string, object>>();
 
         /// <summary>
         /// The device module configuration content.
         /// </summary>
-        [JsonProperty(PropertyName = "moduleContent")]
+        [JsonPropertyName("moduleContent")]
         public IDictionary<string, object> ModuleContent { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The device configuration content.
         /// </summary>
-        [JsonProperty(PropertyName = "deviceContent")]
+        [JsonPropertyName("deviceContent")]
         public IDictionary<string, object> DeviceContent { get; set; } = new Dictionary<string, object>();
 
         /// <summary>

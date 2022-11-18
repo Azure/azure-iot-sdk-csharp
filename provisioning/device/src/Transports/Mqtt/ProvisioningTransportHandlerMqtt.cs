@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
@@ -16,8 +17,6 @@ using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -222,7 +221,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (provisioningRequest.Payload != null)
             {
                 var registrationRequest = new DeviceRegistration(new JRaw(provisioningRequest.Payload));
-                string requestString = JsonConvert.SerializeObject(registrationRequest);
+                string requestString = JsonSerializer.Serialize(registrationRequest);
                 payload = Encoding.UTF8.GetBytes(requestString);
             }
 
@@ -420,14 +419,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 // The initial provisioning request's response topic is shaped like "$dps/registrations/res/202/?$rid=1&retry-after=3"
                 string jsonString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
-                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonString);
+                RegistrationOperationStatus operation = JsonSerializer.Deserialize<RegistrationOperationStatus>(jsonString);
                 _startProvisioningRequestStatusSource.TrySetResult(operation);
             }
             else
             {
                 // All status polling requests' response topics are shaped like "$dps/registrations/res/200/?$rid=2"
                 string jsonString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
-                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonString);
+                RegistrationOperationStatus operation = JsonSerializer.Deserialize<RegistrationOperationStatus>(jsonString);
 
                 operation.RetryAfter = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(topic, s_defaultOperationPollingInterval);
 

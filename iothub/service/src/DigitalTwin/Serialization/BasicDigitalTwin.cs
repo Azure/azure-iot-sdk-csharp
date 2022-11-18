@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This is present at the root of every digital twin.
         /// </remarks>
-        [JsonProperty("$dtId")]
+        [JsonPropertyName("$dtId")]
         public string Id { get; set; }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This field is present on every digital twin.
         /// </remarks>
-        [JsonProperty("$metadata")]
+        [JsonPropertyName("$metadata")]
         public DigitalTwinMetadata Metadata { get; set; }
 
         /// <summary>

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Unique Id for the job.
         /// </summary>
-        [JsonProperty(PropertyName = "jobId", Required = Required.Default)]
+        [JsonPropertyName("jobId", Required = Required.Default)]
         public string JobId { get; set; }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public TimeSpan MaxExecutionTime { get; set; }
 
-        [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonPropertyName("maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         internal long MaxExecutionTimeInSeconds
         {
             get => (long)MaxExecutionTime.TotalSeconds;
