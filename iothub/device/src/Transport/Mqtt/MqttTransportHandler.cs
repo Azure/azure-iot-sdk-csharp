@@ -324,7 +324,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         };
                     case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                         // Should never happen since the protocol version (3.1.1) is hardcoded
-                        throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", innerException: ex);
+                        throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", ex);
                     case MqttClientConnectResultCode.ServerUnavailable:
                         throw new IotHubClientException("MQTT connection rejected because the server was unavailable", ex)
                         {
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
                         // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
                         // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
-                        throw new IotHubClientException("Failed to open the MQTT connection", innerException: ex);
+                        throw new IotHubClientException("Failed to open the MQTT connection", ex);
                 }
             }
             catch (MqttCommunicationTimedOutException ex)
