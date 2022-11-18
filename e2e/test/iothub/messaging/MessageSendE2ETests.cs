@@ -106,6 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
             amqpTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
+
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);

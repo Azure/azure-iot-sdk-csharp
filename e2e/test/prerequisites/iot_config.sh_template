@@ -17,7 +17,7 @@ export IOTHUB_CONN_STRING_CSHARP=""
 # X509 Certificate 1 thumbprint:
 export IOTHUB_PFX_X509_THUMBPRINT=
 # X509 PFX Base64 encoded Certificate 1 (empty password):
-export IOTHUB_X509_PFX_CERTIFICATE=
+export IOTHUB_X509_DEVICE_PFX_CERTIFICATE=
 
 # ---------- Azure Security Center for IoT - Log Analytics Configuration ----------
 # the iot hub above must be registered to Azure Security Center for IoT security solution
@@ -96,4 +96,4 @@ export DPS_GLOBALDEVICEENDPOINT_INVALIDCERT=
 export PROVISIONING_CONNECTION_STRING_INVALIDCERT=""
 
 # Proxy configuration:
-export IOTHUB_PROXY_SERVER_ADDRESS=""
+export PROXY_SERVER_ADDRESS=""

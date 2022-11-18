@@ -19,6 +19,20 @@ param UserObjectId string {
   }
 }
 
+param HubUnitsCount int {
+  default: 1
+  metadata: {
+    description: 'The number of IoT hub units to be deployed.'
+  }
+}
+
+param OperationInsightsLocation string {
+  default: 'westus2',
+  metadata: {
+    description: 'The location for Microsoft.OperationalInsights/workspaces.'
+  }
+}
+
 param DpsCustomAllocatorRunCsxContent string
 
 param DpsCustomAllocatorProjContent string
@@ -48,6 +62,20 @@ param ConsumerGroupName string {
   default: 'e2e-tests'
   metadata: {
     description: 'The IotHub consumer group name.'
+  }
+}
+
+param UserAssignedManagedIdentityName string {
+  default: '${resourceGroup().name}-user-msi'
+  metadata: {
+    description: 'The name of the user assigned managed identity.'
+  }
+}
+
+param EnableIotHubSecuritySolution bool {
+  default: false
+  metadata: {
+    description: 'Flag to indicate if IoT hub should have security solution enabled.'
   }
 }
 
@@ -131,6 +159,90 @@ resource applicationInsights 'Microsoft.Insights/components@2015-05-01' = {
   location: 'WestUs'
   properties: {
     Application_Type: 'web'
+  }
+}
+
+resource userAssignedManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: UserAssignedManagedIdentityName
+  location: resourceGroup().location
+}
+
+resource iotHub 'Microsoft.Devices/IotHubs@2021-03-03-preview' = {
+  name: HubName
+  location: resourceGroup().location
+  identity: {
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedManagedIdentity.id}' : {}
+    }
+  }
+  properties: {
+    eventHubEndpoints: {
+      events: {
+        retentionTimeInDays: 1
+        partitionCount: 4
+      }
+    }
+    cloudToDevice: {
+      defaultTtlAsIso8601: 'PT1H'
+      maxDeliveryCount: 100
+      feedback: {
+        ttlAsIso8601: 'PT1H'
+        lockDurationAsIso8601: 'PT5S'
+        maxDeliveryCount: 100
+      }
+    }
+    messagingEndpoints: {
+      fileNotifications: {
+        ttlAsIso8601: 'PT1H'
+        lockDurationAsIso8601: 'PT5S'
+        maxDeliveryCount: 100
+      }
+    }
+    StorageEndPoints: {
+      '$default': {
+        sasTtlAsIso8601: 'PT1H'
+        connectionString: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value}'
+        containerName: ContainerName
+      }
+    }
+    enableFileUploadNotifications: true
+  }
+  sku: {
+    name: 'S1'
+    tier: 'Standard'
+    capacity: HubUnitsCount
+  }
+  dependsOn: [
+    container
+  ]
+}
+
+resource operationalInsightsWorkspaces 'Microsoft.OperationalInsights/workspaces@2017-03-15-preview' = if (EnableIotHubSecuritySolution) {
+  name: OperationalInsightsName
+  location: OperationInsightsLocation
+  properties: {
+  }
+}
+
+resource iotSecuritySolution 'Microsoft.Security/IoTSecuritySolutions@2019-08-01' = if (EnableIotHubSecuritySolution) {
+  name: SecuritySolutionName
+  location: resourceGroup().location
+  properties: {
+    workspace: operationalInsightsWorkspaces.id
+    status: 'Enabled'
+    export: [
+      'RawEvents'
+    ]
+    disabledDataSources: [
+    ]
+    displayName: SecuritySolutionName
+    iotHubs: [
+      iotHub.id
+    ]
+    recommendationsConfiguration: [
+    ]
+    unmaskedIpLoggingStatus: 'Enabled'
   }
 }
 
@@ -417,7 +529,7 @@ output farHubConnectionString string = 'HostName=${FarHubName}.azure-devices.net
 output dpsName string = DpsName
 output dpsConnectionString string = 'HostName=${DpsName}.azure-devices-provisioning.net;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=${listkeys(dpsKeysId, '2017-11-15').primaryKey}'
 output storageAccountConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${StorageAccountName}AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value};EndpointSuffix=core.windows.net'
-output workspaceId string = '${reference(operationalInsightsWorkspaces.id, '2017-03-15-preview').customerId}'
+output workspaceId string = (EnableIotHubSecuritySolution) ? '${reference(operationalInsightsWorkspaces.id, '2017-03-15-preview').customerId}' : ''
 output customAllocationPolicyWebhook string = 'https://${WebsiteName}.azurewebsites.net/api/${DpsCustomAllocatorFunctionName}?code=${listkeys(functionKeysId, '2019-08-01').default}'
 output keyVaultName string = KeyVaultName
 output instrumentationKey string = reference(applicationInsights.id, '2015-05-01').InstrumentationKey

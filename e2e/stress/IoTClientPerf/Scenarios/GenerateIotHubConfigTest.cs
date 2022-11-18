@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         // Pattern: <NamePrefix>_<auth>_id
         // - SAS key devices generated will have the same key as the device specified in the IOTHUB_DEVICE_CONN_STRING/IOTHUB_DEVICE_CONN_STRING2.
-        // - X509 key devices generated will have the same certificate as specified in IOTHUB_X509_PFX_CERTIFICATE
+        // - X509 key devices generated will have the same certificate as specified in IOTHUB_X509_DEVICE_PFX_CERTIFICATE
         private static StreamWriter s_outputFile = new StreamWriter("devices.txt");
         private static SemaphoreSlim s_semaphore = new SemaphoreSlim(1);
 

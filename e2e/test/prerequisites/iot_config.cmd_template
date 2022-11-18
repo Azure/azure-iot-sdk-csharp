@@ -16,7 +16,7 @@ set IOTHUB_CONN_STRING_CSHARP=
 @REM X509 Certificate 1 thumbprint:
 set IOTHUB_PFX_X509_THUMBPRINT=
 @REM X509 PFX Base64 encoded Certificate 1 (empty password):
-set IOTHUB_X509_PFX_CERTIFICATE=
+set IOTHUB_X509_DEVICE_PFX_CERTIFICATE=
 
 @REM ---------- Azure Security Center For IoT - Log Analytics Configuration ----------
 @REM the iot hub above must be registered to Azure Security Center for IoT security solution
@@ -97,6 +97,6 @@ set DPS_GLOBALDEVICEENDPOINT_INVALIDCERT=
 set PROVISIONING_CONNECTION_STRING_INVALIDCERT=
 
 @REM Proxy configuration:
-set IOTHUB_PROXY_SERVER_ADDRESS=
+set PROXY_SERVER_ADDRESS=
 
 exit /B 0
