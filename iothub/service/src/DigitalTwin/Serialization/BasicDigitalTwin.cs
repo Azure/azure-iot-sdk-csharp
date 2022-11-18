@@ -39,15 +39,5 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         [JsonExtensionData]
         public IDictionary<string, object> CustomProperties { get; set; } = new Dictionary<string, object>();
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeCustomProperties()
-        {
-            return CustomProperties != null && CustomProperties.Any();
-        }
     }
 }

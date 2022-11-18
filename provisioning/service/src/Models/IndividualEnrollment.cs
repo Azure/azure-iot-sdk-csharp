@@ -213,24 +213,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonPropertyName("iotHubs")]
         public IList<string> IotHubs { get; set; } = new List<string>();
-
-        /// <summary>
-        /// Convert this object in a pretty print format.
-        /// </summary>
-        /// <returns>The string with the content of this class in a pretty print format.</returns>
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this, Formatting.Indented);
-        }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeIotHubs()
-        {
-            return IotHubs != null && IotHubs.Any();
-        }
     }
 }

@@ -172,35 +172,5 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         [JsonPropertyName(NullValueHandling = NullValueHandling.Ignore)]
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeTags()
-        {
-            return Tags != null && Tags.Count > 0;
-        }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeConfigurations()
-        {
-            return Configurations != null && Configurations.Any();
-        }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeParentScopes()
-        {
-            return ParentScopes != null && ParentScopes.Any();
-        }
     }
 }
