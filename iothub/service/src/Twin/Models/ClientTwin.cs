@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="twinProperties">Properties of the twin.</param>
-        public ClientTwin(ClientTwinDocument twinProperties)
+        public ClientTwin(ClientTwinProperties twinProperties)
         {
             Properties = twinProperties ?? new();
         }
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices
         /// Gets and sets the twin properties.
         /// </summary>
         [JsonPropertyName("properties")]
-        public ClientTwinDocument Properties { get; set; } = new();
+        public ClientTwinProperties Properties { get; set; } = new();
 
         /// <summary>
         /// Gets the twin configuration properties.
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices
         public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; } = new Dictionary<string, ConfigurationInfo>();
 
         /// <summary>
-        /// Gets the twin capabilities.
+        /// Gets the device or module's capabilities.
         /// </summary>
         /// <remarks>
         /// Twin capabilities are read only.
@@ -106,7 +106,6 @@ namespace Microsoft.Azure.Devices
         /// Gets the corresponding device's status.
         /// </summary>
         [JsonPropertyName("status")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ClientStatus? Status { get; internal set; }
 
         /// <summary>
@@ -119,16 +118,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Time when the corresponding device's status was last updated.
         /// </summary>
-        [DefaultValue(null)]
         [JsonPropertyName("statusUpdatedTime")]
         public DateTimeOffset? StatusUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Corresponding device's connection state.
         /// </summary>
-        [DefaultValue(null)]
         [JsonPropertyName("connectionState")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ClientConnectionState? ConnectionState { get; internal set; }
 
         /// <summary>
@@ -141,7 +137,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Number of messages sent to the corresponding device from the cloud.
         /// </summary>
-        [DefaultValue(null)]
         [JsonPropertyName("cloudtoDeviceMessageCount")]
         public int? CloudToDeviceMessageCount { get; internal set; }
 
@@ -149,7 +144,6 @@ namespace Microsoft.Azure.Devices
         /// Corresponding device's authentication type.
         /// </summary>
         [JsonPropertyName("authenticationType")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ClientAuthenticationType? AuthenticationType { get; internal set; }
 
         /// <summary>
@@ -165,7 +159,6 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [DefaultValue(null)]
         [JsonPropertyName("deviceScope")]
         public string DeviceScope { get; internal set; }
 
@@ -175,7 +168,6 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [DefaultValue(null)]
         [JsonPropertyName("parentScopes")]
         public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
     }

@@ -352,19 +352,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     // The response here is deserialized into an SDK-defined type based on service-defined System.Text.Json-based json property name.
                     // For this reason, we use System.Text.Json serializer for this deserialization.
-                    TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(body);
+                    TwinProperties clientTwinProperties = JsonSerializer.Deserialize<TwinProperties>(body);
+                    clientTwinProperties.Desired.PayloadConvention = _payloadConvention;
+                    clientTwinProperties.Reported.PayloadConvention = _payloadConvention;
 
-                    var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
-                    {
-                        PayloadConvention = _payloadConvention,
-                    };
-
-                    var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true)
-                    {
-                        PayloadConvention = _payloadConvention,
-                    };
-
-                    return new TwinProperties(twinDesiredProperties, twinReportedProperties);
+                    return clientTwinProperties;
                 }
                 catch (JsonException ex)
                 {
@@ -455,16 +447,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (correlationId == null)
             {
                 // This is desired property updates, so call the callback with DesiredPropertyCollection.
-                using var reader = new StreamReader(responseFromService.BodyStream, _payloadConvention.PayloadEncoder.ContentEncoding);
+                using var reader = new StreamReader(responseFromService.BodyStream, DefaultPayloadConvention.Instance.PayloadEncoder.ContentEncoding);
                 string responseBody = reader.ReadToEnd();
 
-                Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(responseBody);
-                var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
-                {
-                    PayloadConvention = _payloadConvention,
-                };
+                DesiredProperties propertyCollection = DefaultPayloadConvention.Instance.PayloadSerializer.DeserializeToType<DesiredProperties>(responseBody);
+                propertyCollection.PayloadConvention = _payloadConvention;
 
-                _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
+                _onDesiredStatePatchListener.Invoke(propertyCollection);
             }
             else
             {

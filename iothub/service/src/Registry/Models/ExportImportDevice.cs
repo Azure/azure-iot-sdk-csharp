@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
             /// desired porperty values are JSON objects, up-to 4KB in length.
             /// </remarks>
             [JsonPropertyName("desired")]
-            public ClientTwinProperties DesiredProperties { get; set; }
+            public ClientTwinPropertyCollection DesiredProperties { get; set; }
 
             /// <summary>
             /// The collection of reported property key-value pairs.
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices
             /// reported property values are JSON objects, up-to 4KB in length.
             /// </remarks>
             [JsonPropertyName("reported")]
-            public ClientTwinProperties ReportedProperties { get; set; }
+            public ClientTwinPropertyCollection ReportedProperties { get; set; }
         }
 
         /// <summary>

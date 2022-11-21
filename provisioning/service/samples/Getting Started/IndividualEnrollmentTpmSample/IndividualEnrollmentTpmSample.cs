@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly string _deviceId;
 
         private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
-        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityEnabled = new() { IsIotEdge = true };
-        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityDisabled = new() { IsIotEdge = false };
+        private readonly ProvisioningTwinCapabilities _optionalEdgeCapabilityEnabled = new() { IsIotEdge = true };
+        private readonly ProvisioningTwinCapabilities _optionalEdgeCapabilityDisabled = new() { IsIotEdge = false };
 
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
@@ -67,26 +67,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 DeviceId = _deviceId,
                 ProvisioningStatus = OptionalProvisioningStatus,
                 Capabilities = _optionalEdgeCapabilityEnabled,
-                InitialTwinState = new ProvisioningTwinState(
-                    tags: null,
-                    desiredProperties: new ProvisioningTwinProperties
+                InitialTwinState = new InitialTwinState
+                {
+                    Properties =
                     {
-                        ["Brand"] = "Contoso",
-                        ["Model"] = "SSC4",
-                        ["Color"] = "White",
-                    })
+                        Desired =
+                        {
+                            { "Brand", "Contoso" },
+                            { "Model", "SSC4" },
+                            { "Color", "White" },
+                        },
+                    },
+                },
             };
 
-            IndividualEnrollment individualEnrollmentResult =
-                await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
+            IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
             Console.WriteLine($"Successfully created the individual enrollment '{individualEnrollmentResult.RegistrationId}'.");
         }
 
         public async Task<IndividualEnrollment> GetIndividualEnrollmentInfoAsync()
         {
             Console.WriteLine("Getting the individualEnrollment information...");
-            IndividualEnrollment getResult =
-                await _provisioningServiceClient.IndividualEnrollments.GetAsync(_registrationId);
+            IndividualEnrollment getResult = await _provisioningServiceClient.IndividualEnrollments.GetAsync(_registrationId);
 
             return getResult;
         }
@@ -96,7 +98,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             IndividualEnrollment individualEnrollment = await GetIndividualEnrollmentInfoAsync();
             Console.WriteLine($"Initial device twin state is {individualEnrollment.InitialTwinState}.");
             Console.WriteLine($"IoT Edge device set to '{individualEnrollment.Capabilities.IsIotEdge}'.");
-            individualEnrollment.InitialTwinState.DesiredProperties["Color"] = "Yellow";
+            individualEnrollment.InitialTwinState.Properties.Desired["Color"] = "Yellow";
             individualEnrollment.Capabilities = _optionalEdgeCapabilityDisabled;
 
             Console.WriteLine($"Updating desired properties and capabilities of the individual enrollment '{individualEnrollment.RegistrationId}'...");

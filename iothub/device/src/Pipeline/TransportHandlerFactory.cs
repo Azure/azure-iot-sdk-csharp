@@ -13,21 +13,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             IotHubClientTransportSettings transportSettings = context.IotHubClientTransportSettings;
 
-            if (transportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
+            return transportSettings switch
             {
-                return new AmqpTransportHandler(
+                IotHubClientAmqpSettings iotHubClientAmqpSettings => new AmqpTransportHandler(
                     context,
-                    iotHubClientAmqpSettings);
-            }
+                    iotHubClientAmqpSettings),
 
-            if (transportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
-            {
-                return new MqttTransportHandler(
+                IotHubClientMqttSettings iotHubClientMqttSettings => new MqttTransportHandler(
                     context,
-                    iotHubClientMqttSettings);
-            }
+                    iotHubClientMqttSettings),
 
-            throw new InvalidOperationException($"Unsupported transport setting {context.IotHubClientTransportSettings.GetType()}");
+                _ => throw new InvalidOperationException($"Unsupported transport setting {context.IotHubClientTransportSettings.GetType()}")
+            };
         }
     }
 }

@@ -64,12 +64,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
 
-            if (NextHandler == null)
-            {
-                throw new InvalidOperationException();
-            }
-
-            return NextHandler.WaitForTransportClosedAsync();
+            return NextHandler == null
+                ? throw new InvalidOperationException()
+                : NextHandler.WaitForTransportClosedAsync();
         }
 
         public virtual Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
