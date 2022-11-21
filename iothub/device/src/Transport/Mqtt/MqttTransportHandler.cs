@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _mqttClient = mqttFactory.CreateMqttClient();
             _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
-            _hostName = context.IotHubConnectionCredentials.IotHubHostName;
+            _hostName = context.IotHubConnectionCredentials.HostName;
             _connectionCredentials = context.IotHubConnectionCredentials;
 
             if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
@@ -217,12 +217,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             var tlsParameters = new MqttClientOptionsBuilderTlsParameters();
-
             List<X509Certificate> certs = _connectionCredentials.ClientCertificate == null
                 ? new List<X509Certificate>(0)
                 : new List<X509Certificate> { _connectionCredentials.ClientCertificate };
 
             tlsParameters.Certificates = certs;
+            tlsParameters.IgnoreCertificateRevocationErrors = !settings.CertificateRevocationCheck;
 
             if (_mqttTransportSettings?.RemoteCertificateValidationCallback != null)
             {
