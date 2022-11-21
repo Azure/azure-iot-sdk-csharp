@@ -488,16 +488,16 @@ jobs:
     steps:
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 7.0'
-        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           packageType: sdk
           version: 7.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
-          
+
       - script: |
-          rem Run dotnet first experience.
-          dotnet new
+          rem List installed .NET SDK versions
+          dotnet --list-sdks
+
           rem Start build
           build.cmd -clean -build -configuration Debug -package
 
