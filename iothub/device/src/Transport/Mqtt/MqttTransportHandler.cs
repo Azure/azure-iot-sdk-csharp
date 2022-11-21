@@ -217,14 +217,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             var tlsParameters = new MqttClientOptionsBuilderTlsParameters();
-            if (_connectionCredentials.ClientCertificate != null)
-            {
-                tlsParameters.Certificates = new List<X509Certificate> { _connectionCredentials.ClientCertificate };
-            }
-            else
-            {
-                tlsParameters.IgnoreCertificateRevocationErrors = true;
-            }
+            List<X509Certificate> certs = _connectionCredentials.ClientCertificate == null
+                ? new List<X509Certificate>(0)
+                : new List<X509Certificate> { _connectionCredentials.ClientCertificate };
+
+            tlsParameters.Certificates = certs;
+            tlsParameters.IgnoreCertificateRevocationErrors = !settings.CertificateRevocationCheck;
 
             if (_mqttTransportSettings?.RemoteCertificateValidationCallback != null)
             {
@@ -1110,12 +1108,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _ = _twinResponseTimeouts
                 .Where(x => DateTimeOffset.UtcNow - x.Value > s_twinResponseTimeout)
                 .Select(x =>
-                {
-                    _getTwinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<GetTwinResponse> _);
-                    _reportedPropertyUpdateResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<PatchTwinResponse> _);
-                    _twinResponseTimeouts.TryRemove(x.Key, out DateTimeOffset _);
-                    return true;
-                });
+                    {
+                        _getTwinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<GetTwinResponse> _);
+                        _reportedPropertyUpdateResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<PatchTwinResponse> _);
+                        _twinResponseTimeouts.TryRemove(x.Key, out DateTimeOffset _);
+                        return true;
+                    });
         }
 
         private static void PopulateMessagePropertiesFromMqttMessage(IncomingMessage message, MqttApplicationMessage mqttMessage)
