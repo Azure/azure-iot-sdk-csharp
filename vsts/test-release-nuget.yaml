@@ -11,28 +11,28 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 7.0:
+          FRAMEWORK: net7.0
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
 
     condition: succeeded()
     pool:
       vmImage: ubuntu-20.04
     steps:
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 6.0'
+        displayName: 'Use .NET SDK 7.0'
         inputs:
           packageType: sdk
-          version: 6.x
+          version: 7.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
+        displayName: 'Use .NET SDK 6.0'
         inputs:
           packageType: sdk
-          version: 3.1.x
+          version: 6.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -137,28 +137,28 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 7.0:
+          FRAMEWORK: net7.0
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
 
     condition: succeeded()
     pool:
       vmImage: windows-2022
     steps:
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 6.0'
+        displayName: 'Use .NET SDK 7.0'
         inputs:
           packageType: sdk
-          version: 6.x
+          version: 7.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
+        displayName: 'Use .NET SDK 6.0'
         inputs:
           packageType: sdk
-          version: 3.1.x
+          version: 6.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 

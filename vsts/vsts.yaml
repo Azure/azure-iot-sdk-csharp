@@ -12,14 +12,14 @@ parameters:
   type: number
   default: 120
 - name: testTargets
-  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net6.0, netcore3.1) are aggregates of the remaining values.
+  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net7.0, net6.0) are aggregates of the remaining values.
   type: string
   values:
     - default
     - all
     - min-matrix
+    - net7.0
     - net6.0
-    - netcore3.1
   default: default
 
 variables:
@@ -36,8 +36,8 @@ variables:
     minMatrix: ${{ or(eq(parameters['testTargets'], 'min-matrix'), eq(variables['allTestTargets'], 'True')) }}
 
 # The minimum matrix build/test targets.
+  testNet70: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net7.0')) }}
   testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
-  testNetcore31: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
 
 # The remaining build/test targets.
   # Add remaining targets in here
@@ -66,13 +66,14 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
+        .NET 7.0:
+          FRAMEWORK: net7.0
+          # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
+          SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
         .NET 6.0:
           FRAMEWORK: net6.0
           # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET CoreApp 3.1:
-          FRAMEWORK: netcoreapp3.1
-          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -94,6 +95,15 @@ jobs:
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
       - task: UseDotNet@2
+        displayName: 'Use .NET SDK 7.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+         packageType: sdk
+         version: 7.x
+         performMultiLevelLookup: true
+         installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
         # Linux requires .NET 6.0 install for tests to run, no matter which framework target is being tested
         condition: always()
@@ -102,15 +112,6 @@ jobs:
          version: 6.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: Docker@2
         displayName: "Login to ACR"
@@ -333,12 +334,12 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
+        .NET 7.0:
+          FRAMEWORK: net7.0
+          SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET CoreApp 3.1:
-          FRAMEWORK: netcoreapp3.1
-          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -358,20 +359,20 @@ jobs:
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
 
       - task: UseDotNet@2
+        displayName: 'Use .NET SDK 7.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 7.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           packageType: sdk
           version: 6.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          packageType: sdk
-          version: 3.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -485,6 +486,15 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 7.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 7.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+          
       - script: |
           rem Run dotnet first experience.
           dotnet new

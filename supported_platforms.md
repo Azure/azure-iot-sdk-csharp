@@ -18,8 +18,8 @@ Note that, while we only directly test on Windows 10, we do support other Window
 Nightly test platform details:
 
 .NET versions tested on
-- .NET 5.0
-- .NET Core 3.1
+- .NET 7.0
+- .NET 6.0
 
 
 Default locale: en_US, platform encoding: Cp1252
@@ -33,8 +33,8 @@ Note that, while we only directly test on Ubuntu 20.04, we do generally support 
 Nightly test platform details:
 
 .NET versions tested on:
-- .NET 5.0
-- .NET Core 3.1
+- .NET 7.0
+- .NET 6.0
 
 Default locale: en_US, platform encoding: UTF-8
 

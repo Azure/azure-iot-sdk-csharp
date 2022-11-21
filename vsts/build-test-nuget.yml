@@ -52,10 +52,10 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 10
       matrix:
+        .Net 7.0:
+          FRAMEWORK: net7.0
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
@@ -84,18 +84,18 @@ jobs:
             gci -Path $(Build.SourcesDirectory)/bin/nuget -Recurse -Force
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 6.x'
+        displayName: 'Use .NET SDK 7.x'
         inputs:
           packageType: sdk
-          version: 6.x
+          version: 7.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
 
       - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.x'
+        displayName: 'Use .NET SDK 6.x'
         inputs:
           packageType: sdk
-          version: 3.1.x
+          version: 6.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
 
@@ -183,10 +183,10 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 10
       matrix:
+        .Net 7.0:
+          FRAMEWORK: net7.0
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
@@ -214,18 +214,18 @@ jobs:
             ls -alR $(Build.SourcesDirectory)/bin/nuget
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 6.x'
+        displayName: 'Use .NET SDK 7.x'
         inputs:
           packageType: sdk
-          version: 6.x
+          version: 7.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
 
       - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.x'
+        displayName: 'Use .NET SDK 6.x'
         inputs:
           packageType: sdk
-          version: 3.1.x
+          version: 6.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
   
