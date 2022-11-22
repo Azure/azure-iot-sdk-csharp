@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Specifies the initial desired properties on a twin.
         /// </summary>
         [JsonIgnore]
+        // This is here to flatten the hierarchy to make it simpler for users. The API needn't be as clumsy to use as the JSON hierachy is.
         public InitialTwinPropertyCollection DesiredProperties
         {
             get => Properties.Desired;
@@ -22,7 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Getter and setter the desired properties.
+        /// For the JSON payload, this node is called "properties" with a single child of "desired".
         /// </summary>
         [JsonPropertyName("properties")]
         internal InitialTwinProperties Properties { get; set; } = new();
