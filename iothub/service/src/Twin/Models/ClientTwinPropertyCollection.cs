@@ -96,7 +96,16 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <inheritdoc />
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        public IEnumerator GetEnumerator()
+        {
+            foreach (KeyValuePair<string, object> kvp in Properties)
+            {
+                yield return new KeyValuePair<string, dynamic>(kvp.Key, this[kvp.Key]);
+            }
+        }
+
+        /// <inheritdoc />
+        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
         {
             foreach (KeyValuePair<string, object> kvp in Properties)
             {
