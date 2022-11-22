@@ -12,16 +12,15 @@ parameters:
   type: number
   default: 120
 - name: testTargets
-  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net6.0, netcore3.1) are aggregates of the remaining values.
+  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net7.0, net6.0) are aggregates of the remaining values.
   type: string
   values:
     - default
     - all
     - min-matrix
+    - net7.0
     - net6.0
-    - net5.0
     - netcore3.1
-    - netcore2.1
     - net4.7.2
   default: default
 
@@ -39,12 +38,11 @@ variables:
     minMatrix: ${{ or(eq(parameters['testTargets'], 'min-matrix'), eq(variables['allTestTargets'], 'True')) }}
 
 # The minimum matrix build/test targets.
+  testNet70: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net7.0')) }}
   testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
-  testNetcore31: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
 
 # The remaining build/test targets.
-  testNet50: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net5.0')) }}
-  testNetcore21: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore2.1')) }}
+  testNetcore31: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
   testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
 
 trigger:
@@ -71,19 +69,16 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
+        # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
+        .NET 7.0:
+          FRAMEWORK: net7.0
+          SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
         .NET 6.0:
           FRAMEWORK: net6.0
-          # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 5.0:
-          FRAMEWORK: net5.0
-          SHOULD_RUN: ${{ eq(variables['testNet50'], 'True') }}
         .NET CoreApp 3.1:
           FRAMEWORK: netcoreapp3.1
           SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
-        .NET CoreApp 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
-          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -99,14 +94,21 @@ jobs:
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
+            Write-Host "testNet70: ${{ variables.testNet70 }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNet50: ${{ variables.testNet50 }}"
-            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
-            Write-Host "testNet451: ${{ variables.testNet451 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 7.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+         packageType: sdk
+         version: 7.x
+         performMultiLevelLookup: true
+         installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
@@ -119,29 +121,11 @@ jobs:
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          packageType: sdk
-          version: 5.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 3.1'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           packageType: sdk
           version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          packageType: sdk
-          version: 2.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -366,18 +350,15 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
+        .NET 7.0:
+          FRAMEWORK: net7.0
+          SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 5.0:
-          FRAMEWORK: net5.0
-          SHOULD_RUN: ${{ eq(variables['testNet50'], 'True') }}
         .NET CoreApp 3.1:
           FRAMEWORK: netcoreapp3.1
           SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
-        .NET CoreApp 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
-          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
         .NET 4.7.2:
           FRAMEWORK: net472
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
@@ -396,11 +377,19 @@ jobs:
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
+            Write-Host "testNet70: ${{ variables.testNet70 }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNet50: ${{ variables.testNet50 }}"
-            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 7.0'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 7.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
@@ -412,15 +401,6 @@ jobs:
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          packageType: sdk
-          version: 5.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 3.1'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
@@ -428,19 +408,6 @@ jobs:
           version: 3.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: CmdLine@2
-        displayName: 'Install .NET Core 2.1'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          script: 'choco install dotnetcore-2.1-sdk'
-
-      - ${{ if eq(variables['testNet472'], 'True') }}:
-        - task: CmdLine@2
-          displayName: 'Install .NET 4.7.2'
-          condition: eq(variables.SHOULD_RUN, 'True')
-          inputs:
-            script: 'choco install netfx-4.7.2-devpack'
 
       - script: |
           choco install -y squid
@@ -552,9 +519,18 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 7.0'
+        inputs:
+          packageType: sdk
+          version: 7.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - script: |
-          rem Run dotnet first experience.
-          dotnet new
+          rem List installed .NET SDK versions
+          dotnet --list-sdks
+
           rem Start build
           build.cmd -clean -build -configuration Debug -package
 
