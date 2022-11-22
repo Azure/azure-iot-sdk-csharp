@@ -1,24 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// The collection of twin properties.
+    /// Represents a collection of properties for device twin.
     /// </summary>
-    public abstract class PropertyCollection : IEnumerable<KeyValuePair<string, object>>
+    public sealed class InitialTwinPropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {
         /// <summary>
         /// The version of the client twin properties.
         /// </summary>
         /// <value>A <see cref="long"/> that is used to identify the version of the client twin properties.</value>
         [JsonPropertyName("$version")]
-        public long Version { get; protected internal set; }
+        public long Version { get; internal set; }
 
         [JsonExtensionData]
         internal IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
@@ -27,11 +28,6 @@ namespace Microsoft.Azure.Devices.Client
         /// The count of properties in the collection.
         /// </summary>
         public int Count => Properties.Count;
-
-        /// <summary>
-        /// The payload convention that defines a specific serializer as well as a specific content encoding for the payload.
-        /// </summary>
-        protected internal PayloadConvention PayloadConvention { get; set; }
 
         /// <summary>
         /// Gets the value associated with the <paramref name="propertyName"/> in the reported property collection.
@@ -60,9 +56,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    propertyValue = PayloadConvention
-                        .PayloadSerializer
-                        .DeserializeToType<T>(jsonElementValue.GetRawText());
+                    propertyValue = JsonSerializer.Deserialize<T>(jsonElementValue.GetRawText());
                     return true;
                 }
                 catch (JsonException)
@@ -74,11 +68,25 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The client twin properties, as a serialized string.
+        /// Gets or sets the value associated with the specified key.
         /// </summary>
-        public string GetSerializedString()
+        /// <param name="propertyKey"> The key of the value to get or set. </param>
+        public object this[string propertyKey]
         {
-            return PayloadConvention.PayloadSerializer.SerializeToString(Properties);
+            get => Properties[propertyKey];
+            set => Add(propertyKey, value);
+        }
+
+        /// <summary>
+        /// Adds the values to the collection.
+        /// </summary>
+        /// <param name="propertyKey">The key of the property to add.</param>
+        /// <param name="propertyValue">The value of the property to add.</param>
+        /// <exception cref="ArgumentException"><paramref name="propertyKey"/> already exists in the collection.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyKey"/> is <c>null</c>.</exception>
+        public void Add(string propertyKey, object propertyValue)
+        {
+            Properties.Add(propertyKey, propertyValue);
         }
 
         /// <inheritdoc/>
@@ -94,11 +102,6 @@ namespace Microsoft.Azure.Devices.Client
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        internal byte[] GetObjectBytes()
-        {
-            return PayloadConvention.GetObjectBytes(Properties);
         }
     }
 }

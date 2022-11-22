@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Details of the configuration.
     /// </summary>
-    public class ConfigurationInfo
+    public sealed class ConfigurationInfo
     {
         /// <summary>
         /// Configuration status.
