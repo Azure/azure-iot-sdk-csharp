@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Status of capabilities enabled on the device.
     /// </summary>
-    public class ClientCapabilities
+    public sealed class ClientCapabilities
     {
         /// <summary>
         /// Indicates if the device is an IoT Edge device.

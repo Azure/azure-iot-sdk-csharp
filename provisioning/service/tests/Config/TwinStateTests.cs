@@ -17,12 +17,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             { "ConsumeUnity", "MPG" },
         };
 
-        private readonly ProvisioningTwinProperties _sampleDesiredProperties = new()
+        private readonly InitialTwinPropertyCollection _sampleDesiredProperties = new()
         {
-            ["Brand"] = "NiceCar",
-            ["Model"] = "SNC4",
-            ["MaxSpeed"] = 200,
-            ["MaxConsume"] = 15
+            Properties =
+            {
+                ["Brand"] = "NiceCar",
+                ["Model"] = "SNC4",
+                ["MaxSpeed"] = 200,
+                ["MaxConsume"] = 15,
+            }
         };
 
         private const string OnlyTagsInitialTwinJSON =
@@ -66,14 +69,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             Dictionary<string, object> tags = null;
-            ProvisioningTwinProperties desiredProperties = null;
+            InitialTwinPropertyCollection desiredProperties = null;
 
             // act
-            var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
+            var initialTwin = new InitialTwinState
+            {
+                Tags = tags,
+                Properties =
+                {
+                    Desired = desiredProperties,
+                },
+            };
 
             // assert
             Assert.IsNull(initialTwin.Tags);
-            Assert.IsNull(initialTwin.DesiredProperties);
+            Assert.IsNull(initialTwin.Properties.Desired);
         }
 
         [TestMethod]
@@ -81,14 +91,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             Dictionary<string, object> tags = _sampleTags;
-            ProvisioningTwinProperties desiredProperties = null;
+            InitialTwinPropertyCollection desiredProperties = null;
 
             // act
-            var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
+            var initialTwin = new InitialTwinState
+            {
+                Tags = tags,
+                Properties =
+                {
+                    Desired = desiredProperties,
+                },
+            };
 
             // assert
             Assert.AreEqual(tags, initialTwin.Tags);
-            Assert.IsNull(initialTwin.DesiredProperties);
+            Assert.IsNull(initialTwin.Properties.Desired);
         }
 
         [TestMethod]
@@ -96,14 +113,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             Dictionary<string, object> tags = null;
-            ProvisioningTwinProperties desiredProperties = _sampleDesiredProperties;
+            InitialTwinPropertyCollection desiredProperties = _sampleDesiredProperties;
 
             // act
-            var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
+            var initialTwin = new InitialTwinState
+            {
+                Tags = tags,
+                Properties =
+                {
+                    Desired = desiredProperties,
+                },
+            };
 
             // assert
             Assert.IsNull(initialTwin.Tags);
-            Assert.AreEqual(desiredProperties, initialTwin.DesiredProperties);
+            Assert.AreEqual(desiredProperties, initialTwin.Properties.Desired);
         }
 
         [TestMethod]
@@ -111,14 +135,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             Dictionary<string, object> tags = _sampleTags;
-            ProvisioningTwinProperties desiredProperties = _sampleDesiredProperties;
+            InitialTwinPropertyCollection desiredProperties = _sampleDesiredProperties;
 
             // act
-            var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
+            var initialTwin = new InitialTwinState
+            {
+                Tags = tags,
+                Properties =
+                {
+                    Desired = desiredProperties,
+                },
+            };
 
             // assert
             Assert.AreEqual(tags, initialTwin.Tags);
-            Assert.AreEqual(desiredProperties, initialTwin.DesiredProperties);
+            Assert.AreEqual(desiredProperties, initialTwin.Properties.Desired);
         }
 
         [TestMethod]
@@ -126,8 +157,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             Dictionary<string, object> tags = _sampleTags;
-            ProvisioningTwinProperties desiredProperties = null;
-            var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
+            InitialTwinPropertyCollection desiredProperties = null;
+            var initialTwin = new InitialTwinState
+            {
+                Tags = tags,
+                Properties =
+                {
+                    Desired = desiredProperties,
+                },
+            };
 
             // act
             string jsonResult = JsonSerializer.Serialize(initialTwin);
@@ -141,8 +179,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             Dictionary<string, object> tags = null;
-            ProvisioningTwinProperties desiredProperties = _sampleDesiredProperties;
-            var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
+            InitialTwinPropertyCollection desiredProperties = _sampleDesiredProperties;
+            var initialTwin = new InitialTwinState
+            {
+                Tags = tags,
+                Properties =
+                {
+                    Desired = desiredProperties,
+                },
+            };
 
             // act
             string jsonResult = JsonSerializer.Serialize(initialTwin);
@@ -156,8 +201,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             Dictionary<string, object> tags = _sampleTags;
-            ProvisioningTwinProperties desiredProperties = _sampleDesiredProperties;
-            var initialTwin = new ProvisioningTwinState(tags, desiredProperties);
+            InitialTwinPropertyCollection desiredProperties = _sampleDesiredProperties;
+            var initialTwin = new InitialTwinState
+            {
+                Tags = tags,
+                Properties =
+                {
+                    Desired = desiredProperties,
+                },
+            };
 
             // act
             string jsonResult = JsonSerializer.Serialize(initialTwin);
@@ -170,7 +222,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TwinStateSucceedOnFromJson()
         {
             // act
-            ProvisioningTwinState initialTwin = JsonSerializer.Deserialize<ProvisioningTwinState>(FullInitialTwinJSON);
+            InitialTwinState initialTwin = JsonSerializer.Deserialize<InitialTwinState>(FullInitialTwinJSON);
 
             // assert
             TestAssert.AreEqualJson(FullInitialTwinJSON, JsonSerializer.Serialize(initialTwin));

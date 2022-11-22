@@ -949,14 +949,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
 
-            string patch = _payloadConvention.PayloadEncoder.ContentEncoding.GetString(receivedEventArgs.ApplicationMessage.Payload);
-            Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(patch);
-            var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
-            {
-                PayloadConvention = _payloadConvention,
-            };
+            string patch = DefaultPayloadConvention.Instance.PayloadEncoder.ContentEncoding.GetString(receivedEventArgs.ApplicationMessage.Payload);
+            DesiredProperties propertyCollection = DefaultPayloadConvention.Instance.PayloadSerializer.DeserializeToType<DesiredProperties>(patch);
+            propertyCollection.PayloadConvention = _payloadConvention;
 
-            _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
+            _onDesiredStatePatchListener.Invoke(propertyCollection);
         }
 
         private void HandleTwinResponse(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
@@ -990,26 +987,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
                             // The response is deserialized into an SDK-defined type based on service-defined System.Text.Json-based json property name.
                             // For this reason, we use System.Text.Json serializer for this deserialization.
-                            TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(
-                                _payloadConvention
+                            string payload = DefaultPayloadConvention.Instance
                                 .PayloadEncoder
                                 .ContentEncoding
-                                .GetString(payloadBytes));
-
-                            var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
-                            {
-                                PayloadConvention = _payloadConvention,
-                            };
-
-                            var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true)
-                            {
-                                PayloadConvention = _payloadConvention,
-                            };
+                                .GetString(payloadBytes);
+                            TwinProperties clientTwinProperties = JsonSerializer.Deserialize<TwinProperties>(payload);
+                            clientTwinProperties.Desired.PayloadConvention = _payloadConvention;
+                            clientTwinProperties.Reported.PayloadConvention = _payloadConvention;
 
                             var getTwinResponse = new GetTwinResponse
                             {
                                 Status = status,
-                                Twin = new TwinProperties(twinDesiredProperties, twinReportedProperties),
+                                Twin = clientTwinProperties,
                             };
 
                             getTwinCompletion.TrySetResult(getTwinResponse);

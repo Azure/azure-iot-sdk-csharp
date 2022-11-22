@@ -69,12 +69,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             AttestationMechanism attestation,
             string deviceId,
             string iotHubHostName,
-            ProvisioningTwinState initialTwinState,
+            InitialTwinState initialTwinState,
             ProvisioningStatus? provisioningStatus,
             DateTimeOffset createdOnUtc,
             DateTimeOffset lastUpdatedOnUtc,
             ETag eTag,
-            ProvisioningClientCapabilities capabilities)
+            ProvisioningTwinCapabilities capabilities)
         {
             if (attestation == null)
             {
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Initial twin state.
         /// </summary>
         [JsonPropertyName("initialTwin")]
-        public ProvisioningTwinState InitialTwinState { get; set; }
+        public InitialTwinState InitialTwinState { get; set; }
 
         /// <summary>
         /// The provisioning status.
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Capabilities of the device.
         /// </summary>
         [JsonPropertyName("capabilities")]
-        public ProvisioningClientCapabilities Capabilities { get; set; }
+        public ProvisioningTwinCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The behavior when a device is re-provisioned to an IoT hub.
