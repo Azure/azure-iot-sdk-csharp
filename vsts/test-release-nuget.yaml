@@ -153,8 +153,8 @@ jobs:
           FRAMEWORK: net6.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Framework 4.6.1:
-          FRAMEWORK: net461
+        .Net Framework 4.7.2:
+          FRAMEWORK: net472
 
     condition: succeeded()
     pool:

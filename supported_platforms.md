@@ -21,7 +21,7 @@ Nightly test platform details:
 - .NET 7.0
 - .NET 6.0
 - .NET Core 3.1
-- .NET Framework 4.6.1 (only IoT Hub SDKs)
+- .NET Framework 4.7.2
 
 
 Default locale: en_US, platform encoding: Cp1252

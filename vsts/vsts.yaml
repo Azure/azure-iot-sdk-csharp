@@ -21,7 +21,7 @@ parameters:
     - net7.0
     - net6.0
     - netcore3.1
-    - net4.6.1
+    - net4.7.2
   default: default
 
 variables:
@@ -43,7 +43,7 @@ variables:
 
 # The remaining build/test targets.
   testNetcore31: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
-  testNet461: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.6.1')) }}
+  testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
 
 trigger:
   batch: true
@@ -97,7 +97,7 @@ jobs:
             Write-Host "testNet70: ${{ variables.testNet70 }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNet461: ${{ variables.testNet461 }}"
+            Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
@@ -359,9 +359,9 @@ jobs:
         .NET CoreApp 3.1:
           FRAMEWORK: netcoreapp3.1
           SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
-        .NET 4.6.1:
-          FRAMEWORK: net461
-          SHOULD_RUN: ${{ eq(variables['testNet461'], 'True') }}
+        .NET 4.7.2:
+          FRAMEWORK: net472
+          SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -380,7 +380,7 @@ jobs:
             Write-Host "testNet70: ${{ variables.testNet70 }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNet461: ${{ variables.testNet461 }}"
+            Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 7.0'
