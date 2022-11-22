@@ -12,10 +12,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public sealed class InitialTwinState
     {
         /// <summary>
-        /// Getter and setter the desired properties.
+        /// Specifies the initial desired properties on a twin.
+        /// </summary>
+        [JsonIgnore]
+        // This is here to flatten the hierarchy to make it simpler for users. The API needn't be as clumsy to use as the JSON hierachy is.
+        public InitialTwinPropertyCollection DesiredProperties
+        {
+            get => Properties.Desired;
+            set => Properties.Desired = value;
+        }
+
+        /// <summary>
+        /// For the JSON payload, this node is called "properties" with a single child of "desired".
         /// </summary>
         [JsonPropertyName("properties")]
-        public InitialTwinProperties Properties { get; set; } = new();
+        internal InitialTwinProperties Properties { get; set; } = new();
 
         /// <summary>
         /// Gets and sets the twin tags.

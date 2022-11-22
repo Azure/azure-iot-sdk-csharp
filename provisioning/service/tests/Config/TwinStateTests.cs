@@ -75,15 +75,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new InitialTwinState
             {
                 Tags = tags,
-                Properties =
-                {
-                    Desired = desiredProperties,
-                },
+                DesiredProperties = desiredProperties,
             };
 
             // assert
             Assert.IsNull(initialTwin.Tags);
-            Assert.IsNull(initialTwin.Properties.Desired);
+            Assert.IsNull(initialTwin.DesiredProperties);
         }
 
         [TestMethod]
@@ -97,15 +94,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new InitialTwinState
             {
                 Tags = tags,
-                Properties =
-                {
-                    Desired = desiredProperties,
-                },
+                DesiredProperties = desiredProperties,
             };
 
             // assert
             Assert.AreEqual(tags, initialTwin.Tags);
-            Assert.IsNull(initialTwin.Properties.Desired);
+            Assert.IsNull(initialTwin.DesiredProperties);
         }
 
         [TestMethod]
@@ -119,15 +113,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new InitialTwinState
             {
                 Tags = tags,
-                Properties =
-                {
-                    Desired = desiredProperties,
-                },
+                DesiredProperties = desiredProperties,
             };
 
             // assert
             Assert.IsNull(initialTwin.Tags);
-            Assert.AreEqual(desiredProperties, initialTwin.Properties.Desired);
+            Assert.AreEqual(desiredProperties, initialTwin.DesiredProperties);
         }
 
         [TestMethod]
@@ -141,15 +132,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new InitialTwinState
             {
                 Tags = tags,
-                Properties =
-                {
-                    Desired = desiredProperties,
-                },
+                DesiredProperties = desiredProperties,
             };
 
             // assert
             Assert.AreEqual(tags, initialTwin.Tags);
-            Assert.AreEqual(desiredProperties, initialTwin.Properties.Desired);
+            Assert.AreEqual(desiredProperties, initialTwin.DesiredProperties);
         }
 
         [TestMethod]
@@ -161,10 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new InitialTwinState
             {
                 Tags = tags,
-                Properties =
-                {
-                    Desired = desiredProperties,
-                },
+                DesiredProperties = desiredProperties,
             };
 
             // act
@@ -183,10 +168,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new InitialTwinState
             {
                 Tags = tags,
-                Properties =
-                {
-                    Desired = desiredProperties,
-                },
+                DesiredProperties = desiredProperties,
             };
 
             // act
@@ -205,10 +187,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var initialTwin = new InitialTwinState
             {
                 Tags = tags,
-                Properties =
-                {
-                    Desired = desiredProperties,
-                },
+                DesiredProperties = desiredProperties,
             };
 
             // act
