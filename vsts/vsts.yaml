@@ -120,7 +120,7 @@ jobs:
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-       - task: UseDotNet@2
+      - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 3.1'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
