@@ -30,12 +30,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Primary reference.
         /// </summary>
         [JsonPropertyName("primary")]
-        public string Primary { get; private set; }
+        public string Primary { get; internal set; }
 
         /// <summary>
         /// Secondary reference.
         /// </summary>
         [JsonPropertyName("secondary")]
-        public string Secondary { get; private set; }
+        public string Secondary { get; internal set; }
     }
 }

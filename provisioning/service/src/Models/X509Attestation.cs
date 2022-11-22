@@ -263,7 +263,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new X509Attestation(
                 null,
                 null,
-                new X509CaReferences(primary, secondary));
+                new X509CaReferences
+                {
+                    Primary = primary,
+                    Secondary = secondary,
+                });
         }
 
         /// <summary>
