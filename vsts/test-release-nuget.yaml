@@ -11,40 +11,22 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 7.0:
+          FRAMEWORK: net7.0
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net 5.0:
-          FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
 
     condition: succeeded()
     pool:
       vmImage: ubuntu-20.04
     steps:
       - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
+        displayName: 'Use .NET SDK 7.0'
         inputs:
           packageType: sdk
-          version: 2.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
-        inputs:
-          packageType: sdk
-          version: 5.x
+          version: 7.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -53,6 +35,14 @@ jobs:
         inputs:
           packageType: sdk
           version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -157,14 +147,12 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 7.0:
+          FRAMEWORK: net7.0
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net 5.0:
-          FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
         .Net Framework 4.7.2:
           FRAMEWORK: net472
 
@@ -173,10 +161,18 @@ jobs:
       vmImage: windows-2022
     steps:
       - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
+        displayName: 'Use .NET SDK 7.0'
         inputs:
           packageType: sdk
-          version: 2.1.x
+          version: 7.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -185,14 +181,6 @@ jobs:
         inputs:
           packageType: sdk
           version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
-        inputs:
-          packageType: sdk
-          version: 5.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 

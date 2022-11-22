@@ -15,9 +15,8 @@ This may not be sufficient to run certain samples that require Visual Studio and
 
 ### Windows + .NET Framework
 
-- Install the latest .NET Core from https://dot.net
+- Install the latest .NET from https://dot.net
 - Install .NET Framework 4.7.2 Developer Pack: https://dotnet.microsoft.com/download/dotnet-framework/net472
-- Install .NET Framework 4.5.1 Developer Pack: https://www.microsoft.com/en-us/download/details.aspx?id=40772
 - As admin (one-time setup):
     Enable Powershell script execution on your system. See http://go.microsoft.com/fwlink/?LinkID=135170 for more information.
     `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned`
