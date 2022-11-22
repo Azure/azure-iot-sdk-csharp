@@ -91,5 +91,87 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             settings.ClientWebSocket.Dispose();
         }
+
+        [TestMethod]
+        public void IotHubClientNoRetry()
+        {
+            // arrange
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+
+            options.RetryPolicy = new IotHubClientNoRetry();
+            options.RetryPolicy.Should().BeOfType<IotHubClientNoRetry>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+        }
+
+        [TestMethod]
+        public void IotHubClientIncrementalDelayRetryPolicy()
+        {
+            // arrange
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+
+            options.RetryPolicy = new IotHubClientIncrementalDelayRetryPolicy(0, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(100), false);
+            options.RetryPolicy.Should().BeOfType<IotHubClientIncrementalDelayRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+        }
+
+        [TestMethod]
+        public void IotHubClientFixedDelayRetryPolicy()
+        {
+            // arrange
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+
+            options.RetryPolicy = new IotHubClientFixedDelayRetryPolicy(0, TimeSpan.FromSeconds(1), false);
+            options.RetryPolicy.Should().BeOfType<IotHubClientFixedDelayRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+        }
+
+        [TestMethod]
+        public void IotHubClientCustomRetryPolicy()
+        {
+            // arrange
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+
+            options.RetryPolicy = new CustomRetryPolicy();
+            options.RetryPolicy.Should().BeOfType<CustomRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+        }
+
+        internal class CustomRetryPolicy : IIotHubClientRetryPolicy
+        {
+            public CustomRetryPolicy() { }
+
+            public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay)
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

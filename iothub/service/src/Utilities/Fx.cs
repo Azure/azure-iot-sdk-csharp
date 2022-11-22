@@ -5,12 +5,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 
-namespace Microsoft.Azure.Devices.Common
+namespace Microsoft.Azure.Devices
 {
     internal static class Fx
     {
-        public static bool IsFatal(Exception ex)
+        internal static bool IsFatal(Exception ex)
         {
             while (ex != null)
             {
@@ -52,6 +53,13 @@ namespace Microsoft.Azure.Devices.Common
             }
 
             return false;
+        }
+
+        internal static bool ContainsAuthenticationException(Exception ex)
+        {
+            return ex != null
+                && (ex is AuthenticationException
+                    || ContainsAuthenticationException(ex.InnerException));
         }
     }
 }
