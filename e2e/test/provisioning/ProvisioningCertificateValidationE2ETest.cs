@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -34,18 +35,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
-            using var provisioningServiceClient = new ProvisioningServiceClient(
-                TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
-            Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery(
-                "SELECT * FROM enrollmentGroups");
+            // arrange
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
+            Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups");
 
+            // act
             Func<Task> act = async () => await q.NextAsync();
 
+            // assert
             var error = await act.Should().ThrowAsync<ProvisioningServiceException>().ConfigureAwait(false);
+            error.And.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeFalse();
 #if NET472
-                Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+            error.And.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
 #else
-            Assert.IsInstanceOfType(error.And.InnerException.InnerException, typeof(AuthenticationException));
+            error.And.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
 #endif
         }
 
@@ -53,54 +58,71 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
+            // arrange
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp));
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
+            // act
+            Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
+
+            //assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-            Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
+            // arrange
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp));
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
+            // act
+            Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
+
+            // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-            if (error.And.InnerException == null)
-            {
-                Assert.AreEqual("MQTT Protocol Exception: Channel closed.", error.And.Message);
-            }
-            else
-            {
-                Assert.IsInstanceOfType(error.And.InnerException, typeof(AuthenticationException));
-            }
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
+            // arrange
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
+            // act
+            Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
+
+            // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-            Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
+            // arrange
             var clientOptions = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket));
-            Func<Task> act = async () => await TestInvalidServiceCertificate(clientOptions);
 
+            // act
+            Func<Task> act = async () => await TestInvalidServiceCertificateAsync(clientOptions);
+
+            // assert
             var error = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
-            Assert.IsInstanceOfType(error.And.InnerException.InnerException.InnerException, typeof(AuthenticationException));
+            error.And.ErrorCode.Should().Be(0);
+            error.And.IsTransient.Should().BeFalse();
+            error.And.InnerException.InnerException.InnerException.InnerException.Should().BeOfType<AuthenticationException>();
         }
 
-        private async Task TestInvalidServiceCertificate(ProvisioningClientOptions clientOptions)
+        private static async Task TestInvalidServiceCertificateAsync(ProvisioningClientOptions clientOptions)
         {
             // Shorten the file name to avoid overall file path become too long and cause error in the test
             string certificateSubject = "cert-" + Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace('+', '-').Replace('/', '.').Trim('=');

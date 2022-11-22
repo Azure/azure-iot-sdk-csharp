@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.ResourceLimitExceeded, amqpSymbol))
             {
-                retException = new IotHubClientException(message, IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded, amqpException);
+                retException = new IotHubClientException(message, IotHubClientErrorCode.QuotaExceeded, amqpException);
             }
             else if (Equals(AmqpErrorCode.ResourceLocked, amqpSymbol))
             {
@@ -192,18 +192,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {
-                // Note: The DeviceMaximumQueueDepthExceededException is not supposed to be thrown here as it is being mapped to the incorrect error code
-                // Error code 403004 is only applicable to C2D (Service client); see https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403004-devicemaximumqueuedepthexceeded
-                // Error code 403002 is applicable to D2C (Device client); see https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded
-                // We have opted not to change the exception type thrown here since it will be a breaking change, alternatively, we are adding the correct exception type
-                // as the inner exception.
-                retException = new IotHubClientException(
-                    $"Please check the inner exception for more information.\n " +
-                    $"The correct exception type is `{IotHubClientErrorCode.QuotaExceeded}` " +
-                    $"but since that is a breaking change to the current behavior in the SDK, you can refer to the inner exception " +
-                    $"for more information. Exception message: {message}",
-                    IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded,
-                    new IotHubClientException(message, IotHubClientErrorCode.QuotaExceeded));
+                retException = new IotHubClientException(message, IotHubClientErrorCode.QuotaExceeded);
             }
             else if (error.Condition.Equals(DeviceContainerThrottled))
             {

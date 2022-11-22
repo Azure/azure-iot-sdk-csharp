@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using System.Net.WebSockets;
+using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -196,6 +198,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // If it was the user's cancellation token that requested cancellation, then this catch block
                 // won't execute and the OperationCanceledException will be thrown as expected.
             }
+            catch (AuthenticationException authEx)
+            {
+                throw new ProvisioningClientException(authEx.Message, authEx, false);
+            }
+            catch (WebSocketException webEx)
+            {
+                if (ContainsAuthenticationException(webEx))
+                {
+                    throw new ProvisioningClientException(webEx.Message, webEx, false);
+                }
+                throw new ProvisioningClientException($"AMQP transport exception", webEx, true);
+            }
             catch (Exception ex) when (ex is not ProvisioningClientException)
             {
                 if (Logging.IsEnabled)
@@ -353,6 +367,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         false);
                 }
             }
+        }
+
+        private static bool ContainsAuthenticationException(Exception ex)
+        {
+            while (ex != null)
+            {
+                return ex is AuthenticationException || ContainsAuthenticationException(ex.InnerException);
+            }
+
+            return false;
         }
     }
 }

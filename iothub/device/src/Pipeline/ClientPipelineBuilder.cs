@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Azure.Core;
 using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client

@@ -112,6 +112,7 @@ namespace Microsoft.Azure.Devices.Client
                 ModelId = ModelId,
                 SdkAssignsMessageId = SdkAssignsMessageId,
                 AdditionalUserAgentInfo = AdditionalUserAgentInfo,
+                RetryPolicy = RetryPolicy,
             };
         }
     }
