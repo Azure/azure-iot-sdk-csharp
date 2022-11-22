@@ -20,6 +20,8 @@ parameters:
     - min-matrix
     - net7.0
     - net6.0
+    - netcore3.1
+    - net4.6.1
   default: default
 
 variables:
@@ -40,7 +42,8 @@ variables:
   testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
 
 # The remaining build/test targets.
-  # Add remaining targets in here
+  testNetcore31: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
+  testNet461: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.6.1')) }}
 
 trigger:
   batch: true
@@ -66,14 +69,16 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
+        # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
         .NET 7.0:
           FRAMEWORK: net7.0
-          # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
           SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
         .NET 6.0:
           FRAMEWORK: net6.0
-          # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
+        .NET CoreApp 3.1:
+          FRAMEWORK: netcoreapp3.1
+          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -89,8 +94,10 @@ jobs:
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
+            Write-Host "testNet70: ${{ variables.testNet70 }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
+            Write-Host "testNet461: ${{ variables.testNet461 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
@@ -112,6 +119,15 @@ jobs:
          version: 6.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+       - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: Docker@2
         displayName: "Login to ACR"
@@ -336,10 +352,16 @@ jobs:
       matrix:
         .NET 7.0:
           FRAMEWORK: net7.0
-          SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
+          SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
+        .NET CoreApp 3.1:
+          FRAMEWORK: netcoreapp3.1
+          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
+        .NET 4.6.1:
+          FRAMEWORK: net461
+          SHOULD_RUN: ${{ eq(variables['testNet461'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -355,8 +377,10 @@ jobs:
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
+            Write-Host "testNet70: ${{ variables.testNet70 }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
+            Write-Host "testNet461: ${{ variables.testNet461 }}"
 
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 7.0'
@@ -373,6 +397,15 @@ jobs:
         inputs:
           packageType: sdk
           version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          packageType: sdk
+          version: 3.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
