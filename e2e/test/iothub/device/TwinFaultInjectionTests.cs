@@ -285,7 +285,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             string propName = Guid.NewGuid().ToString();
-            var props = new ClientTwinProperties();
 
             // Configure the callback and start accepting twin changes.
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)

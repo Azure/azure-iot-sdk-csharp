@@ -6,20 +6,17 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Represents the different collections of properties on a client twin.
+    /// The "properties" section in a twin document that holds desired and reported properties.
     /// </summary>
-    public class ProvisioningTwinDocument
+    /// <remarks>
+    /// For the purposes of setting the initial state of a twin, only the desired section can be provided.
+    /// </remarks>
+    public sealed class InitialTwinProperties
     {
         /// <summary>
         /// Gets and sets the twin desired properties.
         /// </summary>
         [JsonPropertyName("desired")]
-        public ProvisioningTwinProperties Desired { get; set; } = new();
-
-        /// <summary>
-        /// Gets and sets the twin reported properties.
-        /// </summary>
-        [JsonPropertyName("reported")]
-        public ProvisioningTwinProperties Reported { get; set; } = new();
+        public InitialTwinPropertyCollection Desired { get; set; } = new();
     }
 }
