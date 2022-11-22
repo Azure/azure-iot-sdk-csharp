@@ -27,23 +27,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class X509CaReferences
     {
         /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <remarks>
-        /// Creates a new instance of the X509 CA references using the provided CA references.
-        ///
-        /// The CA reference is a String with the name that you gave for your certificate.
-        /// </remarks>
-        /// <param name="primary">the String with the primary CA reference.</param>
-        /// <param name="secondary">the String with the secondary CA reference.</param>
-        [JsonConstructor]
-        protected internal X509CaReferences(string primary, string secondary = default)
-        {
-            Primary = primary;
-            Secondary = secondary;
-        }
-
-        /// <summary>
         /// Primary reference.
         /// </summary>
         [JsonPropertyName("primary")]
