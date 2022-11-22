@@ -23,7 +23,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly ProvisioningTwinCapabilities _optionalEdgeCapabilityEnabled = new() { IsIotEdge = true };
         private readonly ProvisioningTwinCapabilities _optionalEdgeCapabilityDisabled = new() { IsIotEdge = false };
 
-        public IndividualEnrollmentX509Sample(ProvisioningServiceClient provisioningServiceClient, X509Certificate2 issuerCertificate, string deviceId, string registrationId)
+        public IndividualEnrollmentX509Sample(
+            ProvisioningServiceClient provisioningServiceClient,
+            X509Certificate2 issuerCertificate,
+            string deviceId,
+            string registrationId)
         {
             _provisioningServiceClient = provisioningServiceClient;
             _issuerCertificate = issuerCertificate;
@@ -69,27 +73,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 InitialTwinState = new InitialTwinState
                 {
                     Tags = null,
-                    Properties =
+                    DesiredProperties =
                     {
-                        Desired =
-                        {
-                            ["Brand"] = "Contoso",
-                            ["Model"] = "SSC4",
-                            ["Color"] = "White",
-                        },
+                        ["Brand"] = "Contoso",
+                        ["Model"] = "SSC4",
+                        ["Color"] = "White",
                     },
                 },
             };
 
-            IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
+            IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient
+                .IndividualEnrollments
+                .CreateOrUpdateAsync(individualEnrollment);
             Console.WriteLine($"Successfully created the individual enrollment '{individualEnrollmentResult.RegistrationId}'.");
         }
 
         public async Task<IndividualEnrollment> GetIndividualEnrollmentInfoAsync()
         {
             Console.WriteLine("Getting the individual enrollment information...");
-            IndividualEnrollment getResult =
-                await _provisioningServiceClient.IndividualEnrollments.GetAsync(_registrationId);
+            IndividualEnrollment getResult = await _provisioningServiceClient.IndividualEnrollments.GetAsync(_registrationId);
 
             return getResult;
         }
@@ -99,11 +101,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             IndividualEnrollment individualEnrollment = await GetIndividualEnrollmentInfoAsync();
             Console.WriteLine($"Initial device twin state is {individualEnrollment.InitialTwinState}.");
             Console.WriteLine($"IoT Edge device set to '{individualEnrollment.Capabilities.IsIotEdge}'.");
-            individualEnrollment.InitialTwinState.Properties.Desired["Color"] = "Yellow";
+            individualEnrollment.InitialTwinState.DesiredProperties["Color"] = "Yellow";
             individualEnrollment.Capabilities = _optionalEdgeCapabilityDisabled;
 
             Console.WriteLine($"Updating desired properties and capabilities of the individual enrollment '{individualEnrollment.RegistrationId}'...");
-            IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
+            IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient
+                .IndividualEnrollments
+                .CreateOrUpdateAsync(individualEnrollment);
             Console.WriteLine($"Updated initial device twin state is {individualEnrollmentResult.InitialTwinState}.");
             Console.WriteLine($"Updated IoT Edge device to '{individualEnrollmentResult.Capabilities.IsIotEdge}'.");
             Console.WriteLine($"Successfully updated the individual enrollment '{_registrationId}'.");
