@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IndividualEnrollmentTpmSample;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {

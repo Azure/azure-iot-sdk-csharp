@@ -66,14 +66,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 DeviceId = _deviceId,
                 ProvisioningStatus = OptionalProvisioningStatus,
                 Capabilities = _optionalEdgeCapabilityEnabled,
-                InitialTwinState = new ProvisioningTwinState(
-                    tags: null,
-                    desiredProperties: new InitialTwinPropertyCollection
+                InitialTwinState = new InitialTwinState
+                {
+                    Tags = null,
+                    Properties =
                     {
-                        ["Brand"] = "Contoso",
-                        ["Model"] = "SSC4",
-                        ["Color"] = "White",
-                    })
+                        Desired =
+                        {
+                            ["Brand"] = "Contoso",
+                            ["Model"] = "SSC4",
+                            ["Color"] = "White",
+                        },
+                    },
+                },
             };
 
             IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
@@ -94,12 +99,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             IndividualEnrollment individualEnrollment = await GetIndividualEnrollmentInfoAsync();
             Console.WriteLine($"Initial device twin state is {individualEnrollment.InitialTwinState}.");
             Console.WriteLine($"IoT Edge device set to '{individualEnrollment.Capabilities.IsIotEdge}'.");
-            individualEnrollment.InitialTwinState.Desired["Color"] = "Yellow";
+            individualEnrollment.InitialTwinState.Properties.Desired["Color"] = "Yellow";
             individualEnrollment.Capabilities = _optionalEdgeCapabilityDisabled;
 
             Console.WriteLine($"Updating desired properties and capabilities of the individual enrollment '{individualEnrollment.RegistrationId}'...");
-            IndividualEnrollment individualEnrollmentResult =
-                await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
+            IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
             Console.WriteLine($"Updated initial device twin state is {individualEnrollmentResult.InitialTwinState}.");
             Console.WriteLine($"Updated IoT Edge device to '{individualEnrollmentResult.Capabilities.IsIotEdge}'.");
             Console.WriteLine($"Successfully updated the individual enrollment '{_registrationId}'.");
