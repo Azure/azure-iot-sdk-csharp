@@ -4,7 +4,7 @@ This SDK is tested nightly on a mix of .NET implementations on both Windows 10 a
 
 ## Supported .NET versions
 
-The NuGet packages provide support for the following .NET versions:
+The NuGet packages provide targeting for the following .NET versions:
 - .NET Standard 2.0
 
 This SDK _should_ work with newer versions of .NET, but there are no guarantees that they will _always_ work for those until we officially add support for them nor are there guarantees that we will fix bugs that are only present on those versions.
