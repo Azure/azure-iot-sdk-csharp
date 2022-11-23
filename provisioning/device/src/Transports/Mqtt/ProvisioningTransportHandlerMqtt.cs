@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled)
                 Logging.Info(this, $"Service responded to the initial registration request with status '{registrationStatus.Status}'.");
 
-            if (registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning)
+            if (registrationStatus.Status != ProvisioningRegistrationStatus.Assigning)
             {
                 throw new ProvisioningClientException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true);
             }
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Current provisioning state: {currentStatus.RegistrationState.Status}.");
 
-                if (currentStatus.RegistrationState.Status != ProvisioningRegistrationStatusType.Assigning)
+                if (currentStatus.RegistrationState.Status != ProvisioningRegistrationStatus.Assigning)
                 {
                     return currentStatus.RegistrationState;
                 }

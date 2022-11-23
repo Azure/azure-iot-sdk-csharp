@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             DeviceRegistrationResult result = await provClient.RegisterAsync();
 
             Console.WriteLine($"Registration status: {result.Status}.");
-            if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+            if (result.Status != ProvisioningRegistrationStatus.Assigned)
             {
                 Console.WriteLine($"Registration status did not assign a hub, so exiting this sample.");
                 return;

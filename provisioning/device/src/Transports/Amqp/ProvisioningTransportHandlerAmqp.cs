@@ -144,8 +144,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 string operationId = operation.OperationId;
 
                 // Poll with operationId until registration complete.
-                while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0
-                    || string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
+                while (operation.Status == ProvisioningRegistrationStatus.Assigning
+                    || operation.Status == ProvisioningRegistrationStatus.Unassigned)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     attempts++;
                 }
 
-                if (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigned) == 0)
+                if (operation.Status == ProvisioningRegistrationStatus.Assigned)
                 {
                     authStrategy.SaveCredentials(operation);
                 }

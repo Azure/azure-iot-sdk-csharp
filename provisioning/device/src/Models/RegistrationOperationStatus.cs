@@ -9,30 +9,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Registration operation status.
     /// </summary>
-    internal class RegistrationOperationStatus
+    internal sealed class RegistrationOperationStatus
     {
-        public const string OperationStatusAssigned = "assigned";
-        public const string OperationStatusAssigning = "assigning";
-        public const string OperationStatusUnassigned = "unassigned";
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="operationId">Operation Id.</param>
-        /// <param name="status">Device enrollment status. Possible values
-        /// include: 'unassigned', 'assigning', 'assigned', 'failed',
-        /// 'disabled'</param>
-        /// <param name="registrationState">Device registration status.</param>
-        public RegistrationOperationStatus(
-            string operationId = default,
-            string status = default,
-            DeviceRegistrationResult registrationState = default)
-        {
-            OperationId = operationId;
-            Status = status;
-            RegistrationState = registrationState;
-        }
-
         /// <summary>
         /// Gets or sets operation Id.
         /// </summary>
@@ -44,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// 'unassigned', 'assigning', 'assigned', 'failed', 'disabled'
         /// </summary>
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public ProvisioningRegistrationStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets device registration status.
@@ -55,6 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Gets or sets the Retry-After header.
         /// </summary>
+        [JsonIgnore]
         public TimeSpan? RetryAfter { get; set; }
     }
 }

@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningE2ETests : E2EMsTestBase
     {
-        private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
-        private const int FailingTimeoutMiliseconds = 10 * 1000;
+        private const int PassingTimeoutMilliseconds = 10 * 60 * 1000;
+        private const int FailingTimeoutMilliseconds = 10 * 1000;
         private const int MaxTryCount = 10;
         private const string InvalidIdScope = "0neFFFFFFFF";
         private const string PayloadJsonData = "{\"testKey\":\"testValue\"}";
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
 
-        private static readonly IProvisioningServiceRetryPolicy s_provisioningServiceRetryPolicy = 
+        private static readonly IProvisioningServiceRetryPolicy s_provisioningServiceRetryPolicy =
             new ProvisioningServiceExponentialBackoffRetryPolicy(20, TimeSpan.FromSeconds(3), true);
 
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
@@ -56,6 +56,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 TestConfiguration.Provisioning.GetGroupEnrollmentIntermediatePfxCertificateBase64(),
                 s_certificatePassword,
                 s_x509CertificatesFolder);
+        }
+
+        [ClassCleanup]
+        public static void CleanupCertificates()
+        {
+            // Delete all the test client certificates created
+            try
+            {
+                s_x509CertificatesFolder.Delete(true);
+            }
+            catch (Exception)
+            {
+                // In case of an exception, silently exit. All systems images on Microsoft hosted agents will be cleaned up by the system.
+            }
         }
 
         [TestMethod]
@@ -659,7 +673,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 auth,
                 clientOptions);
 
-            using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
+            using var cts = new CancellationTokenSource(PassingTimeoutMilliseconds);
 
             DeviceRegistrationResult result = null;
             IAuthenticationMethod authMethod = null;
@@ -686,14 +700,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     }
                 }
 
-                ProvisioningE2ETests.ValidateDeviceRegistrationResult(false, result);
+                ValidateDeviceRegistrationResult(result);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // The certificate instance referenced in the ClientAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
                 authMethod = CreateAuthenticationMethodFromAuthProvider(auth, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                await ProvisioningE2ETests.ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
+                await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
                 await ConfirmExpectedDeviceCapabilitiesAsync(result, authMethod, deviceCapabilities).ConfigureAwait(false);
             }
             finally
@@ -756,7 +770,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     auth,
                     clientOptions);
 
-                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+                using var cts = new CancellationTokenSource(FailingTimeoutMilliseconds);
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
                 ExceptionAssertions<ProvisioningClientException> exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
                 VerboseTestLogger.WriteLine($"Exception: {exception.And.Message}");
@@ -1083,36 +1097,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         /// <summary>
-        /// Assert that the device registration result has not errors, and that it was assigned to a hub and has a device id
+        /// Assert that the device registration result has not errors, and that it was assigned to a hub and has a device Id.
         /// </summary>
-        private static void ValidateDeviceRegistrationResult(bool validatePayload, DeviceRegistrationResult result)
+        private static void ValidateDeviceRegistrationResult(DeviceRegistrationResult result)
         {
             Assert.IsNotNull(result);
             VerboseTestLogger.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
             VerboseTestLogger.WriteLine($"ProvisioningDeviceClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
 
-            result.Status.Should().Be(ProvisioningRegistrationStatusType.Assigned, $"Unexpected provisioning status, substatus: {result.Substatus}, error code: {result.ErrorCode}, error message: {result.ErrorMessage}");
+            result.Status.Should().Be(
+                ProvisioningRegistrationStatus.Assigned,
+                $"Unexpected provisioning status, substatus: {result.Substatus}, error code: {result.ErrorCode}, error message: {result.ErrorMessage}");
             result.AssignedHub.Should().NotBeNull();
             result.DeviceId.Should().NotBeNull();
-
-            if (validatePayload)
-            {
-                if (PayloadJsonData != null)
-                {
-                    ((object)result.Payload).Should().NotBeNull();
-                    result.Payload.ToString().Should().Be(PayloadJsonData);
-                }
-                else
-                {
-#pragma warning disable CS0162 // Unreachable code detected
-                    ((object)result.Payload).Should().BeNull();
-#pragma warning restore CS0162 // Unreachable code detected
-                }
-            }
-            else
-            {
-                ((object)result.Payload).Should().BeNull();
-            }
+            result.PayloadAsString.Should().BeNull();
         }
 
         public static async Task DeleteCreatedEnrollmentAsync(
@@ -1170,20 +1168,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static bool ImplementsWebProxy(IotHubClientTransportSettings transportSettings)
         {
             return transportSettings is IotHubClientMqttSettings or IotHubClientAmqpSettings;
-        }
-
-        [ClassCleanup]
-        public static void CleanupCertificates()
-        {
-            // Delete all the test client certificates created
-            try
-            {
-                s_x509CertificatesFolder.Delete(true);
-            }
-            catch (Exception)
-            {
-                // In case of an exception, silently exit. All systems images on Microsoft hosted agents will be cleaned up by the system.
-            }
         }
     }
 }
