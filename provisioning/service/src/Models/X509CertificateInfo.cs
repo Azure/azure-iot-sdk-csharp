@@ -30,34 +30,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </example>
     public class X509CertificateInfo
     {
-        [JsonConstructor]
-        private X509CertificateInfo(
-            string subjectName,
-            string sha1Thumbprint,
-            string sha256Thumbprint,
-            string issuerName,
-            DateTimeOffset? notBeforeUtc,
-            DateTimeOffset? notAfterUtc,
-            string serialNumber,
-            int? version)
-        {
-            if (notBeforeUtc == null
-                || notAfterUtc == null
-                || version == null)
-            {
-                throw new ProvisioningServiceException("DateTime cannot be null", HttpStatusCode.BadRequest);
-            }
-
-            SubjectName = subjectName;
-            Sha1Thumbprint = sha1Thumbprint;
-            Sha256Thumbprint = sha256Thumbprint;
-            IssuerName = issuerName;
-            NotBeforeUtc = (DateTimeOffset)notBeforeUtc;
-            NotAfterUtc = (DateTimeOffset)notAfterUtc;
-            SerialNumber = serialNumber;
-            Version = (int)version;
-        }
-
         /// <summary>
         /// For unit testing.
         /// </summary>

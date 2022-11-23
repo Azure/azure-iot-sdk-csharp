@@ -57,40 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
             RegistrationId = registrationId;
-            Attestation = attestation;
-        }
-
-        // This JsonConstructor is used for serialization instead of the usual empty constructor
-        // because one of this object's fields (attestation) doesn't map 1:1 with where that field
-        // is in the JSON the service sends.
-        [JsonConstructor]
-        internal IndividualEnrollment(
-            string registrationId,
-            AttestationMechanism attestation,
-            string deviceId,
-            string iotHubHostName,
-            InitialTwinState initialTwinState,
-            ProvisioningStatus? provisioningStatus,
-            DateTimeOffset createdOnUtc,
-            DateTimeOffset lastUpdatedOnUtc,
-            ETag eTag,
-            ProvisioningTwinCapabilities capabilities)
-        {
-            if (attestation == null)
-            {
-                throw new ProvisioningServiceException("Service responded with an enrollment without attestation.", HttpStatusCode.BadRequest);
-            }
-
-            RegistrationId = registrationId;
-            DeviceId = deviceId;
-            Attestation = attestation.GetAttestation(); // This is the one reason why we can't use an empty constructor here.
-            IotHubHostName = iotHubHostName;
-            InitialTwinState = initialTwinState;
-            ProvisioningStatus = provisioningStatus;
-            CreatedOnUtc = createdOnUtc;
-            LastUpdatedOnUtc = lastUpdatedOnUtc;
-            ETag = eTag;
-            Capabilities = capabilities;
+            Attestation = GetAttestationMechanism(attestation);
         }
 
         /// <summary>
@@ -119,33 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Attestation mechanism.
         /// </summary>
         [JsonPropertyName("attestation")]
-        private AttestationMechanism _attestation;
-
-        /// <summary>
-        /// Attestation.
-        /// </summary>
-        [JsonIgnore]
-        public Attestation Attestation
-        {
-            get => _attestation?.GetAttestation();
-
-            set
-            {
-                if (value is X509Attestation attestation)
-                {
-                    if ((attestation ?? throw new InvalidOperationException(nameof(value))).ClientCertificates == null
-                        && attestation.CaReferences == null)
-                    {
-                        throw new InvalidOperationException($"Value for {nameof(attestation)} does not contain client certificate or CA reference.");
-                    }
-                }
-
-                if (value != null)
-                { 
-                    _attestation = new AttestationMechanism(value);
-                }
-            }
-        }
+        public AttestationMechanism Attestation { get; set; }
 
         /// <summary>
         /// Desired IoT hub to assign the device to.
@@ -213,5 +154,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonPropertyName("iotHubs")]
         public IList<string> IotHubs { get; set; } = new List<string>();
+
+        private static AttestationMechanism GetAttestationMechanism(Attestation attestation)
+        {
+            Argument.AssertNotNull(attestation, nameof(attestation));
+
+            var attestationMechanism = new AttestationMechanism();
+
+            switch (attestation)
+            {
+                case X509Attestation:
+                    attestationMechanism.Type = AttestationMechanismType.X509;
+                    attestationMechanism.X509 = (X509Attestation)attestation;
+                    break;
+
+
+                case SymmetricKeyAttestation:
+                    attestationMechanism.Type = AttestationMechanismType.SymmetricKey;
+                    attestationMechanism.SymmetricKey = (SymmetricKeyAttestation)attestation;
+                    break;
+
+                case TpmAttestation:
+                    attestationMechanism.Type = AttestationMechanismType.Tpm;
+                    attestationMechanism.Tpm = (TpmAttestation)attestation;
+                    break;
+
+                default:
+                    throw new ArgumentException("Unknown attestation mechanism", nameof(attestation));
+            }
+
+            return attestationMechanism;
+        }
     }
 }

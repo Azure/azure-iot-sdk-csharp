@@ -83,6 +83,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public static X509Attestation CreateFromClientCertificates(X509Certificate2 primary)
         {
             Argument.AssertNotNull(primary, nameof(primary));
+
             return new X509Attestation(
                 new X509Certificates(primary, null),
                 null, null);
@@ -262,7 +263,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new X509Attestation(
                 null,
                 null,
-                new X509CaReferences(primary, secondary));
+                new X509CaReferences
+                {
+                    Primary = primary,
+                    Secondary = secondary,
+                });
         }
 
         /// <summary>
@@ -325,7 +330,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="rootCertificates">Root certificates.</param>
         /// <param name="caReferences">Certificate authority references.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        [JsonConstructor]
         private protected X509Attestation(
             X509Certificates clientCertificates,
             X509Certificates rootCertificates,
