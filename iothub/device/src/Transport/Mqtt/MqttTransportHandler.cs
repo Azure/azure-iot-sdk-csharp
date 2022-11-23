@@ -324,7 +324,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             ex);
                     case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                         // Should never happen since the protocol version (3.1.1) is hardcoded
-                        throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", innerException: ex);
+                        throw new IotHubClientException(
+                            "Failed to open the MQTT connection due to an unsupported MQTT version",
+                            innerException: ex);
                     case MqttClientConnectResultCode.ServerUnavailable:
                         throw new IotHubClientException(
                             "MQTT connection rejected because the server was unavailable",
