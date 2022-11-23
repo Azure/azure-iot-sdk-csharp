@@ -139,7 +139,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 await SubscribeToRegistrationResponseMessagesAsync(mqttClient, linkedCancellationToken.Token).ConfigureAwait(false);
 
                 currentStatus = "publishing registration request";
-                RegistrationOperationStatus registrationStatus = await PublishRegistrationRequestAsync(mqttClient, provisioningRequest, linkedCancellationToken.Token).ConfigureAwait(false);
+                RegistrationOperationStatus registrationStatus = await PublishRegistrationRequestAsync(
+                        mqttClient,
+                        provisioningRequest.Payload,
+                        linkedCancellationToken.Token)
+                    .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Successfully sent the initial registration request. Current status '{registrationStatus.Status}'. Now polling until provisioning has finished.");
@@ -229,12 +233,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private async Task<RegistrationOperationStatus> PublishRegistrationRequestAsync(
             IMqttClient mqttClient,
-            ProvisioningTransportRegisterRequest provisioningRequest,
+            RegistrationRequestPayload requestPayload,
             CancellationToken cancellationToken)
         {
-            byte[] payload = provisioningRequest.Payload == null
+            byte[] payload = requestPayload?.Payload == null
                 ? Array.Empty<byte>()
-                : Encoding.UTF8.GetBytes(provisioningRequest.Payload);
+                : Encoding.UTF8.GetBytes(JsonSerializer.Serialize(requestPayload));
 
             string registrationTopic = string.Format(CultureInfo.InvariantCulture, RegisterTopic, ++_packetId);
             MqttApplicationMessage message = new MqttApplicationMessageBuilder()

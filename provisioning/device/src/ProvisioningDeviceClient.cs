@@ -71,17 +71,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
-        /// <param name="data">
+        /// <param name="optionalRegistrationPayload">
         /// The optional additional data that is passed through to the custom allocation policy webhook if
         /// a custom allocation policy webhook is setup for this enrollment.
         /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public async Task<DeviceRegistrationResult> RegisterAsync(RegistrationRequestPayload data, CancellationToken cancellationToken = default)
+        public async Task<DeviceRegistrationResult> RegisterAsync(RegistrationRequestPayload optionalRegistrationPayload, CancellationToken cancellationToken = default)
         {
             Logging.LogRegister(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
-            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData);
+            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, optionalRegistrationPayload);
 
             DeviceRegistrationResult result = null;
 

@@ -244,22 +244,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private async Task<RegistrationOperationStatus> RegisterDeviceAsync(
             AmqpClientConnection client,
             string correlationId,
-            string deviceRegistration,
+            RegistrationRequestPayload registrationPayload,
             CancellationToken cancellationToken)
         {
             AmqpMessage amqpMessage = null;
 
             try
             {
-                if (deviceRegistration == null)
-                {
-                    amqpMessage = AmqpMessage.Create(new MemoryStream(), true);
-                }
-                else
-                {
-                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(deviceRegistration));
-                    amqpMessage = AmqpMessage.Create(customContentStream, true);
-                }
+                amqpMessage = registrationPayload?.Payload == null
+                    ? AmqpMessage.Create(new MemoryStream(), true)
+                    : AmqpMessage.Create(new MemoryStream(
+                        Encoding.UTF8.GetBytes(JsonSerializer.Serialize(registrationPayload))), true);
 
                 amqpMessage.Properties.CorrelationId = correlationId;
                 amqpMessage.ApplicationProperties.Map[OperationType] = Register;

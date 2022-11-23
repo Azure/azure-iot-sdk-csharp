@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Represents the interface for a Provisioning Transport Handler.
+    /// Represents the interface for a provisioning transport handler.
     /// </summary>
     internal abstract class ProvisioningTransportHandler
     {
