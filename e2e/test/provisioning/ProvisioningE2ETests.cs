@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
@@ -692,7 +693,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 authMethod = CreateAuthenticationMethodFromAuthProvider(auth, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
+                await ProvisioningE2ETests.ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
                 await ConfirmExpectedDeviceCapabilitiesAsync(result, authMethod, deviceCapabilities).ConfigureAwait(false);
             }
             finally
@@ -757,7 +758,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
-                var exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
+                ExceptionAssertions<ProvisioningClientException> exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
                 VerboseTestLogger.WriteLine($"Exception: {exception.And.Message}");
             }
             finally
@@ -823,7 +824,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 VerboseTestLogger.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
 
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
-                var exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
+                ExceptionAssertions<ProvisioningClientException> exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
 
                 VerboseTestLogger.WriteLine($"Exception: {exception.And.Message}");
             }
@@ -877,7 +878,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// Attempt to create device client instance from provided arguments, ensure that it can open a
         /// connection, ensure that it can send telemetry, and (optionally) send a reported property update
         /// </summary
-        private async Task ConfirmRegisteredDeviceWorksAsync(
+        private static async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
             IAuthenticationMethod auth,
             IotHubClientTransportSettings transportSettings,

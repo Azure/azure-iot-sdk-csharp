@@ -63,7 +63,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// It can be null.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="bodyString"/> is null.</exception>
         /// <exception cref="ArgumentException">If <paramref name="bodyString"/> is empty or white space.</exception>
-        ///
         protected internal QueryResult(string typeString, string bodyString, string continuationToken)
         {
             QueryType = (QueryResultType)Enum.Parse(typeof(QueryResultType), typeString, true);
@@ -104,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     {
                         try
                         {
-                            Items = JsonSerializer.Deserialize<IEnumerable<JObject>>(bodyString);
+                            Items = (IEnumerable<object>)JsonSerializer.Deserialize<IEnumerable<JsonElement>>(bodyString);
                         }
                         catch (ArgumentException)
                         {
@@ -121,22 +120,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         {
                             Items = JsonSerializer.Deserialize<IEnumerable<object>>(bodyString);
                         }
-                        catch (JsonException)
-                        {
-                            Items = new string[] { bodyString };
-                        }
                     }
                     break;
             }
-        }
-
-        /// <summary>
-        /// Convert this object in a pretty print format.
-        /// </summary>
-        /// <returns>The string with the content of this class in a pretty print format.</returns>
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this, Formatting.Indented);
         }
     }
 }

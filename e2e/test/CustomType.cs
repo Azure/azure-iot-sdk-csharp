@@ -10,18 +10,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class CustomType
     {
-        [JsonPropertyName("stringAttri")]
-        public string StringAttri;
-
-        [JsonPropertyName("intAttri")]
-        public int IntAttri;
-
-        [JsonPropertyName("boolAttri")]
-        public bool BoolAttri;
-
-        [JsonPropertyName("nestedCustomType")]
-        public NestedCustomType NestedCustomType;
-
         public CustomType(string stringAttri, int intAttri, bool boolAttri, NestedCustomType nestedCustomType)
         {
             StringAttri = stringAttri;
@@ -29,5 +17,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             BoolAttri = boolAttri;
             NestedCustomType = nestedCustomType;
         }
+
+        [JsonPropertyName("stringAttri")]
+        public string StringAttri { get; set; }
+
+        [JsonPropertyName("intAttri")]
+        public int IntAttri { get; set; }
+
+        [JsonPropertyName("boolAttri")]
+        public bool BoolAttri { get; set; }
+
+        [JsonPropertyName("nestedCustomType")]
+        public NestedCustomType NestedCustomType { get; set; }
     }
 }
