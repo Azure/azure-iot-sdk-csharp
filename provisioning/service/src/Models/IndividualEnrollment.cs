@@ -159,34 +159,31 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNull(attestation, nameof(attestation));
 
-            if (attestation is X509Attestation x509Attestation)
+            var attestationMechanism = new AttestationMechanism();
+
+            switch (attestation)
             {
-                return new AttestationMechanism
-                {
-                    Type = AttestationMechanismType.X509,
-                    X509 = x509Attestation,
-                };
+                case X509Attestation:
+                    attestationMechanism.Type = AttestationMechanismType.X509;
+                    attestationMechanism.X509 = (X509Attestation)attestation;
+                    break;
+
+
+                case SymmetricKeyAttestation:
+                    attestationMechanism.Type = AttestationMechanismType.SymmetricKey;
+                    attestationMechanism.SymmetricKey = (SymmetricKeyAttestation)attestation;
+                    break;
+
+                case TpmAttestation:
+                    attestationMechanism.Type = AttestationMechanismType.Tpm;
+                    attestationMechanism.Tpm = (TpmAttestation)attestation;
+                    break;
+
+                default:
+                    throw new ArgumentException("Unknown attestation mechanism", nameof(attestation));
             }
-            else if (attestation is TpmAttestation tpmAttestation)
-            {
-                return new AttestationMechanism
-                {
-                    Type = AttestationMechanismType.Tpm,
-                    Tpm = tpmAttestation,
-                };
-            }
-            else if (attestation is SymmetricKeyAttestation symmetricKeyAttestation)
-            {
-                return new AttestationMechanism
-                {
-                    Type = AttestationMechanismType.SymmetricKey,
-                    SymmetricKey = symmetricKeyAttestation,
-                };
-            }
-            else
-            {
-                throw new ArgumentException("Unknown attestation mechanism", nameof(attestation));
-            }
+
+            return attestationMechanism;
         }
     }
 }
