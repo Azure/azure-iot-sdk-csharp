@@ -41,11 +41,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
 
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin, options)}");
+            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin, new JsonSerializerOptions { WriteIndented = true })}");
 
             return twin;
         }
@@ -79,11 +75,10 @@ namespace Microsoft.Azure.Devices.Samples
             const string getMaxMinReportCommandName = "getMaxMinReport";
 
             // Create command name to invoke for component
-            var commandInvocation = new DirectMethodServiceRequest
+            var commandInvocation = new DirectMethodServiceRequest(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))
             {
                 MethodName = getMaxMinReportCommandName,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
-                Payload = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)),
             };
 
             _logger.LogDebug($"Invoke the {getMaxMinReportCommandName} command on {_deviceId} device twin.");
@@ -92,7 +87,7 @@ namespace Microsoft.Azure.Devices.Samples
                 DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
 
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on device twin {_deviceId}." +
-                    $"\nDevice returned status: {result.Status}. \nReport: {result.Payload}");
+                    $"\nDevice returned status: {result.Status}. \nReport: {result.PayloadAsString}");
             }
             catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotFound)
             {

@@ -12,13 +12,17 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DirectMethodServiceRequest
     {
-        private object _payload;
-
         /// <summary>
-        /// Initialize an instance of this class.
+        /// Creates an instance of this class with the specified payload to be serialized.
         /// </summary>
-        public DirectMethodServiceRequest()
+        /// <param name="payload">The method serializable payload to send to the device.</param>
+        public DirectMethodServiceRequest(object payload = default)
         {
+            if (payload != default)
+            {
+                using var jd = JsonDocument.Parse(JsonSerializer.Serialize(payload));
+                JsonPayload = jd.RootElement;
+            }
         }
 
         /// <summary>
@@ -59,35 +63,19 @@ namespace Microsoft.Azure.Devices
         public TimeSpan? ResponseTimeout { get; set; }
 
         /// <summary>
-        /// Get the payload object. May be null or empty.
+        /// Get the serialized JSON payload.
         /// </summary>
+        /// <remarks>
+        /// May be null or empty.
+        /// </remarks>
         [JsonIgnore]
-        public object Payload
-        {
-            get => _payload;
-
-            set
-            {
-                _payload = value;
-                if (value != null)
-                {
-                    PayloadAsJsonString = JsonSerializer.Serialize(value);
-                    JsonPayload = new JRaw(PayloadAsJsonString);
-                }
-            }
-        }
+        public string PayloadAsJsonString => JsonPayload?.GetRawText();
 
         /// <summary>
-        /// Get the serialized JSON payload. May be null or empty.
-        /// </summary>
-        [JsonIgnore]
-        public string PayloadAsJsonString { get; internal set; }
-
-        /// <summary>
-        /// The JSON payload in JRaw type.
+        /// The deserialized payload.
         /// </summary>
         [JsonPropertyName("payload")]
-        internal JRaw JsonPayload { get; set; }
+        internal JsonElement? JsonPayload { get; set; }
 
         [JsonPropertyName("responseTimeoutInSeconds")]
         internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
@@ -96,13 +84,23 @@ namespace Microsoft.Azure.Devices
         internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
 
         /// <summary>
-        /// Returns JSON payload in a custom type.
+        /// Returns JSON payload as a specified type.
         /// </summary>
-        /// <typeparam name="T">The custom type into which the JSON payload can be deserialized.</typeparam>
-        /// <returns>The JSON payload in custom type.</returns>
-        public T GetPayload<T>()
+        /// <typeparam name="T">The type into which the JSON payload can be deserialized.</typeparam>
+        /// <returns>True if the value could be deserialized, otherwise false.</returns>
+        public bool TryGetPayload<T>(out T value)
         {
-            return JsonSerializer.Deserialize<T>(PayloadAsJsonString);
+            value = default;
+
+            try
+            {
+                value = JsonSerializer.Deserialize<T>(PayloadAsJsonString);
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
         }
     }
 }
