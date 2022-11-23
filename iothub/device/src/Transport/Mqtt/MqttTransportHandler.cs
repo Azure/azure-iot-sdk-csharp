@@ -1130,7 +1130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             if (Logging.IsEnabled)
                                 Logging.Error(this, $"Failed to parse twin patch error response JSON: {ex}. Message body: '{errorResponseString}'");
 
-                            errorResponse = new IotHubClientErrorResponseMessage()
+                            errorResponse = new IotHubClientErrorResponseMessage
                             {
                                 Message = errorResponseString,
                             };
