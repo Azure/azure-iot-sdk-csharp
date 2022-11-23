@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(CancellationToken cancellationToken = default)
         {
-            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
+            Logging.LogRegister(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
             return RegisterAsync(null, cancellationToken);
         }
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public async Task<DeviceRegistrationResult> RegisterAsync(RegistrationRequestPayload data, CancellationToken cancellationToken = default)
         {
-            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
+            Logging.LogRegister(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
             var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData);
 
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 .RunWithRetryAsync(
                     async () =>
                     {
-                        result = await _provisioningTransportHandler.RegisterAsync(request, cancellationToken);
+                        result = await _provisioningTransportHandler.RegisterAsync(request, cancellationToken).ConfigureAwait(false);
                     },
                     cancellationToken)
                 .ConfigureAwait(false);

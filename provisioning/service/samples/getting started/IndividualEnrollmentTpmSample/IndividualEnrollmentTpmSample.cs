@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task CreateIndividualEnrollmentTpmAsync()
         {
             Console.WriteLine($"Creating an individual enrollment '{_registrationId}'...");
-            Attestation attestation = new TpmAttestation(_tpmEndorsementKey);
+            Attestation attestation = new TpmAttestation { EndorsementKey = _tpmEndorsementKey };
             var individualEnrollment = new IndividualEnrollment(
                 _registrationId,
                 attestation)

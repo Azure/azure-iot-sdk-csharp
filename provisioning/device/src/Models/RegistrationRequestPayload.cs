@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class RegistrationRequestPayload
     {
         /// <summary>
-        /// Additional (optional) Json Data to be sent to the service 
+        /// Additional (optional) JSON data to be sent to the service.
         /// </summary>
         public string JsonData { get; set; }
     }

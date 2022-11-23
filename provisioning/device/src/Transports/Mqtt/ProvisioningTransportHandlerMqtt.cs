@@ -90,10 +90,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // Link the user-supplied cancellation token with a cancellation token that is cancelled
             // when the connection is lost so that all operations stop when either the user
             // cancels the token or when the connection is lost.
-            using CancellationTokenSource linkedCancellationToken =
-                CancellationTokenSource.CreateLinkedTokenSource(
-                    cancellationToken,
-                    connectionLostCancellationToken.Token);
+            using CancellationTokenSource linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                connectionLostCancellationToken.Token);
 
             Task HandleDisconnectionAsync(MqttClientDisconnectedEventArgs disconnectedEventArgs)
             {
@@ -114,9 +113,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 try
                 {
-                    MqttClientConnectResult connectResult = await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken).ConfigureAwait(false);
+                    MqttClientConnectResult connectResult = await mqttClient
+                        .ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken)
+                        .ConfigureAwait(false);
+
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"MQTT connect responded with status code '{connectResult.ResultCode}'");
+
                     mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                 }
                 catch (MqttCommunicationException ex)
@@ -224,18 +227,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        private async Task<RegistrationOperationStatus> PublishRegistrationRequestAsync(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest, CancellationToken cancellationToken)
+        private async Task<RegistrationOperationStatus> PublishRegistrationRequestAsync(
+            IMqttClient mqttClient,
+            ProvisioningTransportRegisterRequest provisioningRequest,
+            CancellationToken cancellationToken)
         {
-            byte[] payload = new byte[0];
-            if (provisioningRequest.Payload != null)
-            {
-                var registrationRequest = new DeviceRegistration(new JRaw(provisioningRequest.Payload));
-                string requestString = JsonSerializer.Serialize(registrationRequest);
-                payload = Encoding.UTF8.GetBytes(requestString);
-            }
+            byte[] payload = provisioningRequest.Payload == null
+                ? Array.Empty<byte>()
+                : Encoding.UTF8.GetBytes(provisioningRequest.Payload);
 
             string registrationTopic = string.Format(CultureInfo.InvariantCulture, RegisterTopic, ++_packetId);
-            var message = new MqttApplicationMessageBuilder()
+            MqttApplicationMessage message = new MqttApplicationMessageBuilder()
                 .WithPayload(payload)
                 .WithTopic(registrationTopic)
                 .WithQualityOfServiceLevel(_publishingQualityOfService)
@@ -282,7 +284,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             while (true)
             {
                 string topicName = string.Format(CultureInfo.InvariantCulture, GetOperationsTopic, ++_packetId, operationId);
-                var message = new MqttApplicationMessageBuilder()
+                MqttApplicationMessage message = new MqttApplicationMessageBuilder()
                     .WithTopic(topicName)
                     .WithQualityOfServiceLevel(_publishingQualityOfService)
                     .Build();

@@ -106,7 +106,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     },
                     _settings);
 
-                await authStrategy.OpenConnectionAsync(
+                await authStrategy
+                    .OpenConnectionAsync(
                         connection,
                         useWebSocket,
                         _settings.Proxy,
@@ -117,10 +118,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // Link the user-supplied cancellation token with a cancellation token that is cancelled
                 // when the connection is lost so that all operations stop when either the user
                 // cancels the token or when the connection is lost.
-                using CancellationTokenSource linkedCancellationToken =
-                    CancellationTokenSource.CreateLinkedTokenSource(
-                        cancellationToken,
-                        connectionLostCancellationToken.Token);
+                using CancellationTokenSource linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken,
+                    connectionLostCancellationToken.Token);
 
                 await CreateLinksAsync(
                         connection,
@@ -132,14 +132,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0)
-                    ? new DeviceRegistration(new JRaw(message.Payload))
-                    : null;
-
                 RegistrationOperationStatus operation = await RegisterDeviceAsync(
                         connection,
                         correlationId,
-                        deviceRegistration,
+                        message.Payload,
                         linkedCancellationToken.Token)
                     .ConfigureAwait(false);
 
@@ -153,7 +149,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await Task.Delay(
+                    await Task
+                        .Delay(
                             operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval),
                             linkedCancellationToken.Token)
                         .ConfigureAwait(false);
@@ -247,7 +244,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private async Task<RegistrationOperationStatus> RegisterDeviceAsync(
             AmqpClientConnection client,
             string correlationId,
-            DeviceRegistration deviceRegistration,
+            string deviceRegistration,
             CancellationToken cancellationToken)
         {
             AmqpMessage amqpMessage = null;
@@ -260,7 +257,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 }
                 else
                 {
-                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(deviceRegistration)));
+                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(deviceRegistration));
                     amqpMessage = AmqpMessage.Create(customContentStream, true);
                 }
 

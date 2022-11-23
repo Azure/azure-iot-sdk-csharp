@@ -38,9 +38,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             var individualEnrollments = new List<IndividualEnrollment>();
             foreach (string item in s_registrationIds)
             {
-                string primaryKey = CryptoKeyGenerator.GenerateKey(32);
-                string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
-                Attestation attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
+                var attestation = new SymmetricKeyAttestation
+                {
+                    PrimaryKey = CryptoKeyGenerator.GenerateKey(32),
+                    SecondaryKey = CryptoKeyGenerator.GenerateKey(32),
+                };
                 individualEnrollments.Add(new IndividualEnrollment(item, attestation));
             }
 

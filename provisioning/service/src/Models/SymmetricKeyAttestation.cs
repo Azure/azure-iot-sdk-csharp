@@ -14,12 +14,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the primary key used for attestation.
         /// </summary>
         [JsonPropertyName("primaryKey")]
-        public string PrimaryKey { get; }
+        public string PrimaryKey { get; set; }
 
         /// <summary>
         /// Gets the secondary key used for attestation.
         /// </summary>
         [JsonPropertyName("secondaryKey")]
-        public string SecondaryKey { get; }
+        public string SecondaryKey { get; set; }
     }
 }
