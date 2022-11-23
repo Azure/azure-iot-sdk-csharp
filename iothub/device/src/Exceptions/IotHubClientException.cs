@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The specific error code.
         /// </summary>
-        public IotHubClientErrorCode ErrorCode { get; private set; }
+        public IotHubClientErrorCode ErrorCode { get; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.
