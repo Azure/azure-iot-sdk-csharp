@@ -180,20 +180,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // TODO: pradeepc - need to confirm this with ASP.NET team
                 if (innerExceptions.Any(e => e is TimeoutException))
                 {
-                    throw new IotHubClientException(ex.Message, ex)
-                    {
-                        ErrorCode = IotHubClientErrorCode.NetworkErrors,
-                    };
+                    throw new IotHubClientException(
+                        ex.Message,
+                        IotHubClientErrorCode.NetworkErrors,
+                        ex);
                 }
 
                 throw new IotHubClientException(ex.Message, innerException: ex);
             }
             catch (Exception ex) when (ex is TimeoutException || ex is IOException || ex is HttpRequestException)
             {
-                throw new IotHubClientException(ex.Message, ex)
-                {
-                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
-                };
+                throw new IotHubClientException(
+                    ex.Message,
+                    IotHubClientErrorCode.NetworkErrors,
+                    ex);
             }
             catch (Exception ex) when (!Fx.IsFatal(ex) && ex is not OperationCanceledException)
             {

@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.ResourceLimitExceeded, amqpSymbol))
             {
-                errorCode = IotHubClientErrorCode.DeviceMaximumQueueDepthExceeded;
+                errorCode = IotHubClientErrorCode.QuotaExceeded;
             }
             else if (Equals(AmqpErrorCode.PreconditionFailed, amqpSymbol))
             {
@@ -122,9 +122,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 isTransient = true;
             }
 
-            return new IotHubClientException(message, amqpException)
+            return new IotHubClientException(message, errorCode, amqpException)
             {
-                ErrorCode = errorCode,
                 IsTransient = isTransient
             };
         }
@@ -181,10 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 message = $"IoT hub {message} is suspended";
             }
 
-            var retException = new IotHubClientException(message)
-            {
-                ErrorCode = errorCode,
-            };
+            var retException = new IotHubClientException(message, errorCode);
 
             if (trackingId != null)
             {

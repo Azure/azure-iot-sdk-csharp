@@ -157,17 +157,17 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IotHubClientException(webSocketException.Message, webSocketException)
-                {
-                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
-                };
+                throw new IotHubClientException(
+                    webSocketException.Message,
+                    IotHubClientErrorCode.NetworkErrors,
+                    webSocketException);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IotHubClientException(httpListenerException.Message, httpListenerException)
-                {
-                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
-                };
+                throw new IotHubClientException(
+                    httpListenerException.Message,
+                    IotHubClientErrorCode.NetworkErrors,
+                    httpListenerException);
             }
             finally
             {
@@ -208,17 +208,17 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (WebSocketException webSocketException)
             {
-                throw new IotHubClientException(webSocketException.Message, webSocketException)
-                {
-                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
-                };
+                throw new IotHubClientException(
+                    webSocketException.Message,
+                    IotHubClientErrorCode.NetworkErrors,
+                    webSocketException);
             }
             catch (HttpListenerException httpListenerException)
             {
-                throw new IotHubClientException(httpListenerException.Message, httpListenerException)
-                {
-                    ErrorCode = IotHubClientErrorCode.NetworkErrors,
-                };
+                throw new IotHubClientException(
+                    httpListenerException.Message,
+                    IotHubClientErrorCode.NetworkErrors,
+                    httpListenerException);
             }
             finally
             {

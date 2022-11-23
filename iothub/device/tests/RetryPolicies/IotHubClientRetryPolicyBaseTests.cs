@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // arrange
             const uint maxRetries = 2;
             var retryPolicy = new IotHubClientTestRetryPolicy(maxRetries);
-            var ex = new IotHubClientException()
+            var ex = new IotHubClientException
             {
                 IsTransient = true,
             };
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var retryPolicy = new IotHubClientTestRetryPolicy(0);
-            var ex = new IotHubClientException()
+            var ex = new IotHubClientException
             {
                 IsTransient = true,
             };
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var retryPolicy = new IotHubClientTestRetryPolicy(0);
-            var ex = new IotHubClientException()
+            var ex = new IotHubClientException
             {
                 IsTransient = true,
             };

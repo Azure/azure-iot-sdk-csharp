@@ -20,9 +20,6 @@ namespace Microsoft.Azure.Devices.Client
         [NonSerialized]
         private const string TrackingIdValueSerializationStoreName = "IotHubClientException-TrackingId";
 
-        private IotHubClientErrorCode _errorCode;
-        private bool? _isTransient;
-
         private static readonly HashSet<IotHubClientErrorCode> s_transientErrorCodes = new()
         {
             IotHubClientErrorCode.QuotaExceeded,
@@ -44,10 +41,13 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
+        /// <param name="errorCode">The specific error code.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected internal IotHubClientException(string message, Exception innerException = null)
+        protected internal IotHubClientException(string message, IotHubClientErrorCode errorCode = IotHubClientErrorCode.Unknown, Exception innerException = null)
             : base(message, innerException)
         {
+            ErrorCode = errorCode;
+            IsTransient = DetermineIfTransient(errorCode);
         }
 
         /// <summary>
@@ -73,24 +73,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient
-        {
-            get => _isTransient != null && (bool)_isTransient;
-            protected internal set => _isTransient = value;
-        }
+        public bool IsTransient { get; protected internal set; }
 
         /// <summary>
         /// The specific error code.
         /// </summary>
-        public IotHubClientErrorCode ErrorCode
-        {
-            get => _errorCode;
-            protected internal set
-            {
-                _errorCode = value;
-                _isTransient ??= DetermineIfTransient(_errorCode);
-            }
-        }
+        public IotHubClientErrorCode ErrorCode { get; private set; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.
