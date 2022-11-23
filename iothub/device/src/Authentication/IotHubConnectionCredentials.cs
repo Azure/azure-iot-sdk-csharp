@@ -388,7 +388,8 @@ namespace Microsoft.Azure.Devices.Client
 
                         throw new IotHubClientException(
                             $"Failed to provide certificates in the chain - {ex.Message}",
-                            IotHubClientErrorCode.Unauthorized, ex);
+                            IotHubClientErrorCode.Unauthorized,
+                            ex);
                     }
                 }
             }
