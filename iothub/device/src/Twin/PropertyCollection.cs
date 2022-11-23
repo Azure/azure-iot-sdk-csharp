@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 Version = versionPresent && ObjectConversionHelper.TryCastNumericTo(version, out long longVersion)
                     ? longVersion
-                    : throw new IotHubClientException("Properties document either missing version number or not formatted as expected. Contact service with logs.", false);
+                    : throw new IotHubClientException("Properties document either missing version number or not formatted as expected. Contact service with logs.");
             }
 
             foreach (KeyValuePair<string, object> property in properties)

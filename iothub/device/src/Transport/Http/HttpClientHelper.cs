@@ -183,23 +183,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
                 }
 
-                throw new IotHubClientException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, innerException: ex);
             }
-            catch (TimeoutException ex)
+            catch (Exception ex) when (ex is TimeoutException || ex is IOException || ex is HttpRequestException)
             {
-                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
-            }
-            catch (IOException ex)
-            {
-                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
+                throw new IotHubClientException(
+                    ex.Message,
+                    IotHubClientErrorCode.NetworkErrors,
+                    ex);
             }
             catch (Exception ex) when (!Fx.IsFatal(ex) && ex is not OperationCanceledException)
             {
-                throw new IotHubClientException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, innerException: ex);
             }
 
             if (!responseMsg.IsSuccessStatusCode)
@@ -217,9 +212,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (!errorMapping.TryGetValue(response.StatusCode, out Func<HttpResponseMessage, Task<Exception>> func))
             {
-                return new IotHubClientException(
-                    await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false),
-                    isTransient: true);
+                return new IotHubClientException(await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false))
+                {
+                    IsTransient = true,
+                };
             }
 
             Func<HttpResponseMessage, Task<Exception>> mapToExceptionFunc = errorMapping[response.StatusCode];

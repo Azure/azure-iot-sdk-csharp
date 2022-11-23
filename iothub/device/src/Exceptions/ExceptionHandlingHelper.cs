@@ -11,16 +11,15 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class ExceptionHandlingHelper
     {
-        public static IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping()
+        internal static IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping()
         {
             var mappings = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
-                { 
+                {
                     HttpStatusCode.NoContent,
                     async (response) =>
                         new IotHubClientException(
                             CreateMessageWhenDeviceNotFound(await GetExceptionMessageAsync(response).ConfigureAwait(false)),
-                            trackingId: null,
                             IotHubClientErrorCode.DeviceNotFound)
                 },
                 { 
@@ -28,7 +27,6 @@ namespace Microsoft.Azure.Devices.Client
                     async (response) =>
                         new IotHubClientException(
                             CreateMessageWhenDeviceNotFound(await GetExceptionMessageAsync(response).ConfigureAwait(false)),
-                            trackingId: null,
                             IotHubClientErrorCode.DeviceNotFound)
                 },
                 { 
@@ -89,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client
             return mappings;
         }
 
-        public static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
+        internal static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
         {
             return response.Content.ReadAsStringAsync();
         }

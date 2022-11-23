@@ -22,7 +22,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // arrange
             const uint maxRetries = 2;
             var retryPolicy = new IotHubClientTestRetryPolicy(maxRetries);
-            var ex = new IotHubClientException("", true);
+            var ex = new IotHubClientException
+            {
+                IsTransient = true,
+            };
 
             // act and assert
             retryPolicy.ShouldRetry(maxRetries - 1, ex, out TimeSpan delay).Should().BeTrue();
@@ -34,7 +37,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var retryPolicy = new IotHubClientTestRetryPolicy(0);
-            var ex = new IotHubClientException("", true);
+            var ex = new IotHubClientException
+            {
+                IsTransient = true,
+            };
 
             // act and assert
             retryPolicy.ShouldRetry(uint.MaxValue, ex, out TimeSpan delay).Should().BeTrue();
@@ -47,7 +53,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var retryPolicy = new IotHubClientTestRetryPolicy(0);
-            var ex = new IotHubClientException("", isTransient);
+            var ex = new IotHubClientException
+            {
+                IsTransient = isTransient,
+            };
 
             // act and assert
             retryPolicy.ShouldRetry(1, ex, out TimeSpan delay).Should().Be(isTransient);

@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (_isClosed)
             {
-                throw new IotHubClientException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.");
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (_isDisposed)
                 {
-                    throw new IotHubClientException("Device is now offline.", false);
+                    throw new IotHubClientException("Device is now offline.");
                 }
             }
             catch (Exception)
@@ -315,7 +315,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (_isClosed)
             {
-                throw new IotHubClientException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.");
             }
 
             // Wait to grab the semaphore, and then open the telemetry receiving link and set the callback,
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (_isClosed)
             {
-                throw new IotHubClientException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.");
             }
 
             await _messageReceivingCallbackSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -428,7 +428,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_isClosed)
             {
-                throw new IotHubClientException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.");
             }
 
             if (Logging.IsEnabled)
@@ -517,7 +517,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (_isClosed)
             {
-                throw new IotHubClientException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.");
             }
 
             _amqpIotSession = await EnsureSessionIsOpenAsync(cancellationToken).ConfigureAwait(false);
@@ -608,7 +608,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (_isClosed)
             {
-                throw new IotHubClientException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.");
             }
 
             _amqpIotSession = await EnsureSessionIsOpenAsync(cancellationToken).ConfigureAwait(false);
@@ -849,7 +849,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_isClosed)
             {
-                throw new IotHubClientException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.");
             }
 
             if (Logging.IsEnabled)
