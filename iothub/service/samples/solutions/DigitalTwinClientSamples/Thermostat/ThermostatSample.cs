@@ -51,11 +51,7 @@ namespace Microsoft.Azure.Devices.Samples
                 .GetAsync<T>(_digitalTwinId);
             T thermostatTwin = getDigitalTwinResponse.DigitalTwin;
 
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-            _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonSerializer.Serialize(thermostatTwin, options)}");
+            _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonSerializer.Serialize(thermostatTwin, new JsonSerializerOptions { WriteIndented = true })}");
 
             return thermostatTwin;
         }
@@ -158,14 +154,12 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                var options = new InvokeDigitalTwinCommandOptions
-                {
-                    Payload = JsonSerializer.Serialize(since),
-                };
-
                 InvokeDigitalTwinCommandResponse invokeCommandResponse = await _serviceClient
                     .DigitalTwins
-                    .InvokeCommandAsync(_digitalTwinId, getMaxMinReportCommandName, options);
+                    .InvokeCommandAsync(
+                        _digitalTwinId,
+                        getMaxMinReportCommandName,
+                        new InvokeDigitalTwinCommandOptions { Payload = JsonSerializer.Serialize(since) });
 
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked. \nDevice returned status: {invokeCommandResponse.Status}." +
                     $"\nReport: {invokeCommandResponse.Payload}");

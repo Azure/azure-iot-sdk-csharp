@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         internal FileUploadSasUriRequest()
         {
         }
+
         /// <summary>
         /// The request parameters when getting a file upload SAS URI from IoT hub.
         /// </summary>

@@ -2,9 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Threading;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -54,19 +53,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         [JsonPropertyName("errors")]
         public IEnumerable<BulkEnrollmentOperationError> Errors { get; protected internal set; }
-
-        /// <summary>
-        /// Convert this object in a pretty print format.
-        /// </summary>
-        /// <returns>The string with the content of this class in a pretty print format.</returns>
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(
-                this,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                });
-        }
     }
 }

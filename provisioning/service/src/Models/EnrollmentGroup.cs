@@ -145,20 +145,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public AttestationMechanism Attestation { get; set; }
 
         /// <summary>
-        /// Convert this object in a pretty print format.
-        /// </summary>
-        /// <returns>The string with the content of this class in a pretty print format.</returns>
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(
-                this,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                });
-        }
-
-        /// <summary>
         /// Desired IoT hub to assign the device to.
         /// </summary>
         [JsonPropertyName("iotHubHostName")]

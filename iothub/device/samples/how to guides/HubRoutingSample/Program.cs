@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Parse the first line into a message object. Retrieve the body as a string.
             // This string was encoded as Base64 when it was written.
-            var messageObject = JsonDocument.Parse(fileLines[0]);
+            using var messageObject = JsonDocument.Parse(fileLines[0]);
             string body = messageObject.RootElement.GetProperty("Body").GetString();
 
             // Convert the body from Base64, then from UTF-32 to text, and write it out to the new file
