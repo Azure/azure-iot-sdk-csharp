@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var retryPolicy = new IotHubClientTestRetryPolicy(0);
             var ex = new IotHubClientException
             {
-                IsTransient = true,
+                IsTransient = isTransient,
             };
 
             // act and assert
