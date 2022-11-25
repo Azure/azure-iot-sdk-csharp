@@ -178,6 +178,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public virtual Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.RefreshTokenAsync(cancellationToken) ?? Task.FromResult(DateTime.Now);
+        }
+
+        public virtual DateTime GetRefreshesOn(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.GetRefreshesOn(cancellationToken) ?? DateTime.MaxValue;
+        }
+
+        public virtual void SetRefreshesOn(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+        }
+
         ~DefaultDelegatingHandler()
         {
             Dispose(false);

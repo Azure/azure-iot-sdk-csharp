@@ -207,6 +207,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return _amqpIotSession;
         }
 
+        internal async Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(RefreshTokenAsync));
+            try
+            {
+                return  await _amqpAuthenticationRefresher.RefreshTokenAsync(cancellationToken);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(RefreshTokenAsync));
+            }
+        }
+
+        internal DateTime GetRefreshesOn(CancellationToken cancellationToken)
+        {
+            if (_amqpAuthenticationRefresher != null)
+            {
+                return _amqpAuthenticationRefresher.RefreshOn;
+            }
+            return DateTime.MaxValue;
+        }
         internal async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)

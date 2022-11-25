@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -29,16 +30,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
 
+        private CancellationTokenSource _loopCancellationTokenSource;
+        private Task _refreshLoop;
+
         internal RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
-            _retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(RetryMaxCount, TimeSpan.FromMinutes(2));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(RetryDelegatingHandler));
+
+            _retryPolicy = context.RetryPolicy;
             _internalRetryHandler = new RetryHandler(_retryPolicy);
 
             _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, _internalRetryHandler, nameof(SetRetryPolicy));
+                Logging.Exit(this, nameof(RetryDelegatingHandler));
         }
 
         internal virtual void SetRetryPolicy(IIotHubClientRetryPolicy retryPolicy)
@@ -354,6 +361,51 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override void SetRefreshesOn(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(SetRefreshesOn));
+
+            DateTime refreshOn = GetRefreshesOn(cancellationToken);
+            if (refreshOn < DateTime.MaxValue && this is IAmqpAuthenticationRefresher refresher)
+            {
+                StartLoopAsync(refreshOn, cancellationToken);
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, cancellationToken, nameof(SetRefreshesOn));
+        }
+
+        public override DateTime GetRefreshesOn(CancellationToken cancellationToken)
+        {
+            return base.GetRefreshesOn(cancellationToken);
+        }
+
+        public override async Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(RefreshTokenAsync));
+
+            try
+            {
+                await _internalRetryHandler
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
+                        return base.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
+                    },
+                     (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors, cancellationToken)
+                .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(RefreshTokenAsync));
+            }
+            return DateTime.MaxValue;
+        }
+
         public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -433,6 +485,70 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 _handlerSemaphore?.Release();
             }
+        }
+
+        private void StartLoopAsync(DateTime refreshOn, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(StartLoopAsync));
+
+            if (_loopCancellationTokenSource == null
+                || _refreshLoop == null)
+            {
+                (this as IAmqpAuthenticationRefresher)?.StopLoop();
+            }
+
+            _loopCancellationTokenSource = new CancellationTokenSource();
+            _refreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, nameof(StartLoopAsync));
+        }
+
+        private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
+        {
+            TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)} with wait time {waitTime}.");
+
+                if (waitTime > TimeSpan.Zero)
+                {
+                    await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    refreshesOn = await RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
+
+                waitTime = refreshesOn - DateTime.UtcNow;
+            }
+        }
+
+            private async void StopLoopAsync()
+        {
+            _loopCancellationTokenSource?.Cancel();
+            if (_refreshLoop != null)
+            {
+                try
+                {
+                    await _refreshLoop.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) { }
+                _refreshLoop = null;
+            }
+
+            _loopCancellationTokenSource?.Dispose();
+            _loopCancellationTokenSource = null;
+
+            if (Logging.IsEnabled)
+                Logging.Info(this, nameof(StopLoopAsync));
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)

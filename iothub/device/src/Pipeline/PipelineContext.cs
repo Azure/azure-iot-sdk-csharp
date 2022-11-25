@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal string ModelId { get; set; }
 
+        internal IIotHubClientRetryPolicy RetryPolicy { get; set; }
+
         internal PayloadConvention PayloadConvention { get; set; }
 
         internal IotHubClientTransportSettings IotHubClientTransportSettings { get; set; }

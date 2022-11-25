@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
@@ -62,9 +63,10 @@ namespace Microsoft.Azure.Devices.Client
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
                 MessageEventCallback = OnMessageReceivedAsync,
+                RetryPolicy = _clientOptions.RetryPolicy ?? new IotHubClientNoRetry(),
             };
 
-            InnerHandler = pipelineBuilder.Build(PipelineContext, _clientOptions.RetryPolicy);
+            InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, _clientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
@@ -116,6 +118,10 @@ namespace Microsoft.Azure.Devices.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
+            if (_clientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
+            {
+                InnerHandler.SetRefreshesOn(cancellationToken);
+            }
         }
 
         /// <summary>

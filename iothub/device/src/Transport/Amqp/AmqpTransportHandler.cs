@@ -129,6 +129,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
+        public override DateTime GetRefreshesOn(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return _amqpUnit.GetRefreshesOn(cancellationToken);
+        }
+
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -234,6 +241,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+            }
+        }
+
+        public override async Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(RefreshTokenAsync));
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                return await _amqpUnit.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(RefreshTokenAsync));
             }
         }
 
