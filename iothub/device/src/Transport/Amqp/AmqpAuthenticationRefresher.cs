@@ -43,12 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
 
-            DateTime refreshOn = await RefreshTokenAsync(cancellationToken);
-            if (refreshOn < DateTime.MaxValue
-                && this is IAmqpAuthenticationRefresher refresher)
-            {
-                refresher.RefreshOn = refreshOn;
-            }
+            await RefreshTokenAsync(cancellationToken);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
@@ -86,11 +81,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (refreshOn < DateTime.MaxValue
+            if (refreshOn < DateTime.MaxValue 
                 && this is IAmqpAuthenticationRefresher refresher)
             {
                 refresher.RefreshOn = refreshOn;
             }
+
             return refreshOn;
         }
 

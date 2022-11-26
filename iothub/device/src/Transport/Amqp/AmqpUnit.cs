@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Logging.Enter(this, nameof(RefreshTokenAsync));
             try
             {
-                return  await _amqpAuthenticationRefresher.RefreshTokenAsync(cancellationToken);
+                return await _amqpAuthenticationRefresher.RefreshTokenAsync(cancellationToken);
             }
             finally
             {
@@ -224,12 +224,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal DateTime GetRefreshesOn(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (_amqpAuthenticationRefresher != null)
             {
                 return _amqpAuthenticationRefresher.RefreshOn;
             }
             return DateTime.MaxValue;
         }
+
         internal async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)

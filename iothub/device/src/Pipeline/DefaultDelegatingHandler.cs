@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.RefreshTokenAsync(cancellationToken) ?? Task.FromResult(DateTime.Now);
+            return NextHandler?.RefreshTokenAsync(cancellationToken) ?? Task.FromResult(DateTime.MaxValue);
         }
 
         public virtual DateTime GetRefreshesOn(CancellationToken cancellationToken)

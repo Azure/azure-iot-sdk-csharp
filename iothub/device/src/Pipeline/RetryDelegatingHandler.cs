@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(SetRefreshesOn));
 
             DateTime refreshOn = GetRefreshesOn(cancellationToken);
-            if (refreshOn < DateTime.MaxValue && this is IAmqpAuthenticationRefresher refresher)
+            if (refreshOn < DateTime.MaxValue)
             {
                 StartLoopAsync(refreshOn, cancellationToken);
             }
@@ -388,12 +388,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                await _internalRetryHandler
+                return await _internalRetryHandler
                 .RunWithRetryAsync(
                     async () =>
                     {
                         await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-                        return base.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
+                        return await base.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
                     },
                      (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors, cancellationToken)
                 .ConfigureAwait(false);
@@ -403,7 +403,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(RefreshTokenAsync));
             }
-            return DateTime.MaxValue;
         }
 
         public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
@@ -531,7 +530,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-            private async void StopLoopAsync()
+        private async void StopLoopAsync()
         {
             _loopCancellationTokenSource?.Cancel();
             if (_refreshLoop != null)
