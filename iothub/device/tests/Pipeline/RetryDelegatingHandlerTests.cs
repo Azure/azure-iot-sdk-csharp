@@ -142,8 +142,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
-            var message = new TelemetryMessage(new byte[] { 1, 2, 3 });
-            IEnumerable<TelemetryMessage> messages = new[] { message };
 
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
@@ -184,8 +182,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
-            var message = new TelemetryMessage(new byte[] { 1, 2, 3 });
-            IEnumerable<TelemetryMessage> messages = new[] { message };
 
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))

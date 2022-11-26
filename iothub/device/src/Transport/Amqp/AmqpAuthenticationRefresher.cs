@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (refreshOn < DateTime.MaxValue 
+            if (refreshOn < DateTime.MaxValue
                 && this is IAmqpAuthenticationRefresher refresher)
             {
                 refresher.RefreshOn = refreshOn;

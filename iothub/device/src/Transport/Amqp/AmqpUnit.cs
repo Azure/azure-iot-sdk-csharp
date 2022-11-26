@@ -211,6 +211,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(RefreshTokenAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 return await _amqpAuthenticationRefresher.RefreshTokenAsync(cancellationToken);
