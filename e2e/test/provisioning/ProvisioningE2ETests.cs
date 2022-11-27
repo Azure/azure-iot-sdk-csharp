@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_certificatePassword = Configuration.Provisioning.CertificatePassword;
 
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
+
         private static DirectoryInfo s_x509CertificatesFolder;
         private static string s_intermediateCertificateSubject;
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();

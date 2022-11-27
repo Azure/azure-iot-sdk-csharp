@@ -7,12 +7,10 @@ using FluentAssertions;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-
     public static partial class Configuration
     {
         public static partial class Provisioning
         {
-
             public static string CertificatePassword => GetValue("DPS_X509_PFX_CERTIFICATE_PASSWORD");
 
             public static string ConnectionString => GetValue("PROVISIONING_CONNECTION_STRING");
@@ -34,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert.NotAfter.Should().NotBeBefore(DateTime.Now, $"The X509 cert from {intermediateCert} has expired.");
                 return GetValue(intermediateCert);
             }
-            
+
             public static string ConnectionStringInvalidServiceCertificate => GetValue("PROVISIONING_CONNECTION_STRING_INVALIDCERT", string.Empty);
 
             public static string GlobalDeviceEndpointInvalidServiceCertificate => GetValue("DPS_GLOBALDEVICEENDPOINT_INVALIDCERT", string.Empty);
