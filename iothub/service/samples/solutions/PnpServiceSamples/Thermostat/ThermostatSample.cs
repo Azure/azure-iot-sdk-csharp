@@ -75,10 +75,11 @@ namespace Microsoft.Azure.Devices.Samples
             const string getMaxMinReportCommandName = "getMaxMinReport";
 
             // Create command name to invoke for component
-            var commandInvocation = new DirectMethodServiceRequest(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))
+            var commandInvocation = new DirectMethodServiceRequest
             {
                 MethodName = getMaxMinReportCommandName,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
+                Payload = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)),
             };
 
             _logger.LogDebug($"Invoke the {getMaxMinReportCommandName} command on {_deviceId} device twin.");

@@ -43,10 +43,11 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
         // Invoke the direct method on the device, passing the payload.
         private static async Task InvokeMethodAsync(IotHubServiceClient serviceClient, string deviceId)
         {
-            var methodInvocation = new DirectMethodServiceRequest("10")
+            var methodInvocation = new DirectMethodServiceRequest
             {
                 MethodName = "SetTelemetryInterval",
                 ResponseTimeout = TimeSpan.FromSeconds(30),
+                Payload = "10",
             };
 
             Console.WriteLine($"Invoking direct method for device: {deviceId}");

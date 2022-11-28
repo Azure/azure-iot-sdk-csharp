@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -12,19 +11,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DirectMethodServiceRequest
     {
-        /// <summary>
-        /// Creates an instance of this class with the specified payload to be serialized.
-        /// </summary>
-        /// <param name="payload">The method serializable payload to send to the device.</param>
-        public DirectMethodServiceRequest(object payload = default)
-        {
-            if (payload != default)
-            {
-                using var jd = JsonDocument.Parse(JsonSerializer.Serialize(payload));
-                JsonPayload = jd.RootElement;
-            }
-        }
-
         /// <summary>
         /// The method name to run.
         /// </summary>
@@ -63,44 +49,15 @@ namespace Microsoft.Azure.Devices
         public TimeSpan? ResponseTimeout { get; set; }
 
         /// <summary>
-        /// Get the serialized JSON payload.
-        /// </summary>
-        /// <remarks>
-        /// May be null or empty.
-        /// </remarks>
-        [JsonIgnore]
-        public string PayloadAsJsonString => JsonPayload?.GetRawText();
-
-        /// <summary>
-        /// The deserialized payload.
+        /// The payload to have serialized and send as JSON.
         /// </summary>
         [JsonPropertyName("payload")]
-        internal JsonElement? JsonPayload { get; set; }
+        public object Payload { get; set; }
 
         [JsonPropertyName("responseTimeoutInSeconds")]
         internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
 
         [JsonPropertyName("connectTimeoutInSeconds")]
         internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
-
-        /// <summary>
-        /// Returns JSON payload as a specified type.
-        /// </summary>
-        /// <typeparam name="T">The type into which the JSON payload can be deserialized.</typeparam>
-        /// <returns>True if the value could be deserialized, otherwise false.</returns>
-        public bool TryGetPayload<T>(out T value)
-        {
-            value = default;
-
-            try
-            {
-                value = JsonSerializer.Deserialize<T>(PayloadAsJsonString);
-                return true;
-            }
-            catch (JsonException)
-            {
-                return false;
-            }
-        }
     }
 }

@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonIgnore]
         public string PayloadAsString => JsonPayload.HasValue
-            ? JsonPayload.Value.ToString()
+            ? JsonPayload.Value.GetRawText()
             : null;
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                value = JsonSerializer.Deserialize<T>(JsonPayload.Value.GetRawText());
+                value = JsonSerializer.Deserialize<T>(PayloadAsString);
                 return true;
             }
             catch (JsonException)
