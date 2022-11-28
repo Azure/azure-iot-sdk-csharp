@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
@@ -15,14 +16,26 @@ namespace Microsoft.Azure.Devices.Client
     public class DirectMethodRequest
     {
         /// <summary>
+        /// For deserialization.
+        /// </summary>
+        internal DirectMethodRequest()
+        { }
+
+        /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
+        /// <param name="payload">A method payload to send, if any.</param>
         /// <remarks>
         /// A direct method request can only be made by the service or a module;
         /// a device client app will not need to instantiate this class.
         /// </remarks>
-        public DirectMethodRequest()
+        public DirectMethodRequest(object payload = default)
         {
+            if (payload != default)
+            {
+                using var jd = JsonDocument.Parse(JsonSerializer.Serialize(payload));
+                Payload = jd.RootElement;
+            }
         }
 
         /// <summary>
@@ -73,15 +86,18 @@ namespace Microsoft.Azure.Devices.Client
         public string RequestId { get; protected internal set; }
 
         /// <summary>
+        /// The serialized payload.
+        /// </summary>
+        [JsonIgnore]
+        public string PayloadAsString => Payload.HasValue
+            ? Payload.Value.GetRawText()
+            : null;
+
+        /// <summary>
         /// The JSON payload in JRaw type.
         /// </summary>
         [JsonPropertyName("payload")]
-        protected internal JRaw JsonPayload { get; set; }
-
-        /// <summary>
-        /// The direct method payload.
-        /// </summary>
-        protected internal byte[] Payload { get; set; }
+        internal JsonElement? Payload { get; }
 
         /// <summary>
         /// The convention to use with the direct method payload.
@@ -111,33 +127,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T">The type to deserialize the direct method request payload to.</typeparam>
         /// <param name="payload">When this method returns true, this contains the value of the direct method request payload.
         /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
-        /// <returns><c>true</c> if the direct method request payload can be deserialized to type <c>T</c>; otherwise, <c>false</c>.</returns>
+        /// <returns>If the direct method request payload can be deserialized to type <c>T</c> returns true; otherwise, false.</returns>
         public bool TryGetPayload<T>(out T payload)
         {
             payload = default;
 
-            try
+            if (Payload.HasValue)
             {
-                payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(GetPayloadAsJsonString());
-                return true;
-            }
-            catch (Exception)
-            {
-                // In case the value cannot be converted using the serializer,
-                // then return false with the default value of the type <T> passed in.
+                try
+                {
+                    payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(PayloadAsString);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    // In case the value cannot be converted using the serializer,
+                    // then return false with the default value of the type <T> passed in.
+                }
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// The command payload as a JSON string.
-        /// </summary>
-        public string GetPayloadAsJsonString()
-        {
-            return Payload.Length == 0
-                ? null
-                : PayloadConvention.PayloadEncoder.ContentEncoding.GetString(Payload);
         }
     }
 }

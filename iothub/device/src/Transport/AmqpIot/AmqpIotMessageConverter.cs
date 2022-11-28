@@ -257,11 +257,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 using var ms = new MemoryStream();
                 amqpMessage.BodyStream.CopyTo(ms);
-                return new DirectMethodRequest
+                return new DirectMethodRequest(ms.ToArray())
                 {
                     PayloadConvention = payloadConvention,
                     MethodName = methodName,
-                    Payload = ms.ToArray(),
                     RequestId = methodRequestId,
                 };
             }

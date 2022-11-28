@@ -21,7 +21,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The status of direct method response.
         /// </summary>
-        [JsonPropertyName("status")]
         public int Status { get; set; }
 
         /// <summary>
@@ -30,23 +29,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
         /// </remarks>
-        [JsonIgnore]
         public object Payload { get; set; }
 
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
         /// <remarks>
-        /// This value is not part of the Json payload. It is received as topic string parameter over MQTT and as a
+        /// This value is not part of the JSON payload. It is received as topic string parameter over MQTT and as a
         /// property over AMQP.
         /// </remarks>
-        [JsonIgnore]
         internal string RequestId { get; set; }
 
         /// <summary>
         /// The convention to use with the direct method payload.
         /// </summary>
-        [JsonIgnore]
         protected internal PayloadConvention PayloadConvention { get; set; }
 
         internal byte[] GetPayloadObjectBytes()
