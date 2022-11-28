@@ -128,8 +128,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
-            var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
+            var myPatch = new DesiredProperties
             {
+                Properties =
+                {
+                    { "key", "value" },
+                    { "$version", 1 }
+                },
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
