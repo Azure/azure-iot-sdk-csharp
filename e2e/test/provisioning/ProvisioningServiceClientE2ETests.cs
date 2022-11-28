@@ -190,18 +190,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 if (attestationType == AttestationMechanismType.SymmetricKey)
                 {
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.SymmetricKey);
+                    attestationMechanism.SymmetricKey.Should().NotBeNull();
 
-                    var symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
-                    symmetricKeyAttestation.PrimaryKey.Should().Be(((SymmetricKeyAttestation)individualEnrollment.Attestation).PrimaryKey);
-                    symmetricKeyAttestation.SecondaryKey.Should().Be(((SymmetricKeyAttestation)individualEnrollment.Attestation).SecondaryKey);
+                    SymmetricKeyAttestation symmetricKeyAttestation = attestationMechanism.SymmetricKey;
+                    symmetricKeyAttestation.PrimaryKey.Should().Be(individualEnrollment.Attestation.SymmetricKey.PrimaryKey);
+                    symmetricKeyAttestation.SecondaryKey.Should().Be(individualEnrollment.Attestation.SymmetricKey.SecondaryKey);
                 }
                 else if (attestationType == AttestationMechanismType.X509)
                 {
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
+                    attestationMechanism.X509.Should().NotBeNull();
 
-                    var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
-                    x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetPrimaryX509CertificateInfo().Sha1Thumbprint);
-                    x509Attestation.GetSecondaryX509CertificateInfo().Sha1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetSecondaryX509CertificateInfo().Sha1Thumbprint);
+                    X509Attestation x509Attestation = attestationMechanism.X509;
+                    x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint
+                        .Should()
+                        .Be(individualEnrollment.Attestation.X509.GetPrimaryX509CertificateInfo().Sha1Thumbprint);
+                    x509Attestation.GetSecondaryX509CertificateInfo().Sha1Thumbprint
+                        .Should()
+                        .Be(individualEnrollment.Attestation.X509.GetSecondaryX509CertificateInfo().Sha1Thumbprint);
                 }
             }
             finally
@@ -242,22 +248,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 if (attestationType == AttestationMechanismType.SymmetricKey)
                 {
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.SymmetricKey);
+                    attestationMechanism.SymmetricKey.Should().NotBeNull();
 
-                    var symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
-                    symmetricKeyAttestation.PrimaryKey.Should().Be(((SymmetricKeyAttestation)enrollmentGroup.Attestation).PrimaryKey);
-                    symmetricKeyAttestation.SecondaryKey.Should().Be(((SymmetricKeyAttestation)enrollmentGroup.Attestation).SecondaryKey);
+                    SymmetricKeyAttestation symmetricKeyAttestation = attestationMechanism.SymmetricKey;
+                    symmetricKeyAttestation.PrimaryKey.Should().Be(enrollmentGroup.Attestation.SymmetricKey.PrimaryKey);
+                    symmetricKeyAttestation.SecondaryKey.Should().Be(enrollmentGroup.Attestation.SymmetricKey.SecondaryKey);
                 }
                 else if (attestationType == AttestationMechanismType.X509)
                 {
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
+                    attestationMechanism.X509.Should().NotBeNull();
 
-                    var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
+                    var x509Attestation = attestationMechanism.X509;
                     x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint
                         .Should()
-                        .Be(((X509Attestation)enrollmentGroup.Attestation).GetPrimaryX509CertificateInfo().Sha1Thumbprint);
+                        .Be(enrollmentGroup.Attestation.X509.GetPrimaryX509CertificateInfo().Sha1Thumbprint);
                     x509Attestation.GetSecondaryX509CertificateInfo().Sha1Thumbprint
                         .Should()
-                        .Be(((X509Attestation)enrollmentGroup.Attestation).GetSecondaryX509CertificateInfo().Sha1Thumbprint);
+                        .Be(enrollmentGroup.Attestation.X509.GetSecondaryX509CertificateInfo().Sha1Thumbprint);
                 }
             }
             finally
@@ -457,7 +465,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 case AttestationMechanismType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
-                    attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
+                    attestation = new SymmetricKeyAttestation { PrimaryKey = primaryKey, SecondaryKey = secondaryKey };
                     break;
 
                 case AttestationMechanismType.X509:
@@ -510,7 +518,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 case AttestationMechanismType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
-                    attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
+                    attestation = new SymmetricKeyAttestation { PrimaryKey = primaryKey, SecondaryKey = secondaryKey };
                     break;
 
                 case AttestationMechanismType.X509:

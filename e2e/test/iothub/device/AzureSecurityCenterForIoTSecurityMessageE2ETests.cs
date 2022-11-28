@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -79,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             string eventId = Guid.NewGuid().ToString();
             string p1Value = eventId;
-            string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString();
+            string payload = JsonSerializer.Serialize(ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId));
 
             var message = new TelemetryMessage(payload)
             {
@@ -90,17 +92,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return message;
         }
 
-        private static JObject ComposeAzureSecurityCenterForIoTSecurityMessagePayload(string eventId)
+        private static object ComposeAzureSecurityCenterForIoTSecurityMessagePayload(string eventId)
         {
             DateTime now = DateTime.UtcNow;
-            return new JObject
+
+            return new Dictionary<string, object>
             {
                 { "AgentVersion", "0.0.1" },
                 { "AgentId" , Guid.NewGuid().ToString() },
                 { "MessageSchemaVersion", "1.0" },
-                { "Events", new JArray
+                {
+                    "Events",
+                    new[]
                     {
-                        new JObject
+                        new Dictionary<string, object>
                         {
                             { "EventType", "Security" },
                             { "Category", "Periodic" },
@@ -110,10 +115,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                             { "Id", eventId },
                             { "TimestampLocal", now },
                             { "TimestampUTC", now },
-                            { "Payload", new JArray() },
-                        }
+                            { "Payload", Array.Empty<object>() },
+                        },
                     }
-                }
+                },
             };
         }
 
