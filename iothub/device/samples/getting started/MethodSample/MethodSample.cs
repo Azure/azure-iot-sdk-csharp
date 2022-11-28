@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodRequest directMethodRequest)
         {
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
-            Console.WriteLine($"\t{directMethodRequest.GetPayloadAsJsonString()}\n");
+            Console.WriteLine($"\t{directMethodRequest.PayloadAsString}\n");
 
             var directMethodResponse = new DirectMethodResponse(200);
 
@@ -95,8 +95,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
 
-            var retValue = new DirectMethodResponse(200);
-            retValue.Payload = Encoding.UTF8.GetBytes("DeviceClientMethodSample");
+            var retValue = new DirectMethodResponse(200)
+            {
+                Payload = Encoding.UTF8.GetBytes("DeviceClientMethodSample")
+            };
 
             return Task.FromResult(retValue);
         }

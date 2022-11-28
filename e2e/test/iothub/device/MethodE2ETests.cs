@@ -314,7 +314,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            JsonSerializer.Serialize(response.Payload).Should().Be(JsonSerializer.Serialize(respJson));
+            response.PayloadAsString.Should().Be(JsonSerializer.Serialize(respJson));
         }
 
         public static async Task ServiceSendMethodAndVerifyResponseAsync(
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            JsonSerializer.Serialize(response.Payload).Should().Be(JsonSerializer.Serialize(respJson));
+            response.PayloadAsString.Should().Be(JsonSerializer.Serialize(respJson));
         }
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName)

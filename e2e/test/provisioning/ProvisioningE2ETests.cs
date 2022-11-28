@@ -1030,8 +1030,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                     iothubs,
                                     capabilities)
                                 .ConfigureAwait(false);
-                            Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
-                            var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
+                            symmetricKeyEnrollmentGroup.Attestation.Type.Should().Be(AttestationMechanismType.SymmetricKey);
+                            var symmetricKeyAttestation = symmetricKeyEnrollmentGroup.Attestation.SymmetricKey;
                             string registrationIdSymmetricKey = _idPrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;
@@ -1054,8 +1054,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                     capabilities)
                                 .ConfigureAwait(false);
 
-                            Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
-                            symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;
+                            symmetricKeyEnrollment.Attestation.Type.Should().Be(AttestationMechanismType.SymmetricKey);
+                            symmetricKeyAttestation = symmetricKeyEnrollment.Attestation.SymmetricKey;
 
                             registrationIdSymmetricKey = symmetricKeyEnrollment.RegistrationId;
                             string primaryKey = symmetricKeyAttestation.PrimaryKey;

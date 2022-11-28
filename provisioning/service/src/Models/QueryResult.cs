@@ -65,12 +65,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If <paramref name="bodyString"/> is empty or white space.</exception>
         protected internal QueryResult(string typeString, string bodyString, string continuationToken)
         {
+            Argument.AssertNotNullOrWhiteSpace(typeString, nameof(typeString));
+
             QueryType = (QueryResultType)Enum.Parse(typeof(QueryResultType), typeString, true);
             ContinuationToken = string.IsNullOrWhiteSpace(continuationToken)
                 ? null
                 : continuationToken;
 
-            if (QueryType != QueryResultType.Unknown && string.IsNullOrWhiteSpace(bodyString))
+            if (QueryType != QueryResultType.Unknown
+                && string.IsNullOrWhiteSpace(bodyString))
             {
                 if (bodyString == null)
                 {
