@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             
             using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<T>(stream, jsonSerializerOptions, token).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<T>(stream, new JsonSerializerOptions(), token).ConfigureAwait(false);
         }
     }
 }
