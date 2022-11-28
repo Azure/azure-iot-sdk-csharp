@@ -15,27 +15,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Users must provide the certificate authority reference as a string. This class will encapsulate both in a
     /// single <see cref="X509Attestation"/>.
     /// </remarks>
-    /// <example>
-    /// The following JSON is an example of the result of this class.
-    /// <code language="json">
-    /// {
-    ///     "primary": "ValidCAReference-1",
-    ///     "secondary": "validCAReference-2"
-    /// }
-    /// </code>
-    /// </example>
     public class X509CaReferences
     {
         /// <summary>
         /// Primary reference.
         /// </summary>
         [JsonPropertyName("primary")]
-        public string Primary { get; internal set; }
+        public string Primary { get; set; }
 
         /// <summary>
         /// Secondary reference.
         /// </summary>
         [JsonPropertyName("secondary")]
-        public string Secondary { get; internal set; }
+        public string Secondary { get; set; }
     }
 }

@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Net;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using Azure;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -17,104 +14,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// This object is used to send EnrollmentGroup information to the provisioning service, or receive EnrollmentGroup
-    ///    information from the provisioning service.
-    ///
+    /// information from the provisioning service.
+    /// <para>
     /// To create or update an EnrollmentGroup on the provisioning service you should fill this object and call the
-    ///    public API {@link ProvisioningServiceClient#createOrUpdateEnrollmentGroup(EnrollmentGroup)}.
-    ///    The minimum information required by the provisioning service is the {@link #enrollmentGroupId} and the
-    ///    {@link #attestation}.
-    ///
+    /// public API <see cref="EnrollmentGroupsClient.CreateOrUpdateAsync(EnrollmentGroup, CancellationToken)"/>
+    /// The minimum information required by the provisioning service is the <see cref="EnrollmentGroupId"/>
+    /// and <see cref="Attestation"/>.
+    /// </para>
+    /// <para>
     /// To provision a device using EnrollmentGroup, it must contain a X509 chip with a signingCertificate for the
-    ///    {@link X509Attestation} mechanism.
-    ///
-    /// The content of this class will be serialized in a JSON format and sent as a body of the rest API to the
-    ///    provisioning service.
-    ///
-    /// The content of this class can be filled by a JSON, received from the provisioning service, as result of a
-    ///    EnrollmentGroup operation like create, update, or query EnrollmentGroup.
+    /// <see cref="X509Attestation"/> mechanism.
+    /// </para>
     /// </remarks>
-    /// <example>
-    /// When serialized, an EnrollmentGroup will look like the following example:
-    /// <code language="json">
-    /// {
-    ///    "enrollmentGroupId": "validEnrollmentGroupId",
-    ///    "attestation": {
-    ///        "type": "x509",
-    ///        "signingCertificates": {
-    ///            "primary": {
-    ///                "certificate": "[valid certificate]"
-    ///            }
-    ///        }
-    ///    },
-    ///    "iotHubHostName": "ContosoIoTHub.azure-devices.net",
-    ///    "provisioningStatus": "enabled"
-    /// }
-    /// </code>
-    ///
-    /// The following JSON is a sample of the EnrollmentGroup response, received from the provisioning service.
-    /// <code>
-    /// {
-    ///    "enrollmentGroupId":"validEnrollmentGroupId",
-    ///    "attestation":{
-    ///        "type":"x509",
-    ///        "signingCertificates":{
-    ///            "primary":{
-    ///                "certificate":"[valid certificate]",
-    ///                "info": {
-    ///                    "subjectName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",
-    ///                    "sha1Thumbprint": "0000000000000000000000000000000000",
-    ///                    "sha256Thumbprint": "validEnrollmentGroupId",
-    ///                    "issuerName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",
-    ///                    "notBeforeUtc": "2017-11-14T12:34:18Z",
-    ///                    "notAfterUtc": "2017-11-20T12:34:18Z",
-    ///                    "serialNumber": "000000000000000000",
-    ///                    "version": 3
-    ///                }
-    ///            }
-    ///        }
-    ///    },
-    ///    "iotHubHostName":"ContosoIoTHub.azure-devices.net",
-    ///    "provisioningStatus":"enabled",
-    ///    "createdDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
-    ///    "lastUpdatedDateTimeUtc": "2017-09-28T16:29:42.3447817Z",
-    ///    "etag": "\"00000000-0000-0000-0000-00000000000\""
-    /// }
-    /// </code>
-    /// </example>
     public class EnrollmentGroup
     {
         /// <summary>
-        /// Creates a new instance of EnrollmentGroup.
+        /// For deserialization.
         /// </summary>
-        /// <remarks>
-        /// This constructor creates an instance of the EnrollmentGroup object with the minimum set of
-        /// information required by the provisioning service. A valid EnrollmentGroup must contain the
-        /// enrollmentGroupId, which uniquely identify this enrollmentGroup, and the attestation mechanism,
-        /// which must X509.
-        ///
-        /// Other parameters can be added by calling the setters on this object.
-        /// </remarks>
-        /// <example>
-        /// When serialized, an EnrollmentGroup will look like the following example:
-        /// <code language="json">
-        /// {
-        ///     "enrollmentGroupId": "validEnrollmentGroupId",
-        ///     "attestation": {
-        ///         "type": "x509",
-        ///         "signingCertificates": {
-        ///             "primary": {
-        ///                 "certificate": "[valid certificate]"
-        ///             }
-        ///         }
-        ///     }
-        /// }
-        /// </code>
-        /// </example>
-        /// <param name="enrollmentGroupId">The string that uniquely identify this enrollmentGroup in the provisioning
-        /// service. It cannot be null or empty.</param>
-        /// <param name="attestation">The <see cref="Attestation"/> object with the attestation mechanism.</param>
-        /// <exception cref="ArgumentNullException">If the provided <paramref name="enrollmentGroupId"/> is null.</exception>
-        /// <exception cref="ArgumentException">If the provided <paramref name="enrollmentGroupId"/> is empty or white space.</exception>
+        internal EnrollmentGroup()
+        { }
+
+        /// <summary>
+        /// Creates an instance of this class with the required properties.
+        /// </summary>
+        /// <param name="enrollmentGroupId">The Id of the enrollment group.</param>
+        /// <param name="attestation">The attestation.</param>
+        /// <exception cref="ArgumentException">When <paramref name="attestation"/> is an unsupported type.</exception>
         public EnrollmentGroup(string enrollmentGroupId, Attestation attestation)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
@@ -142,7 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Attestation mechanism.
         /// </summary>
         [JsonPropertyName("attestation")]
-        public AttestationMechanism Attestation { get; set; }
+        public AttestationMechanism Attestation { get; internal set; }
 
         /// <summary>
         /// Desired IoT hub to assign the device to.
@@ -200,8 +125,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public AllocationPolicy? AllocationPolicy { get; set; }
 
         /// <summary>
-        /// The list of names of IoT hubs the device(s) in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
+        /// The list of names of IoT hubs the device(s) in this resource can be allocated to.
         /// </summary>
+        /// <remarks>
+        /// Must be a subset of tenant level list of IoT hubs.
+        /// </remarks>
         [JsonPropertyName("iotHubs")]
         public IList<string> IotHubs { get; set; } = new List<string>();
 

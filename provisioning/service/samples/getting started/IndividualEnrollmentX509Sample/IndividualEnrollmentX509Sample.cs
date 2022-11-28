@@ -62,11 +62,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task CreateIndividualEnrollmentX509Async()
         {
             Console.WriteLine($"Creating an individual enrollment '{_registrationId}'...");
-            X509Attestation x509 = X509Attestation.CreateFromClientCertificates(_issuerCertificate);
-            var individualEnrollment = new IndividualEnrollment(
-                _registrationId, x509)
+            var x509 = new X509Attestation
             {
-                // The following properties are optional:
+                ClientCertificates = new X509Certificates
+                {
+                    Primary = new X509CertificateWithInfo(_issuerCertificate),
+                },
+            };
+            var individualEnrollment = new IndividualEnrollment(_registrationId, x509)
+            {
                 DeviceId = _deviceId,
                 ProvisioningStatus = OptionalProvisioningStatus,
                 Capabilities = _optionalEdgeCapabilityEnabled,

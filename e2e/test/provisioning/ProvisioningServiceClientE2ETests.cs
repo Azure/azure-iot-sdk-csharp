@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
                     attestationMechanism.X509.Should().NotBeNull();
 
-                    var x509Attestation = attestationMechanism.X509;
+                    X509Attestation x509Attestation = attestationMechanism.X509;
                     x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint
                         .Should()
                         .Be(enrollmentGroup.Attestation.X509.GetPrimaryX509CertificateInfo().Sha1Thumbprint);
@@ -469,7 +469,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     break;
 
                 case AttestationMechanismType.X509:
-                    attestation = X509Attestation.CreateFromClientCertificates(authenticationCertificate);
+                    attestation = new X509Attestation
+                    {
+                        ClientCertificates = new X509Certificates
+                        {
+                            Primary = new X509CertificateWithInfo(authenticationCertificate),
+                        },
+                    };
                     break;
 
                 default:

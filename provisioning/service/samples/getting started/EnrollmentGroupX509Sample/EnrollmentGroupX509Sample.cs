@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
@@ -57,9 +58,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task CreateEnrollmentGroupAsync()
         {
             Console.WriteLine("\nCreating a new enrollmentGroup...");
-            Attestation attestation = X509Attestation.CreateFromRootCertificates(_groupIssuerCertificate);
+            var attestation = new X509Attestation
+            {
+                RootCertificates = new X509Certificates
+                {
+                    Primary = new X509CertificateWithInfo(_groupIssuerCertificate),
+                },
+            };
             var enrollmentGroup = new EnrollmentGroup(EnrollmentGroupId, attestation);
-            Console.WriteLine(enrollmentGroup);
+            Console.WriteLine(JsonSerializer.Serialize(enrollmentGroup));
 
             Console.WriteLine("\nAdding new enrollmentGroup...");
             EnrollmentGroup enrollmentGroupResult = await _provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup);

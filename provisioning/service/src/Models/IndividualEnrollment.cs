@@ -3,10 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Net;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using Azure;
@@ -38,25 +34,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class IndividualEnrollment
     {
         /// <summary>
-        /// Creates a new instance of IndividualEnrollment.
+        /// For deserialization.
         /// </summary>
-        /// <remarks>
-        /// This constructor creates an instance of the IndividualEnrollment object with the minimum set of
-        /// information required by the provisioning service. A valid individualEnrollment must contain the
-        /// registrationId, which uniquely identify this enrollment, and the attestation mechanism, which can
-        /// be X509, or Symmetric key.
-        ///
-        /// Other parameters can be added by calling the setters on this object.
-        /// </remarks>
-        /// <param name="registrationId">The string that uniquely identify this enrollment in the provisioning
-        /// service. It cannot be null or empty.</param>
-        /// <param name="attestation">The <see cref="Attestation"/> object with the attestation mechanism.</param>
-        /// <exception cref="ArgumentNullException">If the provided <paramref name="registrationId"/> is null.</exception>
-        /// <exception cref="ArgumentException">If the provided <paramref name="registrationId"/> is empty or white space.</exception>
+        internal IndividualEnrollment()
+        { }
+
+        /// <summary>
+        /// Creates an instance of this class with the required fields.
+        /// </summary>
+        /// <param name="registrationId">The Id of the registration.</param>
+        /// <param name="attestation">The attestation.</param>
+        /// <exception cref="ArgumentException">When <paramref name="attestation"/> is an unsupported type.</exception>
         public IndividualEnrollment(string registrationId, Attestation attestation)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));
-            RegistrationId = registrationId;
+            RegistrationId= registrationId;
             Attestation = GetAttestationMechanism(attestation);
         }
 
@@ -66,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
-        /// <exception cref="InvalidOperationException">If the provided string does not fit the registration Id requirements</exception>
+        /// <exception cref="InvalidOperationException">If the provided string does not fit the registration Id requirements.</exception>
         [JsonPropertyName("registrationId")]
         public string RegistrationId { get; internal set; }
 
@@ -86,7 +78,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Attestation mechanism.
         /// </summary>
         [JsonPropertyName("attestation")]
-        public AttestationMechanism Attestation { get; set; }
+        public AttestationMechanism Attestation { get; internal set; }
 
         /// <summary>
         /// Desired IoT hub to assign the device to.
