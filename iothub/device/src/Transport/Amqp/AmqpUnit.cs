@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                return await _amqpAuthenticationRefresher.RefreshTokenAsync(cancellationToken);
+                return await _amqpAuthenticationRefresher.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
