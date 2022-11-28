@@ -389,14 +389,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 return await _internalRetryHandler
-                .RunWithRetryAsync(
-                    async () =>
-                    {
-                        await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-                        return await base.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
-                    },
-                     (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors, cancellationToken)
-                .ConfigureAwait(false);
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
+                            return await base.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors, cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
