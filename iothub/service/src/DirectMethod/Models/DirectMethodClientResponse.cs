@@ -28,15 +28,43 @@ namespace Microsoft.Azure.Devices
         public int Status { get; protected internal set; }
 
         /// <summary>
-        /// Get the payload object. May be null or empty.
+        /// The serialized payload.
         /// </summary>
-        /// <remarks>
-        /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
-        /// </remarks>
         [JsonIgnore]
-        public object Payload => JsonSerializer.Deserialize((string)JsonPayload.Value);
+        public string PayloadAsString => JsonPayload.HasValue
+            ? JsonPayload.Value.GetRawText()
+            : null;
 
+        /// <summary>
+        /// The deserialized payload.
+        /// </summary>
         [JsonPropertyName("payload")]
-        internal JRaw JsonPayload { get; set; }
+        protected internal JsonElement? JsonPayload { get; set; }
+
+        /// <summary>
+        /// Tries to deserialize the payload as the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type to convert to.</typeparam>
+        /// <param name="value">The value of the payload.</param>
+        /// <returns>True if converted, otherwise false.</returns>
+        public bool TryGetPayload<T>(out T value)
+        {
+            value = default;
+
+            if (JsonPayload == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                value = JsonSerializer.Deserialize<T>(PayloadAsString);
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
     }
 }

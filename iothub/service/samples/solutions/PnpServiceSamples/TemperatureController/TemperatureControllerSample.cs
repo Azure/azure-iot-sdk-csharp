@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Samples
         private const string Thermostat1Component = "thermostat1";
 
         private static readonly Random s_random = new();
-        private static readonly string DeviceSampleLink =
+        private const string DeviceSampleLink =
             "https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples/TemperatureController";
 
         private readonly IotHubServiceClient _serviceClient;
@@ -49,11 +49,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
 
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin, options)}");
+            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin, new JsonSerializerOptions { WriteIndented = true })}");
 
             return twin;
         }
@@ -78,7 +74,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on component {Thermostat1Component}." +
-                    $"\nDevice returned status: {result.Status}. \nReport: {result.Payload}");
+                    $"\nDevice returned status: {result.Status}. \nReport: {result.PayloadAsString}");
             }
             catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotFound)
             {
@@ -95,7 +91,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
-                Payload = JsonSerializer.Serialize(3),
+                Payload = 3,
             };
 
             _logger.LogDebug($"Invoke the {commandToInvoke} command on the {_deviceId} device twin." +
@@ -121,7 +117,7 @@ namespace Microsoft.Azure.Devices.Samples
             // Choose a random value to assign to the targetTemperature property in thermostat1 component
             int desiredTargetTemperature = s_random.Next(0, 100);
 
-            var twinPatch = CreatePropertyPatch(targetTemperaturePropertyName, desiredTargetTemperature, Thermostat1Component);
+            ClientTwin twinPatch = CreatePropertyPatch(targetTemperaturePropertyName, desiredTargetTemperature, Thermostat1Component);
             _logger.LogDebug($"Updating the {targetTemperaturePropertyName} property under component {Thermostat1Component} on the {_deviceId} device twin to { desiredTargetTemperature}.");
 
             ClientTwin currentTwin = await _serviceClient.Twins.GetAsync(_deviceId);
@@ -132,23 +128,21 @@ namespace Microsoft.Azure.Devices.Samples
             await GetAndPrintDeviceTwinAsync();
         }
 
-        /* The property update patch (for a property within a component) needs to be in the following format:
-         * {
-         *  "sampleComponentName":
-         *      {
-         *          "__t": "c",
-         *          "samplePropertyName": 20
-         *      }
-         *  }
-         */
+        // The property update patch (for a property within a component) needs to be in the following format:
+        // {
+        //  "sampleComponentName":
+        //      {
+        //          "__t": "c",
+        //          "samplePropertyName": 20
+        //      }
+        //  }
+        // 
         private static ClientTwin CreatePropertyPatch(string propertyName, object propertyValue, string componentName)
         {
             var twinPatch = new ClientTwin();
-            twinPatch.Properties.Desired[componentName] = new
-            {
-                __t = "c"
-            };
+            twinPatch.Properties.Desired[componentName] = new { __t = "c" };
             twinPatch.Properties.Desired[componentName][propertyName] = JsonSerializer.Serialize(propertyValue);
+
             return twinPatch;
         }
     }

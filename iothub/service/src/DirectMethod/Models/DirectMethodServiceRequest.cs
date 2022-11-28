@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -12,15 +11,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DirectMethodServiceRequest
     {
-        private object _payload;
-
-        /// <summary>
-        /// Initialize an instance of this class.
-        /// </summary>
-        public DirectMethodServiceRequest()
-        {
-        }
-
         /// <summary>
         /// The method name to run.
         /// </summary>
@@ -59,50 +49,15 @@ namespace Microsoft.Azure.Devices
         public TimeSpan? ResponseTimeout { get; set; }
 
         /// <summary>
-        /// Get the payload object. May be null or empty.
-        /// </summary>
-        [JsonIgnore]
-        public object Payload
-        {
-            get => _payload;
-
-            set
-            {
-                _payload = value;
-                if (value != null)
-                {
-                    PayloadAsJsonString = JsonSerializer.Serialize(value);
-                    JsonPayload = new JRaw(PayloadAsJsonString);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get the serialized JSON payload. May be null or empty.
-        /// </summary>
-        [JsonIgnore]
-        public string PayloadAsJsonString { get; internal set; }
-
-        /// <summary>
-        /// The JSON payload in JRaw type.
+        /// The payload to have serialized and send as JSON.
         /// </summary>
         [JsonPropertyName("payload")]
-        internal JRaw JsonPayload { get; set; }
+        public object Payload { get; set; }
 
         [JsonPropertyName("responseTimeoutInSeconds")]
         internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
 
         [JsonPropertyName("connectTimeoutInSeconds")]
         internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
-
-        /// <summary>
-        /// Returns JSON payload in a custom type.
-        /// </summary>
-        /// <typeparam name="T">The custom type into which the JSON payload can be deserialized.</typeparam>
-        /// <returns>The JSON payload in custom type.</returns>
-        public T GetPayload<T>()
-        {
-            return JsonSerializer.Deserialize<T>(PayloadAsJsonString);
-        }
     }
 }
