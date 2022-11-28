@@ -154,23 +154,45 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "]";
 
         [TestMethod]
-        public void QueryResultConstructorThrowsOnInvalidParameters()
+        public void QueryResultCtorThrowsOnNullTypeString()
         {
-            var acts = new Action[]
-            {
-                () => _ = new QueryResult(null, SampleListIntJson, SampleContinuationToken),
-                () => _ = new QueryResult("", SampleListIntJson, SampleContinuationToken),
-                () => _ = new QueryResult("InvalidType", SampleListIntJson, SampleContinuationToken),
-                () => _ = new QueryResult(SerializedNameEnrollment, null, SampleContinuationToken),
-                () => _ = new QueryResult(SerializedNameEnrollment, "", SampleContinuationToken),
-            };
-            foreach (Action act in acts)
-            {
-                act.Should().Throw<ArgumentNullException>();
-            }
+            Action act = () => _ = new QueryResult(null, SampleListIntJson, SampleContinuationToken);
+            act.Should().Throw<ArgumentNullException>();
+        }
 
-            Action act2 = () => _ = new QueryResult(SerializedNameEnrollment, "[1, 2, ]", SampleContinuationToken);
-            act2.Should().Throw<JsonException>();
+        [TestMethod]
+        public void QueryResultCtorThrowsOnEmptyTypeString()
+        {
+            Action act = () => _ = new QueryResult("", SampleListIntJson, SampleContinuationToken);
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void QueryResultCtorThrowsOnInvalidTypeString()
+        {
+            Action act = () => _ = new QueryResult("InvalidType", SampleListIntJson, SampleContinuationToken);
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void QueryResultCtorThrwosOnNullBodyString()
+        {
+            Action act = () => _ = new QueryResult(SerializedNameEnrollment, null, SampleContinuationToken);
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void QueryResultCtorThrwosOnEmptyBodyString()
+        {
+            Action act = () => _ = new QueryResult(SerializedNameEnrollment, "", SampleContinuationToken);
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void QueryResultCtorThrowsOnInvalidJson()
+        {
+            Action act = () => _ = new QueryResult(SerializedNameEnrollment, "[1, 2, ]", SampleContinuationToken);
+            act.Should().Throw<JsonException>();
         }
 
         [TestMethod]
