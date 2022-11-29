@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     internal class IotHubExceptionResult
     {
         [JsonPropertyName("Message")]
-        internal ResponseMessage Message { get; set; }
+        public ResponseMessage Message { get; set; }
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices
     internal class IotHubExceptionResult2
     {
         [JsonPropertyName("Message")]
-        internal string Message { get; set; }
+        public string Message { get; set; }
 
     }
 }
