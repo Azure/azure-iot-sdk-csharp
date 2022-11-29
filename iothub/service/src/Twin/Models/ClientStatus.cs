@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -15,13 +14,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Indicates that a device is enabled.
         /// </summary>
-        [EnumMember(Value = "enabled")]
-        Enabled = 0,
+        Enabled,
 
         /// <summary>
         /// Indicates that a device is disabled.
         /// </summary>
-        [EnumMember(Value = "disabled")]
         Disabled,
     }
 }

@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Azure;
-using System.Text.Json;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
+using Azure;
 
 namespace Microsoft.Azure.Devices
 {
@@ -15,9 +15,10 @@ namespace Microsoft.Azure.Devices
     public class Device
     {
         /// <summary>
-        /// Creates a new instance of this class. For serialization purposes only.
+        /// For serialization purposes only.
         /// </summary>
-        internal Device()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public Device()
         {
         }
 

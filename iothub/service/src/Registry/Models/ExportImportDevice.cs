@@ -14,38 +14,6 @@ namespace Microsoft.Azure.Devices
     public sealed class ExportImportDevice
     {
         /// <summary>
-        /// The desired and reported properties of the twin.
-        /// </summary>
-        /// <remarks>
-        /// Type definition for the <see cref="Properties"/> property.
-        /// The maximum depth of the object is 10.
-        /// </remarks>
-        public sealed class PropertyContainer
-        {
-            /// <summary>
-            /// The collection of desired property key-value pairs.
-            /// </summary>
-            /// <remarks>
-            /// The keys are UTF-8 encoded, case-sensitive and up-to 1KB in length. Allowed characters
-            /// exclude UNICODE control characters (segments C0 and C1), '.', '$' and space. The
-            /// desired porperty values are JSON objects, up-to 4KB in length.
-            /// </remarks>
-            [JsonPropertyName("desired")]
-            public ClientTwinPropertyCollection DesiredProperties { get; set; }
-
-            /// <summary>
-            /// The collection of reported property key-value pairs.
-            /// </summary>
-            /// <remarks>
-            /// The keys are UTF-8 encoded, case-sensitive and up-to 1KB in length. Allowed characters
-            /// exclude UNICODE control characters (segments C0 and C1), '.', '$' and space. The
-            /// reported property values are JSON objects, up-to 4KB in length.
-            /// </remarks>
-            [JsonPropertyName("reported")]
-            public ClientTwinPropertyCollection ReportedProperties { get; set; }
-        }
-
-        /// <summary>
         /// Create an instance of this class.
         /// </summary>
         public ExportImportDevice()
@@ -57,12 +25,10 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="device">Device properties</param>
         /// <param name="importmode">Identifies the behavior when merging a device to the registry during import actions.</param>
+        /// <exception cref="ArgumentNullException">When <paramref name="device"/> is null.</exception>
         public ExportImportDevice(Device device, ImportMode importmode)
         {
-            if (device == null)
-            {
-                throw new ArgumentNullException(nameof(device));
-            }
+            Argument.AssertNotNull(device, nameof(device));
 
             Id = device.Id;
             ETag = device.ETag;

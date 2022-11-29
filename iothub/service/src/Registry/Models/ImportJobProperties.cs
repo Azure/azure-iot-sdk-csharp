@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -13,9 +14,10 @@ namespace Microsoft.Azure.Devices
     public class ImportJobProperties : JobProperties
     {
         /// <summary>
-        /// Serialization constructor.
+        /// For deserialization.
         /// </summary>
-        internal ImportJobProperties()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public ImportJobProperties()
         { }
 
         /// <summary>

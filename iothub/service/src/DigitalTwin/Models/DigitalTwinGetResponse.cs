@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using Azure;
 
 namespace Microsoft.Azure.Devices
@@ -11,6 +12,13 @@ namespace Microsoft.Azure.Devices
     /// <typeparam name="T">The type of the digital twin.</typeparam>
     public class DigitalTwinGetResponse<T>
     {
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public DigitalTwinGetResponse()
+        { }
+
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>

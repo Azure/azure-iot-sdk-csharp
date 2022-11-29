@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json.Serialization;
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Specifies the different acknowledgement levels for message delivery.
     /// </summary>
+    [JsonConverter(JsonStringEnumConverter)]
     public enum DeliveryAcknowledgement
     {
         /// <summary>

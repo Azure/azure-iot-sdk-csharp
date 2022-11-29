@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,6 +15,13 @@ namespace Microsoft.Azure.Devices
     internal class QueriedPage<T>
     {
         private const string ContinuationTokenHeader = "x-ms-continuation";
+
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public QueriedPage()
+        { }
 
         // Payload is taken separately from http response because reading the payload should only be done
         // in an async function.

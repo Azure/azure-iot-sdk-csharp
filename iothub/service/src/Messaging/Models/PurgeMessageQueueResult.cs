@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -13,11 +14,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// This constructor is for deserialization and unit test mocking purposes.
         /// </summary>
-        /// <remarks>
-        /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
-        /// that can set the properties you want.
-        /// </remarks>
-        protected internal PurgeMessageQueueResult()
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public PurgeMessageQueueResult()
         { }
 
         /// <summary>

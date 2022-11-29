@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -15,13 +14,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Represents a device in the disconnected state.
         /// </summary>
-        [EnumMember(Value = "disconnected")]
-        Disconnected = 0,
+        Disconnected,
 
         /// <summary>
         /// Represents a device in the connected state.
         /// </summary>
-        [EnumMember(Value = "connected")]
-        Connected = 1,
+        Connected,
     }
 }

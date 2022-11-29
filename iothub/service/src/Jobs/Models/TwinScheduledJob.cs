@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -11,12 +12,10 @@ namespace Microsoft.Azure.Devices
     public class TwinScheduledJob : ScheduledJob
     {
         /// <summary>
-        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// For deserialization and unit testing.
         /// </summary>
-        /// <remarks>
-        /// This class can be inherited from and set by unit tests for mocking purposes.
-        /// </remarks>
-        protected internal TwinScheduledJob()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TwinScheduledJob()
         { }
 
         /// <summary>

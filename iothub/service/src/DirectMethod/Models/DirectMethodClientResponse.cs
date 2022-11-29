@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -18,7 +19,8 @@ namespace Microsoft.Azure.Devices
         /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
         /// that can set the properties you want.
         /// </remarks>
-        protected internal DirectMethodClientResponse()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public DirectMethodClientResponse()
         { }
 
         /// <summary>

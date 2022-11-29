@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Azure;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
+using Azure;
 
 namespace Microsoft.Azure.Devices
 {
@@ -17,9 +18,10 @@ namespace Microsoft.Azure.Devices
     public class Module
     {
         /// <summary>
-        /// Creates a new instance of this class. For serialization purposes only.
+        /// For deserialization.
         /// </summary>
-        internal Module()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public Module()
         {
         }
 
