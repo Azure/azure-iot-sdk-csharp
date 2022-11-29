@@ -28,7 +28,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public void SetPayload(string payloadAsJsonString)
         {
             using var jd = JsonDocument.Parse(payloadAsJsonString);
-            Payload = jd.RootElement;
+
+            // JsonDocument is IDisposable. Since the SDK needs to work with a particular element within the JSON document,
+            // we need to return the Clone of that JsonElement.
+            // If we return the RootElement or a sub-element directly without making a Clone,
+            // the caller won't be able to access the returned JsonElement after the JsonDocument that owns it is disposed.
+            // https://learn.microsoft.com/dotnet/standard/serialization/system-text-json/use-dom-utf8jsonreader-utf8jsonwriter?pivots=dotnet-6-0#jsondocument-is-idisposable
+            Payload = jd.RootElement.Clone();
         }
     }
 }
