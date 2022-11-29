@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Text.Json.Serialization;
+using System.ComponentModel;
 
 namespace Microsoft.Azure.Devices
 {
@@ -12,6 +13,13 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class ImportConfiguration : Configuration
     {
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public ImportConfiguration()
+        { }
+
         /// <inheritdoc/>
         public ImportConfiguration(string configurationId)
             : base(configurationId)

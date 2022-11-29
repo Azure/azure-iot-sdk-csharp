@@ -18,10 +18,10 @@ namespace Microsoft.Azure.Devices
     internal class ResponseMessage2
     {
         [JsonPropertyName("Message")]
-        internal string Message { get; set; }
+        public string Message { get; set; }
 
         [JsonPropertyName("ExceptionMessage")]
-        internal string ExceptionMessage { get; set; }
+        public string ExceptionMessage { get; set; }
 
         public IotHubServiceErrorCode ErrorCode { get; set; }
         public string TrackingId { get; set; }

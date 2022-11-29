@@ -67,7 +67,8 @@ namespace Microsoft.Azure.Devices
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.CreationTimeUtc, out propertyValue))
             {
-                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o", CultureInfo.InvariantCulture);   // Convert to string that complies with ISO 8601
+                // Convert to string that complies with ISO 8601
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o", CultureInfo.InvariantCulture);
             }
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out propertyValue))

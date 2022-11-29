@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -15,31 +14,26 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Unknown type.
         /// </summary>
-        [EnumMember(Value = "unknown")]
-        Unknown = 0,
+        Unknown,
 
         /// <summary>
         /// Indicates an ExportDevices job.
         /// </summary>
-        [EnumMember(Value = "export")]
         ExportDevices,
 
         /// <summary>
         /// Indicates an ImportDevices job.
         /// </summary>
-        [EnumMember(Value = "import")]
         ImportDevices,
 
         /// <summary>
         /// Indicates a Device method job.
         /// </summary>
-        [EnumMember(Value = "scheduleDeviceMethod")]
         ScheduleDeviceMethod,
 
         /// <summary>
         /// Indicates a Twin update job.
         /// </summary>
-        [EnumMember(Value = "scheduleUpdateTwin")]
         ScheduleUpdateTwin,
     }
 }

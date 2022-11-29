@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -14,10 +15,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        /// <remarks>
-        /// This class can be inherited from and set by unit tests for mocking purposes.
-        /// </remarks>
-        protected internal JobProperties()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public JobProperties()
         { }
 
         /// <summary>

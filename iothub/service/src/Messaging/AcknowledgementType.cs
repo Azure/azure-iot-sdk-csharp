@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json.Serialization;
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The possible acknowledgement types for a received file upload notification and/or for a received cloud-to-device feedback message.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AcknowledgementType
     {
         /// <summary>

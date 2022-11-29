@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -13,27 +12,23 @@ namespace Microsoft.Azure.Devices
     public enum ClientAuthenticationType
     {
         /// <summary>
+        /// No authentication token at this scope.
+        /// </summary>
+        None,
+
+        /// <summary>
         /// Shared access key.
         /// </summary>
-        [EnumMember(Value = "sas")]
-        Sas = 0,
+        Sas,
 
         /// <summary>
         /// Self-signed certificate.
         /// </summary>
-        [EnumMember(Value = "selfSigned")]
-        SelfSigned = 1,
+        SelfSigned,
 
         /// <summary>
         /// Certificate authority.
         /// </summary>
-        [EnumMember(Value = "certificateAuthority")]
-        CertificateAuthority = 2,
-
-        /// <summary>
-        /// No authentication token at this scope.
-        /// </summary>
-        [EnumMember(Value = "none")]
-        None = 3,
+        CertificateAuthority,
     }
 }

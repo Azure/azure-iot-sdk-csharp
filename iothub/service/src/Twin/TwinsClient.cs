@@ -549,7 +549,6 @@ namespace Microsoft.Azure.Devices
                     ImportMode = importMode,
                     TwinETag = twin.ETag,
                     Tags = twin.Tags,
-                    Properties = new ExportImportDevice.PropertyContainer(),
                 };
                 exportImportDevice.Properties.DesiredProperties = twin.Properties?.Desired;
 

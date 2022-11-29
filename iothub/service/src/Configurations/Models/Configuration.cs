@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text.Json.Serialization;
 using Azure;
 
@@ -20,6 +19,13 @@ namespace Microsoft.Azure.Devices
     /// </remarks>
     public class Configuration
     {
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public Configuration()
+        { }
+
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
@@ -42,7 +48,7 @@ namespace Microsoft.Azure.Devices
         /// The schema version of the configuration.
         /// </summary>
         [JsonPropertyName("schemaVersion")]
-        public string SchemaVersion { get; } = "1.0";
+        public string SchemaVersion { get; internal set; } = "1.0";
 
         /// <summary>
         /// The key-value pairs used to describe the configuration.
@@ -54,7 +60,7 @@ namespace Microsoft.Azure.Devices
         /// The content of the configuration.
         /// </summary>
         [JsonPropertyName("content")]
-        public ConfigurationContent Content { get; set; }
+        public ConfigurationContent Content { get; set; } = new();
 
         /// <summary>
         /// Gets the content type for configuration.
@@ -75,13 +81,13 @@ namespace Microsoft.Azure.Devices
         /// The creation date and time of the configuration.
         /// </summary>
         [JsonPropertyName("createdTimeUtc")]
-        public DateTimeOffset CreatedOnUtc { get; internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The update date and time of the configuration.
         /// </summary>
         [JsonPropertyName("lastUpdatedTimeUtc")]
-        public DateTimeOffset LastUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The priority number assigned to the configuration.
@@ -93,13 +99,13 @@ namespace Microsoft.Azure.Devices
         /// The system metrics computed by the IoT hub that cannot be customized.
         /// </summary>
         [JsonPropertyName("systemMetrics")]
-        public ConfigurationMetrics SystemMetrics { get; set; }
+        public ConfigurationMetrics SystemMetrics { get; set; } = new();
 
         /// <summary>
         /// The custom metrics specified by the developer as queries against twin reported properties.
         /// </summary>
         [JsonPropertyName("metrics")]
-        public ConfigurationMetrics Metrics { get; set; }
+        public ConfigurationMetrics Metrics { get; set; } = new();
 
         /// <summary>
         /// The ETag of the configuration.

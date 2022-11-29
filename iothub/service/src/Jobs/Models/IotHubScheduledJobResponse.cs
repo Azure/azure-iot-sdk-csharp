@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -14,7 +15,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes and serialization.
         /// </summary>
-        protected internal IotHubScheduledJobResponse()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public IotHubScheduledJobResponse()
         { }
 
         /// <summary>

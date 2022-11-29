@@ -11,21 +11,21 @@ namespace Microsoft.Azure.Devices
     internal class ResponseMessage
     {
         [JsonPropertyName("errorCode")]
-        internal string ErrorCode { get; set; }
+        public string ErrorCode { get; set; }
 
         [JsonPropertyName("trackingId")]
-        internal string TrackingId { get; set; }
+        public string TrackingId { get; set; }
 
         [JsonPropertyName("message")]
-        internal string Message { get; set; }
+        public string Message { get; set; }
 
         [JsonPropertyName("timestampUtc")]
-        internal string OccurredOnUtc { get; set; }
+        public string OccurredOnUtc { get; set; }
     }
 
     internal class ResponseMessageWrapper
     {
         [JsonPropertyName("Message")]
-        internal string Message { get; set; }
+        public string Message { get; set; }
     }
 }
