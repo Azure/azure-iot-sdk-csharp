@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static bool ContainsAuthenticationException(Exception ex)
         {
-            while (ex != null)
+            if (ex != null)
             {
                 return ex is AuthenticationException || ContainsAuthenticationException(ex.InnerException);
             }
