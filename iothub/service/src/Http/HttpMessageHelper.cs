@@ -88,7 +88,8 @@ namespace Microsoft.Azure.Devices
         {
             Debug.Assert(requestMessage != null, "Request message should not have been null");
 
-            if (onlyIfUnchanged && !string.IsNullOrWhiteSpace(eTag.ToString()))
+            if (onlyIfUnchanged
+                && !string.IsNullOrWhiteSpace(eTag.ToString()))
             {
                 // "Perform this operation only if the entity is unchanged"
                 // Sends the If-Match header with a value of the ETag.

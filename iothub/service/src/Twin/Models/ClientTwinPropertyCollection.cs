@@ -24,10 +24,10 @@ namespace Microsoft.Azure.Devices
         /// Metadata about the collection of properties.
         /// </summary>
         [JsonPropertyName("$metadata")]
-        public ClientTwinMetadata Metadata { get; set; }
+        public ClientTwinMetadata Metadata { get; set; } = new();
 
         [JsonExtensionData]
-        internal IDictionary<string, object> Properties { get; set; }
+        internal IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The count of properties in the collection.

@@ -36,6 +36,7 @@ namespace Microsoft.Azure.Devices
         /// Device Id.
         /// </summary>
         [JsonPropertyName("deviceId")]
+        [JsonInclude]
         public string Id { get; internal set; }
 
         /// <summary>
@@ -45,6 +46,7 @@ namespace Microsoft.Azure.Devices
         /// This value is used to distinguish devices with the same deviceId, when they have been deleted and re-created.
         /// </remarks>
         [JsonPropertyName("generationId")]
+        [JsonInclude]
         public string GenerationId { get; internal set; }
 
         /// <summary>
@@ -57,14 +59,13 @@ namespace Microsoft.Azure.Devices
         /// Device's connection state.
         /// </summary>
         [JsonPropertyName("connectionState")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonInclude]
         public ClientConnectionState ConnectionState { get; internal set; }
 
         /// <summary>
         /// Device's status.
         /// </summary>
         [JsonPropertyName("status")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public ClientStatus Status { get; set; }
 
         /// <summary>
@@ -77,24 +78,28 @@ namespace Microsoft.Azure.Devices
         /// Time when the connection state was last updated.
         /// </summary>
         [JsonPropertyName("connectionStateUpdatedTime")]
+        [JsonInclude]
         public DateTimeOffset ConnectionStateUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Time when the status was last updated.
         /// </summary>
         [JsonPropertyName("statusUpdatedTime")]
+        [JsonInclude]
         public DateTimeOffset StatusUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Time when the device was last active.
         /// </summary>
         [JsonPropertyName("lastActivityTime")]
+        [JsonInclude]
         public DateTimeOffset LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the device from the cloud.
         /// </summary>
         [JsonPropertyName("cloudToDeviceMessageCount")]
+        [JsonInclude]
         public int CloudToDeviceMessageCount { get; internal set; }
 
         /// <summary>
