@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices
         /// access keys are auto-generated.
         /// </remarks>
         [JsonPropertyName("authentication")]
-        public AuthenticationMechanism Authentication { get; set; }
+        public AuthenticationMechanism Authentication { get; set; } = new();
 
         /// <summary>
         /// String representing a Twin ETag for the entity, as per RFC7232.
@@ -116,13 +116,13 @@ namespace Microsoft.Azure.Devices
         /// The desired and reported properties for the device or module.
         /// </summary>
         [JsonPropertyName("properties")]
-        public PropertyContainer Properties { get; set; }
+        public PropertyContainer Properties { get; set; } = new();
 
         /// <summary>
         /// Status of capabilities enabled on the device or module.
         /// </summary>
         [JsonPropertyName("capabilities")]
-        public ClientCapabilities Capabilities { get; set; }
+        public ClientCapabilities Capabilities { get; set; } = new();
 
         /// <summary>
         /// The scope of the device. For edge devices, this is auto-generated and immutable. For leaf

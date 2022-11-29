@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Specifies the different acknowledgement levels for message delivery.
     /// </summary>
-    [JsonConverter(JsonStringEnumConverter)]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DeliveryAcknowledgement
     {
         /// <summary>

@@ -19,8 +19,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Device()
-        {
-        }
+        { }
 
         /// <summary>
         /// Creates a new instance of device.

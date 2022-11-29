@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices
                     new ExportImportDevice(device, ImportMode.Create)
                     {
                         Tags = twin.Tags,
-                        Properties = new ExportImportDevice.PropertyContainer
+                        Properties =
                         {
                             DesiredProperties = twin.Properties.Desired,
                             ReportedProperties = twin.Properties.Reported,

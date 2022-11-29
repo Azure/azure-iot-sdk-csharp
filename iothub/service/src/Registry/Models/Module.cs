@@ -22,8 +22,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Module()
-        {
-        }
+        { }
 
         /// <summary>
         /// Creates an instance of this class.
