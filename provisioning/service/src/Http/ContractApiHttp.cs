@@ -196,12 +196,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static bool ContainsAuthenticationException(Exception ex)
         {
-            if (ex != null)
-            {
-                return ex is AuthenticationException || ContainsAuthenticationException(ex.InnerException);
-            }
-
-            return false;
+            return ex != null
+                && (ex is AuthenticationException
+                    || ContainsAuthenticationException(ex.InnerException));
         }
 
         private static void ValidateHttpResponse(ContractApiResponse response)
