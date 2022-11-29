@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_GetAsync_PassNullThrows()
+        public async Task DevicesClient_GetAsync_NullDeviceIdThrows()
         {
             // arrange
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_CreateAsync_PassNullThrows()
+        public async Task DevicesClient_CreateAsync_NullDeviceThrows()
         {
             // arrange
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_CreateAsync_NullDevicesInListThrows()
+        public async Task DevicesClient_CreateAsync_NullDeviceInListThrows()
         {
             // arrange
             var goodDevice = new Device("123") { ConnectionState = ClientConnectionState.Connected };
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_SetAsync_PassNullThrows()
+        public async Task DevicesClient_SetAsync_NullDeviceThrows()
         {
             // arrange
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_SetAsync_NullItemInListThrows()
+        public async Task DevicesClient_SetAsync_NullDeviceInListThrows()
         {
             // arrange
             var goodDevice = new Device("123") { ConnectionState = ClientConnectionState.Connected, ETag = new ETag("234") };
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevciesClient_SetAsync_EmptyListThrows()
+        public async Task DevicesClient_SetAsync_EmptyListThrows()
         {
             // arrange
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_SetAsync_WithForce()
+        public async Task DevicesClient_SetAsync_WithOnlyIfUnchangedTrue()
         {
             // arrange
             var goodDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_SetAsync_ForceTrueWithEtag()
+        public async Task DevicesClient_SetAsync_OnlyIfUnchangedTrueWithEtag()
         {
             // arrange
             var goodDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected, ETag = new ETag("234") };
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_DeleteAsync_PassEmptyStringThrows()
+        public async Task DevicesClient_DeleteAsync_DeviceIdEmptyStringThrows()
         {
             // arrange
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_DeleteAsync_NullInListThrows()
+        public async Task DevicesClient_DeleteAsync_NullDeviceInListThrows()
         {
             // arrange
             var goodDevice = new Device("123") { ConnectionState = ClientConnectionState.Connected, ETag = new ETag("234") };
@@ -422,7 +422,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_DeleteAsync_List()
+        public async Task DevicesClient_DeleteAsync_Bulk()
         {
             // arrange
             var goodDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
@@ -457,7 +457,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_DeleteAsync_ForceTrueNoEtagThrows()
+        public async Task DevicesClient_DeleteAsync_OnlyIfUnchangedTrueNoEtagThrows()
         {
             // arrange
             var badDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
@@ -491,7 +491,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_DeleteAsync_ForceTrueHasEtags()
+        public async Task DevicesClient_DeleteAsync_OnlyIfUnchangedTrueHasEtags()
         {
             // arrange
             var goodDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected, ETag = new ETag("234") };

@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task TwinsClient_UpdateAsync_ForceTrueNoEtag()
+        public async Task TwinsClient_UpdateAsync_OnlyIfUnchangedTrueNoEtagThrows()
         {
             // arrange
             var goodTwin = new ClientTwin("123") { ETag = new ETag("234") };
@@ -151,40 +151,6 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task TwinsClient_UpdateAsync_OnlyIfUnchangedTrueNoEtagThrows()
-        {
-            // arrange
-            var goodTwin = new ClientTwin("123") { ETag = new ETag("234") };
-            var badTwin = new ClientTwin("456");
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(ValidMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpResponse = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-            };
-            var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient
-                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockHttpResponse);
-
-            var twinsClient = new TwinsClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
-
-            // act
-            Func<Task> act = async () => await twinsClient.UpdateAsync(new List<ClientTwin> { goodTwin, badTwin }, true).ConfigureAwait(false);
-
-            // assert
-            await act.Should().ThrowAsync<InvalidOperationException>().ConfigureAwait(false);
         }
 
         [TestMethod]

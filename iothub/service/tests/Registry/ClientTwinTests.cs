@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Tests
     public class ClientTwinTests
     {
         [TestMethod]
-        public void Twin_ParentScopes_NotNull()
+        public void ClientTwin_ParentScopes_NotNull()
         {
             // arrange
             var twin = new ClientTwin();
