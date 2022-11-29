@@ -536,7 +536,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             responseReceivedAsExpected.Should().BeTrue();
-            response.Should().BeEquivalentTo(map);
+
+            // The SDK doesn't support nested deserialization so we'll compare the serialized string instead.
+            JsonSerializer.Serialize(response).Should().Be(JsonSerializer.Serialize(map));
         }
 
         [TestMethod]
