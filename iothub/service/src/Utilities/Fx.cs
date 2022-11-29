@@ -57,12 +57,9 @@ namespace Microsoft.Azure.Devices
 
         internal static bool ContainsAuthenticationException(Exception ex)
         {
-            while (ex != null)
-            {
-                return ex is AuthenticationException || ContainsAuthenticationException(ex.InnerException);
-            }
-
-            return false;
+            return ex != null
+                && (ex is AuthenticationException
+                    || ContainsAuthenticationException(ex.InnerException));
         }
     }
 }
