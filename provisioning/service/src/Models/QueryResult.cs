@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -106,7 +107,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     {
                         try
                         {
-                            Items = (IEnumerable<object>)JsonSerializer.Deserialize<IEnumerable<JsonElement>>(bodyString);
+                            IEnumerable<JsonElement> jsonElements = JsonSerializer.Deserialize<IEnumerable<JsonElement>>(bodyString);
+
+                            // Use IEnumerable<TResult> Cast<TResult> to cast the enumerable of JsonElements into objects.
+                            Items = jsonElements.Cast<object>();
                         }
                         catch (ArgumentException)
                         {
