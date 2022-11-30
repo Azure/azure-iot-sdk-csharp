@@ -63,6 +63,7 @@ namespace Microsoft.Azure.Devices
         /// Gets and sets the twin tags.
         /// </summary>
         [JsonPropertyName("tags")]
+        [JsonInclude]
         public IDictionary<string, object> Tags { get; protected internal set; } = new Dictionary<string, object>();
 
         /// <summary>
@@ -96,6 +97,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonPropertyName("etag")]
         public ETag ETag { get; set; }
+
+        /// <summary>
+        /// Device's ETag.
+        /// </summary>
+        [JsonPropertyName("deviceEtag")]
+        public ETag DeviceETag { get; set; }
 
         /// <summary>
         /// Twin's version.
@@ -143,7 +150,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Number of messages sent to the corresponding device from the cloud.
         /// </summary>
-        [JsonPropertyName("cloudtoDeviceMessageCount")]
+        [JsonPropertyName("cloudToDeviceMessageCount")]
         [JsonInclude]
         public int? CloudToDeviceMessageCount { get; internal set; }
 

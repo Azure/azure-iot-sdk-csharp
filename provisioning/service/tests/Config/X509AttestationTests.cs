@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -56,7 +55,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // act - assert
             Action act1 = () => _ = new X509CertificateWithInfo(primaryStr);
             var error1 = act1.Should().Throw<ArgumentException>();
-            error1.And.InnerException.Should().BeOfType(typeof(CryptographicException));
         }
 
         [TestMethod]
@@ -79,7 +77,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // act - assert
             Action act1 = () => _ = new X509CertificateWithInfo(primaryStr);
             var error1 = act1.Should().Throw<ArgumentException>();
-            error1.And.InnerException.Should().BeOfType(typeof(CryptographicException));
         }
     }
 }

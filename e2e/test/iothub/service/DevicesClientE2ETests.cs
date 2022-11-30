@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var twin = new ClientTwin(deviceId)
             {
-                Tags = { { "companyId", 1234 } },
+                Tags = { { "companyId", "1234" } },
             };
 
             var iotEdgeDevice = new Device(deviceId)
@@ -163,8 +163,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                BulkRegistryOperationResult bulkAddResult =
-                    await serviceClient.Devices.CreateAsync(new List<Device> { edge, device }).ConfigureAwait(false);
+                BulkRegistryOperationResult bulkAddResult = await serviceClient.Devices
+                    .CreateAsync(new List<Device> { edge, device })
+                    .ConfigureAwait(false);
 
                 // assert
 

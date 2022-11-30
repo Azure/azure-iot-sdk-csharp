@@ -138,6 +138,7 @@ namespace Microsoft.Azure.Devices
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
         [JsonPropertyName("parentScopes")]
+        [JsonInclude]
         public virtual IList<string> ParentScopes { get; internal set; } = new List<string>();
     }
 }

@@ -107,9 +107,13 @@ namespace Microsoft.Azure.Devices
         public ETag TwinETag { get; set; }
 
         /// <summary>
-        /// The JSON document read and written by the solution back end. The tags are not visible to device apps.
+        /// The JSON document read and written by the solution back end.
         /// </summary>
+        /// <remarks>
+        /// The tags are not visible to device apps.
+        /// </remarks>
         [JsonPropertyName("tags")]
+        [JsonInclude]
         public IDictionary<string, object> Tags { get; internal set; } = new Dictionary<string, object>();
 
         /// <summary>

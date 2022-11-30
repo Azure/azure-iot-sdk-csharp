@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -13,7 +12,7 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
     {
         private const string DeviceId = "JobsSample_Device";
         private const string TestTagName = "JobsSample_Tag";
-        private const int TestTagValue = 100;
+        private const long TestTagValue = 100;
 
         private readonly IotHubServiceClient _jobClient;
 
