@@ -20,6 +20,7 @@
 
   <!--Nuget package dependencies-->
   <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />

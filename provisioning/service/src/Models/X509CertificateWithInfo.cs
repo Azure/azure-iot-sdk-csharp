@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -21,7 +22,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// For deserialization.
         /// </summary>
-        internal X509CertificateWithInfo()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public X509CertificateWithInfo()
         { }
 
         /// <summary>

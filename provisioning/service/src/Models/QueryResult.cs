@@ -13,26 +13,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// It is the result of any query for the provisioning service. This class will parse the result and
-    ///     return it in a best format possible. For the known formats in <see cref="QueryResultType"/>, you can
-    ///     just cast the items. In case of unknown type, the items will contain a list of string
-    ///     and you shall parse it by your own.
+    /// return it in a best format possible. For the known formats in <see cref="QueryResultType"/>, you can
+    /// just cast the items. In case of unknown type, the items will contain a list of string
+    /// and you shall parse it by your own.
     ///
     /// The provisioning service query result is composed by 2 system properties and a body. This class exposes
-    ///     it with 3 getters, <see cref="QueryType"/>, <see cref="Items"/>, and <see cref="ContinuationToken"/>.
+    /// it with 3 getters, <see cref="QueryType"/>, <see cref="Items"/>, and <see cref="ContinuationToken"/>.
     ///
     /// The system properties are:
     /// <list type="bullet">
-    ///     <item>
-    ///     <description>type:
-    ///         Identify the type of the content in the body. You can use it to cast the objects
-    ///         in the items list. See <see cref="QueryResultType"/> for the possible types and classes
-    ///         to cast.</description>
-    ///     </item>
-    ///     <item>
-    ///     <description>continuationToken:
-    ///         Contains the token the uniquely identify the next page of information. The
-    ///         service will return the next page of this query when you send a new query with
-    ///         this token.</description>
+    ///  <item>
+    ///    <description>type:
+    ///      Identify the type of the content in the body. You can use it to cast the objects
+    ///      in the items list. See <see cref="QueryResultType"/> for the possible types and classes
+    ///      to cast.</description>
+    ///  </item>
+    ///  <item>
+    ///    <description>continuationToken:
+    ///      Contains the token the uniquely identify the next page of information. The
+    ///      service will return the next page of this query when you send a new query with
+    ///      this token.</description>
     ///     </item>
     /// </list>
     /// </remarks>
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public string ContinuationToken { get; protected private set; }
 
         /// <summary>
-        /// CONSTRUCTOR
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="typeString">The string with type of the content in the body.
         /// It cannot be null.</param>
@@ -99,35 +99,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     break;
 
                 default:
+                    // Don't deserialize if no body.
                     if (bodyString == null)
                     {
                         Items = null;
+                        break;
                     }
-                    else
-                    {
-                        try
-                        {
-                            IEnumerable<JsonElement> jsonElements = JsonSerializer.Deserialize<IEnumerable<JsonElement>>(bodyString);
 
-                            // Use IEnumerable<TResult> Cast<TResult> to cast the enumerable of JsonElements into objects.
-                            Items = jsonElements.Cast<object>();
-                        }
-                        catch (ArgumentException)
-                        {
-                            try
-                            {
-                                Items = JsonSerializer.Deserialize<IEnumerable<object>>(bodyString);
-                            }
-                            catch (ArgumentException)
-                            {
-                                Items = new string[] { bodyString };
-                            }
-                        }
-                        catch (JsonException)
-                        {
-                            Items = JsonSerializer.Deserialize<IEnumerable<object>>(bodyString);
-                        }
+                    // Ideally, we deserialize into a collection of objects.
+                    try
+                    {
+                        Items = JsonSerializer.Deserialize<IEnumerable<object>>(bodyString);
+                        break;
                     }
+                    catch (JsonException) { }
+
+                    // If the result cannot be deserialized into a collection of objects
+                    // then save off the result into a collection with the body as the only item.
+                    Items = new string[] { bodyString };
                     break;
             }
         }

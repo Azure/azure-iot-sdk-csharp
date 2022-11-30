@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// The Device Provisioning Service query result type
+    /// The Device Provisioning Service query result type.
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum QueryResultType
@@ -15,23 +15,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Unknown result type.
         /// </summary>
         /// <remarks>
-        /// the provisioning service cannot parse the information in the body.
+        /// The provisioning service cannot parse the information in the body.
         /// You shall cast the objects in the items using string and
         /// parser it depending on the query the you sent.
         /// </remarks>
         Unknown,
 
         /// <summary>
-        /// Enrollment result type.
+        /// An individual enrollment.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of individualEnrollment. You shall cast the
-        /// objects in the items using <see cref="IndividualEnrollment"/>.
+        /// The query result in a list of individual enrollments. You shall cast the
+        /// objects in the items using <see cref="Service.IndividualEnrollment"/>.
         /// </remarks>
         Enrollment,
 
         /// <summary>
-        /// Enrollment group result type.
+        /// An enrollment group.
         /// </summary>
         /// <remarks>
         /// The query result in a list of enrollmentGroup. You shall cast
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         EnrollmentGroup,
 
         /// <summary>
-        /// Device registration result type.
+        /// A device registration.
         /// </summary>
         /// <remarks>
         /// The query result in a list of device registration. You shall cast

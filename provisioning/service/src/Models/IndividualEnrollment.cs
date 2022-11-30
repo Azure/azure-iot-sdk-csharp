@@ -62,6 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided string does not fit the registration Id requirements.</exception>
         [JsonPropertyName("registrationId")]
+        [JsonInclude]
         public string RegistrationId { get; internal set; }
 
         /// <summary>
@@ -74,12 +75,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Current registration state.
         /// </summary>
         [JsonPropertyName("registrationState")]
+        [JsonInclude]
         public DeviceRegistrationState RegistrationState { get; internal set; }
 
         /// <summary>
         /// Attestation mechanism.
         /// </summary>
         [JsonPropertyName("attestation")]
+        [JsonInclude]
         public AttestationMechanism Attestation { get; internal set; }
 
         /// <summary>
@@ -105,12 +108,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The DateTime this resource was created.
         /// </summary>
         [JsonPropertyName("createdDateTimeUtc")]
+        [JsonInclude]
         public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
         [JsonPropertyName("lastUpdatedDateTimeUtc")]
+        [JsonInclude]
         public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
