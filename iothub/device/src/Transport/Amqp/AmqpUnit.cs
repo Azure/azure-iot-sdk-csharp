@@ -227,11 +227,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal DateTime GetRefreshesOn()
         {
-            if (_amqpAuthenticationRefresher != null)
-            {
-                return _amqpAuthenticationRefresher.RefreshOn;
-            }
-            return DateTime.MaxValue;
+            return _amqpAuthenticationRefresher?.RefreshOn ?? DateTime.MaxValue;
         }
 
         internal async Task CloseAsync(CancellationToken cancellationToken)
