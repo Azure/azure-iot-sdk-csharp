@@ -129,11 +129,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override DateTime GetRefreshesOn(CancellationToken cancellationToken)
+        public override DateTime GetRefreshesOn()
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return _amqpUnit.GetRefreshesOn(cancellationToken);
+            return _amqpUnit.GetRefreshesOn();
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)

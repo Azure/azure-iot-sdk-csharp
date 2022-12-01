@@ -184,10 +184,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.RefreshTokenAsync(cancellationToken) ?? Task.FromResult(DateTime.MaxValue);
         }
 
-        public virtual DateTime GetRefreshesOn(CancellationToken cancellationToken)
+        public virtual DateTime GetRefreshesOn()
         {
             ThrowIfDisposed();
-            return NextHandler?.GetRefreshesOn(cancellationToken) ?? DateTime.MaxValue;
+            return NextHandler?.GetRefreshesOn() ?? DateTime.MaxValue;
         }
 
         public virtual void SetRefreshesOn(CancellationToken cancellationToken)

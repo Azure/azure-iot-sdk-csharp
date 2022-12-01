@@ -361,26 +361,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override void SetRefreshesOn(CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(SetRefreshesOn));
-
-            DateTime refreshOn = GetRefreshesOn(cancellationToken);
-            if (refreshOn < DateTime.MaxValue)
-            {
-                StartLoopAsync(refreshOn, cancellationToken);
-            }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, cancellationToken, nameof(SetRefreshesOn));
-        }
-
-        public override DateTime GetRefreshesOn(CancellationToken cancellationToken)
-        {
-            return base.GetRefreshesOn(cancellationToken);
-        }
-
         public override async Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -395,7 +375,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             return await base.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
                         },
-                        (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors, cancellationToken)
+                            (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors,
+                            cancellationToken)
                     .ConfigureAwait(false);
             }
             finally
@@ -485,11 +466,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _handlerSemaphore?.Release();
             }
         }
-
-        private void StartLoopAsync(DateTime refreshOn, CancellationToken cancellationToken)
+        public override void SetRefreshesOn(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(StartLoopAsync));
+                Logging.Enter(this, cancellationToken, nameof(SetRefreshesOn));
+
+            DateTime refreshesOn = GetRefreshesOn();
+            if (refreshesOn < DateTime.MaxValue)
+            {
+                StartLoop(refreshesOn, cancellationToken);
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, cancellationToken, nameof(SetRefreshesOn));
+        }
+
+        public override DateTime GetRefreshesOn()
+        {
+            return base.GetRefreshesOn();
+        }
+
+
+        private void StartLoop(DateTime refreshesOn, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, refreshesOn, nameof(StartLoop));
 
             if (_loopCancellationTokenSource == null
                 || _refreshLoop == null)
@@ -498,14 +499,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _loopCancellationTokenSource = new CancellationTokenSource();
-            _refreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
+            _refreshLoop = RefreshLoopAsync(refreshesOn, cancellationToken);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, nameof(StartLoopAsync));
+                Logging.Exit(this, refreshesOn, nameof(StartLoop));
         }
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, refreshesOn, nameof(RefreshLoopAsync));
+
             TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
 
             while (!cancellationToken.IsCancellationRequested)
@@ -528,10 +532,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 waitTime = refreshesOn - DateTime.UtcNow;
             }
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, refreshesOn, nameof(RefreshLoopAsync));
         }
 
         private async void StopLoopAsync()
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(StopLoopAsync));
+
             _loopCancellationTokenSource?.Cancel();
             if (_refreshLoop != null)
             {
@@ -547,7 +557,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _loopCancellationTokenSource = null;
 
             if (Logging.IsEnabled)
-                Logging.Info(this, nameof(StopLoopAsync));
+                Logging.Exit(this, nameof(StopLoopAsync));
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)

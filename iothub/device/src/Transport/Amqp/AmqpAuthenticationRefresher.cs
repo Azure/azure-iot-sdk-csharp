@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
 
-            await RefreshTokenAsync(cancellationToken);
+            await RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.InitLoopAsync));

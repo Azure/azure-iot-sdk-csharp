@@ -225,10 +225,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal DateTime GetRefreshesOn(CancellationToken cancellationToken)
+        internal DateTime GetRefreshesOn()
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             if (_amqpAuthenticationRefresher != null)
             {
                 return _amqpAuthenticationRefresher.RefreshOn;

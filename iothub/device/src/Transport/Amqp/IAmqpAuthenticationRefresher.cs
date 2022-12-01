@@ -13,10 +13,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken);
         void StartLoop(DateTime refreshOn);
         void StopLoop();
-        DateTime RefreshOn
-        {
-            get;
-            set;
-        }
+        DateTime RefreshOn { get; set; }
     }
 }

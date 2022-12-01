@@ -118,10 +118,10 @@ namespace Microsoft.Azure.Devices.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
+            
             if (_clientOptions.TransportSettings is IotHubClientAmqpSettings)
             {
                 InnerHandler.SetRefreshesOn(cancellationToken);
-
             }
         }
 

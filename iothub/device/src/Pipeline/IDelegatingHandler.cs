@@ -37,7 +37,9 @@ namespace Microsoft.Azure.Devices.Client
 
         Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken);
 
-        DateTime GetRefreshesOn(CancellationToken cancellationToken);
+        DateTime GetRefreshesOn();
+
+        void SetRefreshesOn(CancellationToken cancellationToken);
 
         // Twin.
         Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken);
@@ -47,7 +49,5 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
-        
-        void SetRefreshesOn(CancellationToken cancellationToken);
     }
 }
