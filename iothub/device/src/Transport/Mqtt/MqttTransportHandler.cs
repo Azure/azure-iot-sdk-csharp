@@ -637,11 +637,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Received get twin response for request id {requestId} with status {getTwinResponse.Status}.");
 
-                if (getTwinResponse.Status != 200)
+                if (getTwinResponse.Status >= 300)
                 {
-                    throw new IotHubClientException(
-                        getTwinResponse.Message,
-                        IotHubClientErrorCode.NetworkErrors);
+                    // If an error code is returned in the service returned error message then use that first.
+                    if (Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode, out IotHubClientErrorCode errorCode))
+                    {
+                        throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message, errorCode)
+                        {
+                            TrackingId = getTwinResponse.ErrorResponseMessage.TrackingId
+                        };
+                    }
+
+                    // The Hub team is refactoring the retriable status codes without breaking changes to the existing ones.
+                    // It can be expected that we may bring more retriable codes here in the future.
+                    // Retry for Http status code 429 (too many requests)
+                    if (getTwinResponse.Status == 429)
+                    {
+                        throw new IotHubClientException(
+                            getTwinResponse.ErrorResponseMessage.Message,
+                            IotHubClientErrorCode.Throttled);
+                    }
+
+                    throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message)
+                    {
+                        TrackingId = getTwinResponse.ErrorResponseMessage.TrackingId
+                    };
                 }
 
                 return getTwinResponse.Twin;
@@ -738,7 +758,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubClientException(patchTwinResponse.ErrorResponseMessage.Message)
                     {
                         TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId
-                    }; ;
+                    };
                 }
 
                 return patchTwinResponse.Version;
@@ -1061,10 +1081,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     if (status != 200)
                     {
+                        IotHubClientErrorResponseMessage errorResponse = null;
+
+                        // This will only ever contain an error message which is encoded based on service contract (UTF-8).
+                        if (payloadBytes.Length > 0)
+                        {
+                            string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
+                            try
+                            {
+                                errorResponse = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                            }
+                            catch (JsonException ex)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Failed to parse twin patch error response JSON: {ex}. Message body: '{errorResponseString}'");
+
+                                errorResponse = new IotHubClientErrorResponseMessage
+                                {
+                                    Message = errorResponseString,
+                                };
+                            }
+                        }
+
+                        // This received message is in response to an update reported properties request.
                         var getTwinResponse = new GetTwinResponse
                         {
                             Status = status,
-                            Message = Encoding.UTF8.GetString(payloadBytes), // The error message is encoded based on service contract, which is UTF-8.
+                            ErrorResponseMessage = errorResponse,
                         };
 
                         getTwinCompletion.TrySetResult(getTwinResponse);
