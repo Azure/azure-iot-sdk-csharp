@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ToString_ReturnsProductNameAndVersion()
         {
-            Assert.AreEqual(ProductInfoTests.ExpectedUserAgentString(), new ProductInfo().ToString());
+            Assert.AreEqual(ExpectedUserAgentString(), new ProductInfo().ToString());
         }
 
         [TestMethod]
@@ -46,8 +46,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Extra = extra,
             };
 
-            Assert.AreEqual($"{ProductInfoTests.ExpectedUserAgentString()} {extra}", info.ToString());
-            Assert.AreEqual($"{ProductInfoTests.ExpectedHttpUserAgentString()} {extra}", info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual($"{ExpectedUserAgentString()} {extra}", info.ToString());
+            Assert.AreEqual($"{ExpectedHttpUserAgentString()} {extra}", info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
@@ -58,8 +58,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Extra = null
             };
 
-            Assert.AreEqual(ProductInfoTests.ExpectedUserAgentString(), info.ToString());
-            Assert.AreEqual(ProductInfoTests.ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual(ExpectedUserAgentString(), info.ToString());
+            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
@@ -70,8 +70,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Extra = "\t  ",
             };
 
-            Assert.AreEqual(ProductInfoTests.ExpectedUserAgentString(), info.ToString());
-            Assert.AreEqual(ProductInfoTests.ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual(ExpectedUserAgentString(), info.ToString());
+            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
@@ -84,8 +84,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Extra = extra,
             };
 
-            Assert.AreEqual($"{ProductInfoTests.ExpectedUserAgentString()} {extra.Trim()}", info.ToString());
-            Assert.AreEqual($"{ProductInfoTests.ExpectedHttpUserAgentString()} {extra.Trim()}", info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual($"{ExpectedUserAgentString()} {extra.Trim()}", info.ToString());
+            Assert.AreEqual($"{ExpectedHttpUserAgentString()} {extra.Trim()}", info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
@@ -93,10 +93,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var info = new ProductInfo();
 
-            Assert.AreEqual(ProductInfoTests.ExpectedUserAgentString(), info.ToString(UserAgentFormats.Default));
+            Assert.AreEqual(ExpectedUserAgentString(), info.ToString(UserAgentFormats.Default));
 
             // HTTP user agent string should not include SQM ID
-            Assert.AreEqual(ProductInfoTests.ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
+            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
         private static string ExpectedUserAgentString()

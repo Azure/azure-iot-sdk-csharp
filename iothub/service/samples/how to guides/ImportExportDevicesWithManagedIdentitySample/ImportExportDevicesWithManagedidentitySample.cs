@@ -16,7 +16,7 @@ namespace ImportExportDevicesWithManagedIdentitySample
     /// For more information on configuration, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-managed-identity"/>.
     /// For more information on managed identities, see <see href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview"/>
     /// </summary>
-    internal class ImportExportDevicesWithManagedidentitySample
+    internal static class ImportExportDevicesWithManagedidentitySample
     {
         public static async Task RunSampleAsync(string sourceHubConnectionString,
             string destinationHubConnectionString,

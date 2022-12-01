@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Debug.Assert(defaultDelay!= null);
 
-            double jitterSeconds = Math.Min(s_random.NextDouble() * MaxJitter, MaxJitter);
+            double jitterSeconds = s_random.NextDouble() * MaxJitter;
             return defaultDelay.Add(TimeSpan.FromSeconds(jitterSeconds));
         }
     }

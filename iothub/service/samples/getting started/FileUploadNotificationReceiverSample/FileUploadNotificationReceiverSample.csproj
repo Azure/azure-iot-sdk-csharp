@@ -6,8 +6,10 @@
     <LangVersion>9.0</LangVersion>
 
     <!--
-    Warning for using pre-release nugets can be ignored since this sample 
+    NU5104: Warning for using pre-release nugets can be ignored since this sample 
     can't target a main release yet.
+
+    CA2254: We prefer string interpolation for better readability, and don't have a need for logs aggregation.
     -->
     <NoWarn>NU5104;CA2254</NoWarn>
   </PropertyGroup>

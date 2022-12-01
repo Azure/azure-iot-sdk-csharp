@@ -32,8 +32,6 @@ namespace ImportExportDevicesWithManagedIdentitySample
                     Environment.Exit(1);
                 });
 
-            var sample = new ImportExportDevicesWithManagedidentitySample();
-
             await ImportExportDevicesWithManagedidentitySample.RunSampleAsync(
                 parameters.SourceHubConnectionString,
                 parameters.DestinationHubConnectionString,
