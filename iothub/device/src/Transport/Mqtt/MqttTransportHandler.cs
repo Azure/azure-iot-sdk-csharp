@@ -641,7 +641,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // Check if we have an int to string error code translation for the service returned error code.
                     // The error code could be a part of the service returned error message, or it can be a part of the topic string.
-                    // We will compare with the error code in the error message first (if present) since that is the more specific error code returned.
+                    // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
                     if (Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
                         || Enum.TryParse(getTwinResponse.Status.ToString(), out errorCode))
                     {
@@ -742,7 +742,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // Check if we have an int to string error code translation for the service returned error code.
                     // The error code could be a part of the service returned error message, or it can be a part of the topic string.
-                    // We will compare with the error code in the error message first (if present) since that is the more specific error code returned.
+                    // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
                     if (Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
                         || Enum.TryParse(patchTwinResponse.Status.ToString(), out errorCode))
                     {
