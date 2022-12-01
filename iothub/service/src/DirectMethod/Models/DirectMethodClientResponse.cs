@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices
         /// Gets or sets the status of device method invocation.
         /// </summary>
         [JsonPropertyName("status")]
+        [JsonInclude]
         public int Status { get; protected internal set; }
 
         /// <summary>
