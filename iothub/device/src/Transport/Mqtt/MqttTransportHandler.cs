@@ -637,7 +637,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Received get twin response for request id {requestId} with status {getTwinResponse.Status}.");
 
-                if (getTwinResponse.Status >= 300)
+                if (getTwinResponse.Status != 200)
                 {
                     // If an error code is returned in the service returned error message then use that first.
                     if (Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode, out IotHubClientErrorCode errorCode))
