@@ -639,8 +639,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (getTwinResponse.Status != 200)
                 {
-                    // If an error code is returned in the service returned error message then use that first.
-                    if (Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode, out IotHubClientErrorCode errorCode))
+                    // Check if we have an int to string error code translation for the service returned error code.
+                    // The error code could be a part of the service returned error message, or it can be a part of the topic string.
+                    // We will compare with the error code in the error message first (if present) since that is the more specific error code returned.
+                    if (Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
+                        || Enum.TryParse(getTwinResponse.Status.ToString(), out errorCode))
                     {
                         throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message, errorCode)
                         {
@@ -737,8 +740,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (patchTwinResponse.Status != 204)
                 {
-                    // If an error code is returned in the service returned error message then use that.
-                    if (Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode, out IotHubClientErrorCode errorCode))
+                    // Check if we have an int to string error code translation for the service returned error code.
+                    // The error code could be a part of the service returned error message, or it can be a part of the topic string.
+                    // We will compare with the error code in the error message first (if present) since that is the more specific error code returned.
+                    if (Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
+                        || Enum.TryParse(patchTwinResponse.Status.ToString(), out errorCode))
                     {
                         throw new IotHubClientException(patchTwinResponse.ErrorResponseMessage.Message, errorCode)
                         {

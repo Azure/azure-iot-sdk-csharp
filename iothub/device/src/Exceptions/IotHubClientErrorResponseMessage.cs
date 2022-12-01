@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     internal class IotHubClientErrorResponseMessage
     {
         [JsonProperty("errorCode")]
-        internal string ErrorCode { get; set; }
+        internal int ErrorCode { get; set; }
 
         [JsonProperty("trackingId")]
         internal string TrackingId { get; set; }
