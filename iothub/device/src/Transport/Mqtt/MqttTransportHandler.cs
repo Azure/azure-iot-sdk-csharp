@@ -644,23 +644,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message, errorCode)
                         {
-                            TrackingId = getTwinResponse.ErrorResponseMessage.TrackingId
+                            TrackingId = getTwinResponse.ErrorResponseMessage.TrackingId,
                         };
-                    }
-
-                    // The Hub team is refactoring the retriable status codes without breaking changes to the existing ones.
-                    // It can be expected that we may bring more retriable codes here in the future.
-                    // Retry for Http status code 429 (too many requests)
-                    if (getTwinResponse.Status == 429)
-                    {
-                        throw new IotHubClientException(
-                            getTwinResponse.ErrorResponseMessage.Message,
-                            IotHubClientErrorCode.Throttled);
                     }
 
                     throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message)
                     {
-                        TrackingId = getTwinResponse.ErrorResponseMessage.TrackingId
+                        TrackingId = getTwinResponse.ErrorResponseMessage.TrackingId,
                     };
                 }
 
@@ -747,17 +737,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (patchTwinResponse.Status != 204)
                 {
+                    // If an error code is returned in the service returned error message then use that.
                     if (Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode, out IotHubClientErrorCode errorCode))
                     {
                         throw new IotHubClientException(patchTwinResponse.ErrorResponseMessage.Message, errorCode)
                         {
-                            TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId
+                            TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId,
                         };
                     }
 
                     throw new IotHubClientException(patchTwinResponse.ErrorResponseMessage.Message)
                     {
-                        TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId
+                        TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId,
                     };
                 }
 

@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Retrying with exponential back-off could resolve this error. For information on the IoT hub quotas and
         /// throttling, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>.
         /// </remark>
-        Throttled,
+        Throttled = 429,
 
         /// <summary>
         /// The ETag in the request does not match the ETag of the existing resource.
