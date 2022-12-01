@@ -498,10 +498,9 @@ namespace Microsoft.Azure.Devices.Client
 
                 await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"User code threw exception for request Id {directMethodRequest.RequestId}: {ex}", nameof(OnMethodCalledAsync));
+                Logging.Error(this, $"User code threw exception for request Id {directMethodRequest.RequestId}: {ex}", nameof(OnMethodCalledAsync));
             }
             finally
             {

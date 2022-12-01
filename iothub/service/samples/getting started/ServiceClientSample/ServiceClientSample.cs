@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +13,6 @@ namespace Microsoft.Azure.Devices.Samples
     public class ServiceClientSample
     {
         private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan s_operationTimeout = TimeSpan.FromSeconds(10);
 
         private static IotHubServiceClient s_serviceClient;
         private readonly string _hubConnectionString;
@@ -94,7 +92,7 @@ namespace Microsoft.Azure.Devices.Samples
             int messageCount = 0;
             while (!cancellationToken.IsCancellationRequested)
             {
-                var str = $"Hello, Cloud! - Message {++messageCount }";
+                string str = $"Hello, Cloud! - Message {++messageCount }";
                 var message = new Message(Encoding.ASCII.GetBytes(str))
                 {
                     // An acknowledgment is sent on delivery success or failure.

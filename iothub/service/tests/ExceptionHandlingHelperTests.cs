@@ -2,13 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -18,13 +15,11 @@ namespace Microsoft.Azure.Devices.Tests
     [TestCategory("Unit")]
     public class ExceptionHandlingHelperTests
     {
-        private const string HttpErrorCodeName = "iothub-errorcode";
-
         [TestMethod]
         public async Task GetExceptionCodeAsync_NumericErrorCode_InResponseMessage_ValidErrorCode()
         {
             // arrange
-            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult
             {
                 // A read-world message in the response content which includes the numeric error code returned by the hub service.
@@ -55,7 +50,7 @@ namespace Microsoft.Azure.Devices.Tests
             const string expectedTrackingId = "95ae23a6a159445681f6a52aebc99ab0-TimeStamp:10/19/2022 16:47:22";
             const IotHubServiceErrorCode expectedErrorCode = IotHubServiceErrorCode.DeviceNotOnline;
 
-            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new ResponseMessageWrapper
             {
                 Message = JsonConvert.SerializeObject(new ResponseMessage
@@ -84,8 +79,8 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             const string expectedTrackingId = "aeec4c1e4e914a4c9f40fdba7be68fa5-G:0-TimeStamp:10/18/2022 20:50:39";
             const IotHubServiceErrorCode expectedErrorCode = IotHubServiceErrorCode.DeviceNotFound;
-            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            var exceptionResult = $"{{\"Message\": \"ErrorCode:{expectedErrorCode};E2E_MessageReceiveE2EPoolAmqpTests__3_Sasl_f16d18b2-97dc-4ea5-86f1-a3405ee98939\",\"ExceptionMessage\":\"Tracking ID:{expectedTrackingId}\"}}";
+            using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            string exceptionResult = $"{{\"Message\": \"ErrorCode:{expectedErrorCode};E2E_MessageReceiveE2EPoolAmqpTests__3_Sasl_f16d18b2-97dc-4ea5-86f1-a3405ee98939\",\"ExceptionMessage\":\"Tracking ID:{expectedTrackingId}\"}}";
             httpResponseMessage.Content = new StringContent(exceptionResult);
 
             // act
@@ -100,7 +95,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task GetExceptionCodeAsync_NonNumericErrorCode_InPlainString_ValidErrorCode()
         {
             // arrange
-            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult2
             {
                 // A read-world message in the response content which includes the non-numeric error code returned by the hub service.
@@ -120,7 +115,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task GetExceptionCodeAsync_InvalidContent_InPlainString_UnknownErrorCode()
         {
             // arrange
-            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult2
             {
                 // Invalid field name of error code in the response content.
@@ -140,7 +135,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task GetExceptionCodeAsync_NoContentErrorCode_UnknownErrorCode()
         {
             // arrange
-            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult2
             {
                 Message = ""

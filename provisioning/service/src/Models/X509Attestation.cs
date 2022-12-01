@@ -270,7 +270,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <remarks>
         /// This method is a getter for the information returned from the provisioning service for the provided
-        ///     primary certificate.
+        /// primary certificate.
         /// </remarks>
         /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be null.</returns>
         /// <exception cref="InvalidOperationException">If no valid certificate information was provided on initialization.</exception>

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Tests
     public class TestTokenCredential : TokenCredential
     {
         public const string TokenValue = "token";
-        private DateTimeOffset _expiry;
+        private readonly DateTimeOffset _expiry;
 
         public TestTokenCredential(DateTimeOffset expiry)
         {

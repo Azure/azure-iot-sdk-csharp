@@ -91,10 +91,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // Link the user-supplied cancellation token with a cancellation token that is cancelled
             // when the connection is lost so that all operations stop when either the user
             // cancels the token or when the connection is lost.
-            using CancellationTokenSource linkedCancellationToken =
-                CancellationTokenSource.CreateLinkedTokenSource(
-                    cancellationToken,
-                    connectionLostCancellationToken.Token);
+            using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                connectionLostCancellationToken.Token);
 
             Task HandleDisconnectionAsync(MqttClientDisconnectedEventArgs disconnectedEventArgs)
             {
@@ -227,7 +226,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private async Task<RegistrationOperationStatus> PublishRegistrationRequestAsync(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest, CancellationToken cancellationToken)
         {
-            byte[] payload = new byte[0];
+            byte[] payload = Array.Empty<byte>();
             if (provisioningRequest.Payload != null)
             {
                 var registrationRequest = new DeviceRegistration(new JRaw(provisioningRequest.Payload));
@@ -236,7 +235,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
 
             string registrationTopic = string.Format(CultureInfo.InvariantCulture, RegisterTopic, ++_packetId);
-            var message = new MqttApplicationMessageBuilder()
+            MqttApplicationMessage message = new MqttApplicationMessageBuilder()
                 .WithPayload(payload)
                 .WithTopic(registrationTopic)
                 .WithQualityOfServiceLevel(_publishingQualityOfService)
@@ -270,12 +269,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled)
                 Logging.Info(this, $"Service responded to the initial registration request with status '{registrationStatus.Status}'.");
 
-            if (registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning)
-            {
-                throw new ProvisioningClientException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true);
-            }
-
-            return registrationStatus;
+            return registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning
+                ? throw new ProvisioningClientException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true)
+                : registrationStatus;
         }
 
         private async Task<DeviceRegistrationResult> PollUntilProvisionigFinishesAsync(IMqttClient mqttClient, string operationId, CancellationToken cancellationToken)
@@ -283,7 +279,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             while (true)
             {
                 string topicName = string.Format(CultureInfo.InvariantCulture, GetOperationsTopic, ++_packetId, operationId);
-                var message = new MqttApplicationMessageBuilder()
+                MqttApplicationMessage message = new MqttApplicationMessageBuilder()
                     .WithTopic(topicName)
                     .WithQualityOfServiceLevel(_publishingQualityOfService)
                     .Build();
@@ -359,7 +355,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
 
             var tlsParameters = new MqttClientOptionsBuilderTlsParameters();
-            var password = "";
+            string password = "";
             if (provisioningRequest.Authentication is AuthenticationProviderX509 x509Auth)
             {
                 var certs = new List<X509Certificate>
@@ -380,13 +376,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     TimeSpan.FromHours(1));
             }
 
-            var username = string.Format(
-                    CultureInfo.InvariantCulture,
-                    UsernameFormat,
-                    provisioningRequest.IdScope,
-                    provisioningRequest.Authentication.GetRegistrationId(),
-                    ClientApiVersionHelper.ApiVersion,
-                    Uri.EscapeDataString(_options.UserAgentInfo.ToString()));
+            string username = string.Format(
+                CultureInfo.InvariantCulture,
+                UsernameFormat,
+                provisioningRequest.IdScope,
+                provisioningRequest.Authentication.GetRegistrationId(),
+                ClientApiVersionHelper.ApiVersion,
+                Uri.EscapeDataString(_options.UserAgentInfo.ToString()));
 
             mqttClientOptionsBuilder
                 .WithClientId(provisioningRequest.Authentication.GetRegistrationId())

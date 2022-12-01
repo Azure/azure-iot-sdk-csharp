@@ -3,10 +3,10 @@
 
 using System;
 using System.Globalization;
-using System.Net.Http;
 using System.Net;
-using System.Threading.Tasks;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Azure;
 using Newtonsoft.Json;
 
@@ -22,7 +22,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string DeviceRegistrationStatusUriFormat = "{0}/{1}?{2}";
 
         private readonly IContractApiHttp _contractApiHttp;
-        private readonly ServiceConnectionString _serviceConnectionString;
         private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
@@ -32,9 +31,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal DeviceRegistrationStatesClient(ServiceConnectionString serviceConnectionString, IContractApiHttp contractApiHttp, RetryHandler retryHandler)
+        internal DeviceRegistrationStatesClient(IContractApiHttp contractApiHttp, RetryHandler retryHandler)
         {
-            _serviceConnectionString = serviceConnectionString;
             _contractApiHttp = contractApiHttp;
             _internalRetryHandler = retryHandler;
         }
@@ -146,7 +144,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Query CreateEnrollmentGroupQuery(string query, string enrollmentGroupId, int pageSize = 0, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-            return new Query(_serviceConnectionString, GetDeviceRegistrationStatusUri(enrollmentGroupId).ToString(), query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
+            return new Query(GetDeviceRegistrationStatusUri(enrollmentGroupId).ToString(), query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
         }
 
         private static Uri GetDeviceRegistrationStatusUri(string id)

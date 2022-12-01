@@ -177,10 +177,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 // Cancel any pending write
                 CancelPendingWrite();
 
-                using (var cancellationTokenSource = new CancellationTokenSource(timeout))
-                {
-                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
-                }
+                using var cancellationTokenSource = new CancellationTokenSource(timeout);
+                await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
             }
             catch (Exception)
             {

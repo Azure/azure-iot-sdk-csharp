@@ -24,14 +24,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         internal static byte[] SerializeRequest(HttpRequestMessage request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-            if (request.RequestUri == null)
-            {
-                throw new ArgumentNullException(nameof(request.RequestUri));
-            }
+            Argument.AssertNotNull(request, nameof(request));
+            Argument.AssertNotNull(request.RequestUri, $"{nameof(request)}.{nameof(request.RequestUri)}");
 
             PreProcessRequest(request);
 

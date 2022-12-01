@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Samples
                 }
                 if (twin.ParentScopes?.Any() ?? false)
                 {
-                    Console.WriteLine($"\tParent scope: {twin.ParentScopes?.FirstOrDefault()}");
+                    Console.WriteLine($"\tParent scope: {twin.ParentScopes[0]}");
                 }
             }
         }

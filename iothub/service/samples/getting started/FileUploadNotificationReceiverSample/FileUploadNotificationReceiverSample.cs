@@ -17,14 +17,14 @@ namespace Microsoft.Azure.Devices.Samples
     internal class FileUploadNotificationReceiverSample
     {
         private readonly ILogger _logger;
-        private static IotHubServiceClient _serviceClient;
+        private static IotHubServiceClient s_serviceClient;
         private int _totalNotificationsReceived;
         private int _totalNotificationsCompleted;
         private int _totalNotificationsAbandoned;
 
         public FileUploadNotificationReceiverSample(IotHubServiceClient serviceClient, ILogger logger)
         {
-            _serviceClient = serviceClient ?? throw new ArgumentNullException(nameof(serviceClient));
+            s_serviceClient = serviceClient ?? throw new ArgumentNullException(nameof(serviceClient));
             _logger = logger;
             _totalNotificationsReceived = 0;
             _totalNotificationsCompleted = 0;
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Samples
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unrecoverable exception caught, user action is required, exiting...: \n{ex}");
+                _logger.LogError($"Unrecoverable exception caught, user action is required, exiting: {ex}");
             }
             finally
             {
@@ -103,8 +103,8 @@ namespace Microsoft.Azure.Devices.Samples
                 return ackType;
             }
 
-            _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
-            await _serviceClient.FileUploadNotifications.OpenAsync(cancellationToken);
+            s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+            await s_serviceClient.FileUploadNotifications.OpenAsync(cancellationToken);
 
             // Wait for cancellation and then print the summary
             try
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Samples
             _logger.LogInformation($"Total Notifications Marked as Completed: {_totalNotificationsCompleted}.");
             _logger.LogInformation($"Total Notifications Marked as Abandoned: {_totalNotificationsAbandoned}.");
 
-            await _serviceClient.FileUploadNotifications.CloseAsync(CancellationToken.None);
+            await s_serviceClient.FileUploadNotifications.CloseAsync(CancellationToken.None);
         }
     }
 }

@@ -215,6 +215,7 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _httpClient?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private void InitializeSubclients(IotHubServiceClientOptions options)

@@ -23,12 +23,12 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
         [TestMethod]
         public async Task MqttTransportHandler_OpenAsyncCallsConnectAsync()
         {
-            CancellationToken cancellationToken = new CancellationToken();
+            var cancellationToken = new CancellationToken();
             var options = new MqttClientOptions();
 
             var mockMqttClient = new Mock<IMqttClient>();
 
-            var mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
+            using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
             await mqttTransportHandler.OpenAsync(cancellationToken);
 
@@ -45,10 +45,11 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
 
             var transportHandler = new MqttTransportHandler(
                 pipelineContext,
-                new IotHubClientMqttSettings());
-
-            // make the mqtt client used by the handler mocked so no network calls are actually made
-            transportHandler._mqttClient = mockMqttClient;
+                new IotHubClientMqttSettings())
+            {
+                // make the mqtt client used by the handler mocked so no network calls are actually made
+                _mqttClient = mockMqttClient
+            };
 
             return transportHandler;
         }

@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
-using FluentAssertions;
-using Microsoft.Azure.Devices.Common;
 using Azure.Core;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -23,13 +21,13 @@ namespace Microsoft.Azure.Devices.Tests
         public void TestIsTokenCloseToExpiry_Succeeds(int offsetInMinutes, bool expectedIsExpired)
         {
             // arrange
-            var expiry = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(offsetInMinutes);
+            DateTimeOffset expiry = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(offsetInMinutes);
             var tokenCredential = new TestTokenCredential(expiry);
 
             // act
             AccessToken token = tokenCredential.GetToken(
-                default(TokenRequestContext),
-                new CancellationToken());
+                default,
+                CancellationToken.None);
             bool isExpired = TokenHelper.IsCloseToExpiry(token.ExpiresOn);
 
             // assert

@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void Twin_JsonDateParse_Ok()
         {
-            var now = DateTime.Now;
             const string jsonString = @"
 {
  ""deviceId"": ""test"",

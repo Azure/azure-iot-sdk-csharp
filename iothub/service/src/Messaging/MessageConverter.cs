@@ -50,10 +50,7 @@ namespace Microsoft.Azure.Devices
                 amqpMessage.Properties.UserId = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data.UserId));
             }
 
-            if (amqpMessage.ApplicationProperties == null)
-            {
-                amqpMessage.ApplicationProperties = new ApplicationProperties();
-            }
+            amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.Ack, out object propertyValue))
             {

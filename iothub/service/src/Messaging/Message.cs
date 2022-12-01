@@ -220,8 +220,8 @@ namespace Microsoft.Azure.Devices
 
         private T GetSystemProperty<T>(string key)
         {
-            return SystemProperties.ContainsKey(key)
-                ? (T)SystemProperties[key]
+            return SystemProperties.TryGetValue(key, out object value)
+                ? (T)value
                 : default;
         }
     }

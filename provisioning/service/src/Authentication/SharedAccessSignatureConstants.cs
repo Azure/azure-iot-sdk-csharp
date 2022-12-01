@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         internal const string SignedResourceFullFieldName = SharedAccessSignature + " " + AudienceFieldName;
         internal const string KeyValueSeparator = "=";
         internal const string PairSeparator = "&";
-        internal static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        internal static readonly DateTime EpochTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         internal static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
     }
 }

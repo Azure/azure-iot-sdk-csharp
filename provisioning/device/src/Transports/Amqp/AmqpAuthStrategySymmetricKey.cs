@@ -28,8 +28,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             saslProvider.Versions.Add(AmqpConstants.DefaultProtocolVersion);
             settings.TransportProviders.Add(saslProvider);
 
-            var saslHandler = new SaslPlainHandler();
-            saslHandler.AuthenticationIdentity = $"{idScope}/registrations/{_authentication.GetRegistrationId()}";
+            var saslHandler = new SaslPlainHandler
+            {
+                AuthenticationIdentity = $"{idScope}/registrations/{_authentication.GetRegistrationId()}"
+            };
             string key = _authentication.PrimaryKey;
             saslHandler.Password = ProvisioningSasBuilder.BuildSasSignature(key, saslHandler.AuthenticationIdentity, TimeSpan.FromDays(1));
             saslProvider.AddHandler(saslHandler);

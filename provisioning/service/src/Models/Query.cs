@@ -72,7 +72,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private bool _hasNext;
 
         internal Query(
-            ServiceConnectionString serviceConnectionString,
             string serviceName,
             string query,
             IContractApiHttp contractApiHttp,
@@ -82,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (pageSize < 0)
             {
-                throw new ArgumentOutOfRangeException($"{nameof(pageSize)} cannot be negative.");
+                throw new ArgumentOutOfRangeException(nameof(pageSize), "Cannot be negative.");
             }
 
             _contractApiHttp = contractApiHttp;

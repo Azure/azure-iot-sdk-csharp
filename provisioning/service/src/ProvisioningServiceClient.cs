@@ -52,9 +52,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _retryHandler = new RetryHandler(_retryPolicy);
 
             // Subclients
-            IndividualEnrollments = new IndividualEnrollmentsClient(_provisioningConnectionString, _contractApiHttp, _retryHandler);
-            EnrollmentGroups = new EnrollmentGroupsClient(_provisioningConnectionString, _contractApiHttp, _retryHandler);
-            DeviceRegistrationStates = new DeviceRegistrationStatesClient(_provisioningConnectionString, _contractApiHttp, _retryHandler);
+            IndividualEnrollments = new IndividualEnrollmentsClient(_contractApiHttp, _retryHandler);
+            EnrollmentGroups = new EnrollmentGroupsClient(_contractApiHttp, _retryHandler);
+            DeviceRegistrationStates = new DeviceRegistrationStatesClient(_contractApiHttp, _retryHandler);
         }
 
         /// <summary>

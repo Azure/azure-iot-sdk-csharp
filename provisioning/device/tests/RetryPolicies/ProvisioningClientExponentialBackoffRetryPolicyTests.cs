@@ -15,12 +15,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void ExponentialBackoffRetryPolicy_DoesNotUnderflowDelay()
         {
             // arrange
-            const uint MaxRetryAttempts = 70;
+            const uint maxRetryAttempts = 70;
 
-            var exponentialBackoff = new ProvisioningClientExponentialBackoffRetryPolicy(MaxRetryAttempts, TimeSpan.FromDays(365), false);
+            var exponentialBackoff = new ProvisioningClientExponentialBackoffRetryPolicy(maxRetryAttempts, TimeSpan.FromDays(365), false);
             TimeSpan previousDelay = TimeSpan.Zero;
 
-            for (uint retryCount = 1; retryCount < MaxRetryAttempts; retryCount++)
+            for (uint retryCount = 1; retryCount < maxRetryAttempts; retryCount++)
             {
                 // act
                 exponentialBackoff.ShouldRetry(retryCount, new ProvisioningClientException("", true), out TimeSpan delay).Should().BeTrue();
@@ -42,8 +42,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange
             var exponentialBackoff = new ProvisioningClientExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.FromDays(30), false);
-            TimeSpan previousDelay = TimeSpan.Zero;
             uint exponent = retryCount + 6; // starts at 7
+
             // act
             exponentialBackoff.ShouldRetry(retryCount, new ProvisioningClientException("", true), out TimeSpan delay);
 

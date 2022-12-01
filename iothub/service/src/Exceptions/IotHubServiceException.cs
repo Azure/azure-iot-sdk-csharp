@@ -86,21 +86,17 @@ namespace Microsoft.Azure.Devices
 
         private static bool DetermineIfTransient(HttpStatusCode statusCode, IotHubServiceErrorCode errorCode)
         {
-            switch (errorCode)
+            return errorCode switch
             {
-                case IotHubServiceErrorCode.IotHubQuotaExceeded:
-                case IotHubServiceErrorCode.DeviceNotOnline:
-                case IotHubServiceErrorCode.ThrottlingException:
-                case IotHubServiceErrorCode.ServerError:
-                case IotHubServiceErrorCode.ServiceUnavailable:
-                    return true;
-
-                case IotHubServiceErrorCode.Unknown:
-                    return statusCode == HttpStatusCode.RequestTimeout;
-
-                default:
-                    return false;
-            }
+                IotHubServiceErrorCode.IotHubQuotaExceeded
+                    or IotHubServiceErrorCode.DeviceNotOnline
+                    or IotHubServiceErrorCode.ThrottlingException
+                    or IotHubServiceErrorCode.ServerError
+                    or IotHubServiceErrorCode.ServiceUnavailable
+                    => true,
+                IotHubServiceErrorCode.Unknown => statusCode == HttpStatusCode.RequestTimeout,
+                _ => false,
+            };
         }
     }
 }

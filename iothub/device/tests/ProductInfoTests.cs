@@ -17,9 +17,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ToString_IsValidHttpHeaderFormat()
         {
-            var httpRequestMessage = new HttpRequestMessage();
-            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd((new ProductInfo()).ToString()));
-            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd((new ProductInfo()).ToString(UserAgentFormats.Http)));
+            using var httpRequestMessage = new HttpRequestMessage();
+            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd(new ProductInfo().ToString()));
+            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd(new ProductInfo().ToString(UserAgentFormats.Http)));
         }
 
         [TestMethod]
@@ -53,8 +53,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ToString_DoesNotAppendWhenExtraIsNull()
         {
-            var info = new ProductInfo();
-            info.Extra = null;
+            var info = new ProductInfo
+            {
+                Extra = null
+            };
 
             Assert.AreEqual(ExpectedUserAgentString(), info.ToString());
             Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
@@ -97,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
-        private string ExpectedUserAgentString()
+        private static string ExpectedUserAgentString()
         {
             string version = typeof(IotHubDeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
@@ -119,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             return $".NET/{version} ({string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)))})";
         }
 
-        private string ExpectedHttpUserAgentString()
+        private static string ExpectedHttpUserAgentString()
         {
             string version = typeof(IotHubDeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             string runtime = RuntimeInformation.FrameworkDescription.Trim();

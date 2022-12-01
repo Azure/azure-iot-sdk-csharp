@@ -3,11 +3,14 @@
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net7.0;net6.0;netcoreapp3.1;net472</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net7.0;net6.0;netcoreapp3.1</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
+    
     <!-- We will turn on this suppression once we are ready to GA-->
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <!-- <CheckEolTargetFramework>false</CheckEolTargetFramework> -->

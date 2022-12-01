@@ -3,14 +3,20 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NeutralLanguage>en-US</NeutralLanguage>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+
+    <!-- We choose not to use braces in our many logging enabled checks -->
+    <NoWarn>0011</NoWarn>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -34,11 +40,18 @@
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Service Client .NET HTTP</PackageTags>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Azure/azure-iot-sdk-csharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
     <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <!--Nuget package dependencies-->
@@ -67,5 +80,4 @@
       <CustomToolNamespace>Microsoft.Azure.Devices</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-
 </Project>

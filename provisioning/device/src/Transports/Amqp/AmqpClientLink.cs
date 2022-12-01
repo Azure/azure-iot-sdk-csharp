@@ -27,37 +27,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 AutoSendFlow = true,
                 Source = new Source(),
                 Target = new Target(),
-                SettleType = SettleMode.SettleOnDispose
+                SettleType = SettleMode.SettleOnDispose,
             };
         }
-
-        private bool _isLinkClosed;
 
         internal AmqpLink AmqpLink { get; private set; }
 
         public AmqpLinkSettings AmqpLinkSettings { get; private set; }
 
-        public bool IsLinkClosed => _isLinkClosed;
+        public bool IsLinkClosed { get; private set; }
 
         public async Task OpenAsync(CancellationToken cancellationToken)
         {
-            if (Amqp.Extensions.IsReceiver(AmqpLinkSettings))
-            {
-                AmqpLink = new ReceivingAmqpLink(_amqpSession.AmqpSession, AmqpLinkSettings);
-            }
-            else
-            {
-                AmqpLink = new SendingAmqpLink(_amqpSession.AmqpSession, AmqpLinkSettings);
-            }
+            AmqpLink = Extensions.IsReceiver(AmqpLinkSettings)
+                ? new ReceivingAmqpLink(_amqpSession.AmqpSession, AmqpLinkSettings)
+                : new SendingAmqpLink(_amqpSession.AmqpSession, AmqpLinkSettings);
 
             AmqpLink.SafeAddClosed(OnLinkClosed);
             await AmqpLink.OpenAsync(cancellationToken).ConfigureAwait(false);
-            _isLinkClosed = false;
+            IsLinkClosed = false;
         }
 
-        void AddProperty(AmqpSymbol symbol, object value)
+        private void AddProperty(AmqpSymbol symbol, object value)
         {
-            Amqp.Extensions.AddProperty((Attach)AmqpLinkSettings, symbol, value);
+            Extensions.AddProperty(AmqpLinkSettings, symbol, value);
         }
 
         public void AddApiVersion(string apiVersion)
@@ -75,14 +68,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ArraySegment<byte> deliveryTag,
             CancellationToken cancellationToken)
         {
-            var sendLink = AmqpLink as SendingAmqpLink;
-
-            if (sendLink == null)
-            {
-                throw new InvalidOperationException("Link does not support sending.");
-            }
-
-            return await sendLink
+            return AmqpLink is not SendingAmqpLink sendLink
+                ? throw new InvalidOperationException("Link does not support sending.")
+                : await sendLink
                 .SendMessageAsync(message,
                     deliveryTag,
                     AmqpConstants.NullBinary,
@@ -92,28 +80,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public async Task<AmqpMessage> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            var receiveLink = AmqpLink as ReceivingAmqpLink;
-            if (receiveLink == null)
-            {
-                throw new InvalidOperationException("Link does not support receiving.");
-            }
-
-            return await receiveLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+            return AmqpLink is not ReceivingAmqpLink receiveLink
+                ? throw new InvalidOperationException("Link does not support receiving.")
+                : await receiveLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public void AcceptMessage(AmqpMessage amqpMessage)
         {
-            var receiveLink = AmqpLink as ReceivingAmqpLink;
-            if (receiveLink == null)
+            if (AmqpLink is not ReceivingAmqpLink receiveLink)
             {
                 throw new InvalidOperationException("Link does not support receiving.");
             }
             receiveLink.AcceptMessage(amqpMessage, false);
         }
 
-        void OnLinkClosed(object o, EventArgs args)
+        private void OnLinkClosed(object o, EventArgs args)
         {
-            _isLinkClosed = true;
+            IsLinkClosed = true;
         }
     }
 }

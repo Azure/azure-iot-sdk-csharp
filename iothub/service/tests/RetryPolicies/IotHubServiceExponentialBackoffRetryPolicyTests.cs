@@ -47,8 +47,8 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             var exponentialBackoff = new IotHubServiceExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.FromDays(30), false);
-            TimeSpan previousDelay = TimeSpan.Zero;
             uint exponent = retryCount + 6; // starts at 7
+
             // act
             exponentialBackoff.ShouldRetry(retryCount, new IotHubServiceException("") { IsTransient = true }, out TimeSpan delay);
 

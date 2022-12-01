@@ -429,8 +429,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (!IsEnabled)
             {
-                Debug.Assert(!(arg is ValueType), $"Should not be passing value type {arg?.GetType()} to logging without IsEnabled check");
-                Debug.Assert(!(arg is FormattableString), $"Should not be formatting FormattableString \"{arg}\" if tracing isn't enabled");
+                Debug.Assert(arg is not ValueType, $"Should not be passing value type {arg?.GetType()} to logging without IsEnabled check");
+                Debug.Assert(arg is not FormattableString, $"Should not be formatting FormattableString \"{arg}\" if tracing isn't enabled");
             }
         }
 
