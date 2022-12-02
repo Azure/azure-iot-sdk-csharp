@@ -42,18 +42,21 @@ namespace Microsoft.Azure.Devices
         /// Module Id.
         /// </summary>
         [JsonPropertyName("moduleId")]
+        [JsonInclude]
         public string Id { get; internal set; }
 
         /// <summary>
         /// Device Id.
         /// </summary>
         [JsonPropertyName("deviceId")]
+        [JsonInclude]
         public string DeviceId { get; internal set; }
 
         /// <summary>
         /// Modules's generation Id.
         /// </summary>
         [JsonPropertyName("generationId")]
+        [JsonInclude]
         public string GenerationId { get; internal set; }
 
         /// <summary>
@@ -66,25 +69,28 @@ namespace Microsoft.Azure.Devices
         /// Modules's connection state.
         /// </summary>
         [JsonPropertyName("connectionState")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonInclude]
         public ClientConnectionState ConnectionState { get; internal set; }
 
         /// <summary>
         /// Time when the connection state was last updated.
         /// </summary>
         [JsonPropertyName("connectionStateUpdatedTime")]
+        [JsonInclude]
         public DateTimeOffset ConnectionStateUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Time when the module was last active.
         /// </summary>
         [JsonPropertyName("lastActivityTime")]
+        [JsonInclude]
         public DateTimeOffset LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the module from the cloud.
         /// </summary>
         [JsonPropertyName("cloudToDeviceMessageCount")]
+        [JsonInclude]
         public int CloudToDeviceMessageCount { get; internal set; }
 
         /// <summary>

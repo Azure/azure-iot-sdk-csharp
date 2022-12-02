@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(QueryResultType.EnrollmentGroup, queryResult.QueryType);
             IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(2, items.Count());
-            Assert.IsTrue(items.FirstOrDefault() is EnrollmentGroup);
+            Assert.IsTrue(items.First() is EnrollmentGroup);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
             IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(3, items.Count());
-            Assert.IsTrue(items.FirstOrDefault() is JsonElement);
+            Assert.IsTrue(items.First() is JsonElement);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
             IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(3, items.Count());
-            Assert.IsTrue(items.FirstOrDefault() is long);
+            Assert.AreEqual(JsonValueKind.Number, ((JsonElement)items.First()).ValueKind);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
             IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(1, items.Count());
-            Assert.AreEqual(body, items.FirstOrDefault());
+            Assert.AreEqual(body, items.First());
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 

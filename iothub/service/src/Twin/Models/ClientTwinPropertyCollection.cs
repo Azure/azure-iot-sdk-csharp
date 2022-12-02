@@ -12,22 +12,24 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Represents a collection of properties for the twin.
     /// </summary>
-    public sealed class ClientTwinPropertyCollection : IEnumerable<KeyValuePair<string, object>>
+    public class ClientTwinPropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {
         /// <summary>
         /// The version of the collection of properties.
         /// </summary>
         [JsonPropertyName("$version")]
+        [JsonInclude]
         public long Version { get; internal set; }
 
         /// <summary>
         /// Metadata about the collection of properties.
         /// </summary>
         [JsonPropertyName("$metadata")]
-        public ClientTwinMetadata Metadata { get; set; }
+        public ClientTwinMetadata Metadata { get; set; } = new();
 
         [JsonExtensionData]
-        internal IDictionary<string, object> Properties { get; set; }
+        [JsonInclude]
+        internal IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The count of properties in the collection.

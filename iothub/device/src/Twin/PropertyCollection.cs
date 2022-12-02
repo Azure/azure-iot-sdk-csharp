@@ -18,9 +18,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <value>A <see cref="long"/> that is used to identify the version of the client twin properties.</value>
         [JsonPropertyName("$version")]
+        [JsonInclude]
         public long Version { get; protected internal set; }
 
         [JsonExtensionData]
+        [JsonInclude]
         internal IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
