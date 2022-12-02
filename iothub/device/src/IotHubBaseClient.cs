@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The client instance must be opened already.
         /// <para>
-        /// Use AMQP for a true batch operation. MQTT will just send the messages one after the other.
+        /// This operation is supported only over AMQP.
         /// </para>
         /// <para>
         /// For more information on IoT Edge module routing for <see cref="IotHubModuleClient"/> see
