@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly IConnectionCredentials _connectionCredentials;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
-        private Task _refreshLoop;
-        private CancellationTokenSource _loopCancellationTokenSource;
+        //private Task _refreshLoop;
+        //private CancellationTokenSource _loopCancellationTokenSource;
 
         DateTime IAmqpAuthenticationRefresher.RefreshOn { get; set; }
 
@@ -36,17 +36,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Associate(this, _connectionCredentials, nameof(_connectionCredentials));
                 Logging.Associate(this, amqpCbsLink, nameof(_amqpIotCbsLink));
             }
-        }
-
-        async Task IAmqpAuthenticationRefresher.InitLoopAsync(CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
-
-            await RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
         }
 
         private static string CreateAmqpCbsAudience(IConnectionCredentials connectionCredentials)
@@ -69,115 +58,57 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return connectionCredentials.HostName;
         }
 
-        public async Task<DateTime> RefreshTokenAsync(CancellationToken cancellationToken)
-        {
-            DateTime refreshOn = await _amqpIotCbsLink
-                .SendTokenAsync(
-                    _amqpIotCbsTokenProvider,
-                    _amqpEndpoint,
-                    _audience,
-                    _audience,
-                    s_accessRightsStringArray,
-                    cancellationToken)
-                .ConfigureAwait(false);
-
-            if (refreshOn < DateTime.MaxValue
-                && this is IAmqpAuthenticationRefresher refresher)
-            {
-                refresher.RefreshOn = refreshOn;
-            }
-
-            return refreshOn;
-        }
-
-        void IAmqpAuthenticationRefresher.StartLoop(DateTime refreshOn)
+        async Task<DateTime> IAmqpAuthenticationRefresher.RefreshTokenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, refreshOn, nameof(IAmqpAuthenticationRefresher.StartLoop));
+                Logging.Enter(this, nameof(IAmqpAuthenticationRefresher.RefreshTokenAsync));
 
-            if (_loopCancellationTokenSource == null
-                || _refreshLoop == null)
+            try
             {
-                (this as IAmqpAuthenticationRefresher)?.StopLoop();
+                DateTime refreshOn = await _amqpIotCbsLink
+                    .SendTokenAsync(
+                        _amqpIotCbsTokenProvider,
+                        _amqpEndpoint,
+                        _audience,
+                        _audience,
+                        s_accessRightsStringArray,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (refreshOn < DateTime.MaxValue
+                    && this is IAmqpAuthenticationRefresher refresher)
+                {
+                    refresher.RefreshOn = refreshOn;
+                }
+
+                return refreshOn;
             }
-
-            _loopCancellationTokenSource = new CancellationTokenSource();
-            _refreshLoop = RefreshLoopAsync(
-                refreshOn,
-                _loopCancellationTokenSource.Token);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, refreshOn, nameof(IAmqpAuthenticationRefresher.StartLoop));
-        }
-
-        private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
-        {
-            TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
-            Debug.Assert(_connectionCredentials.SasTokenRefresher != null);
-
-            while (!cancellationToken.IsCancellationRequested)
+            finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)} with wait time {waitTime}.");
-
-                if (waitTime > TimeSpan.Zero)
-                {
-                    await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
-                }
-
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    try
-                    {
-                        refreshesOn = await _amqpIotCbsLink
-                            .SendTokenAsync(
-                                _amqpIotCbsTokenProvider,
-                                _amqpEndpoint,
-                                _audience,
-                                _audience,
-                                s_accessRightsStringArray,
-                                cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.NetworkErrors)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(this, refreshesOn, $"Refresh token failed {ex}");
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // close gracefully
-                        return;
-                    }
-                    finally
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
-                    }
-
-                    waitTime = refreshesOn - DateTime.UtcNow;
-                }
+                    Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.RefreshTokenAsync));
             }
         }
 
-        async void IAmqpAuthenticationRefresher.StopLoop()
-        {
-            _loopCancellationTokenSource?.Cancel();
-            if (_refreshLoop != null)
-            {
-                try
-                {
-                    await _refreshLoop.ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) { }
-                _refreshLoop = null;
-            }
+        //// return internal  
+        //async Task IAmqpAuthenticationRefresher.StopLoop()
+        //{
+        //    _loopCancellationTokenSource?.Cancel();
+        //    if (_refreshLoop != null)
+        //    {
+        //        try
+        //        {
+        //            await _refreshLoop.ConfigureAwait(false);
+        //        }
+        //        catch (OperationCanceledException) { }
+        //        _refreshLoop = null;
+        //    }
 
-            _loopCancellationTokenSource?.Dispose();
-            _loopCancellationTokenSource = null;
+        //    _loopCancellationTokenSource?.Dispose();
+        //    _loopCancellationTokenSource = null;
 
-            if (Logging.IsEnabled)
-                Logging.Info(this, nameof(IAmqpAuthenticationRefresher.StopLoop));
-        }
+        //    if (Logging.IsEnabled)
+        //        Logging.Info(this, nameof(IAmqpAuthenticationRefresher.StopLoop));
+        //}
     }
 }

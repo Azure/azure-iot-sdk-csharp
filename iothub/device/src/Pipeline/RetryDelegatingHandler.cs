@@ -375,8 +375,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             return await base.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
                         },
-                            (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors,
-                            cancellationToken)
+                        (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors,
+                        cancellationToken)
                     .ConfigureAwait(false);
             }
             finally
@@ -466,7 +466,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _handlerSemaphore?.Release();
             }
         }
-        public override void SetRefreshesOn(CancellationToken cancellationToken)
+        public override async void SetRefreshesOn(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(SetRefreshesOn));
@@ -474,35 +474,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
             DateTime refreshesOn = GetRefreshesOn();
             if (refreshesOn < DateTime.MaxValue)
             {
-                StartLoop(refreshesOn, cancellationToken);
+                await StartLoopAsync(refreshesOn, cancellationToken);
             }
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, cancellationToken, nameof(SetRefreshesOn));
         }
 
-        public override DateTime GetRefreshesOn()
-        {
-            return base.GetRefreshesOn();
-        }
-
-
-        private void StartLoop(DateTime refreshesOn, CancellationToken cancellationToken)
+        private async Task StartLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, refreshesOn, nameof(StartLoop));
+                Logging.Enter(this, refreshesOn, nameof(StartLoopAsync));
 
             if (_loopCancellationTokenSource == null
                 || _refreshLoop == null)
             {
-                (this as IAmqpAuthenticationRefresher)?.StopLoop();
+                await StopLoopAsync();
             }
 
             _loopCancellationTokenSource = new CancellationTokenSource();
             _refreshLoop = RefreshLoopAsync(refreshesOn, cancellationToken);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, refreshesOn, nameof(StartLoop));
+                Logging.Exit(this, refreshesOn, nameof(StartLoopAsync));
         }
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
@@ -522,10 +516,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    refreshesOn = await RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
-                }
+                refreshesOn = await RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
@@ -537,7 +528,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Exit(this, refreshesOn, nameof(RefreshLoopAsync));
         }
 
-        private async void StopLoopAsync()
+        private async Task StopLoopAsync()
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(StopLoopAsync));
@@ -583,6 +574,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 _handleDisconnectCts.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
+                await StopLoopAsync().ConfigureAwait(false);
             }
             finally
             {

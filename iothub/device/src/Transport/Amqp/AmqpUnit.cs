@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _amqpIotSession.Closed -= OnSessionDisconnected;
                 _amqpIotSession.SafeClose();
             }
-            _amqpAuthenticationRefresher?.StopLoop();
+            //_amqpAuthenticationRefresher?.StopLoop();
 
             if (!IsPooled())
             {
@@ -1044,7 +1044,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(OnConnectionDisconnected));
 
-            _amqpAuthenticationRefresher?.StopLoop();
+            //_amqpAuthenticationRefresher?.StopLoop();
             _onUnitDisconnected();
 
             if (Logging.IsEnabled)
@@ -1058,7 +1058,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (ReferenceEquals(o, _amqpIotSession))
             {
-                _amqpAuthenticationRefresher?.StopLoop();
+                //_amqpAuthenticationRefresher?.StopLoop();
 
                 // calls TransportHandler.OnTransportDisconnected() which sets the transport layer up to retry
                 _onUnitDisconnected();
@@ -1091,7 +1091,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                     // For device SAS authenticated clients the authentication refresher is associated with the AMQP unit itself,
                     // so it needs to be explicitly stopped.
-                    _amqpAuthenticationRefresher?.StopLoop();
+                    //_amqpAuthenticationRefresher?.StopLoop();
 
                     _sessionSemaphore?.Dispose();
                     _messageReceivingLinkSemaphore?.Dispose();

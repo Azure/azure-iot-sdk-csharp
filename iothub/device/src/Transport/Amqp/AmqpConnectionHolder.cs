@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, _amqpIotConnection, nameof(Shutdown));
 
-            _amqpAuthenticationRefresher?.StopLoop();
+            //_amqpAuthenticationRefresher?.StopLoop();
             if (_amqpIotConnection != null)
             {
                 _amqpIotConnection.Closed -= OnConnectionClosed;
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             Logging.Info(this, "Creating connection wide AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));
 
                         amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_connectionCredentials, amqpIotConnection.GetCbsLink());
-                        await amqpAuthenticationRefresher.InitLoopAsync(cancellationToken).ConfigureAwait(false);
+                        await amqpAuthenticationRefresher.RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
                     }
 
                     _amqpIotConnection = amqpIotConnection;
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                amqpAuthenticationRefresher?.StopLoop();
+                //amqpAuthenticationRefresher?.StopLoop();
                 amqpIotConnection?.SafeClose();
                 throw;
             }
@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (_amqpIotConnection != null && ReferenceEquals(_amqpIotConnection, o))
             {
-                _amqpAuthenticationRefresher?.StopLoop();
+                //_amqpAuthenticationRefresher?.StopLoop();
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
