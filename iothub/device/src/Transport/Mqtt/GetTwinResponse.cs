@@ -30,6 +30,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <summary>
         /// The error message if the request failed.
         /// </summary>
-        internal string Message { get; set; }
+        internal IotHubClientErrorResponseMessage ErrorResponseMessage { get; set; }
     }
 }

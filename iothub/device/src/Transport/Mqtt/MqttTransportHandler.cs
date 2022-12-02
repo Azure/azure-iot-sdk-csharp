@@ -639,9 +639,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (getTwinResponse.Status != 200)
                 {
-                    throw new IotHubClientException(
-                        getTwinResponse.Message,
-                        IotHubClientErrorCode.NetworkErrors);
+                    // Check if we have an int to string error code translation for the service returned error code.
+                    // The error code could be a part of the service returned error message, or it can be a part of the topic string.
+                    // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
+                    if ((Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
+                        || Enum.TryParse(getTwinResponse.Status.ToString(), out errorCode))
+                        && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
+                    {
+                        throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message, errorCode)
+                        {
+                            TrackingId = getTwinResponse.ErrorResponseMessage.TrackingId,
+                        };
+                    }
+
+                    throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message)
+                    {
+                        TrackingId = getTwinResponse.ErrorResponseMessage.TrackingId,
+                    };
                 }
 
                 return getTwinResponse.Twin;
@@ -727,18 +741,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (patchTwinResponse.Status != 204)
                 {
-                    if (Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode, out IotHubClientErrorCode errorCode))
+                    // Check if we have an int to string error code translation for the service returned error code.
+                    // The error code could be a part of the service returned error message, or it can be a part of the topic string.
+                    // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
+                    if ((Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
+                        || Enum.TryParse(patchTwinResponse.Status.ToString(), out errorCode))
+                        && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
                     {
                         throw new IotHubClientException(patchTwinResponse.ErrorResponseMessage.Message, errorCode)
                         {
-                            TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId
+                            TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId,
                         };
                     }
 
                     throw new IotHubClientException(patchTwinResponse.ErrorResponseMessage.Message)
                     {
-                        TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId
-                    }; ;
+                        TrackingId = patchTwinResponse.ErrorResponseMessage.TrackingId,
+                    };
                 }
 
                 return patchTwinResponse.Version;
@@ -1061,10 +1080,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     if (status != 200)
                     {
+                        IotHubClientErrorResponseMessage errorResponse = null;
+
+                        // This will only ever contain an error message which is encoded based on service contract (UTF-8).
+                        if (payloadBytes.Length > 0)
+                        {
+                            string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
+                            try
+                            {
+                                errorResponse = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                            }
+                            catch (JsonException ex)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ");
+
+                                errorResponse = new IotHubClientErrorResponseMessage
+                                {
+                                    Message = errorResponseString,
+                                };
+                            }
+                        }
+
+                        // This received message is in response to an update reported properties request.
                         var getTwinResponse = new GetTwinResponse
                         {
                             Status = status,
-                            Message = Encoding.UTF8.GetString(payloadBytes), // The error message is encoded based on service contract, which is UTF-8.
+                            ErrorResponseMessage = errorResponse,
                         };
 
                         getTwinCompletion.TrySetResult(getTwinResponse);
@@ -1104,7 +1146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         catch (JsonReaderException ex)
                         {
                             if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{Encoding.UTF8.GetString(payloadBytes)}'");
+                                Logging.Error(this, $"Failed to parse Twin JSON.  Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.");
 
                             getTwinCompletion.TrySetException(ex);
                         }
@@ -1128,7 +1170,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         catch (JsonException ex)
                         {
                             if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse twin patch error response JSON: {ex}. Message body: '{errorResponseString}'");
+                                Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ");
 
                             errorResponse = new IotHubClientErrorResponseMessage
                             {
