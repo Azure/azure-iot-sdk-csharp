@@ -132,6 +132,7 @@ Find a client you currently use below, read the table of API name changes and us
   - A new property has been added with a recommended action, which a device developer may observe or ignore.
 - The file upload method has been split into the three individual steps that this method used to take. See [this file upload sample](./iothub/device/samples/getting%20started/FileUploadSample/) for an example of how to do file upload using these discrete steps.
 - Cloud-to-device messages can be received by calling `SetMessageIncomingMessageCallbackAsync` and providing a callback. Users no longer need to poll for messages with `ReceiveAsync`.
+- Support for sending a batch of events over MQTT by calling `SendEventBatchAsync` has been removed. MQTT v3.1 does not support true batching but instead sends the messages one after another. True batching is still supported over AMQP.
 - Several callback handler set methods and definitions have changed, losing the `userContext` parameter which was deemed unnecessary and a vestige of the C device client.
 - The exponential back-off retry policy has updated parameters and logic.
 - Remote certificate validation is no natively longer supported for AMQP web socket connections.
@@ -161,7 +162,7 @@ Find a client you currently use below, read the table of API name changes and us
 | `DeviceClient` | `IotHubDeviceClient` | Specify the service it is a device client for. |
 | `DeviceClient.Dispose()` | `IotHubDeviceClient.DisposeAsync()` | Ensures the client is closed before disposing. |
 | `DeviceClient.SendEventAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(...)` | Even our public documentation calls this telemetry, so we renamed the method to describe this better.¹ |
-| `DeviceClient.SendEventBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` | See¹ |
+| `DeviceClient.SendEventBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` | This is now only supported over AMQP. Support over MQTT has been removed. See¹ |
 | `DeviceClient.SetConnectionStatusChangesHandler(...)` | `IotHubDeviceClient.ConnectionStatusChangeCallback` | Local operation doesn't require being a method. |
 | `DeviceClient.SetReceiveMessageHandlerAsync(...)` | `IotHubDeviceClient.SetIncomingMessageCallbackAsync(...)` | Disambiguate from telemetry messages. |
 | `DeviceClient.GetTwinAsync(...)` | `IotHubDeviceClient.GetTwinPropertiesAsync(...)` | The device client doesn't get the full twin, just the properties so this helps avoid that confusion.² |
