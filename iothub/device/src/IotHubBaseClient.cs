@@ -171,6 +171,9 @@ namespace Microsoft.Azure.Devices.Client
         /// This operation is supported only over AMQP.
         /// </para>
         /// <para>
+        /// This operation is not supported over MQTT and will result in an <see cref="InvalidOperationException"/>.
+        /// </para>
+        /// <para>
         /// For more information on IoT Edge module routing for <see cref="IotHubModuleClient"/> see
         /// <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
         /// </para>
@@ -178,6 +181,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if this operation is carried out over MQTT.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
