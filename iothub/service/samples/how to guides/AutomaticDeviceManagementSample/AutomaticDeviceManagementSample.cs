@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 string configurationString = JsonConvert.SerializeObject(configuration, Formatting.Indented);
                 Console.WriteLine(configurationString);
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
             }
 
             Console.WriteLine("Configurations received");

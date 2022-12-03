@@ -22,19 +22,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the count of all devices.
         /// </summary>
-        [JsonProperty(PropertyName = "totalDeviceCount")]
+        [JsonProperty("totalDeviceCount")]
         public long TotalDeviceCount { get; protected internal set; }
 
         /// <summary>
         /// Gets or sets the count of all enabled devices.
         /// </summary>
-        [JsonProperty(PropertyName = "enabledDeviceCount")]
+        [JsonProperty("enabledDeviceCount")]
         public long EnabledDeviceCount { get; protected internal set; }
 
         /// <summary>
         /// Gets or sets the count of all disabled devices.
         /// </summary>
-        [JsonProperty(PropertyName = "disabledDeviceCount")]
+        [JsonProperty("disabledDeviceCount")]
         public long DisabledDeviceCount { get; protected internal set; }
     }
 }

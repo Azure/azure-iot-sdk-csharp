@@ -52,38 +52,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Registers a device described by the message. Because the AMQP library does not accept cancellation tokens, the provided cancellation token
         /// will only be checked for cancellation between AMQP operations. The timeout will be respected during the AMQP operations.
         /// </summary>
-        /// <param name="message">The provisioning message.</param>
+        /// <param name="provisioningRequest">The provisioning message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
         internal override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterRequest message,
+            ProvisioningTransportRegisterRequest provisioningRequest,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
 
-            Argument.AssertNotNull(message, nameof(message));
+            Argument.AssertNotNull(provisioningRequest, nameof(provisioningRequest));
 
             using var connectionLostCancellationToken = new CancellationTokenSource();
 
             try
             {
-                AmqpAuthStrategy authStrategy;
-
-                if (message.Authentication is AuthenticationProviderX509 x509)
+                AmqpAuthStrategy authStrategy = provisioningRequest.Authentication switch
                 {
-                    authStrategy = new AmqpAuthStrategyX509(x509);
-                }
-                else if (message.Authentication is AuthenticationProviderSymmetricKey key)
-                {
-                    authStrategy = new AmqpAuthStrategySymmetricKey(key);
-                }
-                else
-                {
-                    throw new NotSupportedException(
-                        $"{nameof(message.Authentication)} must be of type " +
-                        $"{nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
-                }
+                    AuthenticationProviderX509 x509 => new AmqpAuthStrategyX509(x509),
+                    AuthenticationProviderSymmetricKey key => new AmqpAuthStrategySymmetricKey(key),
+                    _ => throw new NotSupportedException(
+                        $"{nameof(provisioningRequest.Authentication)} must be of type " +
+                        $"{nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}"),
+                };
 
                 if (Logging.IsEnabled)
                     Logging.Associate(authStrategy, this);
@@ -92,12 +84,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 bool useWebSocket = _settings.Protocol == ProvisioningClientTransportProtocol.WebSocket;
 
-                string registrationId = message.Authentication.GetRegistrationId();
-                string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
+                string registrationId = provisioningRequest.Authentication.GetRegistrationId();
+                string linkEndpoint = $"{provisioningRequest.IdScope}/registrations/{registrationId}";
 
                 using AmqpClientConnection connection = authStrategy.CreateConnection(
-                    message.GlobalDeviceEndpoint,
-                    message.IdScope,
+                    provisioningRequest.GlobalDeviceEndpoint,
+                    provisioningRequest.IdScope,
                     () =>
                     {
                         if (Logging.IsEnabled)
@@ -107,7 +99,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     },
                     _settings);
 
-                await authStrategy.OpenConnectionAsync(
+                await authStrategy
+                    .OpenConnectionAsync(
                         connection,
                         useWebSocket,
                         _settings.Proxy,
@@ -132,14 +125,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0)
-                    ? new DeviceRegistration(new JRaw(message.Payload))
-                    : null;
 
                 RegistrationOperationStatus operation = await RegisterDeviceAsync(
                         connection,
                         correlationId,
-                        deviceRegistration,
+                        provisioningRequest.Payload,
                         linkedCancellationToken.Token)
                     .ConfigureAwait(false);
 
@@ -148,12 +138,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 string operationId = operation.OperationId;
 
                 // Poll with operationId until registration complete.
-                while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0
-                    || string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
+                while (operation.Status == ProvisioningRegistrationStatus.Assigning
+                    || operation.Status == ProvisioningRegistrationStatus.Unassigned)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await Task.Delay(
+                    await Task
+                        .Delay(
                             operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval),
                             linkedCancellationToken.Token)
                         .ConfigureAwait(false);
@@ -175,7 +166,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     attempts++;
                 }
 
-                if (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigned) == 0)
+                if (operation.Status == ProvisioningRegistrationStatus.Assigned)
                 {
                     authStrategy.SaveCredentials(operation);
                 }
@@ -224,7 +215,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo, CancellationToken cancellationToken)
+        private static async Task CreateLinksAsync(
+            AmqpClientConnection connection,
+            string linkEndpoint,
+            string productInfo,
+            CancellationToken cancellationToken)
         {
             AmqpClientSession amqpDeviceSession = connection.CreateSession();
             await amqpDeviceSession.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -247,22 +242,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private async Task<RegistrationOperationStatus> RegisterDeviceAsync(
             AmqpClientConnection client,
             string correlationId,
-            DeviceRegistration deviceRegistration,
+            RegistrationRequestPayload payload,
             CancellationToken cancellationToken)
         {
             AmqpMessage amqpMessage = null;
 
             try
             {
-                if (deviceRegistration == null)
-                {
-                    amqpMessage = AmqpMessage.Create(new MemoryStream(), true);
-                }
-                else
-                {
-                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
-                    amqpMessage = AmqpMessage.Create(customContentStream, true);
-                }
+                amqpMessage = payload == null
+                    ? AmqpMessage.Create(new MemoryStream(), true)
+                    : AmqpMessage.Create(new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload))), true);
 
                 amqpMessage.Properties.CorrelationId = correlationId;
                 amqpMessage.ApplicationProperties.Map[OperationType] = Register;

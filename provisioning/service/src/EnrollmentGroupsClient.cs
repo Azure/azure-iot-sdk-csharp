@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -225,7 +226,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             var bulkOperation = new EnrollmentGroupBulkOperation
             {
                 Mode = bulkOperationMode,
-                Enrollments = enrollmentGroups,
+                Enrollments = enrollmentGroups.ToList(),
             };
 
             ContractApiResponse contractApiResponse = null;

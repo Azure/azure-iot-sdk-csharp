@@ -15,13 +15,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Job identifier.
         /// </summary>
-        [JsonProperty(PropertyName = "jobId", Required = Required.Always)]
+        [JsonProperty("jobId", Required = Required.Always)]
         internal string JobId { get; set; }
 
         /// <summary>
         /// [Required] The type of job to execute.
         /// </summary>
-        [JsonProperty(PropertyName = "type", Required = Required.Always)]
+        [JsonProperty("type", Required = Required.Always)]
         internal JobType JobType { get; set; }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Required if jobType is cloud-to-device method.
         /// </remarks>
-        [JsonProperty(PropertyName = "cloudToDeviceMethod")]
+        [JsonProperty("cloudToDeviceMethod")]
         internal DirectMethodServiceRequest DirectMethodRequest { get; set; }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Required if the job type is update twin.
         /// </remarks>
-        [JsonProperty(PropertyName = "updateTwin")]
+        [JsonProperty("updateTwin")]
         internal ClientTwin UpdateTwin { get; set; }
 
         /// <summary>
@@ -48,13 +48,13 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Required if job type is update twin or cloud-to-device method.
         /// </remarks>
-        [JsonProperty(PropertyName = "queryCondition")]
+        [JsonProperty("queryCondition")]
         internal string QueryCondition { get; set; }
 
         /// <summary>
         /// ISO 8601 date time to start the job.
         /// </summary>
-        [JsonProperty(PropertyName = "startTime")]
+        [JsonProperty("startTime")]
         [JsonConverter(typeof(IsoDateTimeConverter))]
         internal DateTimeOffset StartOn { get; set; }
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         internal TimeSpan? MaxExecutionTime { get; set; }
 
-        [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonProperty("maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         internal long? MaxExecutionTimeInSeconds
         {
             get => MaxExecutionTime != null ? (long)MaxExecutionTime?.TotalSeconds : null;

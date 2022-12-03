@@ -69,21 +69,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             AttestationMechanism attestation,
             string deviceId,
             string iotHubHostName,
-            ProvisioningTwinState initialTwinState,
+            InitialTwinState initialTwinState,
             ProvisioningStatus? provisioningStatus,
             DateTimeOffset createdOnUtc,
             DateTimeOffset lastUpdatedOnUtc,
             ETag eTag,
-            ProvisioningClientCapabilities capabilities)
+            ProvisioningTwinCapabilities capabilities)
         {
-            if (attestation == null)
-            {
-                throw new ProvisioningServiceException("Service responded with an enrollment without attestation.", HttpStatusCode.BadRequest);
-            }
+            Argument.AssertNotNull(attestation, nameof(attestation));
 
             RegistrationId = registrationId;
             DeviceId = deviceId;
-            Attestation = attestation.GetAttestation(); // This is the one reason why we can't use an empty constructor here.
+            // This is the one reason why we can't use an empty constructor here.
+            Attestation = attestation.GetAttestation();
             IotHubHostName = iotHubHostName;
             InitialTwinState = initialTwinState;
             ProvisioningStatus = provisioningStatus;
@@ -100,25 +98,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided string does not fit the registration Id requirements</exception>
-        [JsonProperty(PropertyName = "registrationId")]
+        [JsonProperty("registrationId")]
         public string RegistrationId { get; internal set; }
 
         /// <summary>
         /// Desired IoT hub device Id (optional).
         /// </summary>
-        [JsonProperty(PropertyName = "deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string DeviceId { get; set; }
 
         /// <summary>
         /// Current registration state.
         /// </summary>
-        [JsonProperty(PropertyName = "registrationState", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("registrationState", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DeviceRegistrationState RegistrationState { get; internal set; }
 
         /// <summary>
         /// Attestation mechanism.
         /// </summary>
-        [JsonProperty(PropertyName = "attestation")]
+        [JsonProperty("attestation")]
         private AttestationMechanism _attestation;
 
         /// <summary>
@@ -150,79 +148,74 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Desired IoT hub to assign the device to.
         /// </summary>
-        [JsonProperty(PropertyName = "iotHubHostName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("iotHubHostName", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string IotHubHostName { get; set; }
 
         /// <summary>
         /// Initial twin state.
         /// </summary>
-        [JsonProperty(PropertyName = "initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public ProvisioningTwinState InitialTwinState { get; set; }
+        [JsonProperty("initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public InitialTwinState InitialTwinState { get; set; }
 
         /// <summary>
         /// The provisioning status.
         /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
-        [JsonProperty(PropertyName = "provisioningStatus", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("provisioningStatus", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ProvisioningStatus? ProvisioningStatus { get; set; }
 
         /// <summary>
         /// The DateTime this resource was created.
         /// </summary>
-        [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
-        [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Enrollment's ETag.
         /// </summary>
-        [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        [JsonProperty("etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
         public ETag ETag { get; set; }
 
         /// <summary>
         /// Capabilities of the device.
         /// </summary>
-        [JsonProperty(PropertyName = "capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public ProvisioningClientCapabilities Capabilities { get; set; }
+        [JsonProperty("capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public ProvisioningTwinCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The behavior when a device is re-provisioned to an IoT hub.
         /// </summary>
-        [JsonProperty(PropertyName = "reprovisionPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("reprovisionPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ReprovisionPolicy ReprovisionPolicy { get; set; }
 
         /// <summary>
         /// Custom allocation definition.
         /// </summary>
-        [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
 
         /// <summary>
         /// The allocation policy of this resource. Overrides the tenant level allocation policy.
         /// </summary>
-        [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public AllocationPolicy? AllocationPolicy { get; set; }
 
         /// <summary>
-        /// The list of names of IoT hubs the device in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs.
+        /// The list of names of IoT hubs the device in this resource can be allocated to.
         /// </summary>
-        [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        /// <remarks>
+        /// Must be a subset of tenant level list of IoT hubs.
+        /// </remarks>
+        [JsonProperty("iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public IList<string> IotHubs { get; set; } = new List<string>();
-
-        /// <summary>
-        /// Convert this object in a pretty print format.
-        /// </summary>
-        /// <returns>The string with the content of this class in a pretty print format.</returns>
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
-        }
 
         /// <summary>
         /// For use in serialization.

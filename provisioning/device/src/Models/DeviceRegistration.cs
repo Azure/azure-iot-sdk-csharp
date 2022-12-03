@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Gets or set the custom content payload.
         /// </summary>
-        [JsonProperty(PropertyName = "payload")]
+        [JsonProperty("payload")]
         public JRaw Payload { get; internal set; }
     }
 }

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -16,31 +15,26 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Unknown type.
         /// </summary>
-        [EnumMember(Value = "unknown")]
-        Unknown = 0,
+        Unknown,
 
         /// <summary>
-        /// Indicates an ExportDevices job.
+        /// Indicates an export devices job.
         /// </summary>
-        [EnumMember(Value = "export")]
-        ExportDevices,
+        Export,
 
         /// <summary>
-        /// Indicates an ImportDevices job.
+        /// Indicates an import devices job.
         /// </summary>
-        [EnumMember(Value = "import")]
-        ImportDevices,
+        Import,
 
         /// <summary>
-        /// Indicates a Device method job.
+        /// Indicates a scheduled device method job.
         /// </summary>
-        [EnumMember(Value = "scheduleDeviceMethod")]
         ScheduleDeviceMethod,
 
         /// <summary>
-        /// Indicates a Twin update job.
+        /// Indicates a scheduled twin update job.
         /// </summary>
-        [EnumMember(Value = "scheduleUpdateTwin")]
         ScheduleUpdateTwin,
     }
 }

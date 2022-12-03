@@ -15,11 +15,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Configuration targeted.
         /// </summary>
-        Targeted = 1,
+        Targeted ,
 
         /// <summary>
         /// Configuration applied.
         /// </summary>
-        Applied = 2,
+        Applied,
     }
 }

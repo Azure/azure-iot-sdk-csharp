@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents a collection of properties for the twin.
+    /// Gets and sets the twin desired properties.
     /// </summary>
     [JsonConverter(typeof(ClientTwinPropertiesJsonConverter))]
     public class ClientTwinProperties : IEnumerable

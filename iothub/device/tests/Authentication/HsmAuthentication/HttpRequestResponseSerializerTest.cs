@@ -2,17 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
-using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FluentAssertions;
-using System.Threading;
-using System.Net;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 {
@@ -35,9 +34,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             string requestString = Encoding.ASCII.GetString(httpRequestData);
 
             // assert
-            var newLines = new[] { '\r', '\n' };
-            var actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
-            var expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            char[] newLines = new[] { '\r', '\n' };
+            string[] actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            string[] expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
             actual.Length.Should().Be(expected.Length);
             for (int i = 0; i < actual.Length; ++i)
             {
@@ -60,9 +59,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             string requestString = Encoding.ASCII.GetString(httpRequestData);
 
             // assert
-            var newLines = new[] { '\r', '\n' };
-            var actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
-            var expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            char[] newLines = new[] { '\r', '\n' };
+            string[] actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            string[] expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
             actual.Length.Should().Be(expected.Length);
             for (int i = 0; i < actual.Length; ++i)
             {
@@ -84,9 +83,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             string requestString = Encoding.ASCII.GetString(httpRequestData);
 
             // assert
-            var newLines = new[] { '\r', '\n' };
-            var actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
-            var expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            char[] newLines = new[] { '\r', '\n' };
+            string[] actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            string[] expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
             actual.Length.Should().Be(expected.Length);
             for (int i = 0; i < actual.Length; ++i)
             {
@@ -106,9 +105,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             string requestString = Encoding.ASCII.GetString(httpRequestData);
 
             // assert
-            var newLines = new[] { '\r', '\n' };
-            var actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
-            var expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            char[] newLines = new[] { '\r', '\n' };
+            string[] actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            string[] expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
             actual.Length.Should().Be(expected.Length);
             for (int i = 0; i < actual.Length; ++i)
             {
@@ -119,7 +118,8 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public void TestSerializeRequest_RequestIsNull_ShouldThrowArgumentNullException()
         {
-            TestAssert.Throws<ArgumentNullException>(() => HttpRequestResponseSerializer.SerializeRequest(null));
+            Action act = () => HttpRequestResponseSerializer.SerializeRequest(null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -130,7 +130,8 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes("test"));
             request.Content.Headers.TryAddWithoutValidation("content-type", "application/json");
 
-            TestAssert.Throws<ArgumentNullException>(() => HttpRequestResponseSerializer.SerializeRequest(request));
+            Action act = () => HttpRequestResponseSerializer.SerializeRequest(request);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -150,9 +151,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             string requestString = Encoding.ASCII.GetString(httpRequestData);
 
             // assert
-            var newLines = new[] { '\r', '\n' };
-            var actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
-            var expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            char[] newLines = new[] { '\r', '\n' };
+            string[] actual = requestString.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+            string[] expected = input.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
             actual.Length.Should().Be(expected.Length);
             for (int i = 0; i < actual.Length; ++i)
             {
@@ -167,13 +168,11 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             using var memory = new MemoryStream(expected, true);
             using var stream = new HttpBufferedStream(memory);
 
-            CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-
             // act
-            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken);
+            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, CancellationToken.None);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -189,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, CancellationToken.None);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -201,13 +200,11 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             using var memory = new MemoryStream(expected, true);
             using var stream = new HttpBufferedStream(memory);
 
-            CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-
             // act
-            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken);
+            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, CancellationToken.None);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -219,13 +216,11 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             using var memory = new MemoryStream(expected, true);
             using var stream = new HttpBufferedStream(memory);
 
-            CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-
             // act
-            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken);
+            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, CancellationToken.None);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -237,8 +232,8 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             using var memory = new MemoryStream(expected, true);
             using var stream = new HttpBufferedStream(memory);
 
-            CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-            await TestAssert.ThrowsAsync<ArgumentOutOfRangeException>(() => HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken));
+            Func <Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, CancellationToken.None);
+            await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
         }
 
         [TestMethod]
@@ -252,7 +247,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, CancellationToken.None);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -268,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, CancellationToken.None);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -294,13 +289,11 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             using var memory = new MemoryStream(expected, true);
             using var stream = new HttpBufferedStream(memory);
 
-            CancellationToken cancellationToken = default(System.Threading.CancellationToken);
-
             // act
-            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken);
+            Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, CancellationToken.None);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -316,7 +309,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, default);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }
@@ -332,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             Func<Task> act = async () => await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, default);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
         }

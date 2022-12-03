@@ -13,12 +13,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// It is the result of any query for the provisioning service. This class will parse the result and
-    ///     return it in a best format possible. For the known formats in <see cref="QueryResultType"/>, you can
-    ///     just cast the items. In case of unknown type, the items will contain a list of string
-    ///     and you shall parse it by your own.
+    /// return it in a best format possible. For the known formats in <see cref="QueryResultType"/>, you can
+    /// just cast the items. In case of unknown type, the items will contain a list of string
+    /// and you shall parse it by your own.
     ///
     /// The provisioning service query result is composed by 2 system properties and a body. This class exposes
-    ///     it with 3 getters, <see cref="QueryType"/>, <see cref="Items"/>, and <see cref="ContinuationToken"/>.
+    /// it with 3 getters, <see cref="QueryType"/>, <see cref="Items"/>, and <see cref="ContinuationToken"/>.
     ///
     /// The system properties are:
     /// <list type="bullet">
@@ -106,38 +106,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         try
                         {
                             Items = JsonConvert.DeserializeObject<IEnumerable<JObject>>(bodyString);
+                            break;
                         }
-                        catch (ArgumentException)
-                        {
-                            try
-                            {
-                                Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString);
-                            }
-                            catch (ArgumentException)
-                            {
-                                Items = new string[] { bodyString };
-                            }
-                        }
-                        catch (JsonSerializationException)
+                        catch (JsonException)
+                        { }
+
+
+                        try
                         {
                             Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString);
+                            break;
                         }
-                        catch (JsonReaderException)
-                        {
-                            Items = new string[] { bodyString };
-                        }
+                        catch (JsonException)
+                        { }
+
+                        // If the result cannot be deserialized into a collection of objects
+                        // then save off the result into a collection with the body as the only item.
+                        Items = new string[] { bodyString };
                     }
                     break;
             }
-        }
-
-        /// <summary>
-        /// Convert this object in a pretty print format.
-        /// </summary>
-        /// <returns>The string with the content of this class in a pretty print format.</returns>
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
     }
 }

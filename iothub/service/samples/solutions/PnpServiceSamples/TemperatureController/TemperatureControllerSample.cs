@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Samples
         private const string Thermostat1Component = "thermostat1";
 
         private static readonly Random s_random = new();
-        private static readonly string DeviceSampleLink =
+        private const string DeviceSampleLink =
             "https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples/TemperatureController";
 
         private readonly IotHubServiceClient _serviceClient;
@@ -127,22 +127,18 @@ namespace Microsoft.Azure.Devices.Samples
             await GetAndPrintDeviceTwinAsync();
         }
 
-        /* The property update patch (for a property within a component) needs to be in the following format:
-         * {
-         *  "sampleComponentName":
-         *      {
-         *          "__t": "c",
-         *          "samplePropertyName": 20
-         *      }
-         *  }
-         */
+        // The property update patch (for a property within a component) needs to be in the following format:
+        // {
+        //   "sampleComponentName":
+        //     {
+        //       "__t": "c",
+        //         "samplePropertyName": 20
+        //     }
+        // }
         private static ClientTwin CreatePropertyPatch(string propertyName, object propertyValue, string componentName)
         {
             var twinPatch = new ClientTwin();
-            twinPatch.Properties.Desired[componentName] = new
-            {
-                __t = "c"
-            };
+            twinPatch.Properties.Desired[componentName] = new { __t = "c" };
             twinPatch.Properties.Desired[componentName][propertyName] = JsonConvert.SerializeObject(propertyValue);
             return twinPatch;
         }

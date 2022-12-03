@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -22,44 +23,46 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void BulkEnrollmentOperationConstructorSucceed()
         {
             // arrange
-            string expectedJson =
+            string initialJson =
                 "{" +
-                "    \"mode\":\"create\"," +
+                "  \"mode\":\"create\"," +
                 "    \"enrollments\": [ " +
-                "      {\n" +
-                "        \"registrationId\": \"regid1\",\n" +
-                "        \"attestation\": {" +
-                "          \"type\": \"symmetricKey\"," +
-                "          \"symmetricKey\": {\n" +
-                $"           \"primaryKey\": \"{s_primaryKey}\",\n" +
-                $"           \"secondaryKey\": \"{s_secondaryKey}\"\n" +
-                "          }\n" +
+                "    {\n" +
+                "      \"attestation\": {" +
+                "        \"type\": \"symmetricKey\"," +
+                "        \"symmetricKey\": {\n" +
+                $"          \"primaryKey\": \"{s_primaryKey}\",\n" +
+                $"          \"secondaryKey\": \"{s_secondaryKey}\"\n" +
                 "        }\n" +
-                "      }," +
-                "      {\n" +
-                "        \"registrationId\": \"regid2\",\n" +
-                "        \"attestation\": {" +
-                "          \"type\": \"symmetricKey\"," +
-                "          \"symmetricKey\": {\n" +
-                $"           \"primaryKey\": \"{s_primaryKey}\",\n" +
-                $"           \"secondaryKey\": \"{s_secondaryKey}\"\n" +
-                "          }\n" +
+                "      },\n" +
+                "      \"registrationId\": \"regid1\"\n" +
+                "    }," +
+                "    {\n" +
+                "      \"attestation\": {" +
+                "        \"type\": \"symmetricKey\"," +
+                "        \"symmetricKey\": {\n" +
+                $"         \"primaryKey\": \"{s_primaryKey}\",\n" +
+                $"         \"secondaryKey\": \"{s_secondaryKey}\"\n" +
                 "        }\n" +
-                "      }" +
-                "    ]" +
+                "      },\n" +
+                "      \"registrationId\": \"regid2\"\n" +
+                "    }" +
+                "  ]" +
                 "}";
+            var stripWhiteSpace = new Regex(@"\s", RegexOptions.Multiline);
+            string expected = stripWhiteSpace.Replace(initialJson, "");
 
             // act
-            IndividualEnrollmentBulkOperation operation = new IndividualEnrollmentBulkOperation()
+            var operation = new IndividualEnrollmentBulkOperation
             {
                 Mode = BulkOperationMode.Create,
                 Enrollments = s_individualEnrollments,
             };
 
-            string bulkJson = JsonConvert.SerializeObject(operation);
+            string actual = JsonConvert.SerializeObject(operation);
 
             // assert
-            TestAssert.AreEqualJson(expectedJson, bulkJson);
+            actual.Should().Be(expected);
         }
     }
 }

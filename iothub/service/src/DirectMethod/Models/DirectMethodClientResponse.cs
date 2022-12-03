@@ -38,5 +38,31 @@ namespace Microsoft.Azure.Devices
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }
+
+        /// <summary>
+        /// Tries to deserialize the payload as the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type to convert to.</typeparam>
+        /// <param name="value">The value of the payload.</param>
+        /// <returns>True if converted, otherwise false.</returns>
+        public bool TryGetPayload<T>(out T value)
+        {
+            value = default;
+
+            if (JsonPayload == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                value = JsonPayload.Value<T>();
+                return true;
+            }
+            catch (JsonSerializationException)
+            {
+                return false;
+            }
+        }
     }
 }

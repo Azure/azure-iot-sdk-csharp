@@ -13,13 +13,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// X509 client certificate primary thumbprint.
         /// </summary>
-        [JsonProperty(PropertyName = "primaryThumbprint")]
+        [JsonProperty("primaryThumbprint")]
         public string PrimaryThumbprint { get; set; }
 
         /// <summary>
         /// X509 client certificate secondary thumbprint.
         /// </summary>
-        [JsonProperty(PropertyName = "secondaryThumbprint")]
+        [JsonProperty("secondaryThumbprint")]
         public string SecondaryThumbprint { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -59,7 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Console.WriteLine("\nCreating a new enrollmentGroup...");
             Attestation attestation = X509Attestation.CreateFromRootCertificates(_groupIssuerCertificate);
             var enrollmentGroup = new EnrollmentGroup(EnrollmentGroupId, attestation);
-            Console.WriteLine(enrollmentGroup);
+            Console.WriteLine(JsonConvert.SerializeObject(enrollmentGroup));
 
             Console.WriteLine("\nAdding new enrollmentGroup...");
             EnrollmentGroup enrollmentGroupResult = await _provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup);

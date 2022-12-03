@@ -45,18 +45,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // NOTE: Memory constrained devices should leverage storage capabilities of an external service to store this
         // information and perform computation.
         // See https://docs.microsoft.com/en-us/azure/event-grid/compare-messaging-services for more details.
-        private readonly Dictionary<string, Dictionary<DateTimeOffset, double>> _temperatureReadingsDateTimeOffset =
-            new Dictionary<string, Dictionary<DateTimeOffset, double>>();
+        private readonly Dictionary<string, Dictionary<DateTimeOffset, double>> _temperatureReadingsDateTimeOffset = new();
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the componentName.
         private readonly Dictionary<string, Func<DesiredProperties, object, Task>> _desiredPropertyUpdateCallbacks = new();
 
         // Dictionary to hold the current temperature for each "Thermostat" component.
-        private readonly Dictionary<string, double> _temperature = new Dictionary<string, double>();
+        private readonly Dictionary<string, double> _temperature = new();
 
         // Dictionary to hold the max temperature since last reboot, for each "Thermostat" component.
-        private readonly Dictionary<string, double> _maxTemp = new Dictionary<string, double>();
+        private readonly Dictionary<string, double> _maxTemp = new();
 
         // A safe initial value for caching the writable properties version is 1, so the client
         // will process all previous property change requests and initialize the device application

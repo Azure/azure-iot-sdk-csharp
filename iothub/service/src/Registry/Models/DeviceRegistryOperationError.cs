@@ -13,25 +13,25 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The Id of the device that indicated the error.
         /// </summary>
-        [JsonProperty(PropertyName = "deviceId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("deviceId", NullValueHandling = NullValueHandling.Ignore)]
         public string DeviceId { get; internal set; }
 
         /// <summary>
         /// Module Id on the device that indicated the error.
         /// </summary>
-        [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("moduleId", NullValueHandling = NullValueHandling.Ignore)]
         public string ModuleId { get; internal set; }
 
         /// <summary>
         /// Error code associated with the error.
         /// </summary>
-        [JsonProperty(PropertyName = "errorCode", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("errorCode", NullValueHandling = NullValueHandling.Ignore)]
         public IotHubServiceErrorCode ErrorCode { get; internal set; }
 
         /// <summary>
         /// Additional details associated with the error.
         /// </summary>
-        [JsonProperty(PropertyName = "errorStatus", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("errorStatus", NullValueHandling = NullValueHandling.Ignore)]
         public string ErrorStatus { get; internal set; }
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,7 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private readonly DateTime _sampleCreateDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private readonly DateTime _sampleLastUpdatedDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
-        private static readonly ETag SampleEtag = new("00000000-0000-0000-0000-00000000000");
+        private static readonly ETag s_sampleEtag = new("00000000-0000-0000-0000-00000000000");
 
         private const string SampleEndorsementKey =
             "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
@@ -31,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy" +
             "1SSDQMQ==";
 
-        private readonly TpmAttestation _sampleTpmAttestation = new TpmAttestation(SampleEndorsementKey);
+        private readonly TpmAttestation _sampleTpmAttestation = new(SampleEndorsementKey);
 
         private const string SamplePublicKeyCertificateString =
             "-----BEGIN CERTIFICATE-----\n" +
@@ -80,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
             "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
             "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-            "   \"etag\": \"" + SampleEtag.ToString() + "\"\n" +
+            "   \"etag\": \"" + s_sampleEtag.ToString() + "\"\n" +
             "}";
 
         [TestMethod]
@@ -98,8 +97,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void EnrollmentGroupConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
-            _ = TestAssert.Throws<InvalidOperationException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, _sampleX509ClientAttestation));
-            _ = TestAssert.Throws<InvalidOperationException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, _sampleTpmAttestation));
+            Action act = () => _ = new EnrollmentGroup(SampleEnrollmentGroupId, _sampleX509ClientAttestation);
+            act.Should().Throw<InvalidOperationException>();
+
+            act = () => _ = new EnrollmentGroup(SampleEnrollmentGroupId, _sampleTpmAttestation);
+            act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -118,14 +120,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
                 "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
                 "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-                "   \"etag\": \"" + SampleEtag + "\"\n" +
+                "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
 
-            // act - assert
+            // act
             Action act = () => JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson);
-            FluentAssertions.Specialized.ExceptionAssertions<ProvisioningServiceException> error = act.Should().Throw<ProvisioningServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error.And.IsTransient.Should().BeFalse();
+
+            // assert
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -143,7 +145,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleProvisioningStatus, enrollmentGroup.ProvisioningStatus);
             Assert.AreEqual(_sampleCreateDateTimeUTC, enrollmentGroup.CreatedOnUtc);
             Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, enrollmentGroup.LastUpdatedOnUtc);
-            Assert.AreEqual(SampleEtag, enrollmentGroup.ETag);
+            Assert.AreEqual(s_sampleEtag, enrollmentGroup.ETag);
         }
 
         [TestMethod]
@@ -172,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "           }\n" +
                 "       }\n" +
                 "   },\n" +
-                "   \"etag\": \"" + SampleEtag + "\"\n" +
+                "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
             EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(minJson);
 
@@ -180,7 +182,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(enrollmentGroup);
             Assert.AreEqual(SampleEnrollmentGroupId, enrollmentGroup.EnrollmentGroupId);
             Assert.IsTrue(enrollmentGroup.Attestation is X509Attestation);
-            Assert.AreEqual(SampleEtag, enrollmentGroup.ETag);
+            Assert.AreEqual(s_sampleEtag, enrollmentGroup.ETag);
         }
     }
 }

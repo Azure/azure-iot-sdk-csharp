@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Metadata for properties in a <see cref="ProvisioningTwinProperties"/>.
+    /// Metadata for properties in a <see cref="InitialTwinPropertyCollection"/>.
     /// </summary>
     public class ProvisioningTwinMetadata
     {

@@ -301,6 +301,8 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `JobClient.GetJobAsync(...)` | `IotHubServiceClient.ScheduledJobs.GetAsync(...)` | |
 | `JobClient.CreateQuery()` | `IotHubServiceClient.ScheduledJobs.CreateQueryAsync()` | |
 | `JobsClient.ScheduleTwinUpdateAsync(...)` | `IotHubServiceClient.ScheduledJobs.ScheduledTwinUpdateAsync(...)` | |
+| `JobType.ExportDevices` | `JobType.Export` | |
+| `JobType.ImportDevices` | `JobType.Import` | |
 
 #### DigitalTwinClient
 
@@ -405,6 +407,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `X509CertificateInfo.SHA1Thumbprint` | `X509CertificateInfo.Sha1Thumbprint` | See³ |
 | `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` | See³ |
 | `ProvisioningServiceClientException` | `ProvisioningServiceException` | |
+| ProvisioningClientCapabilities.IotEdge | ProvisioningClientCapabilities.IsIotEdge | Boolean properties should start with a verb, usually "Is". |
 
 ### Security provider client
 

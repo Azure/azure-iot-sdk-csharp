@@ -3,7 +3,6 @@
 
 using System;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices
 {
@@ -12,8 +11,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DirectMethodServiceRequest
     {
-        private object _payload;
-
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
@@ -26,6 +23,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty("methodName", Required = Required.Always)]
         public string MethodName { get; set; }
+
+        /// <summary>
+        /// The payload to have serialized and send as JSON.
+        /// </summary>
+        [JsonProperty("payload", Required = Required.AllowNull)]
+        public object Payload { get; set; }
 
         /// <summary>
         /// The amount of time given to the service to connect to the device.
@@ -58,51 +61,10 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public TimeSpan? ResponseTimeout { get; set; }
 
-        /// <summary>
-        /// Get the payload object. May be null or empty.
-        /// </summary>
-        [JsonIgnore]
-        public object Payload
-        {
-            get => _payload;
-
-            set
-            {
-                _payload = value;
-                if (value != null)
-                {
-                    PayloadAsJsonString = JsonConvert.SerializeObject(value);
-                    JsonPayload = new JRaw(PayloadAsJsonString);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get the serialized JSON payload. May be null or empty.
-        /// </summary>
-        [JsonIgnore]
-        public string PayloadAsJsonString { get; internal set; }
-
-        /// <summary>
-        /// The JSON payload in JRaw type.
-        /// </summary>
-        [JsonProperty("payload")]
-        internal JRaw JsonPayload { get; set; }
-
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
         internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
 
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
         internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
-
-        /// <summary>
-        /// Returns JSON payload in a custom type.
-        /// </summary>
-        /// <typeparam name="T">The custom type into which the JSON payload can be deserialized.</typeparam>
-        /// <returns>The JSON payload in custom type.</returns>
-        public T GetPayload<T>()
-        {
-            return JsonConvert.DeserializeObject<T>(PayloadAsJsonString);
-        }
     }
 }

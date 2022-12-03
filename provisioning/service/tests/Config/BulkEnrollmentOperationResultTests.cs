@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -32,19 +34,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "    }" +
                 "  ]" +
                 "}";
+
             string nonStatus =
                 "{" +
                 $"  \"errors\": [ {s_sampleValidErrorJson} ] " +
                 "}";
 
             // act - assert
-            TestAssert.Throws<JsonSerializationException>(() =>
-                JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(nonRegistrationId));
-            TestAssert.Throws<JsonSerializationException>(() =>
-                JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(nonStatus));
+            Action act = () => JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(nonRegistrationId);
+            act.Should().Throw<JsonSerializationException>();
+
+            act = () => JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(nonStatus);
+            act.Should().Throw<JsonSerializationException>();
         }
 
-        /* SRS_BULK_ENROLLMENT_OPERATION_RESULT_21_002: [The BulkEnrollmentOperationResult shall store the provided information.] */
         [TestMethod]
         public void BulkEnrollmentOperationResultConstructorSucceed()
         {

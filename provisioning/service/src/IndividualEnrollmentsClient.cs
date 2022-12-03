@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public async Task<BulkEnrollmentOperationResult> RunBulkOperationAsync(
             BulkOperationMode bulkOperationMode,
-            IEnumerable<IndividualEnrollment> individualEnrollments,
+            IList<IndividualEnrollment> individualEnrollments,
             CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(individualEnrollments, nameof(individualEnrollments));

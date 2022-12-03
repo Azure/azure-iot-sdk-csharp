@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -134,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("SomeNonExistantDevice", methodInvocation);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            ExceptionAssertions<IotHubServiceException> error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
             error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
             error.And.IsTransient.Should().BeFalse();
@@ -187,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", directMethodRequest).ConfigureAwait(false);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            ExceptionAssertions<IotHubServiceException> error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
             error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.ModuleNotFound);
             error.And.IsTransient.Should().BeFalse();
@@ -283,7 +284,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            ExceptionAssertions<IotHubServiceException> error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
             error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotOnline);
             error.And.IsTransient.Should().BeTrue();
@@ -523,10 +524,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 responseTimeout,
                 serviceClientTransportSettings);
 
-            Task testTimeoutTask = Task.Delay(TimeSpan.FromSeconds(20));
+            var testTimeoutTask = Task.Delay(TimeSpan.FromSeconds(20));
 
             // The device should still be able to receive direct methods even though it was re-opened.
-            Task testTask = Task.WhenAll(serviceSendTask, methodReceivedTask);
+            var testTask = Task.WhenAll(serviceSendTask, methodReceivedTask);
 
             Task completedTask = await Task.WhenAny(testTask, testTimeoutTask).ConfigureAwait(false);
 
@@ -569,13 +570,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         internal class DeviceResponsePayload
         {
-            [JsonProperty(PropertyName = "currentState")]
+            [JsonProperty("currentState")]
             public string CurrentState { get; set; }
         }
 
         internal class ServiceRequestPayload
         {
-            [JsonProperty(PropertyName = "desiredState")]
+            [JsonProperty("desiredState")]
             public string DesiredState { get; set; }
         }
     }

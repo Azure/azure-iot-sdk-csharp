@@ -63,25 +63,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(CancellationToken cancellationToken = default)
         {
-            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
-
             return RegisterAsync(null, cancellationToken);
         }
 
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
-        /// <param name="data">
+        /// <param name="optionalRegistrationPayload">
         /// The optional additional data that is passed through to the custom allocation policy webhook if
         /// a custom allocation policy webhook is setup for this enrollment.
         /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public async Task<DeviceRegistrationResult> RegisterAsync(RegistrationRequestPayload data, CancellationToken cancellationToken = default)
+        public async Task<DeviceRegistrationResult> RegisterAsync(RegistrationRequestPayload optionalRegistrationPayload, CancellationToken cancellationToken = default)
         {
-            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
+            if (Logging.IsEnabled)
+                Logging.LogRegister(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
-            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData);
+            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, optionalRegistrationPayload);
 
             DeviceRegistrationResult result = null;
 
@@ -89,7 +88,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 .RunWithRetryAsync(
                     async () =>
                     {
-                        result = await _provisioningTransportHandler.RegisterAsync(request, cancellationToken);
+                        result = await _provisioningTransportHandler.RegisterAsync(request, cancellationToken).ConfigureAwait(false);
                     },
                     cancellationToken)
                 .ConfigureAwait(false);

@@ -7,8 +7,11 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The collection of twin properties reported by the client.
+    /// These are twin properties reported by a device.
     /// </summary>
+    /// <remarks>
+    /// They are read-only from a service perspective.
+    /// </remarks>
     public class ReportedProperties : PropertyCollection
     {
         /// <summary>

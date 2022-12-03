@@ -46,13 +46,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Primary reference.
         /// </summary>
-        [JsonProperty(PropertyName = "primary", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("primary", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Primary { get; private set; }
 
         /// <summary>
         /// Secondary reference.
         /// </summary>
-        [JsonProperty(PropertyName = "secondary", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("secondary", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Secondary { get; private set; }
     }
 }

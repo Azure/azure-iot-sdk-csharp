@@ -16,35 +16,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Unknown result type.
         /// </summary>
         /// <remarks>
-        /// the provisioning service cannot parse the information in the body.
+        /// The provisioning service cannot parse the information in the body.
         /// You shall cast the objects in the items using string and
         /// parser it depending on the query the you sent.
         /// </remarks>
         Unknown,
 
         /// <summary>
-        /// Enrollment result type.
+        /// An individual enrollment.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of individualEnrollment. You shall cast the
+        /// The query result in a list of individual enrollments. You shall cast the
         /// objects in the items using <see cref="IndividualEnrollment"/>.
         /// </remarks>
         Enrollment,
 
         /// <summary>
-        /// Enrollment group result type.
+        /// An enrollment group.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of enrollmentGroup. You shall cast
+        /// The query result in a list of enrollment groups. You shall cast
         /// the objects in the items using <see cref="Service.EnrollmentGroup"/>.
         /// </remarks>
         EnrollmentGroup,
 
         /// <summary>
-        /// Device registration result type.
+        /// A device registration.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of device registration. You shall cast
+        /// The query result in a list of device registrations. You shall cast
         /// the objects in the items using <see cref="DeviceRegistrationState"/>.
         /// </remarks>
         DeviceRegistration,

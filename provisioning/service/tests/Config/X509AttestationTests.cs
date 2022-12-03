@@ -8,7 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using FluentAssertions;
-
+using FluentAssertions.Specialized;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -21,9 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string Sha256Thumbprint = "validEnrollmentGroupId";
         private const string IssuerName = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
         private const string NotBeforeUtcString = "2017-11-14T12:34:18.123Z";
-        private static readonly DateTime s_notBeforeUtc = new(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
         private const string NotAfterUtcString = "2017-11-14T12:34:18.321Z";
-        private static readonly DateTime s_notAfterUtc = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private const string SerialNumber = "000000000000000000";
         private const int Version = 3;
         private const string PublicKeyCertificateString =
@@ -50,10 +48,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondaryStr = null;
 
             // act - assert
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromClientCertificates(primaryCert));
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromClientCertificates(primaryCert, secondaryCert));
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromClientCertificates(primaryStr));
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromClientCertificates(primaryStr, secondaryStr));
+            Action act = () => X509Attestation.CreateFromClientCertificates(primaryCert);
+            act.Should().Throw<ArgumentException>();
+
+            act = () => X509Attestation.CreateFromClientCertificates(primaryCert, secondaryCert);
+            act.Should().Throw<ArgumentException>();
+
+            act = () => X509Attestation.CreateFromClientCertificates(primaryStr);
+            act.Should().Throw<ArgumentException>();
+
+            act = () => X509Attestation.CreateFromClientCertificates(primaryStr, secondaryStr);
+            act.Should().Throw<ArgumentException>();
+
         }
 
         [TestMethod]
@@ -76,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // act - assert
             Action act1 = () => X509Attestation.CreateFromClientCertificates(primaryStr);
-            var error1 = act1.Should().Throw<ProvisioningServiceException>();
+            ExceptionAssertions<ProvisioningServiceException> error1 = act1.Should().Throw<ProvisioningServiceException>();
             error1.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error1.And.IsTransient.Should().BeFalse();
 
@@ -122,12 +128,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // act - assert
             Action act1 = () => X509Attestation.CreateFromRootCertificates(primaryStr);
-            var error1 = act1.Should().Throw<ProvisioningServiceException>();
+            ExceptionAssertions<ProvisioningServiceException> error1 = act1.Should().Throw<ProvisioningServiceException>();
             error1.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error1.And.IsTransient.Should().BeFalse();
 
             Action act2 = () => X509Attestation.CreateFromRootCertificates(primaryStr, secondaryStr);
-            var error2 = act2.Should().Throw<ProvisioningServiceException>();
+            ExceptionAssertions<ProvisioningServiceException> error2 = act2.Should().Throw<ProvisioningServiceException>();
             error2.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error2.And.IsTransient.Should().BeFalse();
         }
@@ -348,8 +354,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string secondaryStr = null;
 
             // act - assert
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromCaReferences(primaryStr));
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromCaReferences(primaryStr, secondaryStr));
+            Action act = () => X509Attestation.CreateFromCaReferences(primaryStr);
+            act.Should().Throw<ArgumentException>();
+
+            act = () => X509Attestation.CreateFromCaReferences(primaryStr, secondaryStr);
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
@@ -477,11 +486,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "{" +
                 "  \"clientCertificates\": {" +
                 "    \"primary\": " +
-                X509AttestationTests.MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
                 "  }," +
                 "  \"signingCertificates\": {" +
                 "    \"primary\": " +
-                X509AttestationTests.MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
                 "  }" +
                 "}";
 
@@ -499,7 +508,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "{" +
                 "  \"clientCertificates\": {" +
                 "    \"primary\": " +
-                X509AttestationTests.MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
                 "  }," +
                 "  \"caReferences\": {" +
                 "    \"primary\": \"" + CaReferenceString + "\"" +
@@ -521,7 +530,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "{" +
                 "  \"signingCertificates\": {" +
                 "    \"primary\": " +
-                X509AttestationTests.MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
                 "  }," +
                 "  \"caReferences\": {" +
                 "    \"primary\": \"" + CaReferenceString + "\"" +
@@ -569,11 +578,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "{" +
                 "  \"" + certName + "\": {" +
                 "    \"primary\": " +
-                X509AttestationTests.MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
                 (primaryOnly ? "" :
                 "," +
                 "    \"secondary\": " +
-                X509AttestationTests.MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version)
+                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version)
                 ) +
                 "  }" +
                 "}";

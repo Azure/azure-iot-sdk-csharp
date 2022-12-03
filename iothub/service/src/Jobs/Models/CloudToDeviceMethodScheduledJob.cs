@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Contains parameters to execute a direct method on a device or module.
         /// </summary>
-        [JsonProperty(PropertyName = "cloudToDeviceMethod", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("cloudToDeviceMethod", NullValueHandling = NullValueHandling.Ignore)]
         public DirectMethodServiceRequest DirectMethodRequest { get; set; }
     }
 }

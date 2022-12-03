@@ -1273,7 +1273,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private class CustomDirectMethodPayload
         {
-            [JsonProperty(PropertyName = "grade")]
+            [JsonProperty("grade")]
             public string Grade { get; set; }
         }
     }

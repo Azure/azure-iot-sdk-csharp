@@ -3,12 +3,12 @@
 
 using System;
 using Newtonsoft.Json.Linq;
-using static Microsoft.Azure.Devices.Provisioning.Service.ProvisioningTwinProperties;
+using static Microsoft.Azure.Devices.Provisioning.Service.InitialTwinPropertyCollection;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Represents a property array in a <see cref="ProvisioningTwinProperties"/>.
+    /// Represents a property array in a <see cref="InitialTwinPropertyCollection"/>.
     /// </summary>
     public class ProvisioningTwinPropertiesArray : JArray
     {

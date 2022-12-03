@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private const int RegisterAsyncId = 11;
 
         [NonEvent]
-        public static void RegisterAsync(
+        public static void LogRegister(
             object thisOrContextObject,
             string globalDeviceEndpoint,
             string idScope,
@@ -25,17 +25,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             if (IsEnabled)
             {
-                Log.RegisterAsync(
-                IdOf(thisOrContextObject),
-                globalDeviceEndpoint,
-                idScope,
-                IdOf(options),
-                IdOf(security));
+                Log.LogRegister(
+                    IdOf(thisOrContextObject),
+                    globalDeviceEndpoint,
+                    idScope,
+                    IdOf(options),
+                    IdOf(security));
             }
         }
 
         [Event(RegisterAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
-        private void RegisterAsync(
+        private void LogRegister(
             string thisOrContextObject,
             string globalDeviceEndpoint,
             string idScope,

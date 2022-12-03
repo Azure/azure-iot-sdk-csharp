@@ -11,6 +11,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Specialized;
+using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
@@ -25,8 +27,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningE2ETests : E2EMsTestBase
     {
-        private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
-        private const int FailingTimeoutMiliseconds = 10 * 1000;
+        private const int PassingTimeoutMilliseconds = 10 * 60 * 1000;
+        private const int FailingTimeoutMilliseconds = 10 * 1000;
         private const int MaxTryCount = 10;
         private const string InvalidIdScope = "0neFFFFFFFF";
         private const string PayloadJsonData = "{\"testKey\":\"testValue\"}";
@@ -35,8 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
 
-        private static readonly IProvisioningServiceRetryPolicy s_provisioningServiceRetryPolicy = 
-            new ProvisioningServiceExponentialBackoffRetryPolicy(20, TimeSpan.FromSeconds(3), true);
+        private static readonly ProvisioningServiceExponentialBackoffRetryPolicy s_provisioningServiceRetryPolicy = new(20, TimeSpan.FromSeconds(3), true);
 
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
 
@@ -55,6 +56,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 TestConfiguration.Provisioning.GetGroupEnrollmentIntermediatePfxCertificateBase64(),
                 s_certificatePassword,
                 s_x509CertificatesFolder);
+        }
+
+        [ClassCleanup]
+        public static void CleanupCertificates()
+        {
+            // Delete all the test client certificates created
+            try
+            {
+                s_x509CertificatesFolder.Delete(true);
+            }
+            catch (Exception)
+            {
+                // In case of an exception, silently exit. All systems images on Microsoft hosted agents will be cleaned up by the system.
+            }
         }
 
         [TestMethod]
@@ -372,7 +387,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = true })
+                    new ProvisioningTwinCapabilities { IsIotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -385,7 +400,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = true })
+                    new ProvisioningTwinCapabilities { IsIotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -398,7 +413,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = false })
+                    new ProvisioningTwinCapabilities { IsIotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -411,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new Devices.Provisioning.Service.ProvisioningClientCapabilities() { IotEdge = false })
+                    new ProvisioningTwinCapabilities { IsIotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -591,11 +606,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
-            ProvisioningClientCapabilities capabilities,
+            ProvisioningTwinCapabilities capabilities,
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            var iothubs = new List<string>() { HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString) };
+            var iothubs = new List<string> { HostNameHelper.GetHostName(TestConfiguration.IotHub.ConnectionString) };
             await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(
                     transportSettings,
                     attestationType,
@@ -619,7 +634,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            ProvisioningClientCapabilities deviceCapabilities,
+            ProvisioningTwinCapabilities deviceCapabilities,
             string proxyServerAddress = null)
         {
             string groupId = null;
@@ -658,7 +673,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 auth,
                 clientOptions);
 
-            using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
+            using var cts = new CancellationTokenSource(PassingTimeoutMilliseconds);
 
             DeviceRegistrationResult result = null;
             IAuthenticationMethod authMethod = null;
@@ -685,14 +700,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     }
                 }
 
-                ProvisioningE2ETests.ValidateDeviceRegistrationResult(false, result);
+                ValidateDeviceRegistrationResult(false, result);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // The certificate instance referenced in the ClientAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
                 authMethod = CreateAuthenticationMethodFromAuthProvider(auth, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
+                await ProvisioningE2ETests.ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
                 await ConfirmExpectedDeviceCapabilitiesAsync(result, authMethod, deviceCapabilities).ConfigureAwait(false);
             }
             finally
@@ -755,9 +770,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     auth,
                     clientOptions);
 
-                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+                using var cts = new CancellationTokenSource(FailingTimeoutMilliseconds);
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
-                var exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
+                ExceptionAssertions<ProvisioningClientException> exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
                 VerboseTestLogger.WriteLine($"Exception: {exception.And.Message}");
             }
             finally
@@ -823,7 +838,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 VerboseTestLogger.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
 
                 Func<Task> act = async () => await provClient.RegisterAsync(cts.Token);
-                var exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
+                ExceptionAssertions<ProvisioningClientException> exception = await act.Should().ThrowAsync<ProvisioningClientException>().ConfigureAwait(false);
 
                 VerboseTestLogger.WriteLine($"Exception: {exception.And.Message}");
             }
@@ -856,28 +871,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public static ProvisioningClientOptions CreateProvisioningClientOptionsFromName(IotHubClientTransportSettings transportSettings)
         {
-            if (transportSettings is IotHubClientAmqpSettings)
+            return transportSettings switch
             {
-                return transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
+                IotHubClientAmqpSettings => transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
                     ? new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp))
-                    : new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
-            }
+                    : new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket)),
 
-            if (transportSettings is IotHubClientMqttSettings)
-            {
-                return transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
+                IotHubClientMqttSettings => transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
                     ? new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp))
-                    : new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket));
-            }
+                    : new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket)),
 
-            throw new NotSupportedException($"Unknown transport: '{transportSettings}'.");
+                _ => throw new NotSupportedException($"Unknown transport: '{transportSettings}'.")
+            };
         }
 
         /// <summary>
         /// Attempt to create device client instance from provided arguments, ensure that it can open a
         /// connection, ensure that it can send telemetry, and (optionally) send a reported property update
         /// </summary
-        private async Task ConfirmRegisteredDeviceWorksAsync(
+        private static async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
             IAuthenticationMethod auth,
             IotHubClientTransportSettings transportSettings,
@@ -909,9 +921,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static async Task ConfirmExpectedDeviceCapabilitiesAsync(
             DeviceRegistrationResult result,
             IAuthenticationMethod auth,
-            ProvisioningClientCapabilities capabilities)
+            ProvisioningTwinCapabilities capabilities)
         {
-            if (capabilities != null && capabilities.IotEdge)
+            if (capabilities != null && capabilities.IsIotEdge)
             {
                 //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
                 var iotHubConnectionCredentials = new IotHubConnectionCredentials(auth, result.AssignedHub);
@@ -929,7 +941,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            ProvisioningClientCapabilities capabilities = null)
+            ProvisioningTwinCapabilities capabilities = null)
         {
             VerboseTestLogger.WriteLine($"{nameof(CreateAuthProviderFromNameAsync)}({attestationType})");
 
@@ -1063,22 +1075,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             VerboseTestLogger.WriteLine($"{nameof(CreateAuthenticationMethodFromAuthProvider)}({deviceId})");
 
-            IAuthenticationMethod auth;
-            if (provisioningAuth is AuthenticationProviderX509 x509Auth)
+            return provisioningAuth switch
             {
-                X509Certificate2 cert = x509Auth.ClientCertificate;
-                auth = new ClientAuthenticationWithX509Certificate(cert, deviceId);
-            }
-            else if (provisioningAuth is AuthenticationProviderSymmetricKey symmetricKeyAuth)
-            {
-                auth = new ClientAuthenticationWithSharedAccessKeyRefresh(symmetricKeyAuth.PrimaryKey, deviceId);
-            }
-            else
-            {
-                throw new NotSupportedException($"Unknown provisioning auth type.");
-            }
-
-            return auth;
+                AuthenticationProviderX509 x509Auth => new ClientAuthenticationWithX509Certificate(x509Auth.ClientCertificate, deviceId),
+                AuthenticationProviderSymmetricKey symmetricKeyAuth => new ClientAuthenticationWithSharedAccessKeyRefresh(symmetricKeyAuth.PrimaryKey, deviceId),
+                _ => throw new NotSupportedException($"Unknown provisioning auth type."),
+            };
         }
 
         /// <summary>
@@ -1090,28 +1092,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             VerboseTestLogger.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
             VerboseTestLogger.WriteLine($"ProvisioningDeviceClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
 
-            result.Status.Should().Be(ProvisioningRegistrationStatusType.Assigned, $"Unexpected provisioning status, substatus: {result.Substatus}, error code: {result.ErrorCode}, error message: {result.ErrorMessage}");
+            result.Status.Should().Be(ProvisioningRegistrationStatus.Assigned, $"Unexpected provisioning status, substatus: {result.Substatus}, error code: {result.ErrorCode}, error message: {result.ErrorMessage}");
             result.AssignedHub.Should().NotBeNull();
             result.DeviceId.Should().NotBeNull();
-
-            if (validatePayload)
-            {
-                if (PayloadJsonData != null)
-                {
-                    ((object)result.Payload).Should().NotBeNull();
-                    result.Payload.ToString().Should().Be(PayloadJsonData);
-                }
-                else
-                {
-#pragma warning disable CS0162 // Unreachable code detected
-                    ((object)result.Payload).Should().BeNull();
-#pragma warning restore CS0162 // Unreachable code detected
-                }
-            }
-            else
-            {
-                ((object)result.Payload).Should().BeNull();
-            }
         }
 
         public static async Task DeleteCreatedEnrollmentAsync(
@@ -1158,8 +1141,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// Generate the derived symmetric key for the provisioned device from the symmetric key used in attestation
         /// </summary>
         /// <param name="masterKey">Symmetric key enrollment group primary/secondary key value</param>
-        /// <param name="registrationId">the registration id to create</param>
-        /// <returns>the primary/secondary key for the member of the enrollment group</returns>
+        /// <param name="registrationId">The registration id to create</param>
+        /// <returns>The primary/secondary key for the member of the enrollment group</returns>
         public static string ComputeDerivedSymmetricKey(byte[] masterKey, string registrationId)
         {
             using var hmac = new HMACSHA256(masterKey);
@@ -1169,20 +1152,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static bool ImplementsWebProxy(IotHubClientTransportSettings transportSettings)
         {
             return transportSettings is IotHubClientMqttSettings or IotHubClientAmqpSettings;
-        }
-
-        [ClassCleanup]
-        public static void CleanupCertificates()
-        {
-            // Delete all the test client certificates created
-            try
-            {
-                s_x509CertificatesFolder.Delete(true);
-            }
-            catch (Exception)
-            {
-                // In case of an exception, silently exit. All systems images on Microsoft hosted agents will be cleaned up by the system.
-            }
         }
     }
 }

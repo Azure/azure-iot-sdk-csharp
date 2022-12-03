@@ -38,13 +38,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the endorsement key used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "endorsementKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("endorsementKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string EndorsementKey { get; }
 
         /// <summary>
         /// Gets the storage key used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "storageRootKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("storageRootKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string StorageRootKey { get; }
     }
 }
