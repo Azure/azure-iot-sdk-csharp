@@ -59,8 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 $" -new" +
                 $" -subj /CN={leafCertificateSubject}" +
                 $" -key \"{leafCertificateKeyFile}\"" +
-                $" -out \"{leafCertificateCsrFile}\"" +
-                $" -extensions v3_req";
+                $" -out \"{leafCertificateCsrFile}\"";
 
             Console.WriteLine($"openssl {csrGen}\n");
             using Process csrGenCmdProcess = CreateErrorObservantProcess("openssl", csrGen);
@@ -80,8 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     $" -days 7" +
                     $" -in \"{leafCertificateCsrFile}\"" +
                     $" -signkey \"{leafCertificateKeyFile}\"" +
-                    $" -out \"{leafCertificateCerFile}\"" +
-                    $" -extensions v3_ca";
+                    $" -out \"{leafCertificateCerFile}\"";
             }
             // This is a request to generate a certificate signed by a verified intermediate certificate
             else
@@ -95,8 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     $" -CA \"{signingCertificateCerFile}\"" +
                     $" -CAkey \"{signingCertificateKeyFile}\"" +
                     $" -CAcreateserial" +
-                    $" -out \"{leafCertificateCerFile}\"" +
-                    $" -extensions v3_req";
+                    $" -out \"{leafCertificateCerFile}\"";
             }
 
             Console.WriteLine($"openssl {signGen}\n");
