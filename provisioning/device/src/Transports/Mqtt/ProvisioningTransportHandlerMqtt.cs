@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             _connectionLossCause = null;
             using IMqttClient mqttClient = _mqttFactory.CreateMqttClient();
-            MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest);
+            MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(mqttClient, provisioningRequest);
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
             using var connectionLostCancellationToken = new CancellationTokenSource();
@@ -320,7 +320,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        private MqttClientOptionsBuilder CreateMqttClientOptions(ProvisioningTransportRegisterRequest provisioningRequest)
+        private MqttClientOptionsBuilder CreateMqttClientOptions(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest)
         {
             var mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
@@ -388,6 +388,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 .WithClientId(provisioningRequest.Authentication.GetRegistrationId())
                 .WithCredentials(username, password);
 
+            bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
+            {
+                return _settings.RemoteCertificateValidationCallback.Invoke(
+                    mqttClient,
+                    args.Certificate,
+                    args.Chain,
+                    args.SslPolicyErrors);
+            }
+
             if (_settings.RemoteCertificateValidationCallback != null)
             {
                 tlsParameters.CertificateValidationHandler = CertificateValidationHandler;
@@ -402,15 +411,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
 
             return mqttClientOptionsBuilder;
-        }
-
-        private bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
-        {
-            return _settings.RemoteCertificateValidationCallback.Invoke(
-                new object(), //TODO Tim to check with Abhipsa about this and if it is necessary
-                args.Certificate,
-                args.Chain,
-                args.SslPolicyErrors);
         }
 
         private Task HandleReceivedMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
