@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// A <see cref="System.Text.Json"/> <see cref="PayloadSerializer"/> implementation.
+    /// A <see cref="System.Text.Json"/> payload serializer implementation.
     /// </summary>
     public class SystemTextJsonPayloadSerializer : PayloadSerializer
     {

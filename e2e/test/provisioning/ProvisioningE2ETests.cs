@@ -387,7 +387,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new ProvisioningTwinCapabilities { IsIotEdge = true })
+                    new InitialTwinCapabilities { IsIotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -400,7 +400,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new ProvisioningTwinCapabilities { IsIotEdge = true })
+                    new InitialTwinCapabilities { IsIotEdge = true })
                 .ConfigureAwait(false);
         }
 
@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false,
-                    new ProvisioningTwinCapabilities { IsIotEdge = false })
+                    new InitialTwinCapabilities { IsIotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -426,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false,
-                    new ProvisioningTwinCapabilities { IsIotEdge = false })
+                    new InitialTwinCapabilities { IsIotEdge = false })
                 .ConfigureAwait(false);
         }
 
@@ -606,7 +606,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
-            ProvisioningTwinCapabilities capabilities,
+            InitialTwinCapabilities capabilities,
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
@@ -634,7 +634,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            ProvisioningTwinCapabilities deviceCapabilities,
+            InitialTwinCapabilities deviceCapabilities,
             string proxyServerAddress = null)
         {
             string groupId = null;
@@ -707,7 +707,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 authMethod = CreateAuthenticationMethodFromAuthProvider(auth, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                await ProvisioningE2ETests.ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
+                await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
                 await ConfirmExpectedDeviceCapabilitiesAsync(result, authMethod, deviceCapabilities).ConfigureAwait(false);
             }
             finally
@@ -921,7 +921,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static async Task ConfirmExpectedDeviceCapabilitiesAsync(
             DeviceRegistrationResult result,
             IAuthenticationMethod auth,
-            ProvisioningTwinCapabilities capabilities)
+            InitialTwinCapabilities capabilities)
         {
             if (capabilities != null && capabilities.IsIotEdge)
             {
@@ -941,7 +941,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            ProvisioningTwinCapabilities capabilities = null)
+            InitialTwinCapabilities capabilities = null)
         {
             VerboseTestLogger.WriteLine($"{nameof(CreateAuthProviderFromNameAsync)}({attestationType})");
 

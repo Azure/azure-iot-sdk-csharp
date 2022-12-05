@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_SymmetricKey_GroupEnrollments_Create_Http_Ok_WithReprovisioningFields()
         {
-            //T his webhook won't actually work for reprovisioning, but this test is only testing that the field is accepted by the service
+            // This webhook won't actually work for reprovisioning, but this test is only testing that the field is accepted by the service
             var customAllocationDefinition = new CustomAllocationDefinition { ApiVersion = "2019-03-31", WebhookUrl = "https://www.microsoft.com" };
             var reprovisionPolicy = new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true };
 
@@ -443,7 +443,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iotHubsToProvisionTo,
-            ProvisioningTwinCapabilities capabilities)
+            InitialTwinCapabilities capabilities)
         {
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
@@ -486,7 +486,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
-            return createdEnrollment ?? throw new ArgumentException($"The enrollment entry with registration Id {registrationId} could not be created; exiting test.");
+            createdEnrollment.Should().NotBeNull($"The enrollment entry with registration Id {registrationId} could not be created; exiting test.");
+            return createdEnrollment;
         }
 
         public static async Task<EnrollmentGroup> CreateEnrollmentGroupAsync(
@@ -497,7 +498,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            Devices.Provisioning.Service.ProvisioningTwinCapabilities capabilities)
+            Devices.Provisioning.Service.InitialTwinCapabilities capabilities)
         {
             Attestation attestation;
 

@@ -24,8 +24,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private readonly DateTime _sampleLastUpdatedDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private static readonly ETag s_sampleEtag = new("00000000-0000-0000-0000-00000000000");
-        private readonly ProvisioningTwinCapabilities _sampleEdgeCapabilityTrue = new() { IsIotEdge = true };
-        private readonly ProvisioningTwinCapabilities _sampleEdgeCapabilityFalse = new() { IsIotEdge = false };
+        private readonly InitialTwinCapabilities _sampleEdgeCapabilityTrue = new() { IsIotEdge = true };
+        private readonly InitialTwinCapabilities _sampleEdgeCapabilityFalse = new() { IsIotEdge = false };
 
         private const string SampleEndorsementKey =
             "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +

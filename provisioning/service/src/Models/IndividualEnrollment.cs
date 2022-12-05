@@ -69,12 +69,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             AttestationMechanism attestation,
             string deviceId,
             string iotHubHostName,
-            InitialTwinState initialTwinState,
+            InitialTwin initialTwin,
             ProvisioningStatus? provisioningStatus,
             DateTimeOffset createdOnUtc,
             DateTimeOffset lastUpdatedOnUtc,
             ETag eTag,
-            ProvisioningTwinCapabilities capabilities)
+            InitialTwinCapabilities capabilities)
         {
             Argument.AssertNotNull(attestation, nameof(attestation));
 
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             // This is the one reason why we can't use an empty constructor here.
             Attestation = attestation.GetAttestation();
             IotHubHostName = iotHubHostName;
-            InitialTwinState = initialTwinState;
+            InitialTwinState = initialTwin;
             ProvisioningStatus = provisioningStatus;
             CreatedOnUtc = createdOnUtc;
             LastUpdatedOnUtc = lastUpdatedOnUtc;
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Initial twin state.
         /// </summary>
         [JsonProperty("initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public InitialTwinState InitialTwinState { get; set; }
+        public InitialTwin InitialTwinState { get; set; }
 
         /// <summary>
         /// The provisioning status.
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Capabilities of the device.
         /// </summary>
         [JsonProperty("capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public ProvisioningTwinCapabilities Capabilities { get; set; }
+        public InitialTwinCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The behavior when a device is re-provisioned to an IoT hub.

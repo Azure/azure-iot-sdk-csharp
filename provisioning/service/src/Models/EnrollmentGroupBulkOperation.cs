@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// It is an internal class that creates a JSON for the bulk operations over the IndividualEnrollment. To use bulk operations, please use
-    /// the external API <see cref="IndividualEnrollmentsClient.RunBulkOperationAsync(BulkOperationMode, IList{IndividualEnrollment}, CancellationToken)"/>.
+    /// the external API <see cref="IndividualEnrollmentsClient.RunBulkOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment}, CancellationToken)"/>.
     /// </remarks>
     internal sealed class EnrollmentGroupBulkOperation
     {

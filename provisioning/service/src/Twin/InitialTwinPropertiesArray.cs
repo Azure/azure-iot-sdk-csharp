@@ -10,11 +10,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Represents a property array in a <see cref="InitialTwinPropertyCollection"/>.
     /// </summary>
-    public class ProvisioningTwinPropertiesArray : JArray
+    public class InitialTwinPropertiesArray : JArray
     {
         private readonly JObject _metadata;
 
-        internal ProvisioningTwinPropertiesArray(JArray jArray, JObject metadata)
+        internal InitialTwinPropertiesArray(JArray jArray, JObject metadata)
             : base(jArray)
         {
             _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     MetadataName => GetMetadata(),
                     LastUpdatedName => GetLastUpdatedOnUtc(),
                     LastUpdatedVersionName => GetLastUpdatedVersion(),
-                    _ => throw new InvalidOperationException($"{nameof(ProvisioningTwinPropertiesArray)} does not contain a definition for '{propertyName}'."),
+                    _ => throw new InvalidOperationException($"{nameof(InitialTwinPropertiesArray)} does not contain a definition for '{propertyName}'."),
                 };
             }
         }
@@ -44,9 +44,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public ProvisioningTwinMetadata GetMetadata()
+        public InitialTwinMetadata GetMetadata()
         {
-            return new ProvisioningTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
+            return new InitialTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
         }
 
         /// <summary>

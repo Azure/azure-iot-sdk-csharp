@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Represents a collection of properties for device twin.
     /// </summary>
-    [JsonConverter(typeof(ProvisioningTwinPropertiesJsonConverter))]
+    [JsonConverter(typeof(InitialTwinPropertiesJsonConverter))]
     public class InitialTwinPropertyCollection : IEnumerable
     {
         internal const string MetadataName = "$metadata";
@@ -152,9 +152,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the Metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public ProvisioningTwinMetadata GetMetadata()
+        public InitialTwinMetadata GetMetadata()
         {
-            return new ProvisioningTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
+            return new InitialTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
         }
 
         /// <summary>
@@ -212,14 +212,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="result">The value to return from the property collection.</param>
         /// <returns>
         /// A <see cref="JToken"/> as an <see cref="object"/> if the metadata is not present; otherwise it will return a
-        /// <see cref="InitialTwinPropertyCollection"/>, a <see cref="ProvisioningTwinPropertiesArray"/> or a <see cref="ProvisioningTwinPropertyValue"/>.
+        /// <see cref="InitialTwinPropertyCollection"/>, a <see cref="InitialTwinPropertiesArray"/> or a <see cref="InitialTwinPropertyValue"/>.
         /// </returns>
         /// <remarks>
         /// If this method is used with a <see cref="InitialTwinPropertyCollection"/> returned from a DeviceClient it will always return a
         /// <see cref="JToken"/>. However, if you are using this method with a <see cref="InitialTwinPropertyCollection"/> returned from a
         /// RegistryManager client, it will return the corresponding type depending on what is stored in the properties collection.
         ///
-        /// For example a <see cref="List{T}"/> would return a <see cref="ProvisioningTwinPropertiesArray"/>, with the metadata intact, when used with
+        /// For example a <see cref="List{T}"/> would return a <see cref="InitialTwinPropertiesArray"/>, with the metadata intact, when used with
         /// a <see cref="InitialTwinPropertyCollection"/> returned from a `IotHubServiceClient`.`TwinsClient`. If you need this method to always return a
         /// <see cref="JToken"/> please see the <see cref="ClearMetadata"/> method for more information.
         /// </remarks>
@@ -235,11 +235,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 if (value is JValue jsonValue)
                 {
-                    result = new ProvisioningTwinPropertyValue(jsonValue, (JObject)_metadata[propertyName]);
+                    result = new InitialTwinPropertyValue(jsonValue, (JObject)_metadata[propertyName]);
                 }
                 else if (value is JArray jsonArray)
                 {
-                    result = new ProvisioningTwinPropertiesArray(jsonArray, (JObject)_metadata[propertyName]);
+                    result = new InitialTwinPropertiesArray(jsonArray, (JObject)_metadata[propertyName]);
                 }
                 else
                 {

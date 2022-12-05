@@ -301,8 +301,8 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `JobClient.GetJobAsync(...)` | `IotHubServiceClient.ScheduledJobs.GetAsync(...)` | |
 | `JobClient.CreateQuery()` | `IotHubServiceClient.ScheduledJobs.CreateQueryAsync()` | |
 | `JobsClient.ScheduleTwinUpdateAsync(...)` | `IotHubServiceClient.ScheduledJobs.ScheduledTwinUpdateAsync(...)` | |
-| `JobType.ExportDevices` | `JobType.Export` | |
-| `JobType.ImportDevices` | `JobType.Import` | |
+| `JobType.ExportDevices` | `JobType.Export` | Matches the actual value expected by the service.¹ |
+| `JobType.ImportDevices` | `JobType.Import` | See¹ |
 
 #### DigitalTwinClient
 
@@ -338,6 +338,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - Added support for setting the remote certificate validation callback for AMQP TCP connections.
 - The library now includes `IProvisioningClientRetryPolicy` implementations: `ProvisioningClientExponentialBackoffRetryPolicy`, `ProvisioningClientFixedDelayRetryPolicy`, `ProvisioningClientIncrementalDelayRetryPolicy` and `ProvisioningClientNoRetry`,
  which can be set via `ProvisioningClientOptions.RetryPolicy`.
+ - ProvisioningRegistrationSubstatus.ReprovisionedToInitalAssignment value added meaning the device has been reprovisioned to a previously assigned IoT hub.
 
 #### API mapping
 
@@ -349,6 +350,8 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `DeviceRegistrationResult.CreatedDateTimeUtc` | `DeviceRegistrationResult.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
 | `DeviceRegistrationResult.LastUpdatedDateTimeUtc` | `DeviceRegistrationResult.LastUpdatedOnUtc` | See¹ |
 | `ProvisioningTransportException` | `ProvisioningClientException` | |
+| `PnpConvention` | `ModelIdPayload` | Added model class to replace a JSON helper. |
+| `ProvisioningRegistrationSubstatusType` | `ProvisioningRegistrationSubstatus` | Renamed, because not a type. `
 
 ### DPS service client
 
@@ -389,25 +392,25 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `EnrollmentGroup.LastUpdatedDateTimeUtc` | `EnrollmentGroup.LastUpdatedOnUtc` | See¹ |
 | `IndividualEnrollment.CreatedDateTimeUtc` | `IndividualEnrollment.CreatedOnUtc` | See¹ |
 | `IndividualEnrollment.LastUpdatedDateTimeUtc` | `IndividualEnrollment.LastUpdatedOnUtc` | See¹ |
-| `Twin` | `ProvisioningTwin` | Disambiguate between similar types in the IoT hub service and device clients.² |
-| `Twin.StatusUpdatedOn` | `ProvisioningTwin.StatusUpdatedOnUtc` | See¹ |
-| `Twin.LastActivityOn` | `ProvisioningTwin.LastActiveOnUtc` | See¹ |
-| `TwinCollection` | `ProvisioningTwinProperties` | See² |
-| `TwinCollection.GetLastUpdatedOn()` | `ProvisioningTwinProperties.GetLastUpdatedOnUtc()` | See¹ |
-| `TwinCollectionValue` | `ProvisioningTwinPropertyValue` | See² |
-| `TwinCollectionValue.GetLastUpdatedOn()` | `ProvisioningTwinPropertyValue.GetLastUpdatedOnUtc()` | See¹ |
-| `TwinCollectionArray` | `ProvisioningTwinPropertyArray` | See² |
-| `TwinCollectionArray.GetLastUpdatedOn()` | `ProvisioningTwinPropertyArray.GetLastUpdatedOnUtc()` | See¹ |
-| `Metadata` | `ProvisioningTwinMetadata` | See² |
-| `Metadata.LastUpdatedOn` | `ProvisioningTwinMetadata.LastUpdatedOnUtc` | See¹ |
-| `DeviceCapabilities` | `ProvisioningClientCapabilities` | See² |
+| `Twin` | `InitialTwin` | Disambiguate between similar types in the IoT hub service and device clients, and make it clearer that this is only represents the initial state of the device's twin.² |
+| `Twin.StatusUpdatedOn` | `InitalTwin.StatusUpdatedOnUtc` | See¹ |
+| `Twin.LastActivityOn` | `InitialTwin.LastActiveOnUtc` | See¹ |
+| `TwinCollection` | `InitialTwinProperties` | See² |
+| `TwinCollection.GetLastUpdatedOn()` | `InitialTwinProperties.GetLastUpdatedOnUtc()` | See¹ |
+| `TwinCollectionValue` | `InitialTwinPropertyValue` | See² |
+| `TwinCollectionValue.GetLastUpdatedOn()` | `InitialTwinPropertyValue.GetLastUpdatedOnUtc()` | See¹ |
+| `TwinCollectionArray` | `InitialTwinPropertyArray` | See² |
+| `TwinCollectionArray.GetLastUpdatedOn()` | `InitialTwinPropertyArray.GetLastUpdatedOnUtc()` | See¹ |
+| `Metadata` | `InitialTwinMetadata` | See² |
+| `Metadata.LastUpdatedOn` | `InitialTwinMetadata.LastUpdatedOnUtc` | See¹ |
+| `DeviceCapabilities` | `InitialClientCapabilities` | See² |
 | `X509Attestation.CreateFromCAReferences(...)` | `X509Attestation.CreateFromCaReferences(...)` | Pascal casing.³ |
 | `X509Attestation.CAReferences` | `X509Attestation.CaReferences` | See³ |
 | `X509CAReferences` | `X509CaReferences` | See³ |
 | `X509CertificateInfo.SHA1Thumbprint` | `X509CertificateInfo.Sha1Thumbprint` | See³ |
 | `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` | See³ |
 | `ProvisioningServiceClientException` | `ProvisioningServiceException` | |
-| ProvisioningClientCapabilities.IotEdge | ProvisioningClientCapabilities.IsIotEdge | Boolean properties should start with a verb, usually "Is". |
+| `ProvisioningClientCapabilities.IotEdge` | `InitialClientCapabilities.IsIotEdge` | Boolean properties should start with a verb, usually "Is". |
 
 ### Security provider client
 

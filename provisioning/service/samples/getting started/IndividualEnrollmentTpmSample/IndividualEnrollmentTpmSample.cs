@@ -19,8 +19,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly string _deviceId;
 
         private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
-        private readonly ProvisioningTwinCapabilities _optionalEdgeCapabilityEnabled = new() { IsIotEdge = true };
-        private readonly ProvisioningTwinCapabilities _optionalEdgeCapabilityDisabled = new() { IsIotEdge = false };
+        private readonly InitialTwinCapabilities _optionalEdgeCapabilityEnabled = new() { IsIotEdge = true };
+        private readonly InitialTwinCapabilities _optionalEdgeCapabilityDisabled = new() { IsIotEdge = false };
 
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
@@ -72,14 +72,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 DeviceId = _deviceId,
                 ProvisioningStatus = OptionalProvisioningStatus,
                 Capabilities = _optionalEdgeCapabilityEnabled,
-                InitialTwinState = new InitialTwinState(
-                    tags: null,
-                    desiredProperties: new InitialTwinPropertyCollection
+                InitialTwinState = new InitialTwin
+                {
+                    Tags = null,
+                    DesiredProperties =
                     {
                         ["Brand"] = "Contoso",
                         ["Model"] = "SSC4",
                         ["Color"] = "White",
-                    })
+                    },
+                },
             };
 
             IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient

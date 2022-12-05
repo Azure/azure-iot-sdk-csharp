@@ -10,11 +10,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Represents a property value in a <see cref="InitialTwinPropertyCollection"/>.
     /// </summary>
-    public class ProvisioningTwinPropertyValue : JValue
+    public class InitialTwinPropertyValue : JValue
     {
         private readonly JObject _metadata;
 
-        internal ProvisioningTwinPropertyValue(JValue jValue, JObject metadata)
+        internal InitialTwinPropertyValue(JValue jValue, JObject metadata)
             : base(jValue)
         {
             _metadata = metadata;
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     MetadataName => GetMetadata(),
                     LastUpdatedName => GetLastUpdatedOnUtc(),
                     LastUpdatedVersionName => GetLastUpdatedVersion(),
-                    _ => throw new InvalidOperationException($"{nameof(ProvisioningTwinPropertyValue)} does not contain a definition for '{propertyName}'."),
+                    _ => throw new InvalidOperationException($"{nameof(InitialTwinPropertyValue)} does not contain a definition for '{propertyName}'."),
                 };
             }
         }
@@ -44,9 +44,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the Metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public ProvisioningTwinMetadata GetMetadata()
+        public InitialTwinMetadata GetMetadata()
         {
-            return new ProvisioningTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
+            return new InitialTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
         }
 
         /// <summary>

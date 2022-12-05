@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class ProvisioningTwinPropertiesJsonConverter : JsonConverter
+    internal class InitialTwinPropertiesJsonConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {

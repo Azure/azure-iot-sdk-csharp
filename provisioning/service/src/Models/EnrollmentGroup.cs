@@ -17,20 +17,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <remarks>
     /// This object is used to send EnrollmentGroup information to the provisioning service, or receive EnrollmentGroup
     /// information from the provisioning service.
-    ///
-    /// To create or update an EnrollmentGroup on the provisioning service you should fill this object and call the
-    /// public API {@link ProvisioningServiceClient#createOrUpdateEnrollmentGroup(EnrollmentGroup)}.
-    /// The minimum information required by the provisioning service is the {@link #enrollmentGroupId} and the
-    /// {@link #attestation}.
-    ///
-    /// To provision a device using EnrollmentGroup, it must contain a X509 chip with a signingCertificate for the
-    /// {@link X509Attestation} mechanism.
-    ///
+    /// <para>
+    /// To create or update an EnrollmentGroup on the provisioning service you should fill this object and call
+    /// <see cref="EnrollmentGroupsClient.CreateOrUpdateAsync(EnrollmentGroup, System.Threading.CancellationToken)"/>.
+    /// The minimum information required by the provisioning service is the <see cref="EnrollmentGroup.EnrollmentGroupId"/>
+    /// and <see cref="EnrollmentGroup.Attestation"/>.
+    /// </para>
+    /// <para>
+    /// To provision a device using an enrollment group, it must contain an X509 chip with a signing certificate for the
+    /// <see cref="X509Attestation"/> mechanism.
+    /// </para>
+    /// <para>
     /// The content of this class will be serialized in a JSON format and sent as a body of the rest API to the
     /// provisioning service.
-    ///
+    /// </para>
+    /// <para>
     /// The content of this class can be filled by a JSON, received from the provisioning service, as result of a
-    /// EnrollmentGroup operation like create, update, or query EnrollmentGroup.
+    /// enrollment group operation like create, update, or query for enrollment groups.
+    /// </para>
     /// </remarks>
     public class EnrollmentGroup
     {
@@ -63,12 +67,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string enrollmentGroupId,
             AttestationMechanism attestation,
             string iotHubHostName,
-            InitialTwinState initialTwinState,
+            InitialTwin initialTwinState,
             ProvisioningStatus? provisioningStatus,
             DateTimeOffset createdOnUtc,
             DateTimeOffset lastUpdatedOnUtc,
             ETag eTag,
-            ProvisioningTwinCapabilities capabilities)
+            InitialTwinCapabilities capabilities)
         {
             Argument.AssertNotNull(attestation, nameof(attestation));
 
@@ -149,7 +153,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Initial twin state.
         /// </summary>
         [JsonProperty("initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public InitialTwinState InitialTwinState { get; set; }
+        public InitialTwin InitialTwinState { get; set; }
 
         /// <summary>
         /// The provisioning status.
@@ -182,7 +186,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Capabilities of the device.
         /// </summary>
         [JsonProperty("capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public ProvisioningTwinCapabilities Capabilities { get; set; }
+        public InitialTwinCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The behavior when a device is re-provisioned to an IoT hub.

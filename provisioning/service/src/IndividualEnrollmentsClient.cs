@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -205,7 +206,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public async Task<BulkEnrollmentOperationResult> RunBulkOperationAsync(
             BulkOperationMode bulkOperationMode,
-            IList<IndividualEnrollment> individualEnrollments,
+            IEnumerable<IndividualEnrollment> individualEnrollments,
             CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(individualEnrollments, nameof(individualEnrollments));
@@ -215,7 +216,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             var bulkOperation = new IndividualEnrollmentBulkOperation
             {
                 Mode = bulkOperationMode,
-                Enrollments = individualEnrollments,
+                Enrollments = individualEnrollments.ToList(),
             };
 
             ContractApiResponse contractApiResponse = null;

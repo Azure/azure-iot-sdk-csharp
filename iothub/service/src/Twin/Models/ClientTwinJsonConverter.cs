@@ -270,7 +270,7 @@ namespace Microsoft.Azure.Devices
                     case TagsJsonTag:
                         if (reader.TokenType != JsonToken.StartObject)
                         {
-                            throw new InvalidOperationException("Tags Json not a dictionary.");
+                            throw new InvalidOperationException("Tags JSON not an object.");
                         }
                         twin.Tags = serializer.Deserialize<Dictionary<string, object>>(reader);
                         break;
