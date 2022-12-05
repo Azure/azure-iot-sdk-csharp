@@ -4,7 +4,7 @@ trigger:
   batch: true
   branches:
     include:
-    - master
+    - main
   paths:
     exclude:
     - docs/*
@@ -43,7 +43,6 @@ jobs:
           ports: |
             127.0.0.1:2321:2321
             127.0.0.1:2322:2322
-
           restartPolicy: unlessStopped
 
       - task: Docker@1
@@ -118,6 +117,14 @@ jobs:
 
         condition: always()
 
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
@@ -126,6 +133,7 @@ jobs:
           testResultsFiles: "**/*.trx"
 
         condition: always()
+        
 
   ### Linux build 2 ###
   - job: LINUX2
@@ -154,7 +162,6 @@ jobs:
           ports: |
             127.0.0.1:2321:2321
             127.0.0.1:2322:2322
-
           restartPolicy: unlessStopped
 
       - task: Docker@1
@@ -166,6 +173,22 @@ jobs:
           containerName: "testproxy-instance"
           ports: "127.0.0.1:8888:8888"
           restartPolicy: unlessStopped
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
@@ -228,6 +251,14 @@ jobs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
 
         condition: always()
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
@@ -258,14 +289,10 @@ jobs:
       - script: |
           call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
           sn -Vr *,31bf3856ad364e35
-
         displayName: "Disable strong name validation"
-
       - script: |
           choco install -y squid
-
         displayName: "Install Squid"
-
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
 
@@ -339,6 +366,19 @@ jobs:
 
         condition: always()
 
+      - task: CmdLine@2
+        displayName: 'Install .NET 4.5.1'
+        inputs:
+          script: 'choco install dotnet4.5.1'
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
@@ -371,14 +411,10 @@ jobs:
       - script: |
           call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
           sn -Vr *,31bf3856ad364e35
-
         displayName: "Disable strong name validation"
-
       - script: |
           choco install -y squid
-
         displayName: "Install Squid"
-
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
 
@@ -452,6 +488,16 @@ jobs:
 
         condition: always()
 
+      - task: CmdLine@2
+        displayName: 'Install .NET 4.5.1'
+        inputs:
+          script: 'choco install dotnet4.5.1'
+    
+      - task: CmdLine@2
+        displayName: 'Install .NET Core 2.1'
+        inputs:
+          script: 'choco install dotnetcore-2.1-sdk'
+
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
@@ -478,9 +524,7 @@ jobs:
           dotnet new
           rem Start build
           build.cmd -clean -build -configuration Debug -package
-
         displayName: build
-
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
       
@@ -511,7 +555,7 @@ jobs:
           UsesHSM: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
-        displayName: "Run BinSkim "
+        displayName: "Run BinSkim"
         inputs:
           arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll --recurse --verbose'
 
@@ -519,7 +563,7 @@ jobs:
         enabled: false
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
-        displayName: "Run CodeMetrics "
+        displayName: "Run CodeMetrics"
         inputs:
           Files: '$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
 

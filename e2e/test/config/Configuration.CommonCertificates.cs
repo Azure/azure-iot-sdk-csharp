@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 const string hubCert = "X509_CHAIN_ROOT_CA_CERTIFICATE";
                 X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                cert.NotAfter.Should().NotBeBefore(DateTime.Now, $"The X509 cert from {hubCert} has expired.");
+                cert.NotAfter.Should().NotBeBefore(DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
                 return cert;
             }
 
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 const string hubCert = "X509_CHAIN_INTERMEDIATE1_CERTIFICATE";
                 X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                cert.NotAfter.Should().NotBeBefore(DateTime.Now, $"The X509 cert from {hubCert} has expired.");
+                cert.NotAfter.Should().NotBeBefore(DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
                 return cert;
             }
 
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 const string hubCert = "X509_CHAIN_INTERMEDIATE2_CERTIFICATE";
                 X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                cert.NotAfter.Should().NotBeBefore(DateTime.Now, $"The X509 cert from {hubCert} has expired.");
+                cert.NotAfter.Should().NotBeBefore(DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
                 return cert;
             }
         }
