@@ -421,7 +421,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
-            throw new InvalidOperationException("Batch telemetry is supported only over AMQP.");
+            throw new InvalidOperationException("This operation is not supported over MQTT. Please refer to the API comments for additional details.");
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
