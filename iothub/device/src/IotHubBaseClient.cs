@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if this operation is carried out over MQTT.</exception>
+        /// <exception cref="InvalidOperationException">When this method is called when the client is configured to use MQTT.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
