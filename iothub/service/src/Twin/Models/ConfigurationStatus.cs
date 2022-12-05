@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Configuration targeted.
         /// </summary>
-        Targeted ,
+        Targeted,
 
         /// <summary>
         /// Configuration applied.
