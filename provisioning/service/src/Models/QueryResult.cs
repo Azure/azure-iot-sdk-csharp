@@ -39,22 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class QueryResult
     {
         /// <summary>
-        /// Getter for the query result type.
-        /// </summary>
-        public QueryResultType QueryType { get; protected private set; }
-
-        /// <summary>
-        /// Getter for the list of query result items.
-        /// </summary>
-        public IEnumerable<object> Items { get; protected private set; }
-
-        /// <summary>
-        /// Getter for the query result continuation token.
-        /// </summary>
-        public string ContinuationToken { get; protected private set; }
-
-        /// <summary>
-        /// CONSTRUCTOR
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="typeString">The string with type of the content in the body.
         /// It cannot be null.</param>
@@ -64,7 +49,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// It can be null.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="bodyString"/> is null.</exception>
         /// <exception cref="ArgumentException">If <paramref name="bodyString"/> is empty or white space.</exception>
-        ///
         protected internal QueryResult(string typeString, string bodyString, string continuationToken)
         {
             QueryType = (QueryResultType)Enum.Parse(typeof(QueryResultType), typeString, true);
@@ -127,5 +111,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     break;
             }
         }
+
+        /// <summary>
+        /// Getter for the query result type.
+        /// </summary>
+        public QueryResultType QueryType { get; protected private set; }
+
+        /// <summary>
+        /// Getter for the list of query result items.
+        /// </summary>
+        public IEnumerable<object> Items { get; protected private set; }
+
+        /// <summary>
+        /// Getter for the query result continuation token.
+        /// </summary>
+        public string ContinuationToken { get; protected private set; }
     }
 }

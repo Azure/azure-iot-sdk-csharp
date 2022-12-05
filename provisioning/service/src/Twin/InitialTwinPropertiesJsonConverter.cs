@@ -18,8 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return;
             }
 
-            var properties = value as InitialTwinPropertyCollection;
-            if (properties == null)
+            if (value is not InitialTwinPropertyCollection properties)
             {
                 throw new InvalidOperationException("Object passed is not of type TwinCollection.");
             }

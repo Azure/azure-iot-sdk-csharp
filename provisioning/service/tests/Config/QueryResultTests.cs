@@ -314,7 +314,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // assert
             queryResult.Should().NotBeNull();
-            queryResult.ContinuationToken.Should().Be(continuationToken);
+            queryResult.ContinuationToken.Should().BeNull();
         }
     }
 }
