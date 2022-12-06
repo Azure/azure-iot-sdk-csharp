@@ -168,7 +168,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The client instance must be opened already.
         /// <para>
-        /// Use AMQP for a true batch operation. MQTT will just send the messages one after the other.
+        /// This operation is supported only over AMQP.
+        /// </para>
+        /// <para>
+        /// This operation is not supported over MQTT and will result in an <see cref="InvalidOperationException"/>.
         /// </para>
         /// <para>
         /// For more information on IoT Edge module routing for <see cref="IotHubModuleClient"/> see
@@ -178,6 +181,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">When this method is called when the client is configured to use MQTT.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {

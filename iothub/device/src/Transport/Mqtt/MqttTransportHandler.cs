@@ -419,14 +419,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public override Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Note that this sends all messages at once and then waits for all the acknowledgements. This
-            // is the recommended pattern for sending large numbers of messages over an asynchronous
-            // protocol like MQTT
-            await Task.WhenAll(messages.Select(x => SendTelemetryAsync(x, cancellationToken))).ConfigureAwait(false);
+            throw new InvalidOperationException("This operation is not supported over MQTT. Please refer to the API comments for additional details.");
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
