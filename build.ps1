@@ -395,6 +395,7 @@ try
         # test categories to exclude
         $testCategory += "&TestCategory!=LongRunning"
         $testCategory += "&TestCategory!=Flaky"
+        $testCategory += "&TestCategory!=InvalidServiceCertificate"
 
         if ($skipIotHubTests)
         {
