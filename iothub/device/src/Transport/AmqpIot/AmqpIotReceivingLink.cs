@@ -5,10 +5,12 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
@@ -207,16 +209,59 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase)
                         || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        string error = null;
-                        using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
-                        error = reader.ReadToEnd();
+                        IotHubClientErrorResponseMessage errorResponse = null;
+                        IotHubClientException twinException = null;
 
-                        // Retry for Http status code request timeout, Too many requests and server errors
-                        var exception = new IotHubClientException(error)
+                        // This will only ever contain an error message which is encoded based on service contract (UTF-8).
+                        if (amqpMessage.BodyStream.Length > 0)
                         {
-                            IsTransient = status >= 500 || status == 429 || status == 408,
-                        };
-                        _onTwinMessageReceived.Invoke(null, correlationId, exception);
+                            using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
+                            string errorResponseString = reader.ReadToEnd();
+
+                            try
+                            {
+                                errorResponse = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                            }
+                            catch (JsonException ex)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ");
+
+                                errorResponse = new IotHubClientErrorResponseMessage
+                                {
+                                    Message = errorResponseString,
+                                };
+                            }
+                        }
+
+                        // Check if we have an int to string error code translation for the service returned error code.
+                        // The error code could be a part of the service returned error message, or it can be a part of the amqp message annotations map.
+                        // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
+                        if ((Enum.TryParse(errorResponse.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
+                            || Enum.TryParse(status.ToString(), out errorCode))
+                            && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
+                        {
+                            twinException = new IotHubClientException(errorResponse.Message, errorCode)
+                            {
+                                TrackingId = errorResponse.TrackingId,
+                            };
+                        }
+                        else if (status >= 500)
+                        {
+                            twinException = new IotHubClientException(errorResponse.Message, IotHubClientErrorCode.ServerError)
+                            {
+                                TrackingId = errorResponse.TrackingId,
+                            };
+                        }
+                        else
+                        {
+                            twinException = new IotHubClientException(errorResponse.Message)
+                            {
+                                TrackingId = errorResponse.TrackingId,
+                            };
+                        }
+
+                        _onTwinMessageReceived.Invoke(null, correlationId, twinException);
                     }
                 }
                 else

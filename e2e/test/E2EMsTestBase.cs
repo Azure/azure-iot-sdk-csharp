@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         protected const int TokenRefreshTestTimeoutMilliseconds = 20 * 60 * 1000; // 20 minutes
 
         private const string CollectSdkLogsEnvVar = "COLLECT_SDK_LOGS";
-        public static readonly bool s_collectSdkLogs;
+        public static readonly bool s_collectSdkLogs = true;
 
         static E2EMsTestBase()
         {
