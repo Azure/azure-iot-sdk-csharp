@@ -20,7 +20,7 @@ jobs:
   ### Linux build 1 ###
   - job: LINUX1
     displayName: Linux pri 1 .NET targets
-    timeoutInMinutes: 75
+    timeoutInMinutes: 120
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
@@ -284,10 +284,10 @@ jobs:
 
     condition: succeeded()
     pool:
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - script: |
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
           sn -Vr *,31bf3856ad364e35
         displayName: "Disable strong name validation"
       - script: |
@@ -406,10 +406,10 @@ jobs:
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - script: |
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
           sn -Vr *,31bf3856ad364e35
         displayName: "Disable strong name validation"
       - script: |
@@ -517,7 +517,7 @@ jobs:
     condition: succeeded()
     pool:
       name: Azure Pipelines
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - script: |
           rem Run dotnet first experience.
