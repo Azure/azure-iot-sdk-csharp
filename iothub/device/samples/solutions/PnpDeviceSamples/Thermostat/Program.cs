@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var pnpPayload = new RegistrationRequestPayload
             {
-                JsonData = $"{{ \"modelId\": \"{ModelId}\" }}",
+                Payload = new ModelIdPayload { ModelId = ModelId },
             };
             return await pdc.RegisterAsync(pnpPayload, cancellationToken);
         }

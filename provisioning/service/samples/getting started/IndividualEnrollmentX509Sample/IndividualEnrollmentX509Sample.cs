@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
@@ -20,8 +19,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly string _deviceId;
 
         private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
-        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityEnabled = new() { IotEdge = true };
-        private readonly ProvisioningClientCapabilities _optionalEdgeCapabilityDisabled = new() { IotEdge = false };
+        private readonly InitialTwinCapabilities _optionalEdgeCapabilityEnabled = new() { IsIotEdge = true };
+        private readonly InitialTwinCapabilities _optionalEdgeCapabilityDisabled = new() { IsIotEdge = false };
 
         public IndividualEnrollmentX509Sample(ProvisioningServiceClient provisioningServiceClient, X509Certificate2 issuerCertificate, string deviceId, string registrationId)
         {
@@ -59,21 +58,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine($"Creating an individual enrollment '{_registrationId}'...");
             X509Attestation x509 = X509Attestation.CreateFromClientCertificates(_issuerCertificate);
-            var individualEnrollment = new IndividualEnrollment(
-                _registrationId, x509)
+            var individualEnrollment = new IndividualEnrollment(_registrationId, x509)
             {
                 // The following properties are optional:
                 DeviceId = _deviceId,
                 ProvisioningStatus = OptionalProvisioningStatus,
                 Capabilities = _optionalEdgeCapabilityEnabled,
-                InitialTwinState = new ProvisioningTwinState(
-                    tags: null,
-                    desiredProperties: new ProvisioningTwinProperties
+                InitialTwinState = new InitialTwin
+                {
+                    Tags = null,
+                    DesiredProperties =
                     {
                         ["Brand"] = "Contoso",
                         ["Model"] = "SSC4",
                         ["Color"] = "White",
-                    })
+                    },
+                },
             };
 
             IndividualEnrollment individualEnrollmentResult = await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             IndividualEnrollment individualEnrollment = await GetIndividualEnrollmentInfoAsync();
             Console.WriteLine($"Initial device twin state is {individualEnrollment.InitialTwinState}.");
-            Console.WriteLine($"IoT Edge device set to '{individualEnrollment.Capabilities.IotEdge}'.");
+            Console.WriteLine($"IoT Edge device set to '{individualEnrollment.Capabilities.IsIotEdge}'.");
             individualEnrollment.InitialTwinState.DesiredProperties["Color"] = "Yellow";
             individualEnrollment.Capabilities = _optionalEdgeCapabilityDisabled;
 
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             IndividualEnrollment individualEnrollmentResult =
                 await _provisioningServiceClient.IndividualEnrollments.CreateOrUpdateAsync(individualEnrollment);
             Console.WriteLine($"Updated initial device twin state is {individualEnrollmentResult.InitialTwinState}.");
-            Console.WriteLine($"Updated IoT Edge device to '{individualEnrollmentResult.Capabilities.IotEdge}'.");
+            Console.WriteLine($"Updated IoT Edge device to '{individualEnrollmentResult.Capabilities.IsIotEdge}'.");
             Console.WriteLine($"Successfully updated the individual enrollment '{_registrationId}'.");
         }
 

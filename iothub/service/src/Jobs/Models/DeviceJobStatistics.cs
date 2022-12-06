@@ -13,31 +13,31 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Number of devices in the job.
         /// </summary>
-        [JsonProperty(PropertyName = "deviceCount")]
+        [JsonProperty("deviceCount")]
         public int DeviceCount { get; protected internal set; }
 
         /// <summary>
         /// The number of failed jobs.
         /// </summary>
-        [JsonProperty(PropertyName = "failedCount")]
+        [JsonProperty("failedCount")]
         public int FailedCount { get; protected internal set; }
 
         /// <summary>
         /// The number of successed jobs.
         /// </summary>
-        [JsonProperty(PropertyName = "succeededCount")]
+        [JsonProperty("succeededCount")]
         public int SucceededCount { get; protected internal set; }
 
         /// <summary>
         /// The number of running jobs.
         /// </summary>
-        [JsonProperty(PropertyName = "runningCount")]
+        [JsonProperty("runningCount")]
         public int RunningCount { get; protected internal set; }
 
         /// <summary>
         /// The number of pending (scheduled) jobs.
         /// </summary>
-        [JsonProperty(PropertyName = "pendingCount")]
+        [JsonProperty("pendingCount")]
         public int PendingCount { get; protected internal set; }
     }
 }

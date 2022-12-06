@@ -6,24 +6,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents a provisioning registration request.
     /// </summary>
-    public class ProvisioningTransportRegisterRequest
+    internal class ProvisioningTransportRegisterRequest
     {
-        /// <summary>
-        /// Creates a new instance of this class.
-        /// </summary>
-        /// <param name="globalDeviceEndpoint">The global device endpoint for this message.</param>
-        /// <param name="idScope">The IDScope for this message.</param>
-        /// <param name="authentication">The authentication provider used to authenticate the client.</param>
-        public ProvisioningTransportRegisterRequest(
-            string globalDeviceEndpoint,
-            string idScope,
-            AuthenticationProvider authentication)
-        {
-            GlobalDeviceEndpoint = globalDeviceEndpoint;
-            IdScope = idScope;
-            Authentication = authentication;
-        }
-
         /// <summary>
         /// Creates a new instance of this class.
         /// </summary>
@@ -35,12 +19,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string globalDeviceEndpoint,
             string idScope,
             AuthenticationProvider authentication,
-            string payload)
+            RegistrationRequestPayload payload = default)
         {
             GlobalDeviceEndpoint = globalDeviceEndpoint;
             IdScope = idScope;
             Authentication = authentication;
-            if (!string.IsNullOrEmpty(payload))
+            if (payload != default)
             {
                 Payload = payload;
             }
@@ -49,21 +33,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// The global device endpoint for this message.
         /// </summary>
-        public string GlobalDeviceEndpoint { get; }
+        internal string GlobalDeviceEndpoint { get; }
 
         /// <summary>
         /// The IDScope for this message.
         /// </summary>
-        public string IdScope { get; }
+        internal string IdScope { get; }
 
         /// <summary>
         /// The authentication provider used to authenticate the client.
         /// </summary>
-        public AuthenticationProvider Authentication { get; }
+        internal AuthenticationProvider Authentication { get; }
 
         /// <summary>
         /// The custom content.
         /// </summary>
-        public string Payload { get; }
+        internal RegistrationRequestPayload Payload { get; }
     }
 }

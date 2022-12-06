@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,8 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"{nameof(ProvisioningServiceClientE2ETests)}_";
 
-        private static readonly IProvisioningServiceRetryPolicy s_provisioningServiceRetryPolicy =
-            new ProvisioningServiceExponentialBackoffRetryPolicy(20, TimeSpan.FromSeconds(3), true);
+        private static readonly ProvisioningServiceExponentialBackoffRetryPolicy s_provisioningServiceRetryPolicy = new(20, TimeSpan.FromSeconds(3), true);
 
         public enum EnrollmentType
         {
@@ -73,16 +73,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_SymmetricKey_GroupEnrollments_Create_Http_Ok_WithReprovisioningFields()
         {
-            //This webhook won't actually work for reprovisioning, but this test is only testing that the field is accepted by the service
+            // This webhook won't actually work for reprovisioning, but this test is only testing that the field is accepted by the service
             var customAllocationDefinition = new CustomAllocationDefinition { ApiVersion = "2019-03-31", WebhookUrl = "https://www.microsoft.com" };
             var reprovisionPolicy = new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true };
-            AllocationPolicy allocationPolicy = AllocationPolicy.GeoLatency;
 
             await ProvisioningServiceClient_GroupEnrollments_Create_Ok(
                 "",
                 AttestationMechanismType.SymmetricKey,
                 reprovisionPolicy,
-                allocationPolicy,
+                AllocationPolicy.GeoLatency,
                 customAllocationDefinition,
                 null).ConfigureAwait(false);
         }
@@ -92,15 +91,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningServiceClient_SymmetricKey_IndividualEnrollment_Create_Http_Ok_WithReprovisioningFields()
         {
             //This webhook won't actually work for reprovisioning, but this test is only testing that the field is accepted by the service
-            var customAllocationDefinition = new CustomAllocationDefinition() { ApiVersion = "2019-03-31", WebhookUrl = "https://www.microsoft.com" };
-            var reprovisionPolicy = new ReprovisionPolicy() { MigrateDeviceData = false, UpdateHubAssignment = true };
-            AllocationPolicy allocationPolicy = AllocationPolicy.GeoLatency;
+            var customAllocationDefinition = new CustomAllocationDefinition { ApiVersion = "2019-03-31", WebhookUrl = "https://www.microsoft.com" };
+            var reprovisionPolicy = new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true };
 
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(
                 "",
                 AttestationMechanismType.SymmetricKey,
                 reprovisionPolicy,
-                allocationPolicy,
+                AllocationPolicy.GeoLatency,
                 customAllocationDefinition,
                 null).ConfigureAwait(false);
         }
@@ -128,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Func<Task> act = async () => await provisioningServiceClient.IndividualEnrollments.GetAsync("invalid-registration-id").ConfigureAwait(false);
 
             // assert
-            var error = await act.Should().ThrowAsync<ProvisioningServiceException>();
+            ExceptionAssertions<ProvisioningServiceException> error = await act.Should().ThrowAsync<ProvisioningServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
             error.And.ErrorCode.Should().Be(404201);
             error.And.IsTransient.Should().BeFalse();
@@ -143,13 +141,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Func<Task> act = async () => await provisioningServiceClient.EnrollmentGroups.GetAsync("invalid-registration-id").ConfigureAwait(false);
 
             // assert
-            var error = await act.Should().ThrowAsync<ProvisioningServiceException>();
+            ExceptionAssertions<ProvisioningServiceException> error = await act.Should().ThrowAsync<ProvisioningServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
             error.And.ErrorCode.Should().Be(404204);
             error.And.IsTransient.Should().BeFalse();
         }
 
-        public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
+        public static async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
@@ -212,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
+        public static async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
         {
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
@@ -276,7 +274,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static async Task ProvisioningServiceClient_IndividualEnrollments_Query_Ok(string proxyServerAddress)
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
-            var queryString = "SELECT * FROM enrollments";
+            string queryString = "SELECT * FROM enrollments";
             Query query = provisioningServiceClient.IndividualEnrollments.CreateQuery(queryString);
             while (query.HasNext())
             {
@@ -285,7 +283,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
+        public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(
                     proxyServerAddress,
@@ -297,7 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
-        public async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(
+        public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(
             string proxyServerAddress,
             AttestationMechanismType attestationType,
             ReprovisionPolicy reprovisionPolicy,
@@ -365,12 +363,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
+        public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
         {
             await ProvisioningServiceClient_GroupEnrollments_Create_Ok(proxyServerAddress, attestationType, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
         }
 
-        public async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(
+        public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(
             string proxyServerAddress,
             AttestationMechanismType attestationType,
             ReprovisionPolicy reprovisionPolicy,
@@ -445,7 +443,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iotHubsToProvisionTo,
-            ProvisioningClientCapabilities capabilities)
+            InitialTwinCapabilities capabilities)
         {
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
@@ -488,11 +486,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
-            if (createdEnrollment == null)
-            {
-                throw new ArgumentException($"The enrollment entry with registration Id {registrationId} could not be created; exiting test.");
-            }
-
+            createdEnrollment.Should().NotBeNull($"The enrollment entry with registration Id {registrationId} could not be created; exiting test.");
             return createdEnrollment;
         }
 
@@ -504,7 +498,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            Devices.Provisioning.Service.ProvisioningClientCapabilities capabilities)
+            Devices.Provisioning.Service.InitialTwinCapabilities capabilities)
         {
             Attestation attestation;
 
@@ -591,11 +585,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static ProvisioningServiceClient CreateProvisioningService(string proxyServerAddress = null)
         {
             var options = new ProvisioningServiceClientOptions();
-            var transportSettings = options.ProvisioningServiceHttpSettings;
 
             if (!string.IsNullOrWhiteSpace(proxyServerAddress))
             {
-                transportSettings.Proxy = new WebProxy(proxyServerAddress);
+                options.ProvisioningServiceHttpSettings.Proxy = new WebProxy(proxyServerAddress);
             }
 
             return new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString, options);

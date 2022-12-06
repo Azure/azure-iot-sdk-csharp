@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
     }
 
     /// <summary>
-    /// A class used as a model to deserialize a different style of error response received form IoT hub.
+    /// A class used as a model to deserialize a different style of error response received from IoT hub.
     /// </summary>
     internal class IotHubExceptionResult2
     {

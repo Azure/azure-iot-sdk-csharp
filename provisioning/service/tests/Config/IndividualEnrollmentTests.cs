@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using Azure;
 using FluentAssertions;
+using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -22,9 +23,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private readonly DateTime _sampleCreateDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private readonly DateTime _sampleLastUpdatedDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
-        private static ETag SampleEtag = new ETag("00000000-0000-0000-0000-00000000000");
-        private readonly ProvisioningClientCapabilities _sampleEdgeCapabilityTrue = new() { IotEdge = true };
-        private readonly ProvisioningClientCapabilities _sampleEdgeCapabilityFalse = new() { IotEdge = false };
+        private static readonly ETag s_sampleEtag = new("00000000-0000-0000-0000-00000000000");
+        private readonly InitialTwinCapabilities _sampleEdgeCapabilityTrue = new() { IsIotEdge = true };
+        private readonly InitialTwinCapabilities _sampleEdgeCapabilityFalse = new() { IsIotEdge = false };
 
         private const string SampleEndorsementKey =
             "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
@@ -85,7 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
             "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
             "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-            "   \"etag\": \"" + SampleEtag + "\",\n";
+            "   \"etag\": \"" + s_sampleEtag + "\",\n";
 
         private readonly string _sampleIndividualEnrollmentJsonWithoutCapabilities =
             "{\n" +
@@ -144,8 +145,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         [TestMethod]
         public void IndividualEnrollmentConstructorThrowsOnInvalidParameters()
         {
-            // arrange - act - assert
-            TestAssert.Throws<InvalidOperationException>(() => new IndividualEnrollment(SampleRegistrationId, _sampleX509RootAttestation));
+            Action act = () => _ = new IndividualEnrollment(SampleRegistrationId, _sampleX509RootAttestation);
+            act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -183,12 +184,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
             "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
             "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-            "   \"etag\": \"" + SampleEtag + "\"\n" +
+            "   \"etag\": \"" + s_sampleEtag + "\"\n" +
             "}";
 
             // act - assert
             Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-            var error = act.Should().Throw<InvalidOperationException>();
+            ExceptionAssertions<InvalidOperationException> error = act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -208,14 +209,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
             "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
             "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-            "   \"etag\": \"" + SampleEtag + "\"\n" +
+            "   \"etag\": \"" + s_sampleEtag + "\"\n" +
             "}";
 
-            // act - assert
+            // act
             Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-            var error = act.Should().Throw<ProvisioningServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error.And.IsTransient.Should().BeFalse();
+
+            // assert
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -258,7 +259,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // act - assert
             Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-            var error = act.Should().Throw<InvalidOperationException>();
+            ExceptionAssertions<InvalidOperationException> error = act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -277,7 +278,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedOnUtc);
             Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedOnUtc);
-            Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
+            Assert.AreEqual(s_sampleEtag, individualEnrollment.ETag);
             Assert.AreEqual(null, individualEnrollment.Capabilities);
         }
 
@@ -297,8 +298,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedOnUtc);
             Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedOnUtc);
-            Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
-            Assert.AreEqual(_sampleEdgeCapabilityTrue.IotEdge, individualEnrollment.Capabilities.IotEdge);
+            Assert.AreEqual(s_sampleEtag, individualEnrollment.ETag);
+            Assert.AreEqual(_sampleEdgeCapabilityTrue.IsIotEdge, individualEnrollment.Capabilities.IsIotEdge);
         }
 
         [TestMethod]
@@ -317,8 +318,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
             Assert.AreEqual(_sampleCreateDateTimeUTC, individualEnrollment.CreatedOnUtc);
             Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedOnUtc);
-            Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
-            Assert.AreEqual(_sampleEdgeCapabilityFalse.IotEdge, individualEnrollment.Capabilities.IotEdge);
+            Assert.AreEqual(s_sampleEtag, individualEnrollment.ETag);
+            Assert.AreEqual(_sampleEdgeCapabilityFalse.IsIotEdge, individualEnrollment.Capabilities.IsIotEdge);
         }
 
         [TestMethod]
@@ -347,7 +348,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "           }\n" +
                 "       }\n" +
                 "   },\n" +
-                "   \"etag\": \"" + SampleEtag + "\"\n" +
+                "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
             IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(minJson);
 
@@ -355,7 +356,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(individualEnrollment);
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
             Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
-            Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
+            Assert.AreEqual(s_sampleEtag, individualEnrollment.ETag);
         }
     }
 }

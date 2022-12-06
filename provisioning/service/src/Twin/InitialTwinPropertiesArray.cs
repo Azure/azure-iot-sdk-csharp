@@ -3,28 +3,28 @@
 
 using System;
 using Newtonsoft.Json.Linq;
-using static Microsoft.Azure.Devices.Provisioning.Service.ProvisioningTwinProperties;
+using static Microsoft.Azure.Devices.Provisioning.Service.InitialTwinPropertyCollection;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Represents a property value in a <see cref="ProvisioningTwinProperties"/>.
+    /// Represents a property array in a <see cref="InitialTwinPropertyCollection"/>.
     /// </summary>
-    public class ProvisioningTwinPropertyValue : JValue
+    public class InitialTwinPropertiesArray : JArray
     {
         private readonly JObject _metadata;
 
-        internal ProvisioningTwinPropertyValue(JValue jValue, JObject metadata)
-            : base(jValue)
+        internal InitialTwinPropertiesArray(JArray jArray, JObject metadata)
+            : base(jArray)
         {
-            _metadata = metadata;
+            _metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
 
         /// <summary>
         /// Gets the value for the given property name.
         /// </summary>
         /// <param name="propertyName">Property Name to lookup.</param>
-        /// <returns>Property value, if present.</returns>
+        /// <returns>Property value, if present</returns>
         /// <exception cref="InvalidOperationException">When the specified <paramref name="propertyName"/> does not exist in the collection.</exception>
         public dynamic this[string propertyName]
         {
@@ -35,22 +35,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     MetadataName => GetMetadata(),
                     LastUpdatedName => GetLastUpdatedOnUtc(),
                     LastUpdatedVersionName => GetLastUpdatedVersion(),
-                    _ => throw new InvalidOperationException($"{nameof(ProvisioningTwinPropertyValue)} does not contain a definition for '{propertyName}'."),
+                    _ => throw new InvalidOperationException($"{nameof(InitialTwinPropertiesArray)} does not contain a definition for '{propertyName}'."),
                 };
             }
         }
 
         /// <summary>
-        /// Gets the Metadata for this property.
+        /// Gets the metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public ProvisioningTwinMetadata GetMetadata()
+        public InitialTwinMetadata GetMetadata()
         {
-            return new ProvisioningTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
+            return new InitialTwinMetadata(GetLastUpdatedOnUtc(), GetLastUpdatedVersion());
         }
 
         /// <summary>
-        /// Gets the time when this property was last updated.
+        /// Gets the time when this property was last updated in UTC.
         /// </summary>
         public DateTimeOffset GetLastUpdatedOnUtc()
         {
@@ -61,13 +61,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return lastUpdatedOnUtc;
             }
 
-            return DateTimeOffset.MinValue;
+            return default;
         }
 
         /// <summary>
-        /// Gets the LastUpdatedVersion for this property.
+        /// Gets the last updated version for this property.
         /// </summary>
-        /// <returns>LastUpdatdVersion if present, null otherwise.</returns>
+        /// <returns>Last updated version if present, null otherwise.</returns>
         public long? GetLastUpdatedVersion()
         {
             return (long?)_metadata?[LastUpdatedVersionName];

@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices
         private const string CapabilitiesJsonTag = "capabilities";
         private const string IotEdgeName = "iotEdge";
         private const string ETagJsonTag = "etag";
+        private const string DeviceETagJsonTag = "deviceEtag";
         private const string TagsJsonTag = "tags";
         private const string PropertiesJsonTag = "properties";
         private const string DesiredPropertiesJsonTag = "desired";
@@ -65,10 +66,9 @@ namespace Microsoft.Azure.Devices
             }
 
             var twin = value as ClientTwin;
-
             if (twin == null)
             {
-                throw new InvalidOperationException("Object passed is not of type Twin.");
+                throw new InvalidOperationException($"Object passed is not of type {nameof(ClientTwin)}.");
             }
 
             writer.WriteStartObject();
@@ -90,6 +90,9 @@ namespace Microsoft.Azure.Devices
 
             writer.WritePropertyName(ETagJsonTag);
             writer.WriteValue(twin.ETag.ToString());
+
+            writer.WritePropertyName(DeviceETagJsonTag);
+            writer.WriteValue(twin.DeviceETag.ToString());
 
             writer.WritePropertyName(VersionTag);
             writer.WriteValue(twin.Version);
@@ -260,10 +263,14 @@ namespace Microsoft.Azure.Devices
                         twin.ETag = new ETag(reader.Value as string);
                         break;
 
+                    case DeviceETagJsonTag:
+                        twin.DeviceETag = new ETag(reader.Value as string);
+                        break;
+
                     case TagsJsonTag:
                         if (reader.TokenType != JsonToken.StartObject)
                         {
-                            throw new InvalidOperationException("Tags Json not a Dictionary.");
+                            throw new InvalidOperationException("Tags JSON not an object.");
                         }
                         twin.Tags = serializer.Deserialize<Dictionary<string, object>>(reader);
                         break;

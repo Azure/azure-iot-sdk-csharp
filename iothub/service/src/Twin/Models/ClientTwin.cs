@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using Azure;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices
 {
@@ -23,21 +22,12 @@ namespace Microsoft.Azure.Devices
         public ClientTwin() { }
 
         /// <summary>
-        /// Creates an instance of this class.
+        /// Creates an instance of this class with the specified device Id.
         /// </summary>
         /// <param name="deviceId">The unique Id of the device to which the twin belongs.</param>
         public ClientTwin(string deviceId)
         {
             DeviceId = deviceId;
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="twinProperties">Properties of the twin.</param>
-        public ClientTwin(ClientTwinDocument twinProperties)
-        {
-            Properties = twinProperties ?? new();
         }
 
         /// <summary>
@@ -49,8 +39,8 @@ namespace Microsoft.Azure.Devices
         /// The DTDL model Id of the device or module.
         /// </summary>
         /// <remarks>
-        /// The value will be null for a non-pnp device.
-        /// The value will be null for a pnp device until the device connects and registers with the model Id.
+        /// The value will be null for a non-plug-and-play device.
+        /// The value will be null for a plug-and-play device until the device connects and registers with the model Id.
         /// </remarks>
         public string ModelId { get; set; }
 
@@ -83,14 +73,23 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Twin capabilities are read only.
         /// </remarks>
-        public ClientCapabilities Capabilities { get; internal set; }
+        public ClientCapabilities Capabilities { get; internal set; } = new();
 
         /// <summary>
         /// Twin's ETag.
         /// </summary>
-        [JsonProperty(PropertyName = "etag")]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        [JsonProperty("etag")]
+        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
         public ETag ETag { get; set; }
+
+        /// <summary>
+        /// Device's ETag.
+        /// </summary>
+        [JsonProperty("deviceEtag")]
+        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        public ETag DeviceETag { get; set; }
 
         /// <summary>
         /// Twin's version.
@@ -125,7 +124,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        [JsonConverter(typeof(StringEnumConverter))]
         public ClientConnectionState? ConnectionState { get; internal set; }
 
         /// <summary>

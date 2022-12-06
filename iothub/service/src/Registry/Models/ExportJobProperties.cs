@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="excludeKeysInExport">Whether to include authorization keys in export output.</param>
         public ExportJobProperties(Uri outputBlobContainerUri, bool excludeKeysInExport)
         {
-            JobType = JobType.ExportDevices;
+            JobType = JobType.Export;
             OutputBlobContainerUri = outputBlobContainerUri;
             ExcludeKeysInExport = excludeKeysInExport;
         }
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// If not specified, the service defaults to "devices.txt".
         /// </remarks>
-        [JsonProperty(PropertyName = "outputBlobName", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("outputBlobName", NullValueHandling = NullValueHandling.Ignore)]
         public string OutputBlobName { get; set; }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Optional parameter. The service defaults to false.
         /// </remarks>
-        [JsonProperty(PropertyName = "excludeKeysInExport", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("excludeKeysInExport", NullValueHandling = NullValueHandling.Ignore)]
         public bool ExcludeKeysInExport { get; set; }
     }
 }

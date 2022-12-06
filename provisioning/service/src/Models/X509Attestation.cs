@@ -14,58 +14,105 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// The provisioning service supports Device Identifier Composition Engine, or DICE, as the device attestation
-    ///     mechanism. To use X509, user must provide the certificate. This class provide the means to create a new
-    ///     attestation for a X509 certificate and return it as an abstract interface <see cref="Attestation"/>.
+    /// mechanism. To use X509, user must provide the certificate. This class provide the means to create a new
+    /// attestation for a X509 certificate and return it as an abstract interface <see cref="Attestation"/>.
     ///
     /// An X509 attestation can contains one of the 3 types of certificate:
-    ///
     /// <list type="bullet">
-    ///     <item>
-    ///     <description>Client or Alias certificate:
-    ///         Called on this class as clientCertificates, this certificate can authenticate a single device.</description>
-    ///     </item>
-    ///     <item>
-    ///     <description>Signing or Root certificate:
-    ///           Called on this class as rootCertificates, this certificate can create multiple Client certificates
-    ///           to authenticate multiple devices.</description>
-    ///     </item>
-    ///     <item>
-    ///     <description>CA Reference:
-    ///           Called on this class as X509CAReferences, this is a CA reference for a rootCertificate that can
-    ///           creates multiple Client certificates to authenticate multiple devices.</description>
-    ///     </item>
+    /// <item>
+    /// <description>Client or Alias certificate:
+    ///     Called on this class as clientCertificates, this certificate can authenticate a single device.</description>
+    /// </item>
+    /// <item>
+    /// <description>Signing or Root certificate:
+    ///     Called on this class as rootCertificates, this certificate can create multiple Client certificates
+    ///     to authenticate multiple devices.</description>
+    /// </item>
+    /// <item>
+    /// <description>CA Reference:
+    ///     Called on this class as X509CAReferences, this is a CA reference for a rootCertificate that can
+    ///     creates multiple Client certificates to authenticate multiple devices.</description>
+    /// </item>
     /// </list>
-    ///
+    /// <para>
     /// The provisioning service allows user to create <see cref="IndividualEnrollment"/> and <see cref="EnrollmentGroup"/>.
-    ///     For all operations over <see cref="IndividualEnrollment"/> with X509, user must provide a
-    ///     clientCertificates, and for operations over <see cref="EnrollmentGroup"/>, user must provide a
-    ///     rootCertificates or a X509CAReferences.
-    ///
+    /// For all operations over <see cref="IndividualEnrollment"/> with X509, user must provide a
+    /// clientCertificates, and for operations over <see cref="EnrollmentGroup"/>, user must provide a
+    /// rootCertificates or a X509CAReferences.
+    /// </para>
+    /// <para>
     /// For each of this types of certificates, user can provide 2 Certificates, a primary and a secondary. Only the
-    ///     primary is mandatory, the secondary is optional.
-    ///
+    /// primary is mandatory, the secondary is optional.
+    /// </para>
+    /// <para>
     /// The provisioning service will process the provided certificates, but will never return it back. Instead of
-    ///     it, <see cref="GetPrimaryX509CertificateInfo()"/> and <see cref="GetSecondaryX509CertificateInfo()"/>
-    ///     will return the certificate information for the certificates.
+    /// it, <see cref="GetPrimaryX509CertificateInfo()"/> and <see cref="GetSecondaryX509CertificateInfo()"/>
+    /// will return the certificate information for the certificates.
+    /// </para>
     /// </remarks>
     public class X509Attestation : Attestation
     {
         /// <summary>
+        /// Provided for deserialization and unit testing.
+        /// </summary>
+        /// <param name="clientCertificates">Client certificates.</param>
+        /// <param name="rootCertificates">Root certificates.</param>
+        /// <param name="caReferences">Certificate authority references.</param>
+        /// <exception cref="InvalidOperationException"></exception>
+        [JsonConstructor]
+        private protected X509Attestation(
+            X509Certificates clientCertificates,
+            X509Certificates rootCertificates,
+            X509CaReferences caReferences)
+        {
+            if (clientCertificates == null
+                && rootCertificates == null
+                && caReferences == null)
+            {
+                throw new InvalidOperationException("Attestation shall receive one non-null certificate.");
+            }
+
+            if (clientCertificates != null
+                && (rootCertificates != null
+                    || caReferences != null)
+                || rootCertificates != null
+                && caReferences != null)
+            {
+                throw new InvalidOperationException("Attestation cannot receive more than one certificate.");
+            }
+
+            try
+            {
+                ClientCertificates = clientCertificates;
+                RootCertificates = rootCertificates;
+                CaReferences = caReferences;
+            }
+            catch (ArgumentException ex)
+            {
+                throw new InvalidOperationException(ex.Message, ex);
+            }
+            catch (CryptographicException ex)
+            {
+                throw new ProvisioningServiceException("The provided certificate is invalid.", HttpStatusCode.BadRequest, ex);
+            }
+        }
+
+        /// <summary>
         /// Client certificates.
         /// </summary>
-        [JsonProperty(PropertyName = "clientCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        internal X509Certificates ClientCertificates { get; protected private set; }
+        [JsonProperty("clientCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public X509Certificates ClientCertificates { get; protected private set; }
 
         /// <summary>
         /// Signing certificates.
         /// </summary>
-        [JsonProperty(PropertyName = "signingCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        internal X509Certificates RootCertificates { get; protected private set; }
+        [JsonProperty("signingCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public X509Certificates RootCertificates { get; protected private set; }
 
         /// <summary>
         /// Certificates Authority references.
         /// </summary>
-        [JsonProperty(PropertyName = "caReferences", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("caReferences", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public X509CaReferences CaReferences { get; protected private set; }
 
         /// <summary>
@@ -316,51 +363,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             return secondaryCertificate?.Info;
-        }
-
-        /// <summary>
-        /// Provided for deserialization and unit testing.
-        /// </summary>
-        /// <param name="clientCertificates">Client certificates.</param>
-        /// <param name="rootCertificates">Root certificates.</param>
-        /// <param name="caReferences">Certificate authority references.</param>
-        /// <exception cref="InvalidOperationException"></exception>
-        [JsonConstructor]
-        private protected X509Attestation(
-            X509Certificates clientCertificates,
-            X509Certificates rootCertificates,
-            X509CaReferences caReferences)
-        {
-            if (clientCertificates == null
-                && rootCertificates == null
-                && caReferences == null)
-            {
-                throw new InvalidOperationException("Attestation shall receive one non-null certificate.");
-            }
-
-            if (clientCertificates != null
-                && (rootCertificates != null
-                    || caReferences != null)
-                || rootCertificates != null
-                && caReferences != null)
-            {
-                throw new InvalidOperationException("Attestation cannot receive more than one certificate.");
-            }
-
-            try
-            {
-                ClientCertificates = clientCertificates;
-                RootCertificates = rootCertificates;
-                CaReferences = caReferences;
-            }
-            catch (ArgumentException ex)
-            {
-                throw new InvalidOperationException(ex.Message, ex);
-            }
-            catch (CryptographicException ex)
-            {
-                throw new ProvisioningServiceException("The provided certificate is invalid.", HttpStatusCode.BadRequest, ex);
-            }
         }
     }
 }

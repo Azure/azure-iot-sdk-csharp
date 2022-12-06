@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,8 +20,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SerializedNameEnrollmentGroup = "enrollmentGroup";
         private const string SerializedNameDeviceRegistration = "deviceRegistration";
         private const string SampleContinuationToken = "{\"token\":\"+RID:Defghij6KLMNOPQ==#RS:1#TRC:2#FPC:AUAAAAAAAAAJQABAAAAAAAk=\",\"range\":{\"min\":\"0123456789abcd\",\"max\":\"FF\"}}";
-        private const string SampleListIntJSON = "[1, 2, 3]";
-        private const string SampleListJObjectJSON = "[{\"a\":1}, {\"a\":2}, {\"a\":3}]";
+        private const string SampleListIntJson = "[1, 2, 3]";
+        private const string SampleListJObjectJson = "[{\"a\":1}, {\"a\":2}, {\"a\":3}]";
 
         private const string SampleEnrollmentJson1 =
                 "    {\n" +
@@ -54,15 +55,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "      \"lastUpdatedDateTimeUtc\": \"2017-09-19T15:46:35.1533673Z\",\n" +
                 "      \"etag\": \"00000000-0000-0000-0000-00000000000\"\n" +
                 "    }";
-        private const string SampleEnrollmentsJSON =
+        private const string SampleEnrollmentsJson =
             "[\n" +
             SampleEnrollmentJson1 + ",\n" +
             SampleEnrollmentJson2 +
             "]";
 
         private const string SampleEnrollmentGroupId = "valid-enrollment-group-id";
-        private const string SampleCreateDateTimeUTCString = "2017-11-14T12:34:18.123Z";
-        private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
+        private const string SampleCreateDateTimeUtcString = "2017-11-14T12:34:18.123Z";
+        private const string SampleLastUpdatedDateTimeUtcString = "2017-11-14T12:34:18.321Z";
         private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
         private const string SampleEnrollmentGroupJson1 =
             "{\n" +
@@ -86,8 +87,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "           }\n" +
             "       }\n" +
             "   },\n" +
-            "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
-            "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
+            "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUtcString + "\",\n" +
+            "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUtcString + "\",\n" +
             "   \"etag\": \"" + SampleEtag + "\"\n" +
             "}";
         private const string SampleEnrollmentGroupJson2 =
@@ -112,12 +113,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "           }\n" +
             "       }\n" +
             "   },\n" +
-            "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
-            "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
+            "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUtcString + "\",\n" +
+            "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUtcString + "\",\n" +
             "   \"etag\": \"" + SampleEtag + "\"\n" +
             "}";
 
-        private const string SampleEnrollmentGroupJSON =
+        private const string SampleEnrollmentGroupJson =
                 "[\n" +
                 SampleEnrollmentGroupJson1 + ",\n" +
                 SampleEnrollmentGroupJson2 +
@@ -147,83 +148,104 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "    \"errorMessage\":\"Succeeded\",\n" +
                 "    \"etag\": \"00000000-0000-0000-0000-00000000000\"\n" +
                 "}";
-        private const string SampleRegistrationStatusJSON =
+        private const string SampleRegistrationStatusJson =
                 "[\n" +
                 SampleRegistrationStatus1 + ",\n" +
                 SampleRegistrationStatus2 +
                 "]";
 
-        /* SRS_QUERY_RESULT_21_001: [The constructor shall throw ArgumentException if the provided type is null, empty, or not parsed to QueryResultType.] */
-        /* SRS_QUERY_RESULT_21_002: [The constructor shall throw ArgumentException if the provided body is null or empty and the type is not `unknown`.] */
-        /* SRS_QUERY_RESULT_21_003: [The constructor shall throw JsonSerializationException if the JSON is invalid.] */
         [TestMethod]
-        public void QueryResultConstructorThrowsOnInvalidParameters()
+        public void QueryResultCtorThrowsOnNullTypeString()
         {
-            // arrange - act - assert
-            TestAssert.Throws<ArgumentException>(() => new QueryResult(null, SampleListIntJSON, SampleContinuationToken));
-            TestAssert.Throws<ArgumentException>(() => new QueryResult("", SampleListIntJSON, SampleContinuationToken));
-            TestAssert.Throws<ArgumentException>(() => new QueryResult("InvalidType", SampleListIntJSON, SampleContinuationToken));
-            TestAssert.Throws<ArgumentException>(() => new QueryResult(SerializedNameEnrollment, null, SampleContinuationToken));
-            TestAssert.Throws<ArgumentException>(() => new QueryResult(SerializedNameEnrollment, "", SampleContinuationToken));
-            TestAssert.Throws<JsonSerializationException>(() => new QueryResult(SerializedNameEnrollment, "[1, 2, ]", SampleContinuationToken));
+            Action act = () => _ = new QueryResult(null, SampleListIntJson, SampleContinuationToken);
+            act.Should().Throw<ArgumentNullException>();
         }
 
-        /* SRS_QUERY_RESULT_21_004: [If the type is `enrollment`, the constructor shall parse the body as IndividualEnrollment[].] */
-        /* SRS_QUERY_RESULT_21_011: [The constructor shall store the provided parameters `type` and `continuationToken`.] */
+        [TestMethod]
+        public void QueryResultCtorThrowsOnEmptyTypeString()
+        {
+            Action act = () => _ = new QueryResult("", SampleListIntJson, SampleContinuationToken);
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void QueryResultCtorThrowsOnInvalidTypeString()
+        {
+            Action act = () => _ = new QueryResult("InvalidType", SampleListIntJson, SampleContinuationToken);
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void QueryResultCtorThrwosOnNullBodyString()
+        {
+            Action act = () => _ = new QueryResult(SerializedNameEnrollment, null, SampleContinuationToken);
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void QueryResultCtorThrwosOnEmptyBodyString()
+        {
+            Action act = () => _ = new QueryResult(SerializedNameEnrollment, "", SampleContinuationToken);
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void QueryResultCtorThrowsOnInvalidJson()
+        {
+            Action act = () => _ = new QueryResult(SerializedNameEnrollment, "[1, 2, ]", SampleContinuationToken);
+            act.Should().Throw<JsonSerializationException>();
+        }
+
         [TestMethod]
         public void QueryResultConstructorSucceedOnIndividualEnrollment()
         {
             // arrange - act
-            var queryResult = new QueryResult(SerializedNameEnrollment, SampleEnrollmentsJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameEnrollment, SampleEnrollmentsJson, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
             Assert.AreEqual(QueryResultType.Enrollment, queryResult.QueryType);
-            IEnumerable<Object> items = queryResult.Items;
+            IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(2, items.Count());
             Assert.IsTrue(items.FirstOrDefault() is IndividualEnrollment);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
-        /* SRS_QUERY_RESULT_21_005: [If the type is `enrollmentGroup`, the constructor shall parse the body as EnrollmentGroup[].] */
         [TestMethod]
         public void QueryResultConstructorSucceedOnEnrollmentGroup()
         {
             // arrange - act
-            var queryResult = new QueryResult(SerializedNameEnrollmentGroup, SampleEnrollmentGroupJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameEnrollmentGroup, SampleEnrollmentGroupJson, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
             Assert.AreEqual(QueryResultType.EnrollmentGroup, queryResult.QueryType);
-            IEnumerable<Object> items = queryResult.Items;
+            IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(2, items.Count());
-            Assert.IsTrue(items.FirstOrDefault() is EnrollmentGroup);
+            Assert.IsTrue(items.First() is EnrollmentGroup);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
-        /* SRS_QUERY_RESULT_21_006: [If the type is `deviceRegistration`, the constructor shall parse the body as DeviceRegistrationState[].] */
         [TestMethod]
         public void QueryResultConstructorSucceedOnDeviceRegistration()
         {
             // arrange - act
-            var queryResult = new QueryResult(SerializedNameDeviceRegistration, SampleRegistrationStatusJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameDeviceRegistration, SampleRegistrationStatusJson, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
             Assert.AreEqual(QueryResultType.DeviceRegistration, queryResult.QueryType);
-            IEnumerable<Object> items = queryResult.Items;
+            IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(2, items.Count());
             Assert.IsTrue(items.FirstOrDefault() is DeviceRegistrationState);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
-        /* SRS_QUERY_RESULT_21_007: [If the type is `unknown`, and the body is null, the constructor shall set `items` as null.] */
         [TestMethod]
         public void QueryResultConstructorSucceedOnUnknownWithNullBody()
         {
             // arrange - act
             var queryResult = new QueryResult(SerializedNameUnknown, null, SampleContinuationToken);
-
             // assert
             Assert.IsNotNull(queryResult);
             Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
@@ -231,39 +253,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
-        /* SRS_QUERY_RESULT_21_008: [If the type is `unknown`, the constructor shall try to parse the body as JObject[].] */
         [TestMethod]
         public void QueryResultConstructorSucceedOnUnknownWithObjectListBody()
         {
             // arrange - act
-            var queryResult = new QueryResult(SerializedNameUnknown, SampleListJObjectJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameUnknown, SampleListJObjectJson, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
             Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
-            IEnumerable<Object> items = queryResult.Items;
+            IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(3, items.Count());
-            Assert.IsTrue(items.FirstOrDefault() is JObject);
+            Assert.IsTrue(items.First() is JObject);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
-        /* SRS_QUERY_RESULT_21_009: [If the type is `unknown`, the constructor shall try to parse the body as Object[].] */
         [TestMethod]
         public void QueryResultConstructorSucceedOnUnknownWithIntegerListBody()
         {
             // arrange - act
-            var queryResult = new QueryResult(SerializedNameUnknown, SampleListIntJSON, SampleContinuationToken);
+            var queryResult = new QueryResult(SerializedNameUnknown, SampleListIntJson, SampleContinuationToken);
 
             // assert
             Assert.IsNotNull(queryResult);
             Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
-            IEnumerable<Object> items = queryResult.Items;
+            IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(3, items.Count());
             Assert.IsTrue(items.FirstOrDefault() is long);
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
-        /* SRS_QUERY_RESULT_21_010: [If the type is `unknown`, and the constructor failed to parse the body as JObject[] and Object[], it shall return the body as a single string in the items.] */
         [TestMethod]
         public void QueryResultConstructorSucceedOnUnknownWithStringBody()
         {
@@ -276,39 +295,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // assert
             Assert.IsNotNull(queryResult);
             Assert.AreEqual(QueryResultType.Unknown, queryResult.QueryType);
-            IEnumerable<Object> items = queryResult.Items;
+            IEnumerable<object> items = queryResult.Items;
             Assert.AreEqual(1, items.Count());
-            Assert.AreEqual(body, items.FirstOrDefault());
+            Assert.AreEqual(body, items.First());
             Assert.AreEqual(SampleContinuationToken, queryResult.ContinuationToken);
         }
 
-        /* SRS_QUERY_RESULT_21_011: [The constructor shall store the provided parameters `type` and `continuationToken`.] */
         [TestMethod]
-        public void QueryResultConstructorSucceedOnNullContinuationToken()
+        [DataRow(null)]
+        [DataRow("")]
+        public void QueryResultConstructorSucceedOnNonRealContinuationToken(string continuationToken)
         {
             // arrange
             string body = "This is a non deserializable body";
 
             // act
-            var queryResult = new QueryResult(SerializedNameUnknown, body, null);
+            var queryResult = new QueryResult(SerializedNameUnknown, body, continuationToken);
 
             // assert
-            Assert.IsNotNull(queryResult);
-            Assert.IsNull(queryResult.ContinuationToken);
-        }
-
-        [TestMethod]
-        public void QueryResultConstructorSucceedOnEmptyContinuationToken()
-        {
-            // arrange
-            string body = "This is a non deserializable body";
-
-            // act
-            var queryResult = new QueryResult(SerializedNameUnknown, body, "");
-
-            // assert
-            Assert.IsNotNull(queryResult);
-            Assert.IsNull(queryResult.ContinuationToken);
+            queryResult.Should().NotBeNull();
+            queryResult.ContinuationToken.Should().BeNull();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Operation mode
         /// </summary>
-        [JsonProperty(PropertyName = "query", Required = Required.Always)]
+        [JsonProperty("query", Required = Required.Always)]
         internal string Query { get; set; }
     }
 }

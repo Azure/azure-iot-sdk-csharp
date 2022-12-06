@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string endorsementKey = null;
 
             // act - assert
-            Action act = () => new TpmAttestation(endorsementKey);
+            Action act = () => _ = new TpmAttestation(endorsementKey);
             var error = act.Should().Throw<ArgumentNullException>();
         }
 
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string endorsementKey = "";
 
             // act - assert
-            Action act = () => new TpmAttestation(endorsementKey);
+            Action act = () => _ = new TpmAttestation(endorsementKey);
             var error = act.Should().Throw<ArgumentException>();
         }
 
@@ -70,8 +70,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(storageRootKey, tpmAttestation.StorageRootKey);
         }
 
-        /* SRS_TPM_ATTESTATION_21_003: [The constructor shall store the provided endorsementKey and storageRootKey.] */
-
         [TestMethod]
         public void TpmAttestationSucceedOnValidEndorsementKey()
         {
@@ -100,8 +98,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
             Assert.AreEqual(storageRootKey, tpmAttestation.StorageRootKey);
         }
-
-        /* SRS_TPM_ATTESTATION_21_004: [The TpmAttestation shall provide means to serialization and deserialization.] */
 
         [TestMethod]
         public void TpmAttestationSucceedOnSerialization()

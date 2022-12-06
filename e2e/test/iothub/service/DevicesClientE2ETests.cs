@@ -163,8 +163,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                BulkRegistryOperationResult bulkAddResult =
-                    await serviceClient.Devices.CreateAsync(new List<Device> { edge, device }).ConfigureAwait(false);
+                BulkRegistryOperationResult bulkAddResult = await serviceClient.Devices
+                    .CreateAsync(new List<Device> { edge, device })
+                    .ConfigureAwait(false);
 
                 // assert
 

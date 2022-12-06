@@ -2,11 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FluentAssertions;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -33,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // assert
 
             // As timeout did not start, asking for it now should return the original time, and then set the deadline.
-            var remainingTime = toh.GetRemainingTime();
+            TimeSpan remainingTime = toh.GetRemainingTime();
             remainingTime.Should().Be(timeout);
 
             // Waiting a bit should show the
@@ -74,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
 
-            var remainingTime = toh.GetRemainingTime();
+            TimeSpan remainingTime = toh.GetRemainingTime();
             remainingTime.Should().Be(timeout);
         }
 
@@ -93,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             remainingTime.Should().NotBe(TimeSpan.Zero);
 
             // ensure we're over the time, because the test will sometimes fail with some microseconds remaining
-            var delay = timeout.Add(TimeSpan.FromMilliseconds(50));
+            TimeSpan delay = timeout.Add(TimeSpan.FromMilliseconds(50));
             await Task.Delay(delay).ConfigureAwait(false);
 
             remainingTime = toh.GetRemainingTime();

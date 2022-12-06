@@ -22,10 +22,10 @@ namespace Microsoft.Azure.Devices
             ContinuationToken = response.Headers.GetFirstValueOrNull(ContinuationTokenHeader);
         }
 
-        [JsonProperty(PropertyName = "items", Required = Required.Always)]
+        [JsonProperty("items", Required = Required.Always)]
         internal IEnumerable<T> Items { get; set; }
 
-        [JsonProperty(PropertyName = "continuationToken", Required = Required.AllowNull)]
+        [JsonProperty("continuationToken", Required = Required.AllowNull)]
         internal string ContinuationToken { get; set; }
     }
 }

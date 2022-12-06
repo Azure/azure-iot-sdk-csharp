@@ -24,19 +24,19 @@ namespace Microsoft.Azure.Devices
         /// For Edge deployments, this should have a key of <c>"$edgeAgent"</c>.
         /// </para>
         /// </remarks>
-        [JsonProperty(PropertyName = "modulesContent")]
+        [JsonProperty("modulesContent")]
         public IDictionary<string, IDictionary<string, object>> ModulesContent { get; set; } = new Dictionary<string, IDictionary<string, object>>();
 
         /// <summary>
         /// The device module configuration content.
         /// </summary>
-        [JsonProperty(PropertyName = "moduleContent")]
+        [JsonProperty("moduleContent")]
         public IDictionary<string, object> ModuleContent { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The device configuration content.
         /// </summary>
-        [JsonProperty(PropertyName = "deviceContent")]
+        [JsonProperty("deviceContent")]
         public IDictionary<string, object> DeviceContent { get; set; } = new Dictionary<string, object>();
 
         /// <summary>

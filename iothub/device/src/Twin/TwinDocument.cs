@@ -13,10 +13,10 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal class TwinDocument
     {
-        [JsonProperty(PropertyName = "desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
         internal Dictionary<string, object> Desired { get; set; }
 
-        [JsonProperty(PropertyName = "reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
         internal Dictionary<string, object> Reported { get; set; }
     }
 }

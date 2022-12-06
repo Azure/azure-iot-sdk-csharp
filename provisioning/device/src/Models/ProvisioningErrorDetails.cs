@@ -14,25 +14,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// The error code that caused the provisioning failure.
         /// </summary>
-        [JsonProperty(PropertyName = "errorCode")]
+        [JsonProperty("errorCode")]
         public int ErrorCode { get; set; }
 
         /// <summary>
         /// A unique Id to share with the service team when seeking help with an error.
         /// </summary>
-        [JsonProperty(PropertyName = "trackingId")]
+        [JsonProperty("trackingId")]
         public string TrackingId { get; set; }
 
         /// <summary>
         /// Error message.
         /// </summary>
-        [JsonProperty(PropertyName = "message")]
+        [JsonProperty("message")]
         public string Message { get; set; }
 
         /// <summary>
         /// Additional information.
         /// </summary>
-        [JsonProperty(PropertyName = "info", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("info", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, string> Info { get; private set; } = new();
     }
 }

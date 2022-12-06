@@ -12,10 +12,10 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class NestedCustomType
     {
         [JsonProperty("stringAttri")]
-        private string StringAttri;
+        internal string StringAttri { get; set; }
 
         [JsonProperty("intAttri")]
-        private int IntAttri;
+        internal int IntAttri { get; set; }
 
         public NestedCustomType(string stringAttri, int intAttri)
         {
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public override string ToString()
         {
-            Dictionary<string, object> dict = new Dictionary<string, object>()
+            var dict = new Dictionary<string, object>()
             {
                 { "stringAttri", StringAttri },
                 { "intAttri", IntAttri },

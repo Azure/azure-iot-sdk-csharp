@@ -25,13 +25,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the primary key used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "primaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("primaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string PrimaryKey { get; }
 
         /// <summary>
         /// Gets the secondary key used for attestation.
         /// </summary>
-        [JsonProperty(PropertyName = "secondaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("secondaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string SecondaryKey { get; }
     }
 }

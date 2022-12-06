@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     /// </summary>
     public class RawQuerySerializationClass
     {
-        [JsonProperty(PropertyName = "TotalNumberOfDevices")]
+        [JsonProperty("TotalNumberOfDevices")]
         public int TotalNumberOfDevices { get; set; }
     }
 }

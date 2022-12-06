@@ -26,13 +26,13 @@ namespace Microsoft.Azure.Devices.Client
         /// The value should equal the <see cref="FileUploadSasUriResponse.CorrelationId"/>
         /// returned from IoT hub when first getting the SAS URI for this file upload.
         /// </summary>
-        [JsonProperty(PropertyName = "correlationId")]
+        [JsonProperty("correlationId")]
         public string CorrelationId { get; }
 
         /// <summary>
         /// Whether the file upload was successful or not.
         /// </summary>
-        [JsonProperty(PropertyName = "isSuccess")]
+        [JsonProperty("isSuccess")]
         public bool IsSuccess { get; }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This property is optional.
         /// </remarks>
-        [JsonProperty(PropertyName = "statusCode")]
+        [JsonProperty("statusCode")]
         public int StatusCode { get; set; }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
         /// This property is optional.
         /// </remarks>
         /// </summary>
-        [JsonProperty(PropertyName = "statusDescription")]
+        [JsonProperty("statusDescription")]
         public string StatusDescription { get; set; }
     }
 }

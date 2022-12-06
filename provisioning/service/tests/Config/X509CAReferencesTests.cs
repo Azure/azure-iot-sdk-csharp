@@ -9,8 +9,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
     [TestCategory("Unit")]
     public class X509CAReferencesTests
     {
-        /* SRS_X509_CAREFERENCE_21_002: [The constructor shall store the primary and secondary CA references.] */
-
         [TestMethod]
         public void X509CAReferencesSucceedOnValidPrimaryReferences()
         {

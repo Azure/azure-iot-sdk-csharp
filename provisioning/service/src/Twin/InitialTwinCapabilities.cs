@@ -8,12 +8,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Status of capabilities enabled on the device.
     /// </summary>
-    public class ProvisioningClientCapabilities
+    public class InitialTwinCapabilities
     {
         /// <summary>
         /// IoT Edge capability.
         /// </summary>
-        [JsonProperty(PropertyName = "iotEdge")]
-        public bool IotEdge { get; set; }
+        [JsonProperty("iotEdge")]
+        public bool IsIotEdge { get; set; }
     }
 }

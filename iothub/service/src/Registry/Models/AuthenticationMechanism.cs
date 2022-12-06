@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the symmetric key used for authentication.
         /// </summary>
-        [JsonProperty(PropertyName = "symmetricKey")]
+        [JsonProperty("symmetricKey")]
         public SymmetricKey SymmetricKey
         {
             get => _symmetricKey;
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the X509 client certificate thumbprint.
         /// </summary>
-        [JsonProperty(PropertyName = "x509Thumbprint")]
+        [JsonProperty("x509Thumbprint")]
         public X509Thumbprint X509Thumbprint
         {
             get => _x509Thumbprint;
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
         /// Gets or sets the authentication type.
         /// </summary>
         [DefaultValue(ClientAuthenticationType.Sas)]
-        [JsonProperty(PropertyName = "type", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonProperty("type", DefaultValueHandling = DefaultValueHandling.Populate)]
         public ClientAuthenticationType Type { get; set; }
     }
 }

@@ -18,7 +18,6 @@ using MQTTnet.Exceptions;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -83,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             _connectionLossCause = null;
             using IMqttClient mqttClient = _mqttFactory.CreateMqttClient();
-            MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest);
+            MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(mqttClient, provisioningRequest);
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
             using var connectionLostCancellationToken = new CancellationTokenSource();
@@ -114,9 +113,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 try
                 {
-                    MqttClientConnectResult connectResult = await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken).ConfigureAwait(false);
+                    MqttClientConnectResult connectResult = await mqttClient
+                        .ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken)
+                        .ConfigureAwait(false);
+
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"MQTT connect responded with status code '{connectResult.ResultCode}'");
+
                     mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                 }
                 catch (MqttCommunicationException ex)
@@ -136,13 +139,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 await SubscribeToRegistrationResponseMessagesAsync(mqttClient, linkedCancellationToken.Token).ConfigureAwait(false);
 
                 currentStatus = "publishing registration request";
-                RegistrationOperationStatus registrationStatus = await PublishRegistrationRequestAsync(mqttClient, provisioningRequest, linkedCancellationToken.Token).ConfigureAwait(false);
+                RegistrationOperationStatus registrationStatus = await PublishRegistrationRequestAsync(
+                        mqttClient,
+                        provisioningRequest,
+                        linkedCancellationToken.Token)
+                    .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Successfully sent the initial registration request. Current status '{registrationStatus.Status}'. Now polling until provisioning has finished.");
 
                 currentStatus = "polling for registration state";
-                DeviceRegistrationResult registrationResult = await PollUntilProvisionigFinishesAsync(mqttClient, registrationStatus.OperationId, linkedCancellationToken.Token).ConfigureAwait(false);
+                DeviceRegistrationResult registrationResult = await PollUntilProvisionigFinishesAsync(
+                        mqttClient,
+                        registrationStatus.OperationId,
+                        linkedCancellationToken.Token)
+                    .ConfigureAwait(false);
 
                 try
                 {
@@ -204,7 +215,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     .WithTopicFilter(SubscribeFilter, _receivingQualityOfService)
                     .Build();
 
-                MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(subscribeOptions, cancellationToken).ConfigureAwait(false);
+                MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(
+                        subscribeOptions,
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
                 if (subscribeResults?.Items == null)
                 {
@@ -224,13 +238,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        private async Task<RegistrationOperationStatus> PublishRegistrationRequestAsync(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest, CancellationToken cancellationToken)
+        private async Task<RegistrationOperationStatus> PublishRegistrationRequestAsync(
+            IMqttClient mqttClient,
+            ProvisioningTransportRegisterRequest provisioningRequest,
+            CancellationToken cancellationToken)
         {
             byte[] payload = Array.Empty<byte>();
             if (provisioningRequest.Payload != null)
             {
-                var registrationRequest = new DeviceRegistration(new JRaw(provisioningRequest.Payload));
-                string requestString = JsonConvert.SerializeObject(registrationRequest);
+                string requestString = JsonConvert.SerializeObject(provisioningRequest.Payload);
                 payload = Encoding.UTF8.GetBytes(requestString);
             }
 
@@ -269,7 +285,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled)
                 Logging.Info(this, $"Service responded to the initial registration request with status '{registrationStatus.Status}'.");
 
-            return registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning
+            return registrationStatus.Status != ProvisioningRegistrationStatus.Assigning
                 ? throw new ProvisioningClientException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true)
                 : registrationStatus;
         }
@@ -302,7 +318,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Current provisioning state: {currentStatus.RegistrationState.Status}.");
 
-                if (currentStatus.RegistrationState.Status != ProvisioningRegistrationStatusType.Assigning)
+                if (currentStatus.RegistrationState.Status != ProvisioningRegistrationStatus.Assigning)
                 {
                     return currentStatus.RegistrationState;
                 }
@@ -320,7 +336,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        private MqttClientOptionsBuilder CreateMqttClientOptions(ProvisioningTransportRegisterRequest provisioningRequest)
+        private MqttClientOptionsBuilder CreateMqttClientOptions(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest)
         {
             var mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
@@ -390,7 +406,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             if (_settings.RemoteCertificateValidationCallback != null)
             {
-                tlsParameters.CertificateValidationHandler = CertificateValidationHandler;
+                tlsParameters.CertificateValidationHandler = (args) => _settings.RemoteCertificateValidationCallback.Invoke(
+                    mqttClient,
+                    args.Certificate,
+                    args.Chain,
+                    args.SslPolicyErrors);
             }
 
             tlsParameters.UseTls = true;
@@ -402,15 +422,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
 
             return mqttClientOptionsBuilder;
-        }
-
-        private bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
-        {
-            return _settings.RemoteCertificateValidationCallback.Invoke(
-                new object(), //TODO Tim to check with Abhipsa about this and if it is necessary
-                args.Certificate,
-                args.Chain,
-                args.SslPolicyErrors);
         }
 
         private Task HandleReceivedMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)

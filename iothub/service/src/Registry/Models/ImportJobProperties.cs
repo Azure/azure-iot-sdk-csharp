@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// If not specified, the input blob container will be used.</param>
         public ImportJobProperties(Uri inputBlobContainerUri, Uri outputBlobContainerUri = default)
         {
-            JobType = JobType.ImportDevices;
+            JobType = JobType.Import;
             InputBlobContainerUri = inputBlobContainerUri;
             OutputBlobContainerUri = outputBlobContainerUri ?? inputBlobContainerUri;
         }
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// </remarks>
-        [JsonProperty(PropertyName = "inputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("inputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
         public Uri InputBlobContainerUri { get; set; }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices
         /// If not specified, the hub defaults to "devices.txt".
         /// The format should be newline-delimited json objects representing each device twin.
         /// </remarks>
-        [JsonProperty(PropertyName = "inputBlobName", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("inputBlobName", NullValueHandling = NullValueHandling.Ignore)]
         public string InputBlobName { get; set; }
     }
 }

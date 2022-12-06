@@ -6,16 +6,16 @@ using System;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Metadata for properties in a <see cref="ProvisioningTwinProperties"/>.
+    /// Metadata for properties in a <see cref="InitialTwinPropertyCollection"/>.
     /// </summary>
-    public class ProvisioningTwinMetadata
+    public class InitialTwinMetadata
     {
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         /// <param name="lastUpdatedOn">When the property was last updated.</param>
         /// <param name="lastUpdatedVersion">The version of the property when updated.</param>
-        public ProvisioningTwinMetadata(DateTimeOffset lastUpdatedOn, long? lastUpdatedVersion)
+        public InitialTwinMetadata(DateTimeOffset lastUpdatedOn, long? lastUpdatedVersion)
         {
             LastUpdatedOnUtc = lastUpdatedOn;
             LastUpdatedVersion = lastUpdatedVersion;

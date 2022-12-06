@@ -19,13 +19,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Operation mode
         /// </summary>
-        [JsonProperty(PropertyName = "mode", Required = Required.Always)]
+        [JsonProperty("mode", Required = Required.Always)]
         internal BulkOperationMode Mode { get; set; }
 
         /// <summary>
         /// Enrollments for bulk operation
         /// </summary>
-        [JsonProperty(PropertyName = "enrollmentGroups", Required = Required.Always)]
-        internal IEnumerable<EnrollmentGroup> Enrollments { get; set; }
+        [JsonProperty("enrollmentGroups", Required = Required.Always)]
+        internal IList<EnrollmentGroup> Enrollments { get; set; }
     }
 }

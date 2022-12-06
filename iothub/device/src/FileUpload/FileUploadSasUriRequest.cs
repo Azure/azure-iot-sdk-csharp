@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The name of the file for which a SAS URI will be generated.
         /// </summary>
-        [JsonProperty(PropertyName = "blobName")]
+        [JsonProperty("blobName")]
         public string BlobName { get; }
     }
 }

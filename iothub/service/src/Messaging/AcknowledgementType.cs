@@ -1,11 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The possible acknowledgement types for a received file upload notification and/or for a received cloud-to-device feedback message.
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum AcknowledgementType
     {
         /// <summary>
@@ -21,6 +25,6 @@ namespace Microsoft.Azure.Devices
         /// time. Each service message has a finite number of times that it can be received and then abandoned before the message
         /// will be removed from the queue. This maximum number of times it can be received can be set through the Azure portal.
         /// </remarks>
-        Abandon
+        Abandon,
     }
 }

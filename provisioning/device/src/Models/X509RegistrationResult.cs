@@ -13,27 +13,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// For deserialization.
         /// </summary>
-        internal X509RegistrationResult()
+        protected internal X509RegistrationResult()
         {
         }
 
         /// <summary>
         /// Information about the X509 certificate.
         /// </summary>
-        [JsonProperty(PropertyName = "certificateInfo")]
-        public X509CertificateInfo CertificateInfo { get; internal set; }
+        [JsonProperty("certificateInfo")]
+        public X509CertificateInfo CertificateInfo { get; protected internal set; }
 
         /// <summary>
         /// The device provisioning service enrollment group Id.
         /// </summary>
-        [JsonProperty(PropertyName = "enrollmentGroupId")]
-        public string EnrollmentGroupId { get; internal set; }
+        [JsonProperty("enrollmentGroupId")]
+        public string EnrollmentGroupId { get; protected internal set; }
 
         /// <summary>
         /// Signing information about the certificate.
         /// </summary>
-        [JsonProperty(PropertyName = "signingCertificateInfo")]
-        public X509CertificateInfo SigningCertificateInfo { get; internal set; }
+        [JsonProperty("signingCertificateInfo")]
+        public X509CertificateInfo SigningCertificateInfo { get; protected internal set; }
 
     }
 }

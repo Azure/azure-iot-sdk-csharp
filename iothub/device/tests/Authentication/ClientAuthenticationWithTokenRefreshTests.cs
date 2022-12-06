@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
+using FluentAssertions;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -32,14 +33,29 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ClientAuthenticationWithTokenRefresh_Ctor_WrongArguments_Fail()
         {
-            TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(null));
-            TestAssert.Throws<ArgumentException>(() => new TestImplementation("   "));
-            TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(null, TestModuleId));
-            TestAssert.Throws<ArgumentException>(() => new TestImplementation("   ", TestModuleId));
-            TestAssert.Throws<ArgumentException>(() => new TestImplementation(TestDeviceId, "   "));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(-1), 10));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), -1));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), 101));
+            Action act = () => _ = new TestImplementation(null);
+            act.Should().Throw<ArgumentNullException>();
+
+            act = () => _ = new TestImplementation("   ");
+            act.Should().Throw<ArgumentException>();
+
+            act = () => _ = new TestImplementation(null, TestModuleId);
+            act.Should().Throw<ArgumentNullException>();
+
+            act = () => _ = new TestImplementation("   ", TestModuleId);
+            act.Should().Throw<ArgumentException>();
+
+            act = () => _ = new TestImplementation(TestDeviceId, "   ");
+            act.Should().Throw<ArgumentException>();
+
+            act = () => _ = new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(-1), 10);
+            act.Should().Throw<ArgumentOutOfRangeException>();
+
+            act = () => _ = new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), -1);
+            act.Should().Throw<ArgumentOutOfRangeException>();
+
+            act = () => _ = new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), 101);
+            act.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [TestMethod]
@@ -59,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ClientAuthenticationWithTokenRefresh_InitializedToken_GetProperties_Ok()
         {
-            TimeSpan ttl = TimeSpan.FromSeconds(5);
+            var ttl = TimeSpan.FromSeconds(5);
             int buffer = 20;  // Token should refresh after 4 seconds.
 
             var refresher = new TestImplementation(TestDeviceId, suggestedTimeToLive: ttl, timeBufferPercentage: buffer);
@@ -94,13 +110,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var refresher = new TestImplementation(TestDeviceId);
             IotHubConnectionCredentials iotHubConnectionCredentials = null;
-            TestAssert.Throws<ArgumentNullException>(() => refresher.Populate(ref iotHubConnectionCredentials));
+            Action act = () => refresher.Populate(ref iotHubConnectionCredentials);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
         public async Task ClientAuthenticationWithTokenRefresh_GetTokenAsync_NewTtl_Ok()
         {
-            TimeSpan ttl = TimeSpan.FromSeconds(1);
+            var ttl = TimeSpan.FromSeconds(1);
 
             var refresher = new TestImplementation(TestDeviceId, suggestedTimeToLive: ttl, timeBufferPercentage: 90);
             await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
@@ -236,9 +253,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private class TestImplementation : ClientAuthenticationWithTokenRefresh
         {
-            private int _callCount;
-
-            public int SafeCreateNewTokenCallCount => _callCount;
+            public int SafeCreateNewTokenCallCount { get; private set; }
 
             public int ActualTimeToLive { get; set; }
 
@@ -254,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             ///<inheritdoc/>
             protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
-                _callCount++;
+                SafeCreateNewTokenCallCount++;
 
                 await Task.Delay(10).ConfigureAwait(false);
 

@@ -13,13 +13,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the primary key.
         /// </summary>
-        [JsonProperty(PropertyName = "primaryKey")]
+        [JsonProperty("primaryKey")]
         public string PrimaryKey { get; set; }
 
         /// <summary>
         /// Gets or sets the secondary key.
         /// </summary>
-        [JsonProperty(PropertyName = "secondaryKey")]
+        [JsonProperty("secondaryKey")]
         public string SecondaryKey { get; set; }
     }
 }

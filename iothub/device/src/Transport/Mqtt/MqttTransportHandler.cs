@@ -1291,14 +1291,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private static string ConvertFromSystemProperties(object systemProperty)
         {
-            if (systemProperty is string)
+            if (systemProperty is string stringProperty)
             {
-                return (string)systemProperty;
+                return stringProperty;
             }
-            if (systemProperty is DateTime)
+
+            if (systemProperty is DateTime dateTimeProperty)
             {
-                return ((DateTime)systemProperty).ToString("o", CultureInfo.InvariantCulture);
+                return dateTimeProperty.ToString("o", CultureInfo.InvariantCulture);
             }
+
+            if (systemProperty is DateTimeOffset dateTimeOffsetProperty)
+            {
+                return dateTimeOffsetProperty.ToString("o", CultureInfo.InvariantCulture);
+            }
+
             return systemProperty?.ToString();
         }
 

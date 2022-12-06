@@ -2,10 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests.Messaging
@@ -80,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             string eventId = Guid.NewGuid().ToString();
             string p1Value = eventId;
-            string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
+            string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId);
 
             var message = new TelemetryMessage(payload)
             {
@@ -91,31 +93,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return message;
         }
 
-        private static JObject ComposeAzureSecurityCenterForIoTSecurityMessagePayload(string eventId)
+        private static string ComposeAzureSecurityCenterForIoTSecurityMessagePayload(string eventId)
         {
-            DateTime now = DateTime.UtcNow;
-            return new JObject
-            {
-                { "AgentVersion", "0.0.1" },
-                { "AgentId" , Guid.NewGuid().ToString() },
-                { "MessageSchemaVersion", "1.0" },
-                { "Events", new JArray
+            DateTime utcNow = DateTime.UtcNow;
+
+            return JsonConvert.SerializeObject(
+                new Dictionary<string, object>
+                {
+                    { "AgentVersion", "0.0.1" },
+                    { "AgentId" , Guid.NewGuid().ToString() },
+                    { "MessageSchemaVersion", "1.0" },
                     {
-                        new JObject
+                        "Events",
+                        new[]
                         {
-                            { "EventType", "Security" },
-                            { "Category", "Periodic" },
-                            { "Name", "ListeningPorts" },
-                            { "IsEmpty", true },
-                            { "PayloadSchemaVersion", "1.0" },
-                            { "Id", eventId },
-                            { "TimestampLocal", now },
-                            { "TimestampUTC", now },
-                            { "Payload", new JArray() },
+                            new Dictionary<string, object>
+                            {
+                                { "EventType", "Security" },
+                                { "Category", "Periodic" },
+                                { "Id", eventId },
+                                { "TimestampLocal", utcNow },
+                                { "TimestampUTC", utcNow },
+                                { "Payload", Array.Empty<object>() },
+                            },
                         }
-                    }
-                }
-            };
+                    },
+                });
         }
 
         private async Task TestSecurityMessageAsync(IotHubClientTransportSettings transportSettings)

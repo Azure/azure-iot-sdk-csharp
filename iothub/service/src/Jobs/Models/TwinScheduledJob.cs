@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     public class TwinScheduledJob : ScheduledJob
     {
         /// <summary>
-        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// For deserialization and unit testing.
         /// </summary>
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The update twin tags and desired properties.
         /// </summary>
-        [JsonProperty(PropertyName = "updateTwin", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("updateTwin", NullValueHandling = NullValueHandling.Ignore)]
         public ClientTwin UpdateTwin { get; }
     }
 }

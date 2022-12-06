@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// The webhook URL used for allocation requests.
         /// </summary>
-        [JsonProperty(PropertyName = "webhookUrl", Required = Required.Always)]
+        [JsonProperty("webhookUrl", Required = Required.Always)]
 #pragma warning disable CA1056 // Uri properties should not be strings
         public string WebhookUrl { get; set; }
 #pragma warning restore CA1056 // Uri properties should not be strings
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// The API version of the provisioning service types (such as IndividualEnrollment) sent in the custom allocation request.
         /// </summary>
-        [JsonProperty(PropertyName = "apiVersion", Required = Required.Always)]
+        [JsonProperty("apiVersion", Required = Required.Always)]
         public string ApiVersion { get; set; }
     }
 }

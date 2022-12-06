@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -96,9 +97,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task DeleteBulkIndividualEnrollmentsAsync(List<IndividualEnrollment> individualEnrollments)
         {
             Console.WriteLine("Deleting the set of individualEnrollments...");
-            BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient.IndividualEnrollments
+            BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient
+                .IndividualEnrollments
                 .RunBulkOperationAsync(BulkOperationMode.Delete, individualEnrollments);
-            Console.WriteLine(bulkEnrollmentOperationResult);
+            Console.WriteLine(JsonConvert.SerializeObject(bulkEnrollmentOperationResult));
         }
     }
 }

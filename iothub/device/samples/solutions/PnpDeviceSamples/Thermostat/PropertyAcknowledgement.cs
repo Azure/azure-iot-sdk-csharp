@@ -13,25 +13,25 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// <summary>
         /// The unserialized property value.
         /// </summary>
-        [JsonProperty(PropertyName = "value")]
+        [JsonProperty("value")]
         public object Value { get; set; }
 
         /// <summary>
         /// The acknowledgment code, usually an HTTP Status Code e.g. 200, 400.
         /// </summary>
-        [JsonProperty(PropertyName = "ac")]
+        [JsonProperty("ac")]
         public int AckCode { get; set; }
 
         /// <summary>
         /// The acknowledgment version, as supplied in the property update request.
         /// </summary>
-        [JsonProperty(PropertyName = "av")]
+        [JsonProperty("av")]
         public long AckVersion { get; set; }
 
         /// <summary>
         /// The acknowledgment description, an optional, human-readable message about the result of the property update.
         /// </summary>
-        [JsonProperty(PropertyName = "ad")]
+        [JsonProperty("ad")]
         public string AckDescription { get; set; }
     }
 }
