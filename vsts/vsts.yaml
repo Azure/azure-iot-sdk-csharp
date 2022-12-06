@@ -146,6 +146,7 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
+      # https://docs.docker.com/engine/install/ubuntu/#uninstall-docker-engine
       - task: PowerShell@2
         displayName: 'Uninstall previous Docker installations'
         inputs:
@@ -155,8 +156,10 @@ jobs:
             Write-Host "uninstall docker"
             Write-Host "============"
             dpkg -l | grep -i docker
-            sudo apt-get purge -y docker-engine docker docker.io docker-ce docker-ce-cli
-            sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce
+            sudo apt-get remove docker docker-engine docker.io containerd runc
+            sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            sudo rm -rf /var/lib/docker
+            sudo rm -rf /var/lib/containerd
 
       - task: Docker@2
         displayName: "Login to ACR"
