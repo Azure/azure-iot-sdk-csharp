@@ -16,7 +16,6 @@
     <Compile Remove="provisioning\ProvisioningE2ETests.cs" />
     <Compile Remove="provisioning\ProvisioningServiceClientE2ETests.cs" />
     <Compile Remove="provisioning\ProvisioningCertificateValidationE2ETest.cs" />
-    <Compile Remove="provisioning\ReprovisioningE2ETests.cs" />
     <Compile Remove="helpers\StorageContainer.cs" />
     <Compile Remove="helpers\ImportExportDevicesHelpers.cs" />
     <Compile Remove="iothub\service\RegistryManagerImportDevicesTests.cs" />

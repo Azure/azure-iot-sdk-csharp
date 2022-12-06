@@ -12,7 +12,7 @@ Fill in the following environment variables (see the e2e\test prerequisites for 
 IOTHUB_CONNECTION_STRING=
 IOTHUB_DEVICE_CONN_STRING=
 IOTHUB_DEVICE_CONN_STRING2=
-IOTHUB_X509_PFX_CERTIFICATE=
+IOTHUB_X509_DEVICE_PFX_CERTIFICATE=
 ```
 
 ##### Provision sufficient devices for the hub:

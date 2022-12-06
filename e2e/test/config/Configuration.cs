@@ -20,21 +20,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             return Environment.ExpandEnvironmentVariables(envValue);
         }
 
-        private static Uri GetUriValue(string envName, Uri defaultValue = null)
-        {
-            string envValue = GetValue(envName, null);
-
-            if (envValue == null)
-            {
-                return defaultValue ?? throw new InvalidOperationException($"Configuration missing: {envName}");
-            }
-
-            return new Uri(envValue);
-        }
-
-        // To generate environment variables value use
-        // [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)).
-
         private static X509Certificate2 GetBase64EncodedCertificate(string envName, string password = null, string defaultValue = null)
         {
             string certBase64 = GetValue(envName, defaultValue);
@@ -54,23 +39,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 return new X509Certificate2(buff, password);
             }
-        }
-
-        private static X509Certificate2Collection GetBase64EncodedCertificateCollection(
-            string envName,
-            string defaultValue = null)
-        {
-            string certBase64 = GetValue(envName, null);
-
-            if (certBase64 == null)
-            {
-                certBase64 = defaultValue;
-            }
-
-            Byte[] buff = Convert.FromBase64String(certBase64);
-            var collection = new X509Certificate2Collection();
-            collection.Import(buff);
-            return collection;
         }
     }
 }

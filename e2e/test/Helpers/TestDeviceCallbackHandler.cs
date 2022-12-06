@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -94,6 +95,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                     try
                     {
+                        var patchList = patch.Cast<KeyValuePair<string, object>>().ToList();
+                        patch.Contains(expectedPropName).Should().BeTrue($"Expected patch to contain key {expectedPropName} but contained the following: {string.Join(",", patchList)}");
                         string propertyValue = patch[expectedPropName];
                         propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
                         context.Should().Be(userContext, "The context should match what was set by service");

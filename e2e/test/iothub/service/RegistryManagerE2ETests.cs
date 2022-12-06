@@ -117,60 +117,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task RegistryManager_BulkLifecycle()
-        {
-            int bulkCount = 50;
-            List<Device> devices = new List<Device>();
-            for (int i = 0; i < bulkCount; i++)
-            {
-                devices.Add(new Device(_devicePrefix + Guid.NewGuid()));
-            }
-
-            var registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-
-            // Test that you can create devices in bulk
-            var bulkAddResult = await registryManager.AddDevices2Async(devices).ConfigureAwait(false);
-            Assert.IsTrue(bulkAddResult.IsSuccessful);
-
-            foreach (Device device in devices)
-            {
-                // After a bulk add, every device should be able to be retrieved
-                Assert.IsNotNull(await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false));
-            }
-
-            List<Twin> twins = new List<Twin>();
-            string expectedProperty = "someNewProperty";
-            string expectedPropertyValue = "someNewPropertyValue";
-            foreach (Device device in devices)
-            {
-                Twin twin = await registryManager.GetTwinAsync(device.Id).ConfigureAwait(false);
-                twin.Properties.Desired[expectedProperty] = expectedPropertyValue;
-                twins.Add(twin);
-            }
-
-            // Test that you can update twins in bulk
-            await registryManager.UpdateTwins2Async(twins).ConfigureAwait(false);
-
-            foreach (Device device in devices)
-            {
-                Twin twin = await registryManager.GetTwinAsync(device.Id).ConfigureAwait(false);
-                Assert.IsNotNull(twin.Properties.Desired[expectedProperty]);
-                Assert.AreEqual(expectedPropertyValue, (string)twin.Properties.Desired[expectedProperty]);
-            }
-
-            // Test that you can delete device identities in bulk
-            var bulkDeleteResult = await registryManager.RemoveDevices2Async(devices, true, default).ConfigureAwait(false);
-
-            Assert.IsTrue(bulkDeleteResult.IsSuccessful);
-
-            foreach (Device device in devices)
-            {
-                // After a bulk delete, every device should not be found
-                Assert.IsNull(await registryManager.GetDeviceAsync(device.Id).ConfigureAwait(false));
-            }
-        }
-
-        [LoggedTestMethod]
         public async Task RegistryManager_AddDeviceWithProxy()
         {
             string deviceId = _devicePrefix + Guid.NewGuid();
