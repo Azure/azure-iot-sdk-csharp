@@ -390,7 +390,6 @@ try
         $testCategory += "&TestCategory!=LongRunning"
         $testCategory += "&TestCategory!=FaultInjection"
         $testCategory += "&TestCategory!=Flaky"
-        $testCategory += "&TestCategory!=InvalidServiceCertificate"
 
         # Invalid certificate tests are currently disabled on both Windows and Linux
         # Windows - Invalid cert tests don't currently work with docker on Windows within pipeline agent setup because of virtual host networking configuration issue
