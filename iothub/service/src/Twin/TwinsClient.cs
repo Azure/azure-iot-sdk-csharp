@@ -41,8 +41,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         protected TwinsClient()
-        {
-        }
+        { }
 
         internal TwinsClient(
             string hostName,

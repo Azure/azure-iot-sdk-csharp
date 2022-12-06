@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -38,50 +35,5 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty("deviceContent")]
         public IDictionary<string, object> DeviceContent { get; set; } = new Dictionary<string, object>();
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <remarks>
-        /// To give the properties above a default instance to prevent <see cref="NullReferenceException"/> but
-        /// avoid serializing them when the dictionary is empty, we use this feature of Newtonsoft.Json, which must
-        /// be public, and hide it from web docs and intellisense using the EditorBrowsable attribute.
-        /// </remarks>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeModulesContent()
-        {
-            return ModulesContent != null && ModulesContent.Any();
-        }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <remarks>
-        /// To give the properties above a default instance to prevent <see cref="NullReferenceException"/> but
-        /// avoid serializing them when the dictionary is empty, we use this feature of Newtonsoft.Json, which must
-        /// be public, and hide it from web docs and intellisense using the EditorBrowsable attribute.
-        /// </remarks>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeModuleContent()
-        {
-            return ModuleContent != null && ModuleContent.Any();
-        }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <remarks>
-        /// To give the properties above a default instance to prevent <see cref="NullReferenceException"/> but
-        /// avoid serializing them when the dictionary is empty, we use this feature of Newtonsoft.Json, which must
-        /// be public, and hide it from web docs and intellisense using the EditorBrowsable attribute.
-        /// </remarks>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeDeviceContent()
-        {
-            return DeviceContent != null && DeviceContent.Any();
-        }
     }
 }

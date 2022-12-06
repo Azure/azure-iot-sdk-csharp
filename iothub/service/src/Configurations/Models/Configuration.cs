@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using Azure;
 using Newtonsoft.Json;
 
@@ -35,26 +33,26 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The unique identifier of the configuration.
         /// </summary>
-        [JsonProperty("id", Required = Required.Always)]
+        [JsonProperty("id")]
         public string Id { get; internal set; }
 
         /// <summary>
         /// The schema version of the configuration.
         /// </summary>
-        [JsonProperty("schemaVersion", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("schemaVersion")]
         public string SchemaVersion { get; } = "1.0";
 
         /// <summary>
         /// The key-value pairs used to describe the configuration.
         /// </summary>
-        [JsonProperty("labels", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("labels")]
         public IDictionary<string, string> Labels { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// The content of the configuration.
         /// </summary>
-        [JsonProperty("content", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationContent Content { get; set; }
+        [JsonProperty("content")]
+        public ConfigurationContent Content { get; set; } = new();
 
         /// <summary>
         /// Gets the content type for configuration.
@@ -74,14 +72,14 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The creation date and time of the configuration.
         /// </summary>
-        [JsonProperty("createdTimeUtc")]
-        public DateTimeOffset CreatedOnUtc { get; internal set; }
+        [JsonProperty("createdTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The update date and time of the configuration.
         /// </summary>
-        [JsonProperty("lastUpdatedTimeUtc")]
-        public DateTimeOffset LastUpdatedOnUtc { get; internal set; }
+        [JsonProperty("lastUpdatedTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The priority number assigned to the configuration.
@@ -92,30 +90,21 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The system metrics computed by the IoT hub that cannot be customized.
         /// </summary>
-        [JsonProperty("systemMetrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics SystemMetrics { get; set; }
+        [JsonProperty("systemMetrics")]
+        public ConfigurationMetrics SystemMetrics { get; set; } = new();
 
         /// <summary>
         /// The custom metrics specified by the developer as queries against twin reported properties.
         /// </summary>
-        [JsonProperty("metrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics Metrics { get; set; }
+        [JsonProperty("metrics")]
+        public ConfigurationMetrics Metrics { get; set; } = new();
 
         /// <summary>
         /// The ETag of the configuration.
         /// </summary>
         [JsonProperty("etag")]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
         public ETag ETag { get; set; }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeLabels()
-        {
-            return Labels != null && Labels.Any();
-        }
     }
 }

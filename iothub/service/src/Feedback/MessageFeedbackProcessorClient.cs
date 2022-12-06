@@ -27,8 +27,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         protected MessageFeedbackProcessorClient()
-        {
-        }
+        { }
 
         internal MessageFeedbackProcessorClient(
             string hostName,

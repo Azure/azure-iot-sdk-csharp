@@ -19,10 +19,7 @@ namespace Microsoft.Azure.Devices
     {
         private const string ConfigurationRequestUriFormat = "/configurations/{0}";
         private const string ConfigurationsRequestUriFormat = "&top={0}";
-        private const string ETagSetWhileCreatingConfiguration = "ETagSetWhileCreatingConfiguration";
         private const string ArgumentMustBeNonNegative = "ArgumentMustBeNonNegative";
-        private const string ETagNotSetWhileDeletingConfiguration = "ETagNotSetWhileDeletingConfiguration";
-        private const string ETagNotSetWhileUpdatingConfiguration = "ETagNotSetWhileUpdatingConfiguration";
 
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
@@ -34,8 +31,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         protected ConfigurationsClient()
-        {
-        }
+        { }
 
         internal ConfigurationsClient(
             string hostName,

@@ -93,13 +93,13 @@ namespace Microsoft.Azure.Devices
                 // "Perform this operation only if the entity is unchanged"
                 // Sends the If-Match header with a value of the ETag.
                 string escapedETag = EscapeETag(eTag.ToString());
-                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag));
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag, true));
             }
             else
             {
                 // "Perform this operation even if the entity has changed"
                 // Sends the If-Match header with a value of "*"
-                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(s_eTagForce));
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(s_eTagForce, true));
             }
         }
 
