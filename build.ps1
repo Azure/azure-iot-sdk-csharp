@@ -390,6 +390,7 @@ try
         $testCategory += "&TestCategory!=LongRunning"
         $testCategory += "&TestCategory!=FaultInjection"
         $testCategory += "&TestCategory!=Flaky"
+        $testCategory += "&TestCategory!=InvalidServiceCertificate"
 
         if ($skipIotHubTests)
         {
