@@ -328,83 +328,87 @@ jobs:
             docker run -h invalidcertiothub1.westus.cloudapp.azure.com --name invalid-hub --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxyhub.cfg
             docker ps -a
 
-      - task: Bash@3
-        displayName: 'Cert Validation - Setup local hostname'
-        name: CVTEST_NET
-        inputs:
-          targetType: 'inline'
-          script: |
-            echo "==============="
-            echo "Inspect network"
-            echo "==============="
-            ip -4 addr
-            export CVTEST_HOST_IP=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+')
-            export CVTEST_HOST_NETWORK=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+/*\d.')
-            export CVTEST_HOST_SUBNET=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+' | grep -Po '[\d]{1,3}.[\d]{1,3}.[\d]{1,3}')
-            export CVTEST_HOST_SUBNET_MASK=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+/*\d.' | grep -Po '/[\d]{1,2}')
-            export CVTEST_CONTAINER_IP=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
-            echo "HOST=$CVTEST_HOST_IP"
-            echo "HOST NETWORK=$CVTEST_HOST_NETWORK"
-            echo "HOST SUBNET=$CVTEST_HOST_SUBNET"
-            echo "HOST SUBNET MASK=$CVTEST_HOST_SUBNET_MASK"
-            echo "CONTAINER=$CVTEST_CONTAINER_IP"
-            #echo "##vso[task.setvariable variable=AGENT_HOST;isoutput=true;]$CVTEST_HOST_IP"
-            #echo "##vso[task.setvariable variable=AGENT_NETWORK;isoutput=true;]$CVTEST_HOST_NETWORK"
-            #echo "##vso[task.setvariable variable=AGENT_SUBNET;isoutput=true;]$CVTEST_HOST_SUBNET"
-            #echo "##vso[task.setvariable variable=AGENT_SUBNET_MASK;isoutput=true;]$CVTEST_HOST_SUBNET_MASK"
-            #echo "##vso[task.setvariable variable=AGENT_CONTAINER;isoutput=true;]$CVTEST_CONTAINER_IP"
-            #echo "=========="
-            #echo "Ping hosts"
-            #echo "=========="
-            #ping -c 5 $CVTEST_HOST_IP
-            #ping -c 5 $CVTEST_CONTAINER_IP
-            #echo "=================="
-            #echo "Inspect containers"
-            #echo "=================="
-            #docker ps -a
-            #docker inspect invalid-gde
-            #docker inspect invalid-dps
-            #docker inspect invalid-hub
-            export CVTEST_GDE_IP=$(docker inspect invalid-gde | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
-            export CVTEST_DPS_IP=$(docker inspect invalid-dps | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
-            export CVTEST_HUB_IP=$(docker inspect invalid-hub | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
-            echo "invalid-gde=$CVTEST_GDE_IP"
-            echo "invalid-dps=$CVTEST_DPS_IP"
-            echo "invalid-hub=$CVTEST_HUB_IP"
-            #echo "##vso[task.setvariable variable=AGENT_GDE_IP;isoutput=true;]$CVTEST_GDE_IP"
-            #echo "##vso[task.setvariable variable=AGENT_DPS_IP;isoutput=true;]$CVTEST_DPS_IP"
-            #echo "##vso[task.setvariable variable=AGENT_HUB_IP;isoutput=true;]$CVTEST_HUB_IP"
-            #echo "==============="
-            #echo "Ping containers"
-            #echo "==============="
-            #docker ps -a
-            #ping -c 2 $CVTEST_GDE_IP
-            #ping -c 2 $CVTEST_DPS_IP
-            #ping -c 2 $CVTEST_HUB_IP
-            #cat /etc/hosts
-            echo "================="
-            echo "Update hosts file"
-            echo "================="
-            sudo bash -c 'mv /etc/hosts /etc/hosts.org'
-            sudo bash -c 'cp /etc/hosts.org /etc/hosts'
-            echo "$CVTEST_GDE_IP invalidcertgde1.westus.cloudapp.azure.com"
-            echo "$CVTEST_DPS_IP invalidcertdps1.westus.cloudapp.azure.com"
-            echo "$CVTEST_HUB_IP invalidcertiothub1.westus.cloudapp.azure.com"
-            echo "" >> /tmp/hosts.cvtest
-            echo "# Local host for invalid cert test" >> /tmp/hosts.cvtest
-            echo "$CVTEST_GDE_IP invalidcertgde1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
-            echo "$CVTEST_DPS_IP invalidcertdps1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
-            echo "$CVTEST_HUB_IP invalidcertiothub1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
-            sudo bash -c 'cat /tmp/hosts.cvtest >> /etc/hosts'
-            cat /etc/hosts
-            echo "====================="
-            echo "Ping containers (URL)"
-            echo "====================="
-            docker ps -a
-            route
-            ping -c 2 invalidcertgde1.westus.cloudapp.azure.com
-            ping -c 2 invalidcertdps1.westus.cloudapp.azure.com
-            ping -c 2 invalidcertiothub1.westus.cloudapp.azure.com
+      # The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
+      # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
+      # Explicit installation of an older docker version through DockerInstaller@0 task doesn't help as the hosted agent keeps referencing the newer version that comes pre-installed.
+
+      # - task: Bash@3
+      #   displayName: 'Cert Validation - Setup local hostname'
+      #   name: CVTEST_NET
+      #   inputs:
+      #     targetType: 'inline'
+      #     script: |
+      #       echo "==============="
+      #       echo "Inspect network"
+      #       echo "==============="
+      #       ip -4 addr
+      #       export CVTEST_HOST_IP=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+')
+      #       export CVTEST_HOST_NETWORK=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+/*\d.')
+      #       export CVTEST_HOST_SUBNET=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+' | grep -Po '[\d]{1,3}.[\d]{1,3}.[\d]{1,3}')
+      #       export CVTEST_HOST_SUBNET_MASK=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+/*\d.' | grep -Po '/[\d]{1,2}')
+      #       export CVTEST_CONTAINER_IP=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+      #       echo "HOST=$CVTEST_HOST_IP"
+      #       echo "HOST NETWORK=$CVTEST_HOST_NETWORK"
+      #       echo "HOST SUBNET=$CVTEST_HOST_SUBNET"
+      #       echo "HOST SUBNET MASK=$CVTEST_HOST_SUBNET_MASK"
+      #       echo "CONTAINER=$CVTEST_CONTAINER_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_HOST;isoutput=true;]$CVTEST_HOST_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_NETWORK;isoutput=true;]$CVTEST_HOST_NETWORK"
+      #       #echo "##vso[task.setvariable variable=AGENT_SUBNET;isoutput=true;]$CVTEST_HOST_SUBNET"
+      #       #echo "##vso[task.setvariable variable=AGENT_SUBNET_MASK;isoutput=true;]$CVTEST_HOST_SUBNET_MASK"
+      #       #echo "##vso[task.setvariable variable=AGENT_CONTAINER;isoutput=true;]$CVTEST_CONTAINER_IP"
+      #       #echo "=========="
+      #       #echo "Ping hosts"
+      #       #echo "=========="
+      #       #ping -c 5 $CVTEST_HOST_IP
+      #       #ping -c 5 $CVTEST_CONTAINER_IP
+      #       #echo "=================="
+      #       #echo "Inspect containers"
+      #       #echo "=================="
+      #       #docker ps -a
+      #       #docker inspect invalid-gde
+      #       #docker inspect invalid-dps
+      #       #docker inspect invalid-hub
+      #       export CVTEST_GDE_IP=$(docker inspect invalid-gde | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
+      #       export CVTEST_DPS_IP=$(docker inspect invalid-dps | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
+      #       export CVTEST_HUB_IP=$(docker inspect invalid-hub | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
+      #       echo "invalid-gde=$CVTEST_GDE_IP"
+      #       echo "invalid-dps=$CVTEST_DPS_IP"
+      #       echo "invalid-hub=$CVTEST_HUB_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_GDE_IP;isoutput=true;]$CVTEST_GDE_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_DPS_IP;isoutput=true;]$CVTEST_DPS_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_HUB_IP;isoutput=true;]$CVTEST_HUB_IP"
+      #       #echo "==============="
+      #       #echo "Ping containers"
+      #       #echo "==============="
+      #       #docker ps -a
+      #       #ping -c 2 $CVTEST_GDE_IP
+      #       #ping -c 2 $CVTEST_DPS_IP
+      #       #ping -c 2 $CVTEST_HUB_IP
+      #       #cat /etc/hosts
+      #       echo "================="
+      #       echo "Update hosts file"
+      #       echo "================="
+      #       sudo bash -c 'mv /etc/hosts /etc/hosts.org'
+      #       sudo bash -c 'cp /etc/hosts.org /etc/hosts'
+      #       echo "$CVTEST_GDE_IP invalidcertgde1.westus.cloudapp.azure.com"
+      #       echo "$CVTEST_DPS_IP invalidcertdps1.westus.cloudapp.azure.com"
+      #       echo "$CVTEST_HUB_IP invalidcertiothub1.westus.cloudapp.azure.com"
+      #       echo "" >> /tmp/hosts.cvtest
+      #       echo "# Local host for invalid cert test" >> /tmp/hosts.cvtest
+      #       echo "$CVTEST_GDE_IP invalidcertgde1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
+      #       echo "$CVTEST_DPS_IP invalidcertdps1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
+      #       echo "$CVTEST_HUB_IP invalidcertiothub1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
+      #       sudo bash -c 'cat /tmp/hosts.cvtest >> /etc/hosts'
+      #       cat /etc/hosts
+      #       echo "====================="
+      #       echo "Ping containers (URL)"
+      #       echo "====================="
+      #       docker ps -a
+      #       route
+      #       ping -c 2 invalidcertgde1.westus.cloudapp.azure.com
+      #       ping -c 2 invalidcertdps1.westus.cloudapp.azure.com
+      #       ping -c 2 invalidcertiothub1.westus.cloudapp.azure.com
 
       - task: Docker@1
         displayName: "Start TPM Simulator"
