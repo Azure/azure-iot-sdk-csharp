@@ -114,6 +114,11 @@ Users are still encouraged to migrate to v2 when they have the chance.
 This guide has been organized by the previous clients.
 Find a client you currently use below, read the table of API name changes and use that to update your client app for when type and property names have changed.
 
+### General guidance
+
+- Many models have changed to be nullable to prevent default values (e.g., DateTimeOffset defaults to Jan 01 0001) instead of null.
+  - This may mean having to change referencing code to use the `Value` property or the null conditional operator (e.g., given a model named `model` with a nullable property named `NullableProperty`: `model.NullableProperty.Value.SubProperty` or `model.NullableProperty?.SubProperty`) to avoid a NullReferenceException.
+
 ### IoT hub device clients
 
 #### DeviceClient

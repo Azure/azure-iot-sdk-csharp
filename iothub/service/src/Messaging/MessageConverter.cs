@@ -4,14 +4,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Text;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
-using System.Globalization;
+using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
