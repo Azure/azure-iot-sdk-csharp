@@ -54,17 +54,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return TaskHelpers.CompletedTask;
             }
 
-            if (_incompleteQueue.TryDequeue(out IncompleteWorkItem incompleteWorkItem))
+            IncompleteWorkItem incompleteWorkItem = _incompleteQueue.Peek();
+            if (incompleteWorkItem != null)
             {
                 if (incompleteWorkItem.Id.Equals(workId))
                 {
+                    _incompleteQueue.Dequeue();
                     return _completeWorkAsync(context, incompleteWorkItem.WorkItem);
                 }
-
                 throw new IotHubException(
                     $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
                     isTransient: false);
             }
+
             return TaskHelpers.CompletedTask;
         }
 

@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The client responds to the direct method invocation by sending a message to the topic "$iothub/methods/res/{status}/?$rid={request id}", using the same request Id as the request.
 
         private const string MethodPostTopicFilter = "$iothub/methods/POST/#";
-        private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
+        internal const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
         // Topic names for enabling events on Modules.

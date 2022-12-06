@@ -716,7 +716,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (((PublishPacket)packet).QualityOfService == QualityOfService.AtLeastOnce &&
                             ((PublishPacket)packet).TopicName.StartsWith(MqttTransportHandler.MethodPostTopicPrefix, StringComparison.OrdinalIgnoreCase))
                         {
-                            await AcknowledgeAsync(context, ((PublishPacket)packet).PacketId.ToString()).ConfigureAwait(false);
+                            await AcknowledgeAsync(context, ((PublishPacket)packet).PacketId.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
                         break;
 
