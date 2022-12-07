@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
         /// exclude UNICODE control characters (segments C0 and C1), '.', '$' and space. The
         /// desired porperty values are JSON objects, up-to 4KB in length.
         /// </remarks>
-        [JsonProperty("desired", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("desired")]
         public ClientTwinProperties DesiredProperties { get; set; } = new();
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// exclude UNICODE control characters (segments C0 and C1), '.', '$' and space. The
         /// reported property values are JSON objects, up-to 4KB in length.
         /// </remarks>
-        [JsonProperty("reported", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("reported")]
         public ClientTwinProperties ReportedProperties { get; set; } = new();
     }
 }

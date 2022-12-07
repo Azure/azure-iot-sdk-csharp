@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is set by this client depending on which job method is called.
         /// </remarks>
-        [JsonProperty("type", Required = Required.Always)]
+        [JsonProperty("type")]
         public JobType JobType { get; protected internal set; }
 
         /// <summary>
@@ -35,19 +35,19 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// </remarks>
-        [JsonProperty("outputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("outputBlobContainerUri")]
         public Uri OutputBlobContainerUri { get; set; }
 
         /// <summary>
         /// Specifies authentication type being used for connecting to storage account.
         /// </summary>
-        [JsonProperty("storageAuthenticationType", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("storageAuthenticationType")]
         public StorageAuthenticationType? StorageAuthenticationType { get; set; }
 
         /// <summary>
         /// The managed identity used to access the storage account for the job.
         /// </summary>
-        [JsonProperty("identity", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("identity")]
         public ManagedIdentity Identity { get; set; }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// The service assumes this is false, if not specified. If true, then configurations are included in the data import/export.
         /// </remarks>
-        [JsonProperty("includeConfigurations", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("includeConfigurations")]
         public bool? IncludeConfigurations { get; set; }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// The service assumes this is configurations.txt, if not specified.
         /// </remarks>
-        [JsonProperty("configurationsBlobName", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("configurationsBlobName")]
         public string ConfigurationsBlobName { get; set; }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         /// <remarks>The service doesn't actually seem to set this, so not exposing it.</remarks>
-        [JsonProperty("progress", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("progress")]
         internal int Progress { get; set; }
     }
 }

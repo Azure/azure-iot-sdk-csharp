@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         ///  Capabilities that are enabled one the device.
         /// </summary>
-        [JsonProperty("capabilities", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("capabilities")]
         public virtual ClientCapabilities Capabilities { get; set; } = new();
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices
         /// For leaf devices, the value to set a parent edge device can be retrieved from the parent edge device's scope property.
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonProperty("deviceScope", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("deviceScope")]
         public virtual string Scope { get; set; }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices
         ///
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonProperty("parentScopes", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("parentScopes")]
         public virtual IList<string> ParentScopes { get; internal set; } = new List<string>();
     }
 }

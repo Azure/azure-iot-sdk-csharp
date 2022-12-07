@@ -32,8 +32,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         protected QueryClient()
-        {
-        }
+        { }
 
         internal QueryClient(
             string hostName,
@@ -179,7 +178,6 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </code>
         /// </example>
-
         public virtual async Task<QueryResponse<ScheduledJob>> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)

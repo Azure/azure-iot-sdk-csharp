@@ -66,6 +66,6 @@ namespace Microsoft.Azure.Devices
         /// The twin's ETag, is processed independently from the device's ETag. If there is a mismatch with the existing twin's ETag,
         /// an error is written to the log file.
         /// </summary>
-        UpdateTwinIfMatchETag
+        UpdateTwinIfMatchETag,
     }
 }

@@ -15,13 +15,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Job identifier.
         /// </summary>
-        [JsonProperty("jobId", Required = Required.Always)]
+        [JsonProperty("jobId")]
         internal string JobId { get; set; }
 
         /// <summary>
         /// [Required] The type of job to execute.
         /// </summary>
-        [JsonProperty("type", Required = Required.Always)]
+        [JsonProperty("type")]
         internal JobType JobType { get; set; }
 
         /// <summary>

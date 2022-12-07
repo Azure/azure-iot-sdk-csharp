@@ -14,13 +14,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Whether or not the operation was successful.
         /// </summary>
-        [JsonProperty("isSuccessful", Required = Required.Always)]
+        [JsonProperty("isSuccessful")]
         public bool IsSuccessful { get; protected internal set; }
 
         /// <summary>
         /// If the operation was not successful, this contains DeviceRegistryOperationError objects.
         /// </summary>
-        [JsonProperty("errors", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("errors")]
         public IList<DeviceRegistryOperationError> Errors { get; internal set; } = new List<DeviceRegistryOperationError>();
     }
 }

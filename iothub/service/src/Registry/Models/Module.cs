@@ -4,7 +4,6 @@
 using System;
 using Azure;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices
 {
@@ -21,8 +20,7 @@ namespace Microsoft.Azure.Devices
         /// Creates a new instance of this class. For serialization purposes only.
         /// </summary>
         internal Module()
-        {
-        }
+        { }
 
         /// <summary>
         /// Creates an instance of this class.

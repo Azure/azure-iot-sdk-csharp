@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The update twin tags and desired properties.
         /// </summary>
-        [JsonProperty("updateTwin", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("updateTwin")]
         public ClientTwin UpdateTwin { get; }
     }
 }
