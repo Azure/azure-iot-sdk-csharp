@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices
 
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 T digitalTwin = await HttpMessageHelper.DeserializeResponseAsync<T>(response).ConfigureAwait(false);
-                ETag etag = new ETag(response.Headers.GetValues("ETag").FirstOrDefault());
+                var etag = new ETag(response.Headers.GetValues("ETag").FirstOrDefault());
                 return new DigitalTwinGetResponse<T>(digitalTwin, etag);
             }
             catch (HttpRequestException ex)
@@ -174,9 +174,9 @@ namespace Microsoft.Azure.Devices
                     _credentialProvider,
                     jsonPatch);
 
-                if (!string.IsNullOrWhiteSpace(requestOptions?.IfMatch))
+                if (!string.IsNullOrWhiteSpace(requestOptions?.IfMatch.ToString()))
                 {
-                    HttpMessageHelper.ConditionallyInsertETag(request, new ETag(requestOptions?.IfMatch), false);
+                    HttpMessageHelper.ConditionallyInsertETag(request, requestOptions.IfMatch, false);
                 }
 
                 HttpResponseMessage response = null;

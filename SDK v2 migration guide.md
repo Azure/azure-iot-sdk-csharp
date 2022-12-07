@@ -318,6 +318,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
   - Formerly `HttpOperationResponse` and now specific per method call. To get the body of the response before it would have been `HttpOperationResponse.Body` and now it will be, for example, `DigitalTwinGetReponse<T>.DigitalTwin`.
 - The update method takes an `InvokeDigitalTwinCommandOptions` which holds the optional payload, connect timeout, and response timeout.
 - The `HttpOperationException will no longer be thrown. Exceptions that might be thrown are documented on each method.
+- `UpdateDigitalTwinOptions.IfMatch` type changed from `string` to `ETag`.
 
 #### API mapping
 

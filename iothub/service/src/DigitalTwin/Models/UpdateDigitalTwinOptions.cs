@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Azure;
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -15,13 +17,12 @@ namespace Microsoft.Azure.Devices
         /// The request's operation is performed only if this ETag matches the value maintained by the server,
         /// indicating that the entity has not been modified since it was last retrieved.
         /// <para>
-        /// To perform the operation only if the entity exists, set the ETag to the wildcard character <c>"*"</c>.
-        /// To perform the operation unconditionally, leave it the default value of <c>null</c>.
+        /// To perform the operation unconditionally, let it retain the default of <see cref="ETag.All"/>.
         /// </para>
         /// <para>
         /// For more information about this property, see <see href="https://tools.ietf.org/html/rfc7232#section-3.2">RFC 7232</see>.
         /// </para>
         /// </remarks>
-        public string IfMatch { get; set; }
+        public ETag IfMatch { get; set; } = ETag.All;
     }
 }
