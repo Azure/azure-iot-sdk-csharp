@@ -60,21 +60,6 @@ namespace Microsoft.Azure.Devices.Client
         Suspended,
 
         /// <summary>
-        /// The request failed because the operation timed out. This can be caused by underlying network issues 
-        /// or by the server being too busy to handle the request.
-        /// </summary>
-        Timeout,
-
-        /// <summary>
-        /// The request failed because the IoT hub exceed the limits based on the tier of the hub.
-        /// </summary>
-        /// <remark>
-        /// Retrying with exponential back-off could resolve this error. For information on the IoT hub quotas and
-        /// throttling, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>.
-        /// </remark>
-        Throttled = 429,
-
-        /// <summary>
         /// The ETag in the request does not match the ETag of the existing resource.
         /// </summary>
         /// <remark>
@@ -135,6 +120,21 @@ namespace Microsoft.Azure.Devices.Client
         /// device certificates and ensure they are up-to-date.
         /// </remarks>
         TlsAuthenticationError,
+
+        /// <summary>
+        /// The request failed because the operation timed out. This can be caused by underlying network issues 
+        /// or by the server being too busy to handle the request.
+        /// </summary>
+        Timeout = 408,
+
+        /// <summary>
+        /// The request failed because the IoT hub exceed the limits based on the tier of the hub.
+        /// </summary>
+        /// <remark>
+        /// Retrying with exponential back-off could resolve this error. For information on the IoT hub quotas and
+        /// throttling, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>.
+        /// </remark>
+        Throttled = 429,
 
         /// <summary>
         /// Something in the request payload is invalid. Check the error message for more information about what

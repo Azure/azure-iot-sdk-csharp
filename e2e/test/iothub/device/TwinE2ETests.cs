@@ -110,6 +110,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Twin_DeviceSetsInvalidReportedPropertyThrowsException_Amqp(IotHubClientTransportProtocol transportProtocol)
+        {
+            await Twin_DeviceSetsInvalidReportedPropertyThrowsExceptionAsync(
+                    new IotHubClientAmqpSettings(transportProtocol))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Twin_DeviceSetsInvalidReportedPropertyThrowsException_Mqtt(IotHubClientTransportProtocol transportProtocol)
+        {
+            await Twin_DeviceSetsInvalidReportedPropertyThrowsExceptionAsync(
+                    new IotHubClientMqttSettings(transportProtocol))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
@@ -418,6 +440,31 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.AreEqual(0, connectionStatusChangeCount, "AMQP should not be disconnected.");
         }
 
+        public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync<T>(IotHubDeviceClient deviceClient, string deviceId, T propValue)
+        {
+            string propName = Guid.NewGuid().ToString();
+
+            VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
+
+            var props = new ReportedProperties();
+            props[propName] = propValue;
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+
+            // Validate the updated twin from the device-client
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            bool propertyFound = deviceTwin.Reported.TryGetValue(propName, out T actual);
+            propertyFound.Should().BeTrue();
+            // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
+            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
+
+            // Validate the updated twin from the service-client
+            ClientTwin completeTwin = await _serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
+            object actualProp = completeTwin.Properties.Reported[propName];
+            JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
+            completeTwin.Properties.Reported.Version.Should().Be(newTwinVersion);
+        }
+
         private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
@@ -436,29 +483,31 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, s_listOfPropertyValues).ConfigureAwait(false);
         }
 
-        public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync<T>(IotHubDeviceClient deviceClient, string deviceId, T propValue)
+        private async Task Twin_DeviceSetsInvalidReportedPropertyThrowsExceptionAsync(IotHubClientTransportSettings transportSettings)
         {
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
             string propName = Guid.NewGuid().ToString();
+            var propValue = new Dictionary<string, object>
+            {
+                { "serialNumber", 5283920058631410000 },
+            };
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
-            var props = new ReportedProperties();
-            props[propName] = propValue;
+            var props = new ReportedProperties
+            {
+                [propName] = propValue
+            };
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
-            // Validate the updated twin from the device-client
-           TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
-            bool propertyFound = deviceTwin.Reported.TryGetValue(propName, out T actual);
-            propertyFound.Should().BeTrue();
-            // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
-
-            // Validate the updated twin from the service-client
-            ClientTwin completeTwin = await _serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
-            object actualProp = completeTwin.Properties.Reported[propName];
-            JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
-            completeTwin.Properties.Reported.Version.Should().Be(newTwinVersion);
+            Func<Task> actionAsync = async () => await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+            await actionAsync
+                .Should()
+                .ThrowAsync<IotHubClientException>()
+                .Where(ex => ex.ErrorCode == IotHubClientErrorCode.ArgumentInvalid);
         }
 
         private async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(IotHubClientTransportSettings transportSettings)
