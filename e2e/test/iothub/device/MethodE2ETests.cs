@@ -285,10 +285,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             error.And.IsTransient.Should().BeTrue();
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponseAsync(
+        public static async Task ServiceSendMethodAndVerifyResponseAsync<T>(
             string deviceId,
             string methodName,
-            object respJson,
+            T respJson,
             object reqJson,
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
@@ -309,14 +309,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            JsonConvert.SerializeObject(response.PayloadAsString).Should().Be(JsonConvert.SerializeObject(respJson));
+            response.TryGetPayload(out T actual).Should().BeTrue();
+            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(respJson));
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponseAsync(
+        public static async Task ServiceSendMethodAndVerifyResponseAsync<T>(
             string deviceId,
             string moduleId,
             string methodName,
-            object respJson,
+            T respJson,
             object reqJson,
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
@@ -338,7 +339,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            JsonConvert.SerializeObject(response.PayloadAsString).Should().Be(JsonConvert.SerializeObject(respJson));
+            response.TryGetPayload(out T actual).Should().BeTrue();
+            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(respJson));
         }
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName)

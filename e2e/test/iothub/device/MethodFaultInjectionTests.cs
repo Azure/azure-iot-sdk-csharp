@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        private async Task ServiceSendMethodAndVerifyResponseAsync(string deviceName, string methodName, object deviceResponsePayload, object serviceRequestPayload)
+        private async Task ServiceSendMethodAndVerifyResponseAsync<T>(string deviceName, string methodName, T deviceResponsePayload, object serviceRequestPayload)
         {
             var sw = Stopwatch.StartNew();
             bool done = false;
@@ -238,7 +238,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
                     response.Status.Should().Be(200);
-                    JsonConvert.SerializeObject(response.PayloadAsString).Should().Be(JsonConvert.SerializeObject(deviceResponsePayload));
+                    response.TryGetPayload<T>(out T actual).Should().BeTrue();
+                    JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(deviceResponsePayload));
 
                     done = true;
                 }
