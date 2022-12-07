@@ -279,6 +279,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 
 - The library now includes `IIotHubServiceRetryPolicy` implementations: `IotHubServiceExponentialBackoffRetryPolicy`, `IotHubServiceFixedDelayRetryPolicy`, `IotHubServiceIncrementalDelayRetryPolicy` and `IotHubServiceNoRetry`,
  which can be set via `IotHubServiceClientOptions.RetryPolicy`.
+ - `DirectMethodClientResponse` now has a method `TryGetValue<T>` to deserialize the payload to a type of your choice.
 
 #### API mapping
 
@@ -291,6 +292,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `ServiceClient.InvokeDeviceMethodAsync(...)` | `IotHubServiceClient.DirectMethods.InvokeAsync(...)` | |
 | `CloudToDeviceMethod` | `DirectMethodServiceRequest` | Disambiguate from types in the device client.² |
 | `CloudToDeviceMethodResult` | `DirectMethodClientResponse` | See² |
+| `CloudToDeviceMethodResult.GetPayloadAsJson()` | `DirectMethodClientResponse.PayloadAsString` | |
 | `ServiceClient.GetFeedbackReceiver(...)` | `IotHubServiceClient.MessageFeedback.MessageFeedbackProcessor` | |
 | `ServiceClient.GetFileNotificationReceiver()` | `IotHubServiceClient.FileUploadNotifications.FileUploadNotificationProcessor` | |
 | `IotHubException` | `IotHubServiceException` | Specify the exception is for Hub service client only. |

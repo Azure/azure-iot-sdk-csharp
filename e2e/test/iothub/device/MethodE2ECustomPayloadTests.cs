@@ -140,9 +140,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
-            var directMethodRequest = new DirectMethodServiceRequest
+            var directMethodRequest = new DirectMethodServiceRequest(methodName)
             {
-                MethodName = methodName,
                 ResponseTimeout = methodTimeout,
                 Payload = request,
             };
@@ -153,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {methodResponse.Status}.");
             methodResponse.Status.Should().Be(200);
-            JsonConvert.SerializeObject(methodResponse.Payload).Should().BeEquivalentTo(JsonConvert.SerializeObject(response));
+            methodResponse.PayloadAsString.Should().BeEquivalentTo(JsonConvert.SerializeObject(response));
         }
 
         public static async Task<Task> SetDeviceReceiveMethod_booleanPayloadAsync(IotHubDeviceClient deviceClient, string methodName)

@@ -224,9 +224,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-                    var directMethodRequest = new DirectMethodServiceRequest
+                    var directMethodRequest = new DirectMethodServiceRequest(methodName)
                     {
-                        MethodName = methodName,
                         Payload = serviceRequestPayload,
                         ResponseTimeout = TimeSpan.FromMinutes(5),
                     };
@@ -239,7 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
                     response.Status.Should().Be(200);
-                    JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(deviceResponsePayload));
+                    JsonConvert.SerializeObject(response.PayloadAsString).Should().Be(JsonConvert.SerializeObject(deviceResponsePayload));
 
                     done = true;
                 }

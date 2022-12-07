@@ -14,20 +14,25 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
-        public DirectMethodServiceRequest()
+        /// <param name="methodName">The method name to run.</param>
+        /// <exception cref="ArgumentNullException">When <paramref name="methodName"/> is null.</exception>
+        /// <exception cref="ArgumentException">When <paramref name="methodName"/> is empty or white space.</exception>
+        public DirectMethodServiceRequest(string methodName)
         {
+            Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
+            MethodName= methodName;
         }
 
         /// <summary>
         /// The method name to run.
         /// </summary>
-        [JsonProperty("methodName", Required = Required.Always)]
-        public string MethodName { get; set; }
+        [JsonProperty("methodName")]
+        public string MethodName { get; }
 
         /// <summary>
         /// The payload to have serialized and send as JSON.
         /// </summary>
-        [JsonProperty("payload", Required = Required.AllowNull)]
+        [JsonProperty("payload")]
         public object Payload { get; set; }
 
         /// <summary>
