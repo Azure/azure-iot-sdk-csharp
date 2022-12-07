@@ -132,10 +132,7 @@ Function BuildProject($path, $message)
         }
     }
 
-    # Temporarily remove the "-warnAsError" switch because of  Microsoft.CodeAnalysis.NetAnalyzers version dependency issue.
-    # MSBuild flags Microsoft.CodeAnalysis.NetAnalyzers v6.0.0 with a warning because this nuget has a v7.0.0-preview released and MSBuild wants the projects to be updated to the newer version.
-    # Since we will not take dependency on preview packages for our GA nugets, we'll temporarily disable the command to treat warnings as errors. 
-    & dotnet build $projectPath --verbosity $verbosity --configuration $configuration |  Tee-Object ./buildlog.txt
+    & dotnet build $projectPath --verbosity $verbosity --configuration $configuration -warnAsError |  Tee-Object ./buildlog.txt
 
     if (DidBuildFail "./buildlog.txt" -or $LASTEXITCODE -ne 0)
     {

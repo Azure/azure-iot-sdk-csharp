@@ -21,6 +21,14 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
+  <!-- 
+    MSBuild flags Microsoft.CodeAnalysis.NetAnalyzers v6.0.0 with a warning because v7.0.0-preview has been released and MSBuild wants the projects to be updated to the newer version.
+    Since we will not take dependency on preview packages for our GA nugets, we'll temporarily skip analyzers upgrade warning. 
+  -->
+  <PropertyGroup>
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Version>1.17.2</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client MQTT Transport</Title>
