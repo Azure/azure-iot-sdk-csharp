@@ -68,10 +68,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             // This cancellation token source is disposed when the authentication refresher is disposed
             // or if this code block is executed more than once per instance of AmqpAuthenticationRefresher (not expected).
 
+            Debug.Assert(_refresherCancellationTokenSource == null);
+
             if (_refresherCancellationTokenSource != null)
             {
                 if (Logging.IsEnabled)
-                    Logging.Info(this, "_refresherCancellationTokenSource was already initialized, whhich was unexpected. Canceling and disposing the previous instance.", nameof(InitLoopAsync));
+                    Logging.Info(this, "_refresherCancellationTokenSource was already initialized, which was unexpected. Canceling and disposing the previous instance.", nameof(InitLoopAsync));
 
                 try
                 {
@@ -82,6 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 _refresherCancellationTokenSource.Dispose();
             }
+
             _refresherCancellationTokenSource = new CancellationTokenSource();
 
             if (refreshOn < DateTime.MaxValue)
