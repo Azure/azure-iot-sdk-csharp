@@ -727,53 +727,44 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             string propName1 = Guid.NewGuid().ToString();
             string propName2 = Guid.NewGuid().ToString();
-            string propEmptyValue = "{}";
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            var options = new IotHubClientOptions(transportSettings);
-            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            await deviceClient
-                .UpdateReportedPropertiesAsync(
-                    new ReportedProperties
-                    {
-                        [propName1] = null
-                    })
-                .ConfigureAwait(false);
-            ClientTwin serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+            try
+            {
+                var options = new IotHubClientOptions(transportSettings);
+                await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+                await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            await deviceClient
-                .UpdateReportedPropertiesAsync(
-                    new ReportedProperties
-                    {
-                        [propName1] = new Dictionary<string, object>
+                await deviceClient
+                    .UpdateReportedPropertiesAsync(
+                        new ReportedProperties
                         {
-                            [propName2] = null
-                        }
-                    })
-                .ConfigureAwait(false);
-            serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
-            string value1 = serviceTwin.Properties.Reported[propName1].ToString();
+                            [propName1] = null
+                        })
+                    .ConfigureAwait(false);
+                ClientTwin serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+                Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
 
-            Assert.AreEqual(value1, propEmptyValue);
-
-            await deviceClient
-                .UpdateReportedPropertiesAsync(
-                    new ReportedProperties
-                    {
-                        [propName1] = new Dictionary<string, object>
+                await deviceClient
+                    .UpdateReportedPropertiesAsync(
+                        new ReportedProperties
                         {
-                            [propName2] = null
-                        }
-                    })
-                .ConfigureAwait(false);
-            serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
-            string value2 = serviceTwin.Properties.Reported[propName1].ToString();
-            Assert.AreEqual(value2, propEmptyValue);
+                            [propName1] = new Dictionary<string, object>
+                            {
+                                [propName2] = null
+                            }
+                        })
+                    .ConfigureAwait(false);
+                serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+                serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
+                serviceTwin.Properties.Reported.TryGetValue(propName1, out Dictionary<string, object> value1).Should().BeTrue();
+                value1.Count.Should().Be(0);
+            }
+            finally
+            {
+                await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
+            }
         }
 
         [DataTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]

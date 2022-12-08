@@ -55,9 +55,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         internal ClientTwinProperties(JObject twinJson)
         {
-            JObject = twinJson ?? new JObject();
+            TwinData = twinJson ?? new JObject();
 
-            if (JObject.TryGetValue(MetadataName, out JToken metadataJToken))
+            if (TwinData.TryGetValue(MetadataName, out JToken metadataJToken))
             {
                 _metadata = metadataJToken as JObject;
             }
@@ -70,14 +70,14 @@ namespace Microsoft.Azure.Devices
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
         public ClientTwinProperties(JObject twinJson, JObject metadataJson)
         {
-            JObject = twinJson ?? new JObject();
+            TwinData = twinJson ?? new JObject();
             _metadata = metadataJson;
         }
 
         /// <summary>
         /// Gets the version of the collection.
         /// </summary>
-        public long Version => !JObject.TryGetValue(VersionName, out JToken versionToken)
+        public long Version => !TwinData.TryGetValue(VersionName, out JToken versionToken)
             ? default
             : (long)versionToken;
 
@@ -88,16 +88,16 @@ namespace Microsoft.Azure.Devices
         {
             get
             {
-                int count = JObject.Count;
+                int count = TwinData.Count;
                 if (count > 0)
                 {
                     // Metadata and Version should not count towards this value
-                    if (JObject.TryGetValue(MetadataName, out _))
+                    if (TwinData.TryGetValue(MetadataName, out _))
                     {
                         count--;
                     }
 
-                    if (JObject.TryGetValue(VersionName, out _))
+                    if (TwinData.TryGetValue(VersionName, out _))
                     {
                         count--;
                     }
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        internal JObject JObject { get; private set; }
+        internal JObject TwinData { get; private set; }
 
         /// <summary>
         /// Property indexer.
@@ -141,12 +141,6 @@ namespace Microsoft.Azure.Devices
             set => TrySetMemberInternal(propertyName, value);
         }
 
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return JObject.ToString();
-        }
-
         /// <summary>
         /// Gets the metadata for this collection.
         /// </summary>
@@ -169,7 +163,7 @@ namespace Microsoft.Azure.Devices
             TryClearMetadata(LastUpdatedName);
             TryClearMetadata(LastUpdatedVersionName);
             TryClearMetadata(VersionName);
-        
+
             // GitHub Issue: https://github.com/Azure/azure-iot-sdk-csharp/issues/1971
             // When we clear the metadata from the underlying collection we need to also clear
             // the _metadata object so the TryGetMemberInternal will return a JObject instead of a new TwinCollection
@@ -207,13 +201,50 @@ namespace Microsoft.Azure.Devices
         /// <returns>true if the specified property is present; otherwise, false.</returns>
         public bool Contains(string propertyName)
         {
-            return JObject.TryGetValue(propertyName, out _);
+            return TwinData.ContainsKey(propertyName);
+        }
+
+        /// <summary>
+        /// Gets the specified property by name as the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type to convert to.</typeparam>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="propertyValue">The resulting value.</param>
+        /// <returns>True if the property exists and could be converted, otherwise false.</returns>
+        public bool TryGetValue<T>(string propertyName, out T propertyValue)
+        {
+            propertyValue = default;
+
+            if (!TwinData.TryGetValue(propertyName, out JToken jTokenValue))
+            {
+                return false;
+            }
+
+            // Try cast first
+            try
+            {
+                propertyValue = jTokenValue.Value<T>();
+                return true;
+            }
+            catch (InvalidCastException)
+            { }
+
+            // Otherwise, deserialize
+            try
+            {
+                propertyValue = jTokenValue.ToObject<T>();
+                return true;
+            }
+            catch (InvalidCastException)
+            { }
+
+            return false;
         }
 
         /// <inheritdoc />
         public IEnumerator GetEnumerator()
         {
-            foreach (KeyValuePair<string, JToken> kvp in JObject)
+            foreach (KeyValuePair<string, JToken> kvp in TwinData)
             {
                 if (kvp.Key == MetadataName || kvp.Key == VersionName)
                 {
@@ -222,6 +253,14 @@ namespace Microsoft.Azure.Devices
 
                 yield return new KeyValuePair<string, dynamic>(kvp.Key, this[kvp.Key]);
             }
+        }
+
+        /// <summary>
+        /// The property payload as a JSON string.
+        /// </summary>
+        public override string ToString()
+        {
+            return TwinData.ToString();
         }
 
         /// <summary>
@@ -237,14 +276,15 @@ namespace Microsoft.Azure.Devices
         /// If this method is used with a <see cref="ClientTwinProperties"/> returned from a <c>DeviceClient</c> it will always return a
         /// <see cref="JToken"/>. However, if you are using this method with a <see cref="ClientTwinProperties"/> returned from a
         /// <c>RegistryManager</c> client, it will return the corresponding type depending on what is stored in the properties collection.
-        ///
+        /// <para>
         /// For example a <see cref="List{T}"/> would return a <see cref="ClientTwinPropertyArray"/>, with the metadata intact, when used with
         /// a <see cref="ClientTwinProperties"/> returned from a <c>RegistryManager</c> client. If you need this method to always return a
         /// <see cref="JToken"/> please see the <see cref="ClearMetadata"/> method for more information.
+        /// </para>
         /// </remarks>
         private bool TryGetMemberInternal(string propertyName, out object result)
         {
-            if (!JObject.TryGetValue(propertyName, out JToken value))
+            if (!TwinData.TryGetValue(propertyName, out JToken value))
             {
                 result = null;
                 return false;
@@ -282,13 +322,13 @@ namespace Microsoft.Azure.Devices
                 ? null
                 : JToken.FromObject(value);
 
-            if (JObject.TryGetValue(propertyName, out _))
+            if (TwinData.TryGetValue(propertyName, out _))
             {
-                JObject[propertyName] = valueJToken;
+                TwinData[propertyName] = valueJToken;
             }
             else
             {
-                JObject.Add(propertyName, valueJToken);
+                TwinData.Add(propertyName, valueJToken);
             }
 
             return true;
@@ -296,9 +336,14 @@ namespace Microsoft.Azure.Devices
 
         private void TryClearMetadata(string propertyName)
         {
-            if (JObject.ContainsKey(propertyName))
+            if (Contains(propertyName))
             {
-                JObject.Remove(propertyName);
+                TwinData.Remove(propertyName);
+            }
+
+            if (_metadata.ContainsKey(propertyName))
+            {
+                _metadata.Remove(propertyName);
             }
         }
     }
