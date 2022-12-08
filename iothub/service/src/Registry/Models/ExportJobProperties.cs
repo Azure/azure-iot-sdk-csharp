@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// If not specified, the service defaults to "devices.txt".
         /// </remarks>
-        [JsonProperty("outputBlobName", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("outputBlobName")]
         public string OutputBlobName { get; set; }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Optional parameter. The service defaults to false.
         /// </remarks>
-        [JsonProperty("excludeKeysInExport", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("excludeKeysInExport")]
         public bool ExcludeKeysInExport { get; set; }
     }
 }

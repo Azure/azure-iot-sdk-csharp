@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Indicates that the cloud-to-device message was successfully delivered to the device.
         /// </summary>
-        Success = 0,
+        Success,
 
         /// <summary>
         /// Indicates that the cloud-to-device message expired before it could be delivered to the device.
         /// </summary>
-        Expired = 1,
+        Expired,
 
         /// <summary>
         /// Indicates that the cloud-to-device message has been placed in a dead-lettered state.
@@ -29,16 +29,16 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This happens when the message reaches the maximum count for the number of times it can transition between enqueued and invisible states.
         /// </remarks>
-        DeliveryCountExceeded = 2,
+        DeliveryCountExceeded,
 
         /// <summary>
         /// Indicates that the cloud-to-device message was rejected by the device.
         /// </summary>
-        Rejected = 3,
+        Rejected,
 
         /// <summary>
         /// Indicates that the cloud-to-device message was purged from IoT hub.
         /// </summary>
-        Purged = 4
+        Purged
     }
 }

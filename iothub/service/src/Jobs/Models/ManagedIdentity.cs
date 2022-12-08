@@ -7,15 +7,17 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The managed identity used to access the storage account for IoT hub import and export jobs.
+    /// </summary>
+    /// <remarks>
     /// For more information on managed identity configuration on IoT hub, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-managed-identity"/>.
     /// For more information on managed identities, see <see href="https://docs.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview"/>
-    /// </summary>
+    /// </remarks>
     public class ManagedIdentity
     {
         /// <summary>
         /// The user identity resource Id used to access the storage account for import and export jobs.
         /// </summary>
-        [JsonProperty("userAssignedIdentity", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("userAssignedIdentity")]
         public string UserAssignedIdentity { get; set; }
     }
 }

@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("jobId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("jobId")]
         public string JobId { get; protected internal set; }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("startTimeUtc")]
         public DateTimeOffset? StartedOnUtc { get; protected internal set; }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("endTimeUtc")]
         public DateTimeOffset? EndedOnUtc { get; protected internal set; }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("status")]
         public JobStatus Status { get; protected internal set; }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("failureReason", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("failureReason")]
         public string FailureReason { get; protected internal set; }
 
         /// <summary>

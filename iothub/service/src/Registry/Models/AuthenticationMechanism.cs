@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
         /// Gets or sets the authentication type.
         /// </summary>
         [DefaultValue(ClientAuthenticationType.Sas)]
-        [JsonProperty("type", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonProperty("type")]
         public ClientAuthenticationType Type { get; set; }
     }
 }

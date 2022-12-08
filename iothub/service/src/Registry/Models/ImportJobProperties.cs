@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// </remarks>
-        [JsonProperty("inputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("inputBlobContainerUri")]
         public Uri InputBlobContainerUri { get; set; }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices
         /// If not specified, the hub defaults to "devices.txt".
         /// The format should be newline-delimited json objects representing each device twin.
         /// </remarks>
-        [JsonProperty("inputBlobName", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("inputBlobName")]
         public string InputBlobName { get; set; }
     }
 }

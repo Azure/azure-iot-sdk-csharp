@@ -541,11 +541,9 @@ namespace Microsoft.Azure.Devices
                         break;
                 }
 
-                var exportImportDevice = new ExportImportDevice
+                var exportImportDevice = new ExportImportDevice(twin.DeviceId, importMode)
                 {
-                    Id = twin.DeviceId,
                     ModuleId = twin.ModuleId,
-                    ImportMode = importMode,
                     TwinETag = twin.ETag,
                     Tags = twin.Tags,
                     Properties =

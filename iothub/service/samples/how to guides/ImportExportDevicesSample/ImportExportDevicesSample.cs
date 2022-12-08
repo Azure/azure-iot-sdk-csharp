@@ -169,9 +169,8 @@ namespace Microsoft.Azure.Devices.Samples
                 Debug.Print($"Adding device '{deviceName}'");
 
                 // Create a new ExportImportDevice.
-                var deviceToAdd = new ExportImportDevice
+                var deviceToAdd = new ExportImportDevice(deviceName, ImportMode.Create)
                 {
-                    Id = deviceName,
                     Status = ClientStatus.Enabled,
                     Authentication = new AuthenticationMechanism
                     {
@@ -181,8 +180,6 @@ namespace Microsoft.Azure.Devices.Samples
                             SecondaryKey = GenerateKey(32),
                         }
                     },
-                    // This indicates that the entry should be added as a new device.
-                    ImportMode = ImportMode.Create,
                 };
 
                 // Add device to the list as a serialized object.

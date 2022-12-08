@@ -32,8 +32,7 @@ namespace Microsoft.Azure.Devices
         /// Creates client, provided for unit testing purposes only.
         /// </summary>
         protected ScheduledJobsClient()
-        {
-        }
+        { }
 
         internal ScheduledJobsClient(
             string hostName,

@@ -24,38 +24,38 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Id of the device which uploaded the file.
         /// </summary>
-        [JsonProperty("deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("deviceId")]
         public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// URI path of the uploaded file.
         /// </summary>
         // TODO: consider changing this to System.Uri before GA
-        [JsonProperty("blobUri", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("blobUri")]
         public string BlobUriPath { get; protected internal set; }
 
         /// <summary>
         /// Name of the uploaded file.
         /// </summary>
-        [JsonProperty("blobName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("blobName")]
         public string BlobName { get; protected internal set; }
 
         /// <summary>
         /// Date and time indicating when the file was last updated in UTC.
         /// </summary>
-        [JsonProperty("lastUpdatedTime", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("lastUpdatedTime")]
         public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Size of the uploaded file in bytes.
         /// </summary>
-        [JsonProperty("blobSizeInBytes", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("blobSizeInBytes")]
         public long BlobSizeInBytes { get; protected internal set; }
 
         /// <summary>
         /// Date and time indicating when the notification was created in UTC.
         /// </summary>
-        [JsonProperty("enqueuedTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("enqueuedTimeUtc")]
         public DateTimeOffset EnqueuedOnUtc { get; protected internal set; }
     }
 }
