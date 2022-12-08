@@ -282,11 +282,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_SetAsync_WithOnlyIfUnchangedTrue()
+        public async Task DevicesClient_SetAsync_Bulk()
         {
             // arrange
-            var badDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
-            var badDevice2 = new Device("234") { ConnectionState = ClientConnectionState.Connected };
+            var goodDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
+            var goodDevice2 = new Device("234") { ConnectionState = ClientConnectionState.Connected };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -310,7 +310,42 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await devicesClient.SetAsync(new List<Device> { badDevice1, badDevice2 }, true).ConfigureAwait(false);
+            Func<Task> act = async () => await devicesClient.SetAsync(new List<Device> { goodDevice1, goodDevice2 }, false).ConfigureAwait(false);
+
+            // assert
+            await act.Should().NotThrowAsync().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_SetAsync_WithOnlyIfUnchangedTrueNoEtagThrows()
+        {
+            // arrange
+            var deviceWithoutETag1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
+            var deviceWithoutETag2 = new Device("234") { ConnectionState = ClientConnectionState.Connected };
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult()),
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.SetAsync(new List<Device> { deviceWithoutETag1, deviceWithoutETag2 }, true).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
@@ -459,8 +494,8 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DevicesClient_DeleteAsync_OnlyIfUnchangedTrueNoEtagThrows()
         {
             // arrange
-            var badDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
-            var badDevice2 = new Device("234") { ConnectionState = ClientConnectionState.Connected };
+            var deviceWithoutETag1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
+            var deviceWithoutETag2 = new Device("234") { ConnectionState = ClientConnectionState.Connected };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -483,7 +518,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await devicesClient.DeleteAsync(new List<Device> { badDevice1, badDevice2 }, true).ConfigureAwait(false);
+            Func<Task> act = async () => await devicesClient.DeleteAsync(new List<Device> { deviceWithoutETag1, deviceWithoutETag2 }, true).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
