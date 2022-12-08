@@ -123,9 +123,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // setup
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            var methodInvocation = new DirectMethodServiceRequest
+            var methodInvocation = new DirectMethodServiceRequest("SetTelemetryInterval")
             {
-                MethodName = "SetTelemetryInterval",
                 Payload = "10"
             };
 
@@ -175,9 +174,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // setup
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync("ModuleNotFoundTest").ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            var directMethodRequest = new DirectMethodServiceRequest
+            var directMethodRequest = new DirectMethodServiceRequest("SetTelemetryInterval")
             {
-                MethodName = "SetTelemetryInterval",
                 Payload = "10",
             };
 
@@ -199,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // arrange
 
-            const string commandName = "Reboot";
+            const string methodName = "Reboot";
             bool deviceMethodCalledSuccessfully = false;
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync("NullMethodPayloadTest").ConfigureAwait(false);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
@@ -210,7 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .SetDirectMethodCallbackAsync(
                         (methodRequest) =>
                         {
-                            methodRequest.MethodName.Should().Be(commandName);
+                            methodRequest.MethodName.Should().Be(methodName);
                             deviceMethodCalledSuccessfully = true;
                             var response = new Client.DirectMethodResponse(200);
 
@@ -219,9 +217,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .ConfigureAwait(false);
 
                 using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-                var directMethodRequest = new DirectMethodServiceRequest
+                var directMethodRequest = new DirectMethodServiceRequest(methodName)
                 {
-                    MethodName = commandName,
                     ConnectionTimeout = TimeSpan.FromMinutes(1),
                     ResponseTimeout = TimeSpan.FromMinutes(1),
                 };
@@ -270,9 +267,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
-            var directMethodRequest = new DirectMethodServiceRequest
+            var directMethodRequest = new DirectMethodServiceRequest(methodName)
             {
-                MethodName = methodName,
                 ResponseTimeout = methodTimeout,
             };
 
@@ -289,10 +285,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             error.And.IsTransient.Should().BeTrue();
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponseAsync(
+        public static async Task ServiceSendMethodAndVerifyResponseAsync<T>(
             string deviceId,
             string methodName,
-            object respJson,
+            T respJson,
             object reqJson,
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
@@ -301,9 +297,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
-            var directMethodRequest = new DirectMethodServiceRequest
+            var directMethodRequest = new DirectMethodServiceRequest(methodName)
             {
-                MethodName = methodName,
                 ResponseTimeout = methodTimeout,
                 Payload = reqJson,
             };
@@ -314,14 +309,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(respJson));
+            response.TryGetPayload(out T actual).Should().BeTrue();
+            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(respJson));
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponseAsync(
+        public static async Task ServiceSendMethodAndVerifyResponseAsync<T>(
             string deviceId,
             string moduleId,
             string methodName,
-            object respJson,
+            T respJson,
             object reqJson,
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
@@ -330,9 +326,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
 
-            var directMethodRequest = new DirectMethodServiceRequest
+            var directMethodRequest = new DirectMethodServiceRequest(methodName)
             {
-                MethodName = methodName,
                 ResponseTimeout = methodTimeout,
                 Payload = reqJson,
             };
@@ -344,7 +339,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            JsonConvert.SerializeObject(response.Payload).Should().Be(JsonConvert.SerializeObject(respJson));
+            response.TryGetPayload(out T actual).Should().BeTrue();
+            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(respJson));
         }
 
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName)

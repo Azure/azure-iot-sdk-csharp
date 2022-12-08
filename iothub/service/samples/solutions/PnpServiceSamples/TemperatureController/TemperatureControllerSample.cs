@@ -58,10 +58,9 @@ namespace Microsoft.Azure.Devices.Samples
             const string getMaxMinReportCommandName = "getMaxMinReport";
 
             // Create command name to invoke for component. The command is formatted as <component name>*<command name>
-            string commandToInvoke = $"{Thermostat1Component}*{getMaxMinReportCommandName}";
-            var commandInvocation = new DirectMethodServiceRequest
+            string commandName = $"{Thermostat1Component}*{getMaxMinReportCommandName}";
+            var commandInvocation = new DirectMethodServiceRequest(commandName)
             { 
-                MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
                 Payload = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)),
             };
@@ -73,7 +72,7 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on component {Thermostat1Component}." +
-                    $"\nDevice returned status: {result.Status}. \nReport: {result.Payload}");
+                    $"\nDevice returned status: {result.Status}. \nReport: {result.PayloadAsString}");
             }
             catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotFound)
             {
@@ -85,26 +84,25 @@ namespace Microsoft.Azure.Devices.Samples
         private async Task InvokeRebootCommandAsync()
         {
             // Create command name to invoke for component
-            const string commandToInvoke = "reboot";
-            var commandInvocation = new DirectMethodServiceRequest
+            const string commandName = "reboot";
+            var commandInvocation = new DirectMethodServiceRequest(commandName)
             {
-                MethodName = commandToInvoke,
                 ResponseTimeout = TimeSpan.FromSeconds(30),
                 Payload = JsonConvert.SerializeObject(3),
             };
 
-            _logger.LogDebug($"Invoke the {commandToInvoke} command on the {_deviceId} device twin." +
+            _logger.LogDebug($"Invoke the {commandName} command on the {_deviceId} device twin." +
                 $"\nThis will set the \"targetTemperature\" on \"Thermostat\" component to 0.");
 
             try
             {
                 DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
-                _logger.LogDebug($"Command {commandToInvoke} was invoked on the {_deviceId} device twin." +
+                _logger.LogDebug($"Command {commandName} was invoked on the {_deviceId} device twin." +
                     $"\nDevice returned status: {result.Status}.");
             }
             catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotFound)
             {
-                _logger.LogWarning($"Unable to execute command {commandToInvoke} on component {Thermostat1Component}." +
+                _logger.LogWarning($"Unable to execute command {commandName} on component {Thermostat1Component}." +
                     $"\nMake sure that the device sample TemperatureController located in {DeviceSampleLink} is also running.");
             }
         }

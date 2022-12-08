@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // D2C Operation
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 1: Send D2C for device={testDevice.Id}");
-                var message = TelemetryE2ETests.ComposeD2cTestMessage(out string _, out string _);
+                TelemetryMessage message = TelemetryE2ETests.ComposeD2cTestMessage(out string _, out string _);
                 Task sendD2cMessage = deviceClient.SendTelemetryAsync(message);
                 clientOperations.Add(sendD2cMessage);
 
