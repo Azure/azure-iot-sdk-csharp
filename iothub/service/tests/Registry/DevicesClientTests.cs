@@ -285,8 +285,8 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DevicesClient_SetAsync_WithOnlyIfUnchangedTrue()
         {
             // arrange
-            var goodDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
-            var goodDevice2 = new Device("234") { ConnectionState = ClientConnectionState.Connected };
+            var badDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
+            var badDevice2 = new Device("234") { ConnectionState = ClientConnectionState.Connected };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -310,10 +310,10 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await devicesClient.SetAsync(new List<Device> { goodDevice1, goodDevice2 }, false).ConfigureAwait(false);
+            Func<Task> act = async () => await devicesClient.SetAsync(new List<Device> { badDevice1, badDevice2 }, true).ConfigureAwait(false);
 
             // assert
-            await act.Should().NotThrowAsync().ConfigureAwait(false);
+            await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
         }
 
         [TestMethod]
