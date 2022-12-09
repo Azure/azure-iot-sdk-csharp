@@ -267,6 +267,8 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `RegistryManager.GetJobAsync(...)` | `IotHubServiceClient.Devices.GetJobAsync(...)` | |
 | `RegistryManager.CancelJobAsync(...)` | `IotHubServiceClient.Devices.CancelJobAsync(...)` | |
 | `JobProperties.Type` | `JobProperties.JobType` | Other parts of the API use "JobType" and "Type" is otherwise too ambiguous with `System.Type`. |
+| `ExportImportDevice.Properties.DesiredProperties` | `ExportImportDevice.Properties.Desired` | |
+| `ExportImportDevice.Properties.ReportedProperties` | `ExportImportDevice.Properties.Reported` | |
 
 #### ServiceClient
 

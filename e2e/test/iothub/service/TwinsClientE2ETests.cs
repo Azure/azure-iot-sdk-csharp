@@ -63,8 +63,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             try
             {
                 await serviceClient.Devices.CreateAsync(device1).ConfigureAwait(false);
-                ClientTwin twin1 = await serviceClient.Twins.GetAsync(device1.Id).ConfigureAwait(false);
                 await serviceClient.Devices.CreateAsync(device2).ConfigureAwait(false);
+
+                ClientTwin twin1 = await serviceClient.Twins.GetAsync(device1.Id).ConfigureAwait(false);
                 ClientTwin twin2 = await serviceClient.Twins.GetAsync(device2.Id).ConfigureAwait(false);
 
                 // act
@@ -84,8 +85,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 result.IsSuccessful.Should().BeTrue();
 
                 ClientTwin actualTwin1 = await serviceClient.Twins.GetAsync(device1.Id).ConfigureAwait(false);
-                ((string)actualTwin1.Properties.Desired[expectedProperty]).Should().Be(expectedPropertyValue);
                 ClientTwin actualTwin2 = await serviceClient.Twins.GetAsync(device2.Id).ConfigureAwait(false);
+
+                ((string)actualTwin1.Properties.Desired[expectedProperty]).Should().Be(expectedPropertyValue);
                 ((string)actualTwin2.Properties.Desired[expectedProperty]).Should().Be(expectedPropertyValue);
             }
             finally
