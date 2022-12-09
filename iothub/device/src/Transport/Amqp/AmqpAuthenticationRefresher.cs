@@ -105,6 +105,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Enter(this, refreshOn, $"{nameof(StartLoop)}");
             }
 
+            Debug.Assert(_refreshLoop == null);
+
             // This task runs in the background and is unmonitored.
             // When this refresher is disposed it signals this task to be cancelled.
             _refreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
