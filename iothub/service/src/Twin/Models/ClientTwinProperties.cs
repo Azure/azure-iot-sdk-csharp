@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The property payload as a JSON string.
         /// </summary>
-        public override string ToString()
+        public string GetPropertiesAsJson()
         {
             return JsonConvert.SerializeObject(Properties);
         }

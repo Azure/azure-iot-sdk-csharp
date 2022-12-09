@@ -212,7 +212,8 @@ namespace Microsoft.Azure.Devices.Tests
         public void ClientTwin_Properties_DeserializesComplexTwin()
         {
             // arrange
-            string complexTwinJson = File.ReadAllText("Registry\\ComplexTwin.json");
+            // To understand the expected values below, one must read the JSON in this file
+            string complexTwinJson = File.ReadAllText("Registry/ComplexTwin.json");
 
             // act
             ClientTwin twin = JsonConvert.DeserializeObject<ClientTwin>(complexTwinJson);
