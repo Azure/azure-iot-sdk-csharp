@@ -185,6 +185,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled)
                     Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopLoop));
             }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(StopLoop)} threw an exception: {ex}", nameof(StopLoop));
+            }
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(StopLoop));
