@@ -171,7 +171,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public void StopLoop()
+        // StopLoop ensures that the resources related to token refresher are cancelled and ready for cleanup.
+        // It will cancel the associated cancellation token source and will await completion of the refresh loop task.
+        // Any exceptions thrown as a result of these operations are caught and logged.
+        // StopLoop will not generate any exceptions so it safe for us to declare this as async void.
+        public async void StopLoop()
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(StopLoop));
@@ -185,10 +189,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled)
                     Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopLoop));
             }
-            catch (Exception ex)
+
+            // _refresherCancellationTokenSource cancellation signals the loop in RefreshLoopAsync to be cancelled.
+            // We are awaiting this task so that any exceptions thrown within the loop as a result of this cancellation are caught and logged.
+            if (_refreshLoop != null)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(StopLoop)} threw an exception: {ex}", nameof(StopLoop));
+                try
+                {
+                    await _refreshLoop.ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Exception caught while canceling SAS token refresh loop: {ex}", nameof(StopLoop));
+                }
+                _refreshLoop = null;
             }
 
             if (Logging.IsEnabled)
