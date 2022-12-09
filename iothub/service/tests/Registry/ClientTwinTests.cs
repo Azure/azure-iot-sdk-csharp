@@ -130,5 +130,90 @@ namespace Microsoft.Azure.Devices.Tests
             actual.DeviceScope.Should().Be(deviceScope);
             actual.ParentScopes.Should().BeEquivalentTo(parentScopes);
         }
+
+        [TestMethod]
+        public void ClientTwin_Properties_Serializes()
+        {
+            // arrange
+
+            const string reportedStringKey = nameof(reportedStringKey);
+            const string reportedStringValue = nameof(reportedStringValue);
+            const string reportedIntKey = nameof(reportedIntKey);
+            const int reportedIntValue = 3;
+            const string reportedDateTimeOffsetKey = nameof(reportedDateTimeOffsetKey);
+            const string reportedBoolKey = nameof(reportedBoolKey);
+            const bool reportedBoolValue = true;
+            DateTimeOffset reportedDateTimeOffsetValue = DateTimeOffset.UtcNow;
+            const string reportedCustomKey = nameof(reportedCustomKey);
+            var reportedCustomValue = new CustomType { CustomInt = reportedIntValue, CustomString = reportedStringValue };
+
+            const string desiredKey = nameof(desiredKey);
+            const string desiredValue = nameof(desiredValue);
+
+            var twin = new ClientTwin
+            {
+                Properties =
+                {
+                    Desired =
+                    {
+                        [desiredKey] = desiredValue,
+                    },
+                    Reported =
+                    {
+                        [reportedStringKey] = reportedStringValue,
+                        [reportedIntKey] = reportedIntValue,
+                        [reportedDateTimeOffsetKey] = reportedDateTimeOffsetValue,
+                        [reportedBoolKey] = reportedBoolValue,
+                        [reportedCustomKey] = reportedCustomValue,
+                    },
+                }
+            };
+
+            // act
+
+            string json = JsonConvert.SerializeObject(twin);
+            ClientTwin actual = JsonConvert.DeserializeObject<ClientTwin>(json);
+
+            // assert
+
+            // Using TryGetValue
+
+            actual.Properties.Reported.TryGetValue(reportedStringKey, out string actualStringValue).Should().BeTrue();
+            actualStringValue.Should().Be(reportedStringValue);
+
+            actual.Properties.Reported.TryGetValue(reportedIntKey, out int actualIntValue).Should().BeTrue();
+            actualIntValue.Should().Be(reportedIntValue);
+
+            actual.Properties.Reported.TryGetValue(reportedDateTimeOffsetKey, out DateTimeOffset actualDateTimeOffsetValue).Should().BeTrue();
+            actualDateTimeOffsetValue.Should().Be(reportedDateTimeOffsetValue);
+
+            actual.Properties.Reported.TryGetValue(reportedBoolKey, out bool actualBoolValue).Should().BeTrue();
+            actualBoolValue.Should().Be(reportedBoolValue);
+
+            actual.Properties.Reported.TryGetValue(reportedCustomKey, out CustomType actualCustomValue).Should().BeTrue();
+            actualCustomValue.CustomInt.Should().Be(reportedCustomValue.CustomInt);
+            actualCustomValue.CustomString.Should().Be(reportedCustomValue.CustomString);
+
+            actual.Properties.Desired.TryGetValue(desiredKey, out string actualDesiredValue).Should().BeTrue();
+            actualDesiredValue.Should().Be(desiredValue);
+
+            // Using cast from indexer
+
+            ((string)actual.Properties.Reported[reportedStringKey]).Should().Be(reportedStringValue);
+            ((int)actual.Properties.Reported[reportedIntKey]).Should().Be(reportedIntValue);
+            ((DateTimeOffset)actual.Properties.Reported[reportedDateTimeOffsetKey]).Should().Be(reportedDateTimeOffsetValue);
+            ((bool)actual.Properties.Reported[reportedBoolKey]).Should().Be(reportedBoolValue);
+
+            ((string)actual.Properties.Desired[desiredKey]).Should().Be(desiredValue);
+        }
+
+        private class CustomType
+        {
+            [JsonProperty("customInt")]
+            public int CustomInt { get; set; }
+
+            [JsonProperty("customString")]
+            public string CustomString { get; set; }
+        }
     }
 }

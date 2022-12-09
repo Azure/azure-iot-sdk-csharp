@@ -223,6 +223,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 #### Notable additions
 
 - `JobProperties` now has a helper property `IsFinished` which returns true if the job status is in a terminal state.
+- `TryGetValue<T>(...)` is available off of the desired and reported properties on `ClientTwin`.
 
 #### API mapping
 

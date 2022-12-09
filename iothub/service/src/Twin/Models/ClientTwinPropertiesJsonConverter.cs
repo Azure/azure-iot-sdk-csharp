@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
                 throw new InvalidOperationException("Object passed is not of type TwinCollection.");
             }
 
-            serializer.Serialize(writer, properties.JObject);
+            serializer.Serialize(writer, properties.TwinData);
         }
 
         public override bool CanConvert(Type objectType) => typeof(ClientTwinProperties).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());

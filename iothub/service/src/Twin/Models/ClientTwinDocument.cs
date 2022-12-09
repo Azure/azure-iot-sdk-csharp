@@ -13,13 +13,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets and sets the twin desired properties.
         /// </summary>
-        [JsonProperty("desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("desired")]
         public ClientTwinProperties Desired { get; set; } = new();
 
         /// <summary>
         /// Gets and sets the twin reported properties.
         /// </summary>
-        [JsonProperty("reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("reported")]
         public ClientTwinProperties Reported { get; set; } = new();
     }
 }
