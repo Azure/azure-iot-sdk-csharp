@@ -2,6 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices
 {
@@ -11,27 +14,48 @@ namespace Microsoft.Azure.Devices
     public sealed class ClientTwinMetadata
     {
         /// <summary>
-        /// Initializes an instance of this class.
-        /// </summary>
-        /// <param name="lastUpdatedOnUtc">When a property was last updated.</param>
-        /// <param name="lastUpdatedVersion">The version of the property when last updated.</param>
-        public ClientTwinMetadata(DateTimeOffset lastUpdatedOnUtc, long? lastUpdatedVersion)
-        {
-            LastUpdatedOnUtc = lastUpdatedOnUtc;
-            LastUpdatedVersion = lastUpdatedVersion;
-        }
-
-        /// <summary>
         /// When a property was last updated.
         /// </summary>
-        public DateTimeOffset LastUpdatedOnUtc { get; set; }
+        [JsonProperty("$lastUpdated", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// The version of the property when last updated.
         /// </summary>
         /// <remarks>
-        /// This should be null for reported properties metadata and must not be null for desired properties metadata.
+        /// This should be not be included for reported properties metadata and must not be null for desired properties metadata.
         /// </remarks>
+        [JsonProperty("$lastUpdatedVersion", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public long? LastUpdatedVersion { get; set; }
+
+        [JsonExtensionData]
+        internal IDictionary<string, JToken> Properties { get; set; } = new Dictionary<string, JToken>();
+
+        /// <summary>
+        /// Gets the specified property's metadata by name as another metadata object.
+        /// </summary>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="propertyValue">The property's metadata.</param>
+        /// <returns>True if the property exists and could be converted, otherwise false.</returns>
+        public bool TryGetPropertyMetadata(string propertyName, out ClientTwinMetadata propertyValue)
+        {
+            propertyValue = default;
+
+            if (!Properties.TryGetValue(propertyName, out JToken jTokenValue))
+            {
+                return false;
+            }
+
+            // Try convert.
+            try
+            {
+                propertyValue = jTokenValue.ToObject<ClientTwinMetadata>();
+                return true;
+            }
+            catch (InvalidCastException)
+            { }
+
+            return false;
+        }
     }
 }

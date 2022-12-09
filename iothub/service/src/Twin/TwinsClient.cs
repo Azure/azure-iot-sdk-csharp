@@ -548,7 +548,7 @@ namespace Microsoft.Azure.Devices
                     Tags = twin.Tags,
                     Properties =
                     {
-                        DesiredProperties = twin.Properties?.Desired
+                        Desired = twin.Properties?.Desired
                     },
                 };
 

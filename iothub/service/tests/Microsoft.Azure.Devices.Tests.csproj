@@ -13,6 +13,16 @@
     <!-- <CheckEolTargetFramework>false</CheckEolTargetFramework> -->
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Registry\ComplexTwin.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Registry\ComplexTwin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <!--Project reference dependencies-->
   <ItemGroup>
     <ProjectReference Include="..\src\Microsoft.Azure.Devices.csproj" />

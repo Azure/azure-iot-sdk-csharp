@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -119,7 +120,7 @@ namespace Microsoft.Azure.Devices.Tests
             actual.ModuleId.Should().Be(moduleId);
             actual.Tags.Should().BeEquivalentTo(tags);
             actual.ETag.Should().Be(eTag);
-            actual.DeviceETag.ToString().Should().Be(deviceETag.ToString());
+            actual.DeviceETag.Should().Be(deviceETag);
             actual.Version.Should().Be(version);
             actual.Status.Should().Be(status);
             actual.StatusUpdatedOnUtc.Should().Be(statusUpdateOnUtc);
@@ -207,6 +208,91 @@ namespace Microsoft.Azure.Devices.Tests
             ((string)actual.Properties.Desired[desiredKey]).Should().Be(desiredValue);
         }
 
+        [TestMethod]
+        public void ClientTwin_Properties_DeserializesComplexTwin()
+        {
+            // arrange
+            string complexTwinJson = File.ReadAllText("Registry\\ComplexTwin.json");
+
+            // act
+            ClientTwin twin = JsonConvert.DeserializeObject<ClientTwin>(complexTwinJson);
+
+            // assert
+
+            twin.Properties.Should().NotBeNull();
+            twin.Properties.Desired.Should().NotBeNull();
+            twin.Properties.Reported.Should().NotBeNull();
+
+            // Desired root properties
+
+            twin.Properties.Desired.Version.Should().Be(2);
+            twin.Properties.Desired.Count.Should().BeGreaterThan(0);
+            twin.Properties.Desired.Metadata.Should().NotBeNull();
+
+            // Desired root metadata
+
+            var lastUpdatedExpected = DateTimeOffset.Parse("2022-07-14T19:52:01.8575042Z");
+            twin.Properties.Desired.Metadata.LastUpdatedVersion.Should().Be(2);
+            twin.Properties.Desired.Metadata.LastUpdatedOnUtc.Should().Be(lastUpdatedExpected);
+
+            // Desired root property metadata
+
+            twin.Properties.Desired.Metadata
+                .TryGetPropertyMetadata("thermostat2", out ClientTwinMetadata thermostat2Metadata)
+                .Should().BeTrue();
+            thermostat2Metadata.LastUpdatedVersion.Should().Be(2);
+            thermostat2Metadata.LastUpdatedOnUtc.Should().Be(lastUpdatedExpected);
+
+            // Desired nested property metadata
+            thermostat2Metadata
+                .TryGetPropertyMetadata("targetTemperature", out ClientTwinMetadata thermostat2TargetTemperatureMetadata)
+                .Should().BeTrue();
+            thermostat2TargetTemperatureMetadata.LastUpdatedVersion.Should().Be(2);
+            thermostat2TargetTemperatureMetadata.LastUpdatedOnUtc.Should().Be(lastUpdatedExpected);
+
+            // Reported root properties
+
+            twin.Properties.Reported.Version.Should().Be(12);
+            twin.Properties.Reported.Count.Should().Be(4);
+
+            // Reported root simple property
+
+            twin.Properties.Reported
+                .TryGetValue("serialNumber", out string serialNumber)
+                .Should().BeTrue();
+            serialNumber.Should().Be("SR-123456");
+
+            // Reported root complex property
+
+            twin.Properties.Reported
+                .TryGetValue("thermostat1", out ThermostatReported thermostat1Reported)
+                .Should().BeTrue();
+            thermostat1Reported.Component.Should().Be("c");
+            thermostat1Reported.TargetTemperature.Value.Should().Be(70);
+            thermostat1Reported.TargetTemperature.Code.Should().Be(203);
+            thermostat1Reported.TargetTemperature.Version.Should().Be(0, "Initialized value so version is 0");
+            thermostat1Reported.TargetTemperature.Description.Should().Be("Initialized with default value");
+            thermostat1Reported.MaxTempSinceLastReboot.Should().Be(36.1D);
+
+            // Reported root metadata
+            twin.Properties.Reported.Metadata
+                .LastUpdatedOnUtc
+                .Should().Be(DateTimeOffset.Parse("2022-07-29T00:55:15.5412825Z"));
+
+            // Reported root property metadata
+            var reportedPropertyLastUpdated = DateTimeOffset.Parse("2022-07-29T00:55:15.2912928Z");
+            twin.Properties.Reported.Metadata
+                .TryGetPropertyMetadata("thermostat1", out ClientTwinMetadata thermostat1ReportedMetadata)
+                .Should().BeTrue();
+            thermostat1ReportedMetadata.LastUpdatedOnUtc.Should().Be(reportedPropertyLastUpdated);
+
+            // Reported nested property metadata
+            thermostat1ReportedMetadata
+                .TryGetPropertyMetadata("maxTempSinceLastReboot", out ClientTwinMetadata maxTempSinceLastRebootMetadata)
+                .Should().BeTrue();
+            maxTempSinceLastRebootMetadata.LastUpdatedOnUtc.Should().Be(reportedPropertyLastUpdated);
+        }
+
         private class CustomType
         {
             [JsonProperty("customInt")]
@@ -214,6 +300,32 @@ namespace Microsoft.Azure.Devices.Tests
 
             [JsonProperty("customString")]
             public string CustomString { get; set; }
+        }
+
+        private class ThermostatReported
+        {
+            [JsonProperty("__t")]
+            public string Component { get; set; }
+
+            public WritablePropertyResponse<int> TargetTemperature { get; set; }
+
+            [JsonProperty("maxTempSinceLastReboot")]
+            public double MaxTempSinceLastReboot { get; set; }
+        }
+
+        private class WritablePropertyResponse<T>
+        {
+            [JsonProperty("value")]
+            public T Value { get; set; }
+
+            [JsonProperty("ac")]
+            public int Code { get; set; }
+
+            [JsonProperty("av")]
+            public int Version { get; set; }
+
+            [JsonProperty("ad")]
+            public string Description { get; set; }
         }
     }
 }

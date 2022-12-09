@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices
         /// The desired and reported properties for the device or module.
         /// </summary>
         [JsonProperty("properties")]
-        public PropertyContainer Properties { get; set; } = new();
+        public ClientTwinDocument Properties { get; set; } = new();
 
         /// <summary>
         /// Status of capabilities enabled on the device or module.

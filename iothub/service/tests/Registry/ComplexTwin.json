@@ -1,0 +1,142 @@
+﻿{
+  "properties": {
+    "desired": {
+      "thermostat2": {
+        "__t": "c",
+        "targetTemperature": 15
+      },
+      "$metadata": {
+        "$lastUpdated": "2022-07-14T19:52:01.8575042Z",
+        "$lastUpdatedVersion": 2,
+        "thermostat2": {
+          "$lastUpdated": "2022-07-14T19:52:01.8575042Z",
+          "$lastUpdatedVersion": 2,
+          "__t": {
+            "$lastUpdated": "2022-07-14T19:52:01.8575042Z",
+            "$lastUpdatedVersion": 2
+          },
+          "targetTemperature": {
+            "$lastUpdated": "2022-07-14T19:52:01.8575042Z",
+            "$lastUpdatedVersion": 2
+          }
+        }
+      },
+      "$version": 2
+    },
+    "reported": {
+      "thermostat1": {
+        "__t": "c",
+        "targetTemperature": {
+          "value": 70,
+          "ac": 203,
+          "av": 0,
+          "ad": "Initialized with default value"
+        },
+        "maxTempSinceLastReboot": 36.1
+      },
+      "thermostat2": {
+        "__t": "c",
+        "targetTemperature": {
+          "value": 15,
+          "ac": 200,
+          "av": 2
+        },
+        "maxTempSinceLastReboot": 38.3
+      },
+      "deviceInformation": {
+        "__t": "c",
+        "manufacturer": "element15",
+        "model": "ModelIDxcdvmk",
+        "swVersion": "2.0.0",
+        "osName": "Windows 10",
+        "processorArchitecture": "64-bit",
+        "processorManufacturer": "Intel",
+        "totalStorage": 256,
+        "totalMemory": 1024
+      },
+      "serialNumber": "SR-123456",
+      "$metadata": {
+        "$lastUpdated": "2022-07-29T00:55:15.5412825Z",
+        "thermostat1": {
+          "$lastUpdated": "2022-07-29T00:55:15.2912928Z",
+          "__t": {
+            "$lastUpdated": "2022-07-29T00:55:15.2912928Z"
+          },
+          "targetTemperature": {
+            "$lastUpdated": "2022-07-14T19:50:10.67334Z",
+            "value": {
+              "$lastUpdated": "2022-07-14T19:50:10.67334Z"
+            },
+            "ac": {
+              "$lastUpdated": "2022-07-14T19:50:10.67334Z"
+            },
+            "av": {
+              "$lastUpdated": "2022-07-14T19:50:10.67334Z"
+            },
+            "ad": {
+              "$lastUpdated": "2022-07-14T19:50:10.67334Z"
+            }
+          },
+          "maxTempSinceLastReboot": {
+            "$lastUpdated": "2022-07-29T00:55:15.2912928Z"
+          }
+        },
+        "thermostat2": {
+          "$lastUpdated": "2022-07-29T00:55:15.5412825Z",
+          "__t": {
+            "$lastUpdated": "2022-07-29T00:55:15.5412825Z"
+          },
+          "targetTemperature": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z",
+            "value": {
+              "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+            },
+            "ac": {
+              "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+            },
+            "av": {
+              "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+            }
+          },
+          "maxTempSinceLastReboot": {
+            "$lastUpdated": "2022-07-29T00:55:15.5412825Z"
+          }
+        },
+        "deviceInformation": {
+          "$lastUpdated": "2022-07-29T00:55:14.6193954Z",
+          "__t": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          },
+          "manufacturer": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          },
+          "model": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          },
+          "swVersion": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          },
+          "osName": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          },
+          "processorArchitecture": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          },
+          "processorManufacturer": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          },
+          "totalStorage": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          },
+          "totalMemory": {
+            "$lastUpdated": "2022-07-29T00:55:14.6193954Z"
+          }
+        },
+        "serialNumber": {
+          "$lastUpdated": "2022-07-14T19:51:35.0327766Z"
+        }
+      },
+      "$version": 12
+    }
+  }
+}
