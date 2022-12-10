@@ -36,7 +36,7 @@ When using SAS tokens, authentication can be done by:
   > Note:
   > 1. If the shared access policy name is not specified in the connection string, the audience for the token generation will be set by default to - `<iotHubHostName>/devices/<deviceId>`
   > 2. When authenticating a device using shared access key over AMQP, in-connection token refresh is supported.
-  > 3. When authenticating a device using shared access key over MQTT, the connection will be briefly interrupted as part of the token refresh process.
+  > 3. When authenticating a device using shared access key over MQTT, the connection will be briefly closed as part of the token refresh process.
 
 - Providing only the shared access signature
 
