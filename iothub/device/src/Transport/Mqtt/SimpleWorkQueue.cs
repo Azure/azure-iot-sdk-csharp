@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetty.Common.Concurrency;
@@ -20,14 +20,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     internal class SimpleWorkQueue<TWork>
     {
         private readonly Func<IChannelHandlerContext, TWork, Task> _workerAsync;
-        private readonly Queue<TWork> _backlogQueue;
+        private readonly ConcurrentQueue<TWork> _backlogQueue;
         private readonly TaskCompletionSource _completionSource;
 
         public SimpleWorkQueue(Func<IChannelHandlerContext, TWork, Task> workerAsync)
         {
             _workerAsync = workerAsync;
             _completionSource = new TaskCompletionSource();
-            _backlogQueue = new Queue<TWork>();
+            _backlogQueue = new ConcurrentQueue<TWork>();
         }
 
         protected States State { get; set; }
@@ -106,9 +106,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 case States.FinalProcessing:
                     State = States.Aborted;
 
-                    while (_backlogQueue.Any())
+                    while (_backlogQueue.TryDequeue(out TWork workItem))
                     {
-                        TWork workItem = _backlogQueue.Dequeue();
                         ReferenceCountUtil.Release(workItem);
 
                         var cancellableWorkItem = workItem as ICancellable;
@@ -141,9 +140,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 while (_backlogQueue.Any()
-                    && State != States.Aborted)
+                    && State != States.Aborted
+                    && _backlogQueue.TryDequeue(out TWork workItem))
                 {
-                    TWork workItem = _backlogQueue.Dequeue();
                     await DoWorkAsync(context, workItem).ConfigureAwait(false);
                 }
 

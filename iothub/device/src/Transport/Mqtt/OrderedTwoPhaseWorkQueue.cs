@@ -2,11 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -27,7 +30,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly Func<TWork, TWorkId> _getWorkId;
         private readonly Func<IChannelHandlerContext, TWork, Task> _completeWorkAsync;
-        private readonly Queue<IncompleteWorkItem> _incompleteQueue = new Queue<IncompleteWorkItem>();
+
+        private readonly ConcurrentQueue<IncompleteWorkItem> _incompleteQueue = new ConcurrentQueue<IncompleteWorkItem>();
 
         public OrderedTwoPhaseWorkQueue(
             Func<IChannelHandlerContext, TWork, Task> workerAsync,
@@ -43,19 +47,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (!_incompleteQueue.Any())
             {
-                throw new IotHubException("Nothing to complete.", isTransient: false);
+                if (Logging.IsEnabled)
+                    Logging.Error(context, $"{nameof(CompleteWorkAsync)} called but there are no items in the queue to complete.", nameof(CompleteWorkAsync));
+
+                Debug.Fail($"{nameof(CompleteWorkAsync)} called but there are no items in the queue to complete.");
+                return TaskHelpers.CompletedTask;
             }
 
-            IncompleteWorkItem incompleteWorkItem = _incompleteQueue.Peek();
-            if (incompleteWorkItem.Id.Equals(workId))
+            if (_incompleteQueue.TryDequeue(out IncompleteWorkItem incompleteWorkItem))
             {
-                _incompleteQueue.Dequeue();
-                return _completeWorkAsync(context, incompleteWorkItem.WorkItem);
-            }
+                if (incompleteWorkItem.Id.Equals(workId))
+                {
+                    return _completeWorkAsync(context, incompleteWorkItem.WorkItem);
+                }
 
-            throw new IotHubException(
-                $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
-                isTransient: false);
+                throw new IotHubException(
+                    $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
+                    isTransient: false);
+            }
+            return TaskHelpers.CompletedTask;
         }
 
         protected override async Task DoWorkAsync(IChannelHandlerContext context, TWork work)
@@ -77,17 +87,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (stateBefore != State
                 && State == States.Aborted)
             {
-                while (_incompleteQueue.Any())
+                while (_incompleteQueue.TryDequeue(out IncompleteWorkItem workItem))
                 {
-                    var workItem = _incompleteQueue.Dequeue().WorkItem as ICancellable;
+                    var cancellableWorkItem = workItem.WorkItem as ICancellable;
 
                     if (exception == null)
                     {
-                        workItem?.Cancel();
+                        cancellableWorkItem?.Cancel();
                     }
                     else
                     {
-                        workItem?.Abort(exception);
+                        cancellableWorkItem?.Abort(exception);
                     }
                 }
             }
