@@ -66,6 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 throw new InvalidOperationException("The certificate name has not been set.");
             }
 
+            
             string codeBase = Assembly.GetExecutingAssembly().Location;
             string workingDirectory = Path.GetDirectoryName(codeBase);
 
