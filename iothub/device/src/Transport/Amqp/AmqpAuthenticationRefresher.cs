@@ -118,72 +118,76 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
-            TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
-            Debug.Assert(_connectionString.TokenRefresher != null);
-
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} before {nameof(RefreshLoopAsync)}");
-                }
+                TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
+                Debug.Assert(_connectionString.TokenRefresher != null);
 
-                if (waitTime > TimeSpan.Zero)
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} waiting {waitTime} {nameof(RefreshLoopAsync)}.");
-
-                    await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
-                }
-
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    try
                     {
-                        refreshesOn = await _amqpIoTCbsLink
-                            .SendTokenAsync(
-                                _amqpIoTCbsTokenProvider,
-                                _connectionString.AmqpEndpoint,
-                                _audience,
-                                _audience,
-                                AccessRightsStringArray,
-                                _operationTimeout)
-                            .ConfigureAwait(false);
+                        Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} before {nameof(RefreshLoopAsync)}");
                     }
-                    catch (Exception ex) when (ex is IotHubCommunicationException || ex is OperationCanceledException)
-                    {
-                        // In case the token refresh is not successful either due to a communication exception or cancellation token cancellation
-                        // then log the exception and continue.
-                        // This task runs on an unmonitored thread so there is no point throwing these exceptions.
-                        if (Logging.IsEnabled)
-                        {
-                            Logging.Error(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} refresh token failed {ex}");
-                        }
-                    }
-                    finally
+
+                    if (waitTime > TimeSpan.Zero)
                     {
                         if (Logging.IsEnabled)
-                        {
-                            Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} after {nameof(RefreshLoopAsync)}");
-                        }
+                            Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} waiting {waitTime} {nameof(RefreshLoopAsync)}.");
+
+                        await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                     }
 
-                    waitTime = refreshesOn - DateTime.UtcNow;
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            refreshesOn = await _amqpIoTCbsLink
+                                .SendTokenAsync(
+                                    _amqpIoTCbsTokenProvider,
+                                    _connectionString.AmqpEndpoint,
+                                    _audience,
+                                    _audience,
+                                    AccessRightsStringArray,
+                                    _operationTimeout)
+                                .ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            // In case the token refresh is not successful either due to a communication exception or cancellation token cancellation
+                            // then log the exception and continue.
+                            // This task runs on an unmonitored thread so there is no point throwing these exceptions.
+                            if (Logging.IsEnabled)
+                            {
+                                Logging.Error(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} refresh token failed {ex}");
+                            }
+                        }
+                        finally
+                        {
+                            if (Logging.IsEnabled)
+                            {
+                                Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} after {nameof(RefreshLoopAsync)}");
+                            }
+                        }
+
+                        waitTime = refreshesOn - DateTime.UtcNow;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Exception caught while executing SAS token refresh loop: {ex}", nameof(StopLoop));
             }
         }
 
-        // StopLoop ensures that the resources related to token refresher are cancelled and ready for cleanup.
-        // It will cancel the associated cancellation token source and will await completion of the refresh loop task.
-        // Any exceptions thrown as a result of these operations are caught and logged.
-        // StopLoop will not generate any exceptions so it safe for us to declare this as async void.
-        public async void StopLoop()
+        public void StopLoop()
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(StopLoop));
-
             try
             {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, nameof(StopLoop));
+
                 _refresherCancellationTokenSource?.Cancel();
             }
             catch (ObjectDisposedException)
@@ -191,25 +195,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled)
                     Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopLoop));
             }
-
-            // _refresherCancellationTokenSource cancellation signals the loop in RefreshLoopAsync to be cancelled.
-            // We are awaiting this task so that any exceptions thrown within the loop as a result of this cancellation are caught and logged.
-            if (_refreshLoop != null)
+            catch (Exception ex)
             {
-                try
-                {
-                    await _refreshLoop.ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"Exception caught while canceling SAS token refresh loop: {ex}", nameof(StopLoop));
-                }
-                _refreshLoop = null;
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Exception caught while cleaning up SAS token refresh loop resources: {ex}", nameof(StopLoop));
             }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, nameof(StopLoop));
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(StopLoop));
+            }
         }
 
         public void Dispose()
