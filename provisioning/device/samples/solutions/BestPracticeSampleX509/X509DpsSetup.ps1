@@ -21,6 +21,10 @@ param(
     # Device Id created to use in sample.
     [Parameter(Mandatory=$true)]
     [string] $deviceId
+
+    # Delete and recreate enrollmentGroup if it already exists
+    [Parameter(Mandatory=$false)]
+    [switch] $force = $false
 )
 
 # Check that script is run in admin mode as it requires admin permission to create self-signed certificates. 
@@ -127,22 +131,6 @@ $groupEnrollmentId = "x509GroupEnrollment"
 if (($intermediateCertPath.EndsWith('.pem') -ne $true) -and ($intermediateCertPath.EndsWith('.cer') -ne $true))
 {
     Write-Host "Certificate file type must be either '.pem' or '.cer'"
-    exit
-}
-
-# Check if the resource group exists. If not, exit.
-$resourceGroupExists = az group exists -n $resourceGroup
-if ($resourceGroupExists -ne $true)
-{
-    Write-Host "Resource Group '$resourceGroup' does not exist. Exiting..."
-    exit
-}
-
-# Check if the dps instance exists. If not, exit.
-$dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2>nul
-if ($dpsExists -eq $null)
-{
-    Write-Host "Dps '$dpsName' does not exist under '$resourceGroup'. Exiting..."
     exit
 }
 

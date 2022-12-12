@@ -27,10 +27,11 @@ The business needs of Contoso are:
 2. Set up an IoT hub Device Provisioning Service (DPS) instance.
 3. Link the IoT hub(s) to the DPS instance.
 See [here](https://learn.microsoft.com/azure/iot-dps/quick-setup-auto-provision) for the instructions.
+4. Install OpenSSL for Windows.
 
 ## Warning
 
-The provided script, [X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509AuthSetup.ps1) creates X.509 test certificates. They are provided for demonstration purposes only. Certificates must not be used for production. For a production environment, we recommend using X.509 certificate authority (CA) certificates and your own best practices for certificate lifetime management. To read more about X.509 CA certificates, see [here](https://learn.microsoft.com/en-us/azure/iot-hub/iot-hub-x509ca-concept).
+The provided script, [X509DpsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509DpsSetup.ps1) creates X.509 test certificates. They are provided for demonstration purposes only. Certificates must not be used for production. For a production environment, we recommend using X.509 certificate authority (CA) certificates and your own best practices for certificate lifetime management. To read more about X.509 CA certificates, see [here](https://learn.microsoft.com/en-us/azure/iot-hub/iot-hub-x509ca-concept).
 
 ### Generate test certificates and verify root certificate
 
@@ -40,10 +41,10 @@ The provided script, [X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-
     $password = ConvertTo-SecureString <your password> -AsPlainText -Force
 ```
 
-2. [X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509AuthSetup.ps1) creates the root, intermediate, device certificate, and uploads the root certificate to your DPS instance, and performs proof-of-possession. Your device Id is set to the subject of the common name of the device certificate and the registration Id in DPS.
+2. [X509DpsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509DpsSetup.ps1) creates the root, intermediate, device certificate, and uploads the root certificate to your DPS instance, and performs proof-of-possession. Your device Id is set to the subject of the common name of the device certificate and the registration Id in DPS.
 
 ```powershell
-    .\X509AuthSetup.ps1 `
+    .\X509DpsSetup.ps1 `
         -certFolderPath <Path where the certificates will be placed> `
         -rootCertPassword $password `
         -dpsResourceGroup <DPS instance resource group> `
@@ -51,7 +52,7 @@ The provided script, [X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-
         -deviceId <device Id>
 ```
 
-[X509AuthSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509AuthSetup.ps1) first issues a root certificate. Then it uses the root certificate to generate a unique intermediate certificate for each product line. Finally, it uses the production line certificate, to generate a unique device (end-entity) certificate for each device manufactured on the line.
+[X509DpsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509DpsSetup.ps1) first issues a root certificate. Then it uses the root certificate to generate a unique intermediate certificate for each product line. Finally, it uses the production line certificate, to generate a unique device (end-entity) certificate for each device manufactured on the line.
 
 > **Note**\
 > Read more about X.509 certificate attestation [here](https://learn.microsoft.com/azure/iot-dps/concepts-x509-attestation).
@@ -65,15 +66,8 @@ An enrollment group is a group of devices that share a specific attestation meth
 
 We will use the generated intermediate certificate to group devices by production lines. See [here](https://learn.microsoft.com/azure/iot-dps/concepts-x509-attestation#why-are-intermediate-certs-useful) to read more about intermediate certificates.
 
-[GenerateGroupEnrollment.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/GenerateGroupEnrollment.ps1) creates an enrollment group in your DPS instance using the generated intermediate certificate.
+[X509DpsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/main/provisioning/device/samples/solutions/BestPracticeSampleX509/X509DpsSetup.ps1) also creates an enrollment group in your DPS instance using the generated intermediate certificate.
 You can specify initial twin state, provisioning status, device capabilities, IoT hub name, eTag, etc. To learn more about these optional parameters, see [here](https://learn.microsoft.com/cli/azure/iot/dps/enrollment-group?view=azure-cli-latest#az-iot-dps-enrollment-group-create).
-
-```powershell
-    .\GenerateGroupEnrollment.ps1 `
-        -intermediateCertName <intermediate certificate file name including the path> `
-        -resourceGroup <DPS instance resource group> `
-        -dpsName <DPS instance name>
-```
 
 ### Provision a device through DPS and connect to IoT Hub
 
