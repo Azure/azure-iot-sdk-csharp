@@ -242,7 +242,7 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     Write-Host
     Write-Host -ForegroundColor Cyan $label
 
-    $runTestCmd = "dotnet test -s test.runsettings --verbosity $verbosity --configuration $configuration --logger trx"
+    $runTestCmd = "dotnet test -s test.runsettings --verbosity $verbosity --configuration $configuration --logger trx --collect 'Code Coverage' --collect 'XPlat Code Coverage'"
 
     if ($noBuildBeforeTesting)
     {

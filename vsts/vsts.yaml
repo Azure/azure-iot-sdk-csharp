@@ -481,6 +481,14 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
+      
+      - task: CopyFiles@2
+        displayName: "Copy coverage files to the artifacts folder"
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          SourceFolder: "$(Build.SourcesDirectory)"
+          Contents: "**/*.coverage"
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
       - task: CopyFiles@2
         displayName: "Copy ETL files to the artifacts folder"
@@ -505,6 +513,12 @@ jobs:
           testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
+      
+      - task: PublishCodeCoverageResults@1  
+        displayName: 'Publish code coverage **/*coverage.cobertura.xml'  
+        inputs:  
+          codeCoverageTool: Cobertura  
+          summaryFileLocation: '$(Build.SourcesDirectory)/Cobertura.xml'
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
