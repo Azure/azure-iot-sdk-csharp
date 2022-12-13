@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (_amqpIotConnection != null && ReferenceEquals(_amqpIotConnection, o))
             {
-                _amqpAuthenticationRefresher?.StopLoop();
+                _ = _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, _amqpIotConnection, nameof(Shutdown));
 
-            _amqpAuthenticationRefresher?.StopLoop();
+            _ = _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
             _amqpIotConnection?.SafeClose();
 
             if (Logging.IsEnabled)
@@ -218,7 +218,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                amqpAuthenticationRefresher?.StopLoop();
+                if (amqpAuthenticationRefresher != null)
+                {
+                    await amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
+                }
+
                 amqpIotConnection?.SafeClose();
                 throw;
             }
