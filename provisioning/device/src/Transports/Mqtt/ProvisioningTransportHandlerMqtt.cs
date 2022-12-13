@@ -415,6 +415,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             tlsParameters.UseTls = true;
             tlsParameters.SslProtocol = _settings.SslProtocols;
+            tlsParameters.IgnoreCertificateRevocationErrors = !_settings.CertificateRevocationCheck;
             mqttClientOptionsBuilder
                 .WithTls(tlsParameters)
                 .WithProtocolVersion(MqttProtocolVersion.V311)

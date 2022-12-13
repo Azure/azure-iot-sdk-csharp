@@ -20,14 +20,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 SslProtocols = SslProtocols.Tls12,
                 IdleTimeout = TimeSpan.FromSeconds(1),
+                CertificateRevocationCheck = true,
             };
-            var options = new ProvisioningClientOptions(amqpSettings)
+            ProvisioningClientOptions options = new ProvisioningClientOptions(amqpSettings)
             {
                 AdditionalUserAgentInfo = "info"
             };
 
             // act
-            var clone = options.Clone();
+            ProvisioningClientOptions clone = options.Clone();
 
             // assert
             options.Should().NotBeSameAs(clone);
@@ -46,14 +47,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 SslProtocols = SslProtocols.Tls12,
                 IdleTimeout = TimeSpan.FromSeconds(1),
                 PublishToServerQoS = QualityOfService.AtMostOnce,
+                CertificateRevocationCheck = true,
             };
-            var options = new ProvisioningClientOptions(mqttSettings)
+            ProvisioningClientOptions options = new ProvisioningClientOptions(mqttSettings)
             {
                 AdditionalUserAgentInfo = "info"
             };
 
             // act
-            var clone = options.Clone();
+            ProvisioningClientOptions clone = options.Clone();
 
             // assert
             options.Should().NotBeSameAs(clone);

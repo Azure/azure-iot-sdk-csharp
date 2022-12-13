@@ -60,6 +60,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 PublishToServerQoS = PublishToServerQoS,
                 ReceivingQoS = ReceivingQoS,
                 IdleTimeout = IdleTimeout,
+                CertificateRevocationCheck = CertificateRevocationCheck,
+                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
             };
         }
     }

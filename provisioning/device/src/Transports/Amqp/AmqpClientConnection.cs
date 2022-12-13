@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
@@ -98,7 +99,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 {
                     TargetHost = hostName,
                     Certificate = clientCert,
-                    CertificateValidationCallback = remoteCerificateValidationCallback,
+                    CertificateValidationCallback = remoteCerificateValidationCallback ?? OnRemoteCertificateValidation,
                     Protocols = _clientSettings.SslProtocols,
                 };
 
@@ -206,6 +207,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             await websocket.ConnectAsync(webSocketUriBuilder.Uri, cancellationToken).ConfigureAwait(false);
 
             return new ClientWebSocketTransport(websocket, null, null);
+        }
+
+        private bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            // If there are no policy errors then return the remote certificate validation is a pass.
+            if (sslPolicyErrors == SslPolicyErrors.None)
+            {
+                return true;
+            }
+
+            // If there are remote certificate chain errors due to unknown revocation status check, then it is a pass only if
+            // remote certificate revocation check has been turned off.
+            if (!_clientSettings.CertificateRevocationCheck
+                && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors
+                && CausedByRevocationCheckError(chain))
+            {
+                return true;
+            }
+
+            // For all other cases, it is a fail.
+            return false;
         }
 
         private ClientWebSocket CreateClientWebSocket(IWebProxy webProxy)
@@ -330,6 +352,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 args.Transport = null;
                 _tcs.TrySetException(args.Exception);
             }
+        }
+
+        private static bool CausedByRevocationCheckError(X509Chain chain)
+        {
+            return chain.ChainStatus.All(status => status.Status == X509ChainStatusFlags.RevocationStatusUnknown);
         }
     }
 }
