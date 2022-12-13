@@ -518,7 +518,7 @@ jobs:
         displayName: 'Publish code coverage **/*coverage.cobertura.xml'  
         inputs:  
           codeCoverageTool: Cobertura  
-          summaryFileLocation: '$(Build.SourcesDirectory)/Cobertura.xml'
+          summaryFileLocation: '**/*.xml'
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
