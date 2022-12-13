@@ -22,9 +22,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="moduleId">Module Identifier.</param>
         public ClientAuthenticationWithSharedAccessSignature(string token, string deviceId, string moduleId = default)
         {
-            SetDeviceId(deviceId);
-            SetModuleId(moduleId);
-            SetToken(token);
+            DeviceId = deviceId;
+            Token = token;
+            ModuleId = moduleId;
         }
 
         /// <summary>

@@ -56,6 +56,8 @@ namespace Microsoft.Azure.Devices.Client
             string deviceId,
             string moduleId = default)
         {
+            DeviceId = deviceId;
+            ModuleId = moduleId;
             SetDeviceId(deviceId);
             SetModuleId(moduleId);
             ClientCertificate = certificate
