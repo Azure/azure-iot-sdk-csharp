@@ -20,13 +20,14 @@ param(
 
     # Device Id created to use in sample.
     [Parameter(Mandatory=$true)]
-    [string] $deviceId
+    [string] $deviceId,
 
     # Delete and recreate enrollmentGroup if it already exists
     [Parameter(Mandatory=$false)]
     [switch] $force = $false
 )
 
+Write-Host $force
 # Check that script is run in admin mode as it requires admin permission to create self-signed certificates. 
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 if (-not $isAdmin)
@@ -78,6 +79,7 @@ $deviceCert = New-SelfSignedCertificate `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert
 Write-Host "Exporting $dpsCertChainDeviceCommonName.pfx to $devicePfxPath"
+
 Export-PFXCertificate -cert $deviceCert -filePath $devicePfxPath -password $dpsCredentials.Password | Out-Null
 
 # Check if the resource group exists. If not, exit.
@@ -89,7 +91,7 @@ if ($resourceGroupExists -ne $true)
 }
 
 # Check if the DPS instance exists. If not, exit.
-$dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2>nul
+$dpsExists = az iot dps show --name $dpsName -g $resourceGroup
 if ($dpsExists -eq $null)
 {
     Write-Host "DPS instance '$dpsName' does not exist under '$resourceGroup'. Exiting..."
@@ -101,29 +103,33 @@ Write-Host "Uploading $rootCertPath to $dpsName"
 $certExits = az iot dps certificate list -g $resourceGroup --dps-name $dpsName --query "value[?name=='$certNameToUpload']" --output tsv
 if ($certExits)
 {
-    $etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag'
-    az iot dps certificate delete -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --etag $etag
+    $etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --certificate-name $certNameToUpload --query 'etag'
+    az iot dps certificate delete -g $resourceGroup --dps-name $dpsName --certificate-name $certNameToUpload --etag $etag
 }
-az iot dps certificate create -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --path $rootCertPath | Out-Null
+az iot dps certificate create -g $resourceGroup --dps-name $dpsName --certificate-name $certNameToUpload --path $rootCertPath | Out-Null
+
+$verificationCertPath = "$certFolder/verification.cer"
 
 # Verify rootCA cert in DPS
 Write-Host "Verifying possession of rootCACert in $dpsName"
-$etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag'
-$requestedCommonName = az iot dps certificate generate-verification-code -g $resourceGroup --dps-name $dpsName --name $certNameToUpload -e $etag --query 'properties.verificationCode' 2>nul
-$verificationCertArgs = @{
-    "-DnsName"                       = $requestedCommonName;
-    "-CertStoreLocation"             = "cert:\LocalMachine\My";
-    "-NotAfter"                      = (get-date).AddYears(2);
-    "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0"); 
-    "-Signer"                        = $rootCACert;
+$isVerified = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $certNameToUpload --query 'properties.isVerified' --output tsv
+if ($isVerified -eq 'false')
+{
+    Write-Host "Verifying certificate uploaded to DPS."
+    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $certNameToUpload --query 'etag'
+    $requestedCommonName = az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $certNameToUpload -e $etag --query 'properties.verificationCode'
+    $verificationCertArgs = @{
+        "-DnsName"             = $requestedCommonName;
+        "-CertStoreLocation"   = "cert:\LocalMachine\My";
+        "-NotAfter"            = (get-date).AddYears(2);
+        "-TextExtension"       = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-Signer"              = $rootCACert;
+    }
+    $verificationCert = New-SelfSignedCertificate @verificationCertArgs
+    Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
+    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $certNameToUpload --query 'etag'
+    az iot dps certificate verify -g $ResourceGroup --dps-name $dpsName --certificate-name $certNameToUpload -e $etag --path $verificationCertPath --output none
 }
-
-$verificationCertPath = "$certFolder/verification.cer"
-$verificationCert = New-SelfSignedCertificate @verificationCertArgs
-Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
-$etag = az iot dps certificate show -g $resourceGroup --dps-name $dpsName --name $certNameToUpload --query 'etag' 2>nul
-az iot dps certificate verify -g $resourceGroup --dps-name $dpsName --name $certNameToUpload -e $etag --path $verificationCertPath --output none
-Write-Host "Successfully verified possession of rootCACert in $dpsName"
 
 $groupEnrollmentId = "x509GroupEnrollment"
 
@@ -136,7 +142,7 @@ if (($intermediateCertPath.EndsWith('.pem') -ne $true) -and ($intermediateCertPa
 
 # Check if the enrollment group already exists in dps instance. If it does, delete and regenerate the group enrollment.
 Write-Host "`Checking if '$groupEnrollmentId' enrollment group already exists in '$dpsName'..."
-$groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g $resourceGroup --enrollment-id $groupEnrollmentId 2>nul
+$groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g $resourceGroup --enrollment-id $groupEnrollmentId
 if ($groupEnrollmentExists)
 {
     if ($force)
