@@ -31,7 +31,7 @@ When using SAS tokens, authentication can be done by:
   - [SasTokenTimeToLive](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.clientoptions.sastokentimetolive): The suggested time-to-live value for tokens generated for SAS authenticated clients. Default value is 60 minutes.
   - [SasTokenRenewalBuffer](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.clientoptions.sastokenrenewalbuffer): The time buffer before expiry when the token should be renewed, expressed as a percentage of the time-to-live. Acceptable values lie between 0 and 100. Default value is 15%.  
   
-  > Note:
+  > Notes:
   > 1. If the shared access policy name is not specified in the connection string, the audience for the token generation will be set by default to - `<iotHubHostName>/devices/<deviceId>`
   > 2. When authenticating a device using shared access key over AMQP, in-connection token refresh is supported.
   > 3. When authenticating a device using shared access key over MQTT, the connection will be briefly closed as part of the token refresh process.
