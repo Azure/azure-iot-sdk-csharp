@@ -100,6 +100,7 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <exception cref="IotHubServiceException">If an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="InvalidOperationException">If the message processor is opened before setting the <see cref="MessageFeedbackProcessor"/> callback.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
