@@ -9,9 +9,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// The exception that is thrown when an error occurs during device provisioning client operation.
     /// </summary>
+    [Serializable]
     public class ProvisioningClientException : Exception
     {
-        private const string IsTransientValueSerializationStoreName = "ProvisioningClientException-IsTransient";
+        [NonSerialized]
+        private const string IsTransientValueSerializationStoreName = "ProvisioningClientExceptionn-IsTransient";
+
+        [NonSerialized]
+        private const string TrackingIdValueSerializationStoreName = "ProvisioningClientException-TrackingId";
 
         /// <summary>
         /// Creates a new instance of this class.
@@ -56,13 +61,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected internal ProvisioningClientException(SerializationInfo info, StreamingContext context)
+        protected ProvisioningClientException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             if (info != null)
             {
                 IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                TrackingId = info.GetString(IsTransientValueSerializationStoreName);
+                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
             }
         }
 

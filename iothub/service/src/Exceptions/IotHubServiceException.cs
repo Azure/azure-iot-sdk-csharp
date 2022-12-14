@@ -13,8 +13,11 @@ namespace Microsoft.Azure.Devices
     [Serializable]
     public class IotHubServiceException : Exception
     {
+        [NonSerialized]
         private const string IsTransientValueSerializationStoreName = "IotHubServiceException-IsTransient";
-        private const string TrackingIdValueSerializationStoreName = "IoTHubException-TrackingId";
+
+        [NonSerialized]
+        private const string TrackingIdValueSerializationStoreName = "IotHubServiceException-TrackingId";
 
         /// <summary>
         /// Creates an instance of this class with the specified error message and optional inner exception.
