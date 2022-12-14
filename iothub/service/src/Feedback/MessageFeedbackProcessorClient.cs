@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (MessageFeedbackProcessor == null)
                 {
-                    throw new Exception("Callback for message feedback must be set before opening the connection.");
+                    throw new InvalidOperationException("Callback for message feedback must be set before opening the connection.");
                 }
 
                 await _internalRetryHandler
