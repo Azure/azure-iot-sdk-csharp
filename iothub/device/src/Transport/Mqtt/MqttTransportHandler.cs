@@ -1239,7 +1239,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // This query string key-value pair is only expected in a successful patch twin response message.
                     // Get twin requests will contain the twin version in the payload instead.
-                    version = int.Parse(queryStringKeyValuePairs.Get(VersionTopicKey), CultureInfo.CurrentCulture);
+                    version = int.Parse(queryStringKeyValuePairs.Get(VersionTopicKey), CultureInfo.InvariantCulture);
                 }
 
                 return true;

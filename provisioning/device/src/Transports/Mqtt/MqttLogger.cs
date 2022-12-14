@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt
             string formattedMessage = message;
             if (parameters != null && parameters.Length > 0)
             {
-                formattedMessage = string.Format(CultureInfo.CurrentCulture, message, parameters);
+                formattedMessage = string.Format(CultureInfo.InvariantCulture, message, parameters);
             }
 
             Logging.Log.Write(formattedMessage, options);
