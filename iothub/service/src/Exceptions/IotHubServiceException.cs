@@ -13,8 +13,11 @@ namespace Microsoft.Azure.Devices
     [Serializable]
     public class IotHubServiceException : Exception
     {
+        [NonSerialized]
         private const string IsTransientValueSerializationStoreName = "IotHubServiceException-IsTransient";
-        private const string TrackingIdSerializationStoreName = "IoTHubException-TrackingId";
+
+        [NonSerialized]
+        private const string TrackingIdValueSerializationStoreName = "IotHubServiceException-TrackingId";
 
         /// <summary>
         /// Creates an instance of this class with the specified error message and optional inner exception.
@@ -51,6 +54,21 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
+        /// Creates an instance of this class.
+        /// </summary>
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        protected IotHubServiceException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            if (info != null)
+            {
+                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
+                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
+            }
+        }
+
+        /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
         public bool IsTransient { get; protected internal set; }
@@ -81,7 +99,7 @@ namespace Microsoft.Azure.Devices
         {
             base.GetObjectData(info, context);
             info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
-            info.AddValue(TrackingIdSerializationStoreName, TrackingId);
+            info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
         }
 
         private static bool DetermineIfTransient(HttpStatusCode statusCode, IotHubServiceErrorCode errorCode)
