@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using MQTTnet.Diagnostics;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt
@@ -21,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt
             string formattedMessage = message;
             if (parameters != null && parameters.Length > 0)
             {
-                formattedMessage = string.Format(message, parameters);
+                formattedMessage = string.Format(CultureInfo.CurrentCulture, message, parameters);
             }
 
             Logging.Log.Write(formattedMessage, options);

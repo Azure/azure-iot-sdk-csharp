@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices
                 // No need to deserialize here since the user will deserialize this into their expected type
                 // after this function returns.
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault());
+                int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault(), CultureInfo.CurrentCulture);
                 string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
                 return new InvokeDigitalTwinCommandResponse
                 {
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices
                 // No need to deserialize here since the user will deserialize this into their expected type
                 // after this function returns.
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault());
+                int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault(), CultureInfo.CurrentCulture);
                 string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
                 return new InvokeDigitalTwinCommandResponse
                 {
