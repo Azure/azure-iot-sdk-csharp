@@ -41,9 +41,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <inheritdoc/>
-        public override bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+        public override bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay)
         {
-            if (!base.ShouldRetry(currentRetryCount, lastException, out retryInterval))
+            if (!base.ShouldRetry(currentRetryCount, lastException, out retryDelay))
             {
                 return false;
             }
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             double clampedWaitMs = Math.Min(exponentialIntervalMs, _maxDelay.TotalMilliseconds);
 
-            retryInterval = _useJitter
+            retryDelay = _useJitter
                 ? UpdateWithJitter(clampedWaitMs)
                 : TimeSpan.FromMilliseconds(clampedWaitMs);
 

@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <inheritdoc/>
-        public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+        public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay)
         {
-            retryInterval = TimeSpan.Zero;
+            retryDelay = TimeSpan.Zero;
             return false;
         }
     }
