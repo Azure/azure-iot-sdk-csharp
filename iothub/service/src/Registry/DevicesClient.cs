@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Create a device identity in your IoT hub's registry.
         /// </summary>
-        /// <param name="device">The device identity to register.</param>
+        /// <param name="deviceIdentity">The device identity to register.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered device with the generated keys and ETags.</returns>
         /// <exception cref="ArgumentNullException">When the provided device is null.</exception>
@@ -69,18 +69,18 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<Device> CreateAsync(Device device, CancellationToken cancellationToken = default)
+        public virtual async Task<Device> CreateAsync(Device deviceIdentity, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating device: {device?.Id}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating device: {deviceIdentity?.Id}", nameof(CreateAsync));
 
-            Argument.AssertNotNull(device, nameof(device));
+            Argument.AssertNotNull(deviceIdentity, nameof(deviceIdentity));
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(deviceIdentity.Id), _credentialProvider, deviceIdentity);
                 HttpResponseMessage response = null;
 
                 await _internalRetryHandler
@@ -106,13 +106,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device {device?.Id} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating device {deviceIdentity?.Id} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating device: {device?.Id}", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating device: {deviceIdentity?.Id}", nameof(CreateAsync));
             }
         }
 
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Replace a device identity's state with the provided device identity's state.
         /// </summary>
-        /// <param name="device">The device identity's new state.</param>
+        /// <param name="deviceIdentity">The device identity's new state.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this update operation will be performed even if the provided device identity has
         /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
@@ -196,19 +196,19 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<Device> SetAsync(Device device, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task<Device> SetAsync(Device deviceIdentity, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device: {device?.Id}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating device: {deviceIdentity?.Id}", nameof(SetAsync));
 
-            Argument.AssertNotNull(device, nameof(device));
+            Argument.AssertNotNull(deviceIdentity, nameof(deviceIdentity));
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
-                HttpMessageHelper.ConditionallyInsertETag(request, device.ETag, onlyIfUnchanged);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(deviceIdentity.Id), _credentialProvider, deviceIdentity);
+                HttpMessageHelper.ConditionallyInsertETag(request, deviceIdentity.ETag, onlyIfUnchanged);
 
                 HttpResponseMessage response = null;
 
@@ -235,13 +235,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device {device?.Id} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating device {deviceIdentity?.Id} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating device: {device?.Id}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating device: {deviceIdentity?.Id}", nameof(SetAsync));
             }
         }
 
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Delete the device identity with the provided Id from your IoT hub's registry.
         /// </summary>
-        /// <param name="device">
+        /// <param name="deviceIdentity">
         /// The device identity to delete from your IoT hub's registry. If the provided device's ETag
         /// is out of date, this operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
         /// An up-to-date ETag can be retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
@@ -289,19 +289,19 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task DeleteAsync(Device device, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(Device deviceIdentity, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting device: {device?.Id}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting device: {deviceIdentity?.Id}", nameof(DeleteAsync));
 
-            Argument.AssertNotNull(device, nameof(device));
+            Argument.AssertNotNull(deviceIdentity, nameof(deviceIdentity));
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetRequestUri(device.Id), _credentialProvider);
-                HttpMessageHelper.ConditionallyInsertETag(request, device.ETag, onlyIfUnchanged);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetRequestUri(deviceIdentity.Id), _credentialProvider);
+                HttpMessageHelper.ConditionallyInsertETag(request, deviceIdentity.ETag, onlyIfUnchanged);
 
                 HttpResponseMessage response = null;
 
@@ -327,13 +327,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting device {device?.Id} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting device {deviceIdentity?.Id} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting device: {device?.Id}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting device: {deviceIdentity?.Id}", nameof(DeleteAsync));
             }
         }
 
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices
         /// This API uses the same underlying service API as the bulk create/set/delete APIs defined in
         /// this client such as <see cref="CreateAsync(IEnumerable{Device}, CancellationToken)"/>.
         /// </remarks>
-        /// <param name="device">The device identity to register.</param>
+        /// <param name="deviceIdentity">The device identity to register.</param>
         /// <param name="twin">The initial twin state for the device.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
@@ -355,12 +355,12 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<BulkRegistryOperationResult> CreateWithTwinAsync(Device device, ClientTwin twin, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> CreateWithTwinAsync(Device deviceIdentity, ClientTwin twin, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));
+                Logging.Enter(this, $"Creating device with twin: {deviceIdentity?.Id}", nameof(CreateWithTwinAsync));
 
-            Argument.AssertNotNull(device, nameof(device));
+            Argument.AssertNotNull(deviceIdentity, nameof(deviceIdentity));
             Argument.AssertNotNull(twin, nameof(twin));
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Devices
             {
                 var exportImportDeviceList = new List<ExportImportDevice>
                 {
-                    new ExportImportDevice(device, ImportMode.Create)
+                    new ExportImportDevice(deviceIdentity, ImportMode.Create)
                     {
                         Tags = twin.Tags,
                         Properties =
@@ -393,13 +393,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device with twin {device?.Id} threw an exception: {ex}", nameof(CreateWithTwinAsync));
+                    Logging.Error(this, $"Creating device with twin {deviceIdentity?.Id} threw an exception: {ex}", nameof(CreateWithTwinAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));
+                    Logging.Exit(this, $"Creating device with twin: {deviceIdentity?.Id}", nameof(CreateWithTwinAsync));
             }
         }
 
