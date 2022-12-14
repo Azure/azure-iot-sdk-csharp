@@ -637,8 +637,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // Check if we have an int to string error code translation for the service returned error code.
                     // The error code could be a part of the service returned error message, or it can be a part of the topic string.
                     // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
-                    if ((Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
-                        || Enum.TryParse(getTwinResponse.Status.ToString(), out errorCode))
+                    if ((Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode.ToString(CultureInfo.InvariantCulture), out IotHubClientErrorCode errorCode)
+                        || Enum.TryParse(getTwinResponse.Status.ToString(CultureInfo.InvariantCulture), out errorCode))
                         && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
                     {
                         throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message, errorCode)
@@ -694,7 +694,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             string requestId = Guid.NewGuid().ToString();
-            string topic = string.Format(TwinReportedPropertiesPatchTopicFormat, requestId);
+            string topic = string.Format(CultureInfo.InvariantCulture, TwinReportedPropertiesPatchTopicFormat, requestId);
 
             byte[] body = reportedProperties.GetObjectBytes();
 
@@ -739,8 +739,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // Check if we have an int to string error code translation for the service returned error code.
                     // The error code could be a part of the service returned error message, or it can be a part of the topic string.
                     // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
-                    if ((Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
-                        || Enum.TryParse(patchTwinResponse.Status.ToString(), out errorCode))
+                    if ((Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode.ToString(CultureInfo.InvariantCulture), out IotHubClientErrorCode errorCode)
+                        || Enum.TryParse(patchTwinResponse.Status.ToString(CultureInfo.InvariantCulture), out errorCode))
                         && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
                     {
                         throw new IotHubClientException(patchTwinResponse.ErrorResponseMessage.Message, errorCode)
@@ -854,7 +854,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
 
-                if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
+                if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic, StringComparison.Ordinal))
                 {
                     throw new IotHubClientException(
                         $"Received unexpected subscription to topic {subscribeResult.TopicFilter.Topic}",
@@ -898,7 +898,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 MqttClientUnsubscribeResultItem unsubscribeResult = unsubscribeResults.Items.FirstOrDefault();
-                if (!unsubscribeResult.TopicFilter.Equals(fullTopic))
+                if (!unsubscribeResult.TopicFilter.Equals(fullTopic, StringComparison.Ordinal))
                 {
                     throw new IotHubClientException(
                         $"Received unexpected unsubscription from topic {unsubscribeResult.TopicFilter}",
@@ -1239,7 +1239,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // This query string key-value pair is only expected in a successful patch twin response message.
                     // Get twin requests will contain the twin version in the payload instead.
-                    version = int.Parse(queryStringKeyValuePairs.Get(VersionTopicKey));
+                    version = int.Parse(queryStringKeyValuePairs.Get(VersionTopicKey), CultureInfo.InvariantCulture);
                 }
 
                 return true;
