@@ -239,9 +239,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private T GetSystemProperty<T>(string key)
         {
-            return SystemProperties.ContainsKey(key)
-                ? (T)SystemProperties[key]
-                : default;
+            return SystemProperties.TryGetValue(key, out object value) ? (T)value : default;
         }
     }
 }
