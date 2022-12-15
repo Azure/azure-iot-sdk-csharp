@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
+            await TelemetryE2ETests.SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
         }
 
         public static async Task SendSingleMessageAsync(IotHubDeviceClient deviceClient, int messageSize = 0)
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient.SendTelemetryBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
         }
 
-        private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
+        private static async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
         {
             TelemetryMessage testMessage = ComposeD2cTestMessage(out string _, out string _);
 

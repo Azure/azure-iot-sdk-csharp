@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // act
 
-                IotHubJobResponse importJobResponse = await CreateAndWaitForJobAsync(
+                IotHubJobResponse importJobResponse = await ImportDevicesTests.CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         devicesFileName,
                         configsFileName,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             foundBlob.Should().BeTrue($"Failed to find {fileName} in storage container - required for test.");
         }
 
-        private async Task<IotHubJobResponse> CreateAndWaitForJobAsync(
+        private static async Task<IotHubJobResponse> CreateAndWaitForJobAsync(
             StorageAuthenticationType storageAuthenticationType,
             string devicesFileName,
             string configsFileName,

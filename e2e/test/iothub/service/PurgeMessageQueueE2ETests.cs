@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false); // making sure the queue is empty
 
-            Message testMessage = ComposeD2CTestMessage();
+            Message testMessage = PurgeMesageQueueE2ETests.ComposeD2CTestMessage();
 
             await sc.Messages.OpenAsync().ConfigureAwait(false);
             const int numberOfSends = 3;
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             result.TotalMessagesPurged.Should().Be(numberOfSends);
         }
 
-        private Message ComposeD2CTestMessage()
+        private static Message ComposeD2CTestMessage()
         {
             return new Message(Encoding.UTF8.GetBytes("some payload"));
         }
