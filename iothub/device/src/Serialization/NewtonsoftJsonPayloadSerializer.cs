@@ -42,11 +42,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override T ConvertFromJsonObject<T>(object objectToConvert)
+        public override T ConvertFromJsonObject<T>(object jsonObjectToConvert)
         {
-            var token = JToken.FromObject(objectToConvert);
+            var token = JToken.FromObject(jsonObjectToConvert);
 
-            return objectToConvert == null
+            return jsonObjectToConvert == null
                 ? default
                 : token.ToObject<T>();
         }

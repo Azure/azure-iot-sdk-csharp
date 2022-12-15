@@ -36,9 +36,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override T ConvertFromJsonObject<T>(object objectToConvert)
+        public override T ConvertFromJsonObject<T>(object jsonObjectToConvert)
         {
-            return DeserializeToType<T>(SerializeToString(objectToConvert));
+            return DeserializeToType<T>(SerializeToString(jsonObjectToConvert));
         }
     }
 }
