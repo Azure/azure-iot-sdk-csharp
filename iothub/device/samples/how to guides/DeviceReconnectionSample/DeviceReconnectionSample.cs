@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         }
                         else
                         {
-                            // // Otherwise instantiate it for the first time.
+                            // Otherwise instantiate it for the first time.
                             s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         }
 
