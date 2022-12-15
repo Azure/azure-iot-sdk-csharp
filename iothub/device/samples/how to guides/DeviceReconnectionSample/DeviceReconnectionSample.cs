@@ -59,8 +59,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // if any more are remaining, will try the next one.
             // To test this, either pass an invalid connection string as the first one, or rotate it while the sample is running, and wait about
             // 5 minutes.
-            if (deviceConnectionStrings == null
+            if ((deviceConnectionStrings == null
                 || !deviceConnectionStrings.Any())
+                && parameters.CertificateName == null)
             {
                 throw new ArgumentException("At least one connection string must be provided.", nameof(deviceConnectionStrings));
             }

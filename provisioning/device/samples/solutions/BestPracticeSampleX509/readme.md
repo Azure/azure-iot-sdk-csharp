@@ -88,25 +88,25 @@ In this step, we will use the chained device certificate to provision a device t
 
 4. From terminal, navigate to the [device reconnection sample folder](</iothub/device/samples/how to guides/DeviceReconnectionSample>). Read [readme.md](</iothub/device/samples/how to guides/DeviceReconnectionSample/readme.md>) to learn how to initialize the device client, send device to cloud telemetry, receive cloud to device message, receive twin desired property update notifications, and update device twin's reported properties.
 
-Open [DeviceReconnectionSample.cs](</iothub/device/samples/how to guides/DeviceReconnectionSample/DeviceReconnectionSample.cs>) in code editor. Find
+    Open [DeviceReconnectionSample.cs](</iothub/device/samples/how to guides/DeviceReconnectionSample/DeviceReconnectionSample.cs>) in code editor. Find
 
-```csharp
-s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
-```
+    ```csharp
+    s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
+    ```
 
-and replace it with
+    and replace it with
 
-```csharp
-var deviceCert = new X509Certificate2(_certificatePath, _certificatePassword);
-var auth = new ClientAuthenticationWithX509Certificate(deviceCert, _deviceId);
-s_deviceClient = new IotHubDeviceClient(_hostname, auth, _clientOptions);
-```
+    ```csharp
+    var deviceCert = new X509Certificate2(_certificatePath, _certificatePassword);
+    var auth = new ClientAuthenticationWithX509Certificate(deviceCert, _deviceId);
+    s_deviceClient = new IotHubDeviceClient(_hostname, auth, _clientOptions);
+    ```
 
-Then execute the following command and check for build errors:
+    Then execute the following command and check for build errors:
 
-```powershell
-    dotnet build
-```
+    ```powershell
+        dotnet build
+    ```
 
 5. Set the IoT hub hostname, device Id, device certificate password and path and run the sample.
 
