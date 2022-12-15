@@ -13,6 +13,7 @@ The business needs of Contoso are:
 - Provision devices securely at scale.
 - Group devices by production line.
 - Collect data from devices.
+- Manage devices remotely (e.g., controlling the temperature of a thermostat).
 
 ## Recommended Solution
 
@@ -87,7 +88,7 @@ In this step, we will use the chained device certificate to provision a device t
 
 4. From terminal, navigate to the [device reconnection sample folder](</iothub/device/samples/how to guides/DeviceReconnectionSample>). Read [readme.md](</iothub/device/samples/how to guides/DeviceReconnectionSample/readme.md>) to learn how to initialize the device client, send device to cloud telemetry, receive cloud to device message, receive twin desired property update notifications, and update device twin's reported properties.
 
-Open DeviceReconnectionSample in code editor. Find
+Open [DeviceReconnectionSample.cs](</iothub/device/samples/how to guides/DeviceReconnectionSample/DeviceReconnectionSample.cs>) in code editor. Find
 
 ```csharp
 s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
@@ -113,10 +114,9 @@ Then execute the following command and check for build errors:
     dotnet run --h <assigned IoT hub hostname> --d <device Id> --p <your password> --n <path to device certificate pfx file>
 ```
 
+![x509-bootsequence](media/bootsequence.png)
 > **Note**\
 > To learn more about device twins, see [here](https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins).
-
-![x509-bootsequence](media/bootsequence.png)
 
 ### Optional - Clean-up
 
