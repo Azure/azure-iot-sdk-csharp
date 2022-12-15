@@ -4,13 +4,13 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
@@ -237,8 +237,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         // Check if we have an int to string error code translation for the service returned error code.
                         // The error code could be a part of the service returned error message, or it can be a part of the amqp message annotations map.
                         // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
-                        if ((Enum.TryParse(errorResponse.ErrorCode.ToString(), out IotHubClientErrorCode errorCode)
-                            || Enum.TryParse(status.ToString(), out errorCode))
+                        if ((Enum.TryParse(errorResponse.ErrorCode.ToString(CultureInfo.InvariantCulture), out IotHubClientErrorCode errorCode)
+                            || Enum.TryParse(status.ToString(CultureInfo.InvariantCulture), out errorCode))
                             && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
                         {
                             twinException = new IotHubClientException(errorResponse.Message, errorCode)
