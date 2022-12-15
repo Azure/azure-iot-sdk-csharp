@@ -947,24 +947,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             receivedEventArgs.AutoAcknowledge = false;
             string topic = receivedEventArgs.ApplicationMessage.Topic;
 
-            if (topic.StartsWith(_deviceBoundMessagesTopic))
+            if (topic.StartsWith(_deviceBoundMessagesTopic, StringComparison.InvariantCulture))
             {
                 await HandleReceivedCloudToDeviceMessageAsync(receivedEventArgs).ConfigureAwait(false);
             }
-            else if (topic.StartsWith(TwinDesiredPropertiesPatchTopic))
+            else if (topic.StartsWith(TwinDesiredPropertiesPatchTopic, StringComparison.InvariantCulture))
             {
                 HandleReceivedDesiredPropertiesUpdateRequest(receivedEventArgs);
             }
-            else if (topic.StartsWith(TwinResponseTopic))
+            else if (topic.StartsWith(TwinResponseTopic, StringComparison.InvariantCulture))
             {
                 HandleTwinResponse(receivedEventArgs);
             }
-            else if (topic.StartsWith(DirectMethodsRequestTopic))
+            else if (topic.StartsWith(DirectMethodsRequestTopic, StringComparison.InvariantCulture))
             {
                 HandleReceivedDirectMethodRequest(receivedEventArgs);
             }
-            else if (topic.StartsWith(_moduleEventMessageTopic)
-                || topic.StartsWith(_edgeModuleInputEventsTopic))
+            else if (topic.StartsWith(_moduleEventMessageTopic, StringComparison.InvariantCulture)
+                || topic.StartsWith(_edgeModuleInputEventsTopic, StringComparison.InvariantCulture))
             {
                 // This works regardless of if the event is on a particular Edge module input or if
                 // the module is not an Edge module.
