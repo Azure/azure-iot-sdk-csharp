@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices
 
             foreach (string part in messageParts)
             {
-                if (part.StartsWith(errorCodeLabel))
+                if (part.StartsWith(errorCodeLabel, StringComparison.InvariantCulture))
                 {
                     string[] errorCodeParts = part.Split(':');
 
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices
 
             const string trackingIdLabel = "Tracking ID:";
 
-            if (!ExceptionMessage.StartsWith(trackingIdLabel))
+            if (!ExceptionMessage.StartsWith(trackingIdLabel, StringComparison.InvariantCulture))
             {
                 return false;
             }
