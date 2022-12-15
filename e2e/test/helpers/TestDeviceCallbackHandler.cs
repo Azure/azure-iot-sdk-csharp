@@ -175,6 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _methodCallbackSemaphore?.Dispose();
             _twinCallbackSemaphore?.Dispose();
             _receivedMessageCallbackSemaphore?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

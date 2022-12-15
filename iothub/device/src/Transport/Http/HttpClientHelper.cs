@@ -17,7 +17,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal sealed class HttpClientHelper
+    internal sealed class HttpClientHelper : IDisposable
     {
         private readonly Uri _baseAddress;
         private readonly IConnectionCredentials _connectionCredentials;
@@ -236,6 +236,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             using var reader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(reader);
             return new JsonSerializer().Deserialize<T>(jsonReader);
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }
