@@ -42,6 +42,15 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
+        public void IotHubConnectionStringBuilder_ParamConnectionString_ValidateToString()
+        {
+            var connectionString = $"HostName={HostName};DeviceId={DeviceId};ModuleId={ModuleId};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
+            var connString = IotHubConnectionStringParser.Parse(connectionString);
+            connString.ToString().Should().BeEquivalentTo(connectionString);
+
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(FormatException))]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ValidateHostName()
         {

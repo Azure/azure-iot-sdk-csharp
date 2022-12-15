@@ -244,11 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 WebSocketKeepAlive = TimeSpan.FromSeconds(1),
                 AuthenticationChain = "chain",
                 PrefetchCount = 10,
-                ConnectionPoolSettings = new AmqpConnectionPoolSettings
-                {
-                    MaxPoolSize = 120,
-                    UsePooling = true,
-                },
+                ConnectionPoolSettings = ConnectionPoolSettings,
                 ClientWebSocket = new ClientWebSocket(),
             };
             var options = new IotHubClientOptions(settings)
