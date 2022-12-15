@@ -31,18 +31,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             'n',
             "CertificateName",
             Default = "certificate.pfx",
-            HelpText = "The PFX certificate to load for device provisioning authentication.")]
+            Required = true,
+            HelpText = "The name to the PFX certificate to load for device provisioning authentication. You can also pass in the absolute path to the device PFX certificate file.")]
         public string CertificateName { get; set; }
 
         [Option(
             'p',
             "CertificatePassword",
+            Required = false,
             HelpText = "The password of the PFX certificate file. If not specified, the program will prompt at run time.")]
         public string CertificatePassword { get; set; }
 
         [Option(
             'g',
             "GlobalDeviceEndpoint",
+            Required = false,
             Default = "global.azure-devices-provisioning.net",
             HelpText = "The global endpoint for devices to connect to.")]
         public string GlobalDeviceEndpoint { get; set; }
@@ -50,11 +53,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         [Option(
             "Transport",
             Default = Transport.Mqtt,
+            Required = false,
             HelpText = "The transport to use for the connection.")]
         public Transport Transport { get; set; }
 
         [Option(
             "TransportProtocol",
+            Required = false,
             Default = ProvisioningClientTransportProtocol.Tcp,
             HelpText = "The transport to use to communicate with the device provisioning instance.")]
         public ProvisioningClientTransportProtocol TransportProtocol { get; set; }
@@ -63,10 +68,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         {
             if (string.IsNullOrWhiteSpace(CertificateName))
             {
-                throw new InvalidOperationException("The certificate name has not been set.");
+                throw new ArgumentNullException("The certificate name has not been set.");
             }
 
-            
             string codeBase = Assembly.GetExecutingAssembly().Location;
             string workingDirectory = Path.GetDirectoryName(codeBase);
 

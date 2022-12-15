@@ -44,7 +44,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
         public async Task RunSampleAsync()
         {
-
             s_appCancellation = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
@@ -57,13 +56,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             using X509Certificate2 certificate = LoadProvisioningCertificate();
             var security = new AuthenticationProviderX509(certificate);
 
+            // Perform retry up to 10 times every 2 seconds
+            s_clientOptions.RetryPolicy = new ProvisioningClientFixedDelayRetryPolicy(10, TimeSpan.FromSeconds(2));
+
             _logger.LogInformation("Initializing the device provisioning client...");
 
-            s_provClient = new ProvisioningDeviceClient(
-                _globalDeviceEndpoint,
-                _idScope,
-                security,
-                s_clientOptions);
+            try
+            {
+                s_provClient = new ProvisioningDeviceClient(
+                    _globalDeviceEndpoint,
+                    _idScope,
+                    security,
+                    s_clientOptions);
+            }
+            catch (ProvisioningClientException ex)
+            {
+                _logger.LogError($"ProvioningClientException encountered. Reason: [{ex.GetType()}: {ex.Message}]");
+            }
 
             _logger.LogInformation($"Initialized for registration Id '{security.GetRegistrationId()}'.");
 
@@ -86,7 +95,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             _logger.LogInformation("Testing the provisioned device with IoT Hub...");
             var hubOptions = new IotHubClientOptions(s_hubTransportSettings);
-            using var iotClient = new IotHubDeviceClient(s_provResult.AssignedHub, auth, hubOptions);
+            await using var iotClient = new IotHubDeviceClient(s_provResult.AssignedHub, auth, hubOptions);
 
             await iotClient.OpenAsync(s_appCancellation.Token);
             _logger.LogInformation($"Sending a telemetry message...");
