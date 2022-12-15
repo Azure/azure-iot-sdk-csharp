@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void AttestationMechanismConstructorThrowsOnAttestationNull()
         {
             // arrange - act - assert
-            _ = TestAssert.Throws<ArgumentNullException>(() => new AttestationMechanism(null));
+            _ = TestAssert.Throws<ArgumentNullException>(() => _ = new AttestationMechanism(null));
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             var unknownAttestation = new UnknownAttestation();
 
             // act - assert
-            TestAssert.Throws<ArgumentException>(() => new AttestationMechanism(unknownAttestation));
+            TestAssert.Throws<ArgumentException>(() => _ = new AttestationMechanism(unknownAttestation));
         }
 
         [TestMethod]
