@@ -13,7 +13,6 @@ The business needs of Contoso are:
 - Provision devices securely at scale.
 - Group devices by production line.
 - Collect data from devices.
-- Manage and monitor devices remotely (e.g., controlling the temperature of a thermostat).
 
 ## Recommended Solution
 
@@ -31,7 +30,7 @@ See [here](https://learn.microsoft.com/azure/iot-dps/quick-setup-auto-provision)
 
 ## Warning
 
-The provided script, [X509DpsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/provisioning/device/samples/solutions/BestPracticeSampleX509/X509DpsSetup.ps1) creates X.509 test certificates. They are provided for demonstration purposes only and must not be used for production. For a production environment, we recommend using X.509 certificate authority (CA) certificates and your own best practices for certificate lifetime management. To read more about X.509 CA certificates, see [here](https://learn.microsoft.com/en-us/azure/iot-hub/iot-hub-x509ca-concept).
+The provided script, [X509DpsSetup.ps1](https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/provisioning/device/samples/solutions/BestPracticeSampleX509/X509DpsSetup.ps1) creates X.509 test certificates. They are provided for demonstration purposes only and **MUST NOT** be used for production. For a production environment, we recommend using X.509 certificate authority (CA) certificates and your own best practices for certificate lifetime management. To read more about X.509 CA certificates, see [here](https://learn.microsoft.com/en-us/azure/iot-hub/iot-hub-x509ca-concept).
 
 ### Generate test certificates and verify root certificate
 
@@ -83,10 +82,26 @@ In this step, we will use the chained device certificate to provision a device t
 3. Set the IdScope, device certificate, and certificate password and run the sample. This will assign a device to an IoT hub and connect to the IoT hub and send a sample telemetry message. Check the log for the assigned IoT hub hostname.
 
 ```powershell
-    dotnet run --s <IdScope> --n <CertificateName> --p <your password>
+    dotnet run --s <IdScope> --n <Device certificate pfx file> --p <your password>
 ```
 
-4. From terminal, navigate to the [device reconnection sample folder](</iothub/device/samples/how to guides/DeviceReconnectionSample>). Read [readme.md](</iothub/device/samples/how to guides/DeviceReconnectionSample/readme.md>) to learn how to initialize the device client, send device to cloud telemetry, receive cloud to device message, receive twin desired property update notifications, and update device twin's reported properties. Then execute the following command and check for build errors:
+4. From terminal, navigate to the [device reconnection sample folder](</iothub/device/samples/how to guides/DeviceReconnectionSample>). Read [readme.md](</iothub/device/samples/how to guides/DeviceReconnectionSample/readme.md>) to learn how to initialize the device client, send device to cloud telemetry, receive cloud to device message, receive twin desired property update notifications, and update device twin's reported properties.
+
+Open DeviceReconnectionSample in code editor. Find
+
+```csharp
+s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
+```
+
+and replace it with
+
+```csharp
+var deviceCert = new X509Certificate2(_certificatePath, _certificatePassword);
+var auth = new ClientAuthenticationWithX509Certificate(deviceCert, _deviceId);
+s_deviceClient = new IotHubDeviceClient(_hostname, auth, _clientOptions);
+```
+
+Then execute the following command and check for build errors:
 
 ```powershell
     dotnet build
@@ -95,7 +110,7 @@ In this step, we will use the chained device certificate to provision a device t
 5. Set the IoT hub hostname, device Id, device certificate password and path and run the sample.
 
 ```powershell
-    dotnet run --h <assigned IoT hub hostname> --d <device Id> --devicePfxPassword <your password> --devicePfxPath <path to device certificate pfx file>
+    dotnet run --h <assigned IoT hub hostname> --d <device Id> --p <your password> --n <path to device certificate pfx file>
 ```
 
 > **Note**\

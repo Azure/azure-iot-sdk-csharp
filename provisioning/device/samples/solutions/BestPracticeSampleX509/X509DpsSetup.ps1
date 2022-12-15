@@ -27,7 +27,6 @@ param(
     [switch] $force = $false
 )
 
-Write-Host $force
 # Check that script is run in admin mode as it requires admin permission to create self-signed certificates. 
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 if (-not $isAdmin)
@@ -43,7 +42,7 @@ $dpsCertChainDeviceCommonName = $deviceId
 $certFolder = $certFolderPath
 $dpsCredentials = New-Object System.Management.Automation.PSCredential("Password", $rootCertPassword)
 $resourceGroup = $dpsResourceGroup
-$certNameToUpload = "rootCA"
+$certNameToUpload = "rootCASample"
 
 # Create root cert
 $rootCertPath = "$certFolder/root.cer"
@@ -91,7 +90,7 @@ if ($resourceGroupExists -ne $true)
 }
 
 # Check if the DPS instance exists. If not, exit.
-$dpsExists = az iot dps show --name $dpsName -g $resourceGroup
+$dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2>$NULL
 if ($dpsExists -eq $null)
 {
     Write-Host "DPS instance '$dpsName' does not exist under '$resourceGroup'. Exiting..."
@@ -127,7 +126,7 @@ if ($isVerified -eq 'false')
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
     Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
-    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $certNameToUpload --query 'etag'
+    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $certNameToUpload --query 'etag' 2>$NULL
     az iot dps certificate verify -g $ResourceGroup --dps-name $dpsName --certificate-name $certNameToUpload -e $etag --path $verificationCertPath --output none
 }
 
@@ -142,7 +141,7 @@ if (($intermediateCertPath.EndsWith('.pem') -ne $true) -and ($intermediateCertPa
 
 # Check if the enrollment group already exists in dps instance. If it does, delete and regenerate the group enrollment.
 Write-Host "`Checking if '$groupEnrollmentId' enrollment group already exists in '$dpsName'..."
-$groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g $resourceGroup --enrollment-id $groupEnrollmentId
+$groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g $resourceGroup --enrollment-id $groupEnrollmentId 2>$NULL
 if ($groupEnrollmentExists)
 {
     if ($force)

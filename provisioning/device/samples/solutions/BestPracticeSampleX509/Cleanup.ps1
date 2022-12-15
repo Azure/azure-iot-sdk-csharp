@@ -31,15 +31,15 @@ if ($resourceGroupExists -ne $true)
 }
 
 # Check if the IoT hub instance exists. If not, exit.
-$iothubExists = az iot hub show --name $iothubName -g $resourceGroup 2>nul
+$iothubExists = az iot hub show --name $iothubName -g $resourceGroup 2> $NULL
 if ($iothubExists)
 {
     # Check if the device exists. If it does, delete the device.
-    $deviceExists = az iot hub device-identity show --device-id $deviceId -g $resourceGroup --hub-name $iothubName 2>nul
+    $deviceExists = az iot hub device-identity show --device-id $deviceId -g $resourceGroup --hub-name $iothubName 2> $NULL
     if ($deviceExists)
     {
         Write-Host "Deleting device '$deviceId' in '$iothubName'..."
-        az iot hub device-identity delete --device-id $deviceId --hub-name $iothubName -g $resourceGroup 2>nul
+        az iot hub device-identity delete --device-id $deviceId --hub-name $iothubName -g $resourceGroup 2> $NULL
         Write-Host "Device '$deviceId' deleted in '$iothubName'."
     }
     else
@@ -53,15 +53,15 @@ else
 }
 
 # Check if the DPS instance exists. If it does, delete the device.
-$dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2>nul
+$dpsExists = az iot dps show --name $dpsName -g $resourceGroup 2> $NULL
 if ($dpsExists)
 {
     # Check if the enrollment group exists in dps instance.
-    $groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g $resourceGroup --enrollment-id $groupEnrollmentId 2>nul
+    $groupEnrollmentExists = az iot dps enrollment-group show --dps-name $dpsName -g $resourceGroup --enrollment-id $groupEnrollmentId 2> $NULL
     if ($groupEnrollmentExists)
     {
         Write-Host "Deleting enrollment group '$groupEnrollmentId' in '$dpsName'..."
-        az iot dps enrollment-group delete -g $resourceGroup --eid $groupEnrollmentId --dps-name $dpsName 2>nul
+        az iot dps enrollment-group delete -g $resourceGroup --eid $groupEnrollmentId --dps-name $dpsName 2> $NULL
         Write-Host "Enrollment group '$groupEnrollmentId' is deleted in '$dpsName'."
     }
     else

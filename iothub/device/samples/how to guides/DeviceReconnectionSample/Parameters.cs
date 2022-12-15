@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         [Option(
             'c',
             "PrimaryConnectionString",
-            Required = true,
+            Required = false,
             HelpText = "The primary connection string for the device to simulate.")]
         public string PrimaryConnectionString { get; set; }
 
@@ -43,6 +43,35 @@ namespace Microsoft.Azure.Devices.Client.Samples
            Default = IotHubClientTransportProtocol.Tcp,
            HelpText = "The transport to use to communicate with the device provisioning instance.")]
         public IotHubClientTransportProtocol TransportProtocol { get; set; }
+
+        [Option(
+            'n',
+            "CertificateName",
+            Default = "certificate.pfx",
+            Required = false,
+            HelpText = "The PFX certificate to load for authentication.")]
+        public string CertificateName { get; set; }
+
+        [Option(
+            'p',
+            "CertificatePassword",
+            Required = false,
+            HelpText = "The password of the PFX certificate file.")]
+        public string CertificatePassword { get; set; }
+
+        [Option(
+            'd',
+            "DeviceId",
+            Required = false,
+            HelpText = "The Id of device.")]
+        public string DeviceId { get; set; }
+
+        [Option(
+            'h',
+            "HostName",
+            Required = false,
+            HelpText = "The hostname of IoT hub.")]
+        public string HostName { get; set; }
 
         [Option(
             'r',
