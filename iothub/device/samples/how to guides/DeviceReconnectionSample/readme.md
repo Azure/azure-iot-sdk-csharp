@@ -34,10 +34,10 @@ deviceClient = new IotHubDeviceClient(connectionString, options);
 
 ```csharp
 // X.509 certificate:
-// Run <TODO> script to generate X.509 certificates. Get the IoT hub hostname from Azure IoT Portal.
+// Run provisioning/device/samples/getting started/X509Sample/GenerateTestCertificate.ps1 script to generate an X.509 certificate.
 // Azure portal -
 // Navigate to your IoT Hub and copy the hostname.
-//
+// 
 // Transport:
 // The transport to use to communicate with IoT ub. Possible values include Mqtt and Amqp.
 //
