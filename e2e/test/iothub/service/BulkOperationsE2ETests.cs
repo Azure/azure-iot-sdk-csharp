@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
-            Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
+            Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{BulkOperationsE2ETests.ResultErrorsToString(result)}");
 
             ClientTwin twinUpd = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
 
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
-            Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
+            Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{BulkOperationsE2ETests.ResultErrorsToString(result)}");
 
             ClientTwin twinUpd = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
-            Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
+            Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{BulkOperationsE2ETests.ResultErrorsToString(result)}");
 
             ClientTwin twinUpd = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
-            Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
+            Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{BulkOperationsE2ETests.ResultErrorsToString(result)}");
 
             ClientTwin twinUpd = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
