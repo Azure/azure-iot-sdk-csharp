@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -91,6 +94,34 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public void IotHubDeviceClient_Verify_GetTwinResponse()
+        {
+            // arrange
+            GetTwinResponse twinResponse = new GetTwinResponse()
+            {
+                Status = 404,
+                Twin = new TwinProperties(new DesiredProperties(new Dictionary<string, object>() { { "$version", "1"} }), new ReportedProperties()),
+                ErrorResponseMessage = new IotHubClientErrorResponseMessage()
+                {
+                    ErrorCode = 404,
+                    TrackingId = "Id",
+                    Message = "message",
+                    OccurredOnUtc = "00:00:00",
+                },
+            };
+
+            // assert
+            twinResponse.Status.Should().Be(404);
+            twinResponse.Twin.Should().BeEquivalentTo(twinResponse.Twin);
+            twinResponse.ErrorResponseMessage.Should().BeEquivalentTo(twinResponse.ErrorResponseMessage);
+            twinResponse.ErrorResponseMessage.ErrorCode.Should().Be(twinResponse.ErrorResponseMessage?.ErrorCode);
+            twinResponse.ErrorResponseMessage.TrackingId.Should().Be(twinResponse.ErrorResponseMessage?.TrackingId);
+            twinResponse.ErrorResponseMessage.Message.Should().Be(twinResponse.ErrorResponseMessage?.Message);
+            twinResponse.ErrorResponseMessage.OccurredOnUtc.Should().Be(twinResponse.ErrorResponseMessage?.OccurredOnUtc);
+
+        }
+
+        [TestMethod]
         public async Task IotHubDeviceClient_UpdateReportedPropertiesAsyncCallsSendTwinPatchAsync()
         {
             // arrange
@@ -149,6 +180,29 @@ namespace Microsoft.Azure.Devices.Client.Test
             //assert
             Assert.AreEqual(callCount, 1);
             Assert.ReferenceEquals(myPatch, receivedPatch);
+        }
+
+        [TestMethod]
+        public async Task IotHubDeviceClient_PatchIsReceived_NoCallback()
+        {
+            // arrange
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
+            var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
+            {
+                PayloadConvention = DefaultPayloadConvention.Instance,
+            };
+
+            int callCount = 0;
+            DesiredProperties receivedPatch = null;
+            await client.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
+
+            // act
+            client.OnDesiredStatePatchReceived(myPatch);
+
+            //assert
+            Assert.AreEqual(callCount, 0);
         }
     }
 }

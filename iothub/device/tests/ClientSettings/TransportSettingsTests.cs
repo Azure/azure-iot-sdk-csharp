@@ -16,6 +16,13 @@ namespace Microsoft.Azure.Devices.Client.Test
     public class TransportSettingsTests
     {
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void IotHubClientOptions_None_Throw()
+        {
+            var options = new IotHubClientOptions(null);
+        }
+
+        [TestMethod]
         public void IotHubClientOptions_Mqtt_DoesNotThrow()
         {
             // should not throw
@@ -61,6 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             transportSetting.PrefetchCount.Should().Be(expectedPrefetchCount);
             transportSetting.IdleTimeout.Should().Be(TimeSpan.FromMinutes(2));
             transportSetting.SslProtocols.Should().Be(SslProtocols.None);
+            transportSetting.ToString().Should().Be("IotHubClientAmqpSettings/Tcp");
         }
 
         [TestMethod]
@@ -187,17 +195,23 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubClientAmqpSettings()
         {
             // arrange
+            var ConnectionPoolSettings = new AmqpConnectionPoolSettings
+            {
+                MaxPoolSize = 120,
+                UsePooling = true,
+            };
+            var ConnectionPoolSettings_copy = new AmqpConnectionPoolSettings
+            {
+                MaxPoolSize = 120,
+                UsePooling = true,
+            };
             var settings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)
             {
                 IdleTimeout = TimeSpan.FromSeconds(1),
                 WebSocketKeepAlive = TimeSpan.FromSeconds(1),
                 AuthenticationChain = "chain",
                 PrefetchCount = 10,
-                ConnectionPoolSettings = new AmqpConnectionPoolSettings
-                {
-                    MaxPoolSize = 120,
-                    UsePooling = true,
-                },
+                ConnectionPoolSettings = ConnectionPoolSettings,
                 ClientWebSocket = new ClientWebSocket(),
             };
             var options = new IotHubClientOptions(settings)
@@ -219,9 +233,23 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             options.GatewayHostName = "newHost";
             options.Should().NotBeEquivalentTo(clone);
+            ConnectionPoolSettings.Equals(ConnectionPoolSettings_copy);
+            ConnectionPoolSettings.Equals(null).Should().BeFalse();
 
             settings.ClientWebSocket.Dispose();
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        public void IotHubClientAmqpPoolSettings()
+        {
+            var ConnectionPoolSettings = new AmqpConnectionPoolSettings
+            {
+                MaxPoolSize = 0,
+                UsePooling = true,
+            };
+        }
+
 
         [TestMethod]
         public void IotHubClientNoRetry()

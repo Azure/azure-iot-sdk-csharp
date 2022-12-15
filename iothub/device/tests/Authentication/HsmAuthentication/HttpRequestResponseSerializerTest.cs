@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -175,6 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
+            error.And.TrackingId.Should().Be("");
         }
 
         [TestMethod]

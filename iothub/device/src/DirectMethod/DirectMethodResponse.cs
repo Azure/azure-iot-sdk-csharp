@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Payload == null
                 ? null
-                : PayloadConvention.GetObjectBytes(Payload); ;
+                : PayloadConvention.GetObjectBytes(Payload);
         }
     }
 }

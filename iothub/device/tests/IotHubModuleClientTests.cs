@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -145,6 +146,96 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Times.AtLeastOnce);
             innerHandler.Verify(x => x.DisableReceiveMessageAsync(It.IsAny<CancellationToken>()), Times.Never);
             innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void ModuleClient_ValidateIncomingMessage()
+        {
+            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes("test message"))
+            {
+                InputName = "endpoint1",
+                MessageId = "123",
+                CorrelationId = "1234",
+                SequenceNumber = 123,
+                To = "destination",
+                UserId = "id",
+                CreatedOnUtc = new DateTimeOffset(DateTime.MinValue),
+                EnqueuedOnUtc = new DateTimeOffset(DateTime.MinValue),
+                ExpiresOnUtc = new DateTimeOffset(DateTime.MinValue),
+                MessageSchema = "schema",
+                ContentType = "type",
+                ContentEncoding = "encoding",
+                PayloadConvention = DefaultPayloadConvention.Instance,
+            };
+
+            var testMessage1 = new IncomingMessage(Encoding.UTF8.GetBytes("test message"));
+
+            testMessage.TryGetPayload(out bool bool_payload);
+            bool_payload.Should().BeFalse();
+            testMessage.TryGetPayload(out string payload);
+            payload.Should().Be("test message");
+            testMessage.InputName.Should().Be("endpoint1");
+            testMessage.MessageId.Should().Be("123");
+            testMessage.CorrelationId.Should().Be("1234");
+            testMessage.SequenceNumber.Should().Be(123);
+            testMessage.To.Should().Be("destination");
+            testMessage.UserId.Should().Be("id");
+            testMessage.CreatedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.EnqueuedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.ExpiresOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.MessageSchema.Should().Be("schema");
+            testMessage.ContentType.Should().Be("type");
+            testMessage.ContentEncoding.Should().Be("encoding");
+            testMessage.Properties.Should().NotBeNull();
+            testMessage.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
+            testMessage1.InputName.Should().BeNull();
+
+        }
+
+        [TestMethod]
+        public void ModuleClient_ValidateTelemetryMessage()
+        {
+            var testMessage = new TelemetryMessage(Encoding.UTF8.GetBytes("test message"))
+            {
+                InputName = "endpoint1",
+                MessageId = "123",
+                CorrelationId = "1234",
+                UserId = "id",
+                CreatedOnUtc = new DateTimeOffset(DateTime.MinValue),
+                BatchCreatedOnUtc = new DateTimeOffset(DateTime.MinValue),
+                EnqueuedOnUtc = new DateTimeOffset(DateTime.MinValue),
+                ExpiresOnUtc = new DateTimeOffset(DateTime.MinValue),
+                ComponentName = "component",
+                MessageSchema = "schema",
+                ContentType = "type",
+                ContentEncoding = "encoding",
+                PayloadConvention = DefaultPayloadConvention.Instance,
+                ConnectionDeviceId = "connectionDeviceId",
+                ConnectionModuleId = "connectionModuleId",
+            };
+
+            var testMessage1 = new IncomingMessage(Encoding.UTF8.GetBytes("test message"));
+
+            testMessage.GetPayloadObjectBytes().Should().NotBeNull();
+            testMessage.InputName.Should().Be("endpoint1");
+            testMessage.MessageId.Should().Be("123");
+            testMessage.CorrelationId.Should().Be("1234");
+            testMessage.UserId.Should().Be("id");
+            testMessage.CreatedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.BatchCreatedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.EnqueuedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.ExpiresOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.ComponentName.Should().Be("component");
+            testMessage.MessageSchema.Should().Be("schema");
+            testMessage.ContentType.Should().Be("type");
+            testMessage.ContentEncoding.Should().Be("encoding");
+            testMessage.Properties.Should().NotBeNull();
+            testMessage.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
+            testMessage.ConnectionDeviceId.Should().Be("connectionDeviceId");
+            testMessage.ConnectionModuleId.Should().Be("connectionModuleId");
+
+            testMessage1.InputName.Should().BeNull();
+
         }
 
         [TestMethod]

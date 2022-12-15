@@ -12,6 +12,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Microsoft.Azure.Amqp.Framing;
+using Newtonsoft.Json.Linq;
+using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -271,6 +273,27 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public async Task IotHubDeviceClient_Verify_FileUploadSasUriRequest()
+        {
+            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
+            var request = new FileUploadSasUriResponse()
+            {
+                CorrelationId = "123",
+                HostName = FakeHostName,
+                ContainerName = "container",
+                BlobName = "blob",
+                SasToken = "token",
+            };
+
+            request.CorrelationId.Should().Be("123");
+            request.HostName.Should().Be(FakeHostName);
+            request.ContainerName.Should().Be("container");
+            request.BlobName.Should().Be("blob");
+            request.SasToken.Should().Be("token");
+            request.GetBlobUri().Should().Be("https://acme.azure-devices.net/container/blobtoken");
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task IotHubDeviceClient_CompleteFileUpload_NullParam_Throws()
         {
@@ -292,6 +315,22 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             await deviceClient.CompleteFileUploadAsync(new FileUploadCompletionNotification("", true)).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task IotHubDeviceClient_Verify_FileUploadCompletionNotification()
+        {
+            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
+            var notification = new FileUploadCompletionNotification("123", true)
+            {
+                StatusCode = 200,
+                StatusDescription = "OK",
+            };
+            notification.CorrelationId.Should().Be("123");
+            notification.IsSuccess.Should().BeTrue();
+            notification.StatusCode.Should().Be(200);
+            notification.StatusDescription.Should().Be("OK");
+
         }
 
         [TestMethod]
@@ -331,11 +370,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler.Object;
 
             bool isMethodHandlerCalled = false;
+            bool actualMethodBody = false;
             await deviceClient
                 .SetDirectMethodCallbackAsync(
                     (payload) =>
                     {
                         isMethodHandlerCalled = true;
+                        bool methodReceived = payload.TryGetPayload(out actualMethodBody);
                         return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
@@ -348,6 +389,39 @@ namespace Microsoft.Azure.Devices.Client.Test
                 x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
                 Times.Never);
             isMethodHandlerCalled.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public async Task IotHubDeviceClient_OnMethodCalled_NullPayload()
+        {
+            // arrange
+            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
+
+            bool isMethodHandlerCalled = false;
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        string methodReceived = payload.GetPayloadAsJsonString();
+                        return Task.FromResult(_directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
+            var DirectMethodRequest = new DirectMethodRequest
+            {
+                MethodName = "TestMethodName",
+            };
+
+            // act
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+            isMethodHandlerCalled.Should().BeTrue();
         }
 
         [TestMethod]
@@ -371,6 +445,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
+                RequestId = "request",
+                JsonPayload = new JRaw("Json"),
+                ResponseTimeout = TimeSpan.FromSeconds(5),
+                ConnectionTimeout = TimeSpan.FromSeconds(5),
             };
 
             // act
@@ -394,11 +472,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
+            bool actualMethodBody = false;
             await deviceClient
                 .SetDirectMethodCallbackAsync(
                     (payload) =>
                     {
                         isMethodHandlerCalled = true;
+                        bool methodReceived = payload.TryGetPayload(out actualMethodBody);
+                        var connectionTimeout = payload.ConnectionTimeoutInSeconds;
+                        var responseTimeout = payload.ResponseTimeoutInSeconds;
                         return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
@@ -408,6 +490,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
+                ResponseTimeout = TimeSpan.FromSeconds(1),
+                ConnectionTimeout = TimeSpan.FromSeconds(1),
             };
 
             // act
@@ -418,6 +502,54 @@ namespace Microsoft.Azure.Devices.Client.Test
                 x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
+            DirectMethodRequest.GetPayloadAsJsonString().Should().BeEquivalentTo(JsonConvert.SerializeObject(payload));
+        }
+
+        [TestMethod]
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson_InvalidTimeout()
+        {
+            // arrange
+            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
+            bool isMethodHandlerCalled = false;
+            bool actualMethodBody = false;
+            int? connectionTimeout = 0;
+            int? responseTimeout = 0;
+
+            await deviceClient
+                .SetDirectMethodCallbackAsync(
+                    (payload) =>
+                    {
+                        isMethodHandlerCalled = true;
+                        bool methodReceived = payload.TryGetPayload(out actualMethodBody);
+                        connectionTimeout = payload.ConnectionTimeoutInSeconds;
+                        responseTimeout = payload.ResponseTimeoutInSeconds;
+                        return Task.FromResult(_directMethodResponseWithPayload);
+                    })
+                .ConfigureAwait(false);
+
+            var payload = new CustomDirectMethodPayload { Grade = "good" };
+            var DirectMethodRequest = new DirectMethodRequest
+            {
+                MethodName = "TestMethodName",
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
+                PayloadConvention = DefaultPayloadConvention.Instance,
+                ResponseTimeout = TimeSpan.FromSeconds(-1),
+                ConnectionTimeout = TimeSpan.FromSeconds(-1),
+            };
+
+            // act
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+
+            // assert
+            innerHandler.Verify(
+                x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
+            isMethodHandlerCalled.Should().BeTrue();
+            connectionTimeout.Should().BeNull();
+            responseTimeout.Should().BeNull();
+            DirectMethodRequest.GetPayloadAsJsonString().Should().BeEquivalentTo(JsonConvert.SerializeObject(payload));
         }
 
         [TestMethod]
@@ -436,6 +568,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         isMethodHandlerCalled = true;
                         responseReceivedAsExpected = payload.TryGetPayload(out response);
+                        var connectionTimeout = payload.ConnectionTimeoutInSeconds;
+                        var responseTimeout = payload.ResponseTimeoutInSeconds;
                         return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
@@ -623,12 +757,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
+            DirectMethodResponse response = new DirectMethodResponse(200)
+            {
+                Payload = true,
+                PayloadConvention = DefaultPayloadConvention.Instance,
+            };
             await deviceClient
                 .SetDirectMethodCallbackAsync(
                     (payload) =>
                     {
                         isMethodHandlerCalled = true;
-                        return Task.FromResult(new DirectMethodResponse(200));
+                        return Task.FromResult(response);
                     })
                 .ConfigureAwait(false);
 
@@ -637,6 +776,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
+                RequestId = "1",
             };
 
             // act
@@ -647,6 +787,14 @@ namespace Microsoft.Azure.Devices.Client.Test
                 x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
+            response.Status.Should().Be(200);
+            response.Payload.Should().Be(true);
+            response.RequestId.Should().Be("1");
+            response.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
+            response.GetPayloadObjectBytes().Should().NotBeNull();
+            response.Payload = null;
+            response.GetPayloadObjectBytes().Should().BeNull();
+
         }
 
         [TestMethod]
@@ -842,6 +990,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             handlerCalled.Should().BeTrue();
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
             connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
+            connectionStatusInfo.StatusLastChangedOnUtc.Should().NotBe(null);
+            connectionStatusInfo.RecommendedAction.Should().Be(RecommendedAction.PerformNormally);
         }
 
         [TestMethod]
@@ -920,6 +1070,37 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             handlerCalled.Should().BeTrue();
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.DisconnectedRetrying);
+        }
+
+        [TestMethod]
+        public async Task IotHubDeviceClient_OnConnectionClosed_InvokeHandlerAndQuit()
+        {
+            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
+            var innerHandler = new Mock<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler.Object;
+            var sender = new object();
+            bool handlerCalled = false;
+            ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
+            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
+            {
+                handlerCalled = true;
+                connectionStatusInfo = c;
+            };
+            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
+
+            // current status = disabled
+            deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            handlerCalled.Should().BeTrue();
+            connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
+            connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
+
+            handlerCalled = false;
+
+            // current status = connected
+            deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed));
+
+            handlerCalled.Should().BeTrue();
+            connectionStatusInfo.Status.Should().Be(ConnectionStatus.Closed);
         }
 
         [TestMethod]
@@ -1260,13 +1441,15 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-
+            var request = new FileUploadSasUriRequest("fileName");
+            
             // act
             var ct = new CancellationToken(true);
-            Func<Task> act = async () => await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest("fileName"), ct);
+            Func<Task> act = async () => await deviceClient.GetFileUploadSasUriAsync(request, ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
+            request.BlobName.Should().Be("fileName");
         }
 
         [TestMethod]

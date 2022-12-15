@@ -55,5 +55,131 @@ namespace Microsoft.Azure.Devices.Client.Tests
             Assert.AreEqual(string.Empty, token.KeyName);
             Assert.AreEqual(SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)), token.ExpiresOnUtc);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void TestBuildSasToken_ShouldReturnSasToken_MalformedSignature()
+        {
+            string audience = "iothub.test/devices/device1/modules/module1";
+            string signature = "signature";
+
+            DateTime expiresOn = DateTime.UtcNow.AddMinutes(10);
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiry);
+            sasTokenString = sasTokenString.Replace(
+                SharedAccessSignatureConstants.SignatureFieldName + SharedAccessSignatureConstants.KeyValueSeparator,
+                SharedAccessSignatureConstants.SignatureFieldName + "_" + SharedAccessSignatureConstants.KeyValueSeparator);
+
+            SharedAccessSignature _ = SharedAccessSignatureParser.Parse(sasTokenString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void TestBuildSasToken_ShouldReturnSasToken_MalformedExpiry()
+        {
+            string audience = "iothub.test/devices/device1/modules/module1";
+            string signature = "signature";
+
+            DateTime expiresOn = DateTime.UtcNow.AddMinutes(10);
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiry);
+            sasTokenString = sasTokenString.Replace(
+                SharedAccessSignatureConstants.ExpiryFieldName + SharedAccessSignatureConstants.KeyValueSeparator,
+                SharedAccessSignatureConstants.ExpiryFieldName + "_" + SharedAccessSignatureConstants.KeyValueSeparator);
+
+            SharedAccessSignature _ = SharedAccessSignatureParser.Parse(sasTokenString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void TestBuildSasToken_ShouldReturnSasToken_MalformedAudience()
+        {
+            string audience = "iothub.test/devices/device1/modules/module1";
+            string signature = "signature";
+
+            DateTime expiresOn = DateTime.UtcNow.AddMinutes(10);
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiry);
+            sasTokenString = sasTokenString.Replace(
+                SharedAccessSignatureConstants.AudienceFieldName + SharedAccessSignatureConstants.KeyValueSeparator,
+                SharedAccessSignatureConstants.AudienceFieldName + "_" + SharedAccessSignatureConstants.KeyValueSeparator);
+
+            SharedAccessSignature _ = SharedAccessSignatureParser.Parse(sasTokenString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void TestBuildSasToken_ShouldReturnSasToken_MissingKeyword()
+        {
+            string audience = "iothub.test/devices/device1/modules/module1";
+            string signature = "signature";
+
+            DateTime expiresOn = DateTime.UtcNow.AddMinutes(10);
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiry);
+            sasTokenString = sasTokenString.Replace(SharedAccessSignatureConstants.SharedAccessSignature, "").TrimStart();
+            SharedAccessSignature _ = SharedAccessSignatureParser.Parse(sasTokenString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void TestBuildSasToken_ShouldReturnSasToken_MalformedKeyword()
+        {
+            string audience = "iothub.test/devices/device1/modules/module1";
+            string signature = "signature";
+
+            DateTime expiresOn = DateTime.UtcNow.AddMinutes(10);
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiry);
+            sasTokenString = sasTokenString.Replace(SharedAccessSignatureConstants.SharedAccessSignature, SharedAccessSignatureConstants.SharedAccessSignature + "_");
+            SharedAccessSignature _ = SharedAccessSignatureParser.Parse(sasTokenString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void TestBuildSasToken_ShouldReturnSasToken_MalformedFields()
+        {
+            string audience = "iothub.test/devices/device1/modules/module1";
+            string signature = "signature";
+
+            DateTime expiresOn = DateTime.UtcNow.AddMinutes(10);
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiry);
+            sasTokenString = sasTokenString.Replace(SharedAccessSignatureConstants.AudienceFieldName + SharedAccessSignatureConstants.KeyValueSeparator, "");
+            SharedAccessSignature _ = SharedAccessSignatureParser.Parse(sasTokenString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(IotHubClientException))]
+        public void TestBuildSasToken_ShouldReturnSasToken_expired()
+        {
+            string audience = "iothub.test/devices/device1/modules/module1";
+            string signature = "signature";
+
+            DateTime expiresOn = DateTime.UtcNow.AddMinutes(10);
+            TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
+            string expiry = TimeSpan.FromSeconds(-1).TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
+            string sasTokenString = SharedAccessSignatureBuilder.BuildSignature(null, null, null, TimeSpan.Zero, audience, signature, expiry);
+
+            SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasTokenString);
+
+            Assert.AreEqual(WebUtility.UrlDecode(audience), token.Audience);
+            Assert.AreEqual(signature, token.Signature);
+            Assert.AreEqual(string.Empty, token.KeyName);
+            Assert.AreEqual(SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)), token.ExpiresOnUtc);
+        }
     }
 }

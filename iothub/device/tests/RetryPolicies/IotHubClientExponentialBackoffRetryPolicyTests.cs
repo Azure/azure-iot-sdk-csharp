@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var exception = new IotHubClientException()
             {
                 IsTransient = true,
+                TrackingId = "1",
             };
 
             for (uint retryCount = 1; retryCount < MaxRetryAttempts; retryCount++)
