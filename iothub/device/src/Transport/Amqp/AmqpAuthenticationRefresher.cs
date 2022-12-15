@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _loopCancellationTokenSource?.Dispose();
         }
     }
 }

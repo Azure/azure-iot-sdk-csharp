@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _httpClientObj?.Dispose();
         }
     }
 }
