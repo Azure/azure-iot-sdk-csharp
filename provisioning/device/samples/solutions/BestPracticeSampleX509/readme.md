@@ -74,7 +74,7 @@ You can specify initial twin state, provisioning status, device capabilities, Io
 In this step, we will use the chained device certificate to provision a device to an IoT Hub using the enrollment group. Devices provisioned through the same enrollment group will share the same initial configuration and will be assigned to one of the linked IoT Hub(s).
 
 1. Obtain the IDScope of the DPS instance from Azure Portal.
-2. From terminal, navigate to the [X509 sample folder](</provisioning/device/samples/getting started/X509Sample>) (where the .csproj file lives). Copy and paste the device certificate pfx file. Then execute the following command and check for build errors:
+2. From terminal, navigate to the [X509 sample folder](</provisioning/device/samples/getting started/X509Sample>) (where the .csproj file lives). Then execute the following command and check for build errors:
 
 ```powershell
     dotnet build
