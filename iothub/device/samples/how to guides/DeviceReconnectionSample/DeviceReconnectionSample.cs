@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly IotHubClientOptions _clientOptions;
         private readonly IIotHubClientRetryPolicy _customRetryPolicy;
 
+        // These fields are specific for X.509 certificate authentication
         private readonly string _certificatePath;
         private readonly string _certificatePassword;
         private readonly string _deviceId;
