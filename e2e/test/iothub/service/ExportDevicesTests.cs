@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // act
 
-                IotHubJobResponse exportJobProperties = await CreateAndWaitForJobAsync(
+                IotHubJobResponse exportJobProperties = await ExportDevicesTests.CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         isUserAssignedMsi,
                         devicesFileName,
@@ -126,14 +126,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 exportJobProperties.Status.Should().Be(JobStatus.Completed, $"Export failed due to '{exportJobProperties.FailureReason}'.");
                 exportJobProperties.FailureReason.Should().BeNullOrEmpty("Otherwise export failed");
 
-                await ValidateDevicesAsync(
+                await ExportDevicesTests.ValidateDevicesAsync(
                         devicesFileName,
                         storageContainer,
                         edge1,
                         edge2,
                         device)
                     .ConfigureAwait(false);
-                await ValidateConfigurationsAsync(
+                await ExportDevicesTests.ValidateConfigurationsAsync(
                         configsFileName,
                         storageContainer,
                         configuration)
@@ -141,11 +141,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                await CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, serviceClient).ConfigureAwait(false);
+                await ExportDevicesTests.CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, serviceClient).ConfigureAwait(false);
             }
         }
 
-        private async Task<IotHubJobResponse> CreateAndWaitForJobAsync(
+        private static async Task<IotHubJobResponse> CreateAndWaitForJobAsync(
             StorageAuthenticationType storageAuthenticationType,
             bool isUserAssignedMsi,
             string devicesFileName,
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             return jobResponse;
         }
 
-        private async Task ValidateDevicesAsync(
+        private static async Task ValidateDevicesAsync(
             string devicesFileName,
             StorageContainer storageContainer,
             Device edge1,
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             foundDeviceInExport.Should().BeTrue("Expected device did not appear in the export");
         }
 
-        private async Task ValidateConfigurationsAsync(
+        private static async Task ValidateConfigurationsAsync(
             string configsFileName,
             StorageContainer storageContainer,
             Configuration configuration)
@@ -300,7 +300,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             return await exportFile.DownloadTextAsync().ConfigureAwait(false);
         }
 
-        private async Task CleanUpDevicesAsync(
+        private static async Task CleanUpDevicesAsync(
             string edgeId1,
             string edgeId2,
             string deviceId,
