@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // act
 
-                IotHubJobResponse exportJobProperties = await ExportDevicesTests.CreateAndWaitForJobAsync(
+                IotHubJobResponse exportJobProperties = await CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         isUserAssignedMsi,
                         devicesFileName,
@@ -126,14 +126,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 exportJobProperties.Status.Should().Be(JobStatus.Completed, $"Export failed due to '{exportJobProperties.FailureReason}'.");
                 exportJobProperties.FailureReason.Should().BeNullOrEmpty("Otherwise export failed");
 
-                await ExportDevicesTests.ValidateDevicesAsync(
+                await ValidateDevicesAsync(
                         devicesFileName,
                         storageContainer,
                         edge1,
                         edge2,
                         device)
                     .ConfigureAwait(false);
-                await ExportDevicesTests.ValidateConfigurationsAsync(
+                await ValidateConfigurationsAsync(
                         configsFileName,
                         storageContainer,
                         configuration)
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                await ExportDevicesTests.CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, serviceClient).ConfigureAwait(false);
+                await CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, serviceClient).ConfigureAwait(false);
             }
         }
 

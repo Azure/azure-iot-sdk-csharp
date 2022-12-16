@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
 
             var mockMqttClient = new Mock<IMqttClient>();
 
-            using MqttTransportHandler mqttTransportHandler = MqttTransportHandlerTests.CreateTransportHandler(mockMqttClient.Object);
+            using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
             await mqttTransportHandler.OpenAsync(cancellationToken);
 

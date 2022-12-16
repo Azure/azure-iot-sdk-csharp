@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            await TelemetryE2ETests.SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
+            await SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
         }
 
         public static async Task SendSingleMessageAsync(IotHubDeviceClient deviceClient, int messageSize = 0)

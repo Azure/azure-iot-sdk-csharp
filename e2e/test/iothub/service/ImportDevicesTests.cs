@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // act
 
-                IotHubJobResponse importJobResponse = await ImportDevicesTests.CreateAndWaitForJobAsync(
+                IotHubJobResponse importJobResponse = await CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         devicesFileName,
                         configsFileName,

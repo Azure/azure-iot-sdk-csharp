@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
-            await AzureSecurityCenterForIoTSecurityMessageE2ETests.SendSingleSecurityMessageAsync(deviceClient).ConfigureAwait(false);
+            await SendSingleSecurityMessageAsync(deviceClient).ConfigureAwait(false);
         }
 
         private async Task TestSecurityMessageModuleAsync(IotHubClientTransportSettings transportSettings)
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             var options = new IotHubClientOptions(transportSettings);
             await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
-            await AzureSecurityCenterForIoTSecurityMessageE2ETests.SendSingleSecurityMessageModuleAsync(moduleClient).ConfigureAwait(false);
+            await SendSingleSecurityMessageModuleAsync(moduleClient).ConfigureAwait(false);
         }
 
         private static async Task SendSingleSecurityMessageAsync(
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            TelemetryMessage testMessage = AzureSecurityCenterForIoTSecurityMessageE2ETests.ComposeD2CSecurityTestMessage();
+            TelemetryMessage testMessage = ComposeD2CSecurityTestMessage();
             await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             IotHubModuleClient moduleClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            TelemetryMessage testMessage = AzureSecurityCenterForIoTSecurityMessageE2ETests.ComposeD2CSecurityTestMessage();
+            TelemetryMessage testMessage = ComposeD2CSecurityTestMessage();
             await moduleClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 

@@ -35,14 +35,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
         {
-            await MessageReceiveE2ETests.ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
+            await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Mqtt()
         {
-            await MessageReceiveE2ETests.ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
+            await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Mqtt()
         {
             var settings = new IotHubClientMqttSettings() { CleanSession = true };
-            await MessageReceiveE2ETests.DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
+            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Amqp()
         {
             var settings = new IotHubClientAmqpSettings();
-            await MessageReceiveE2ETests.DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
+            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -79,14 +79,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageAfterOpenCloseOpen_Amqp()
         {
-            await MessageReceiveE2ETests.ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
+            await ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageAfterOpenCloseOpen_Mqtt()
         {
-            await MessageReceiveE2ETests.ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
+            await ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         public static Message ComposeC2dTestMessage(out string payload, out string p1Value)
