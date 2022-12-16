@@ -25,19 +25,19 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(token)).ConfigureAwait(false);
+            await AmqpTransportHandlerTests.TestOperationCanceledByToken(token => AmqpTransportHandlerTests.CreateFromConnectionString().OpenAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task AmqpTransportHandlerSendTelemetryAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryAsync(new TelemetryMessage(), token)).ConfigureAwait(false);
+            await AmqpTransportHandlerTests.TestOperationCanceledByToken(token => AmqpTransportHandlerTests.CreateFromConnectionString().SendTelemetryAsync(new TelemetryMessage(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task AmqpTransportHandlerSendTelemetryAsyncMultipleMessagesTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryBatchAsync(new List<TelemetryMessage>(), token)).ConfigureAwait(false);
+            await AmqpTransportHandlerTests.TestOperationCanceledByToken(token => AmqpTransportHandlerTests.CreateFromConnectionString().SendTelemetryBatchAsync(new List<TelemetryMessage>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             }
         }
 
-        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        private static async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             using var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             catch (OperationCanceledException) { }
         }
 
-        private AmqpTransportHandler CreateFromConnectionString()
+        private static AmqpTransportHandler CreateFromConnectionString()
         {
             var pipelineContext = new PipelineContext
             {

@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
-            var msg = new Message(new byte[0]);
+            var msg = new Message(Array.Empty<byte>());
             msg.Payload.Should().NotBeNull();
             msg.Payload.Length.Should().Be(0);
         }

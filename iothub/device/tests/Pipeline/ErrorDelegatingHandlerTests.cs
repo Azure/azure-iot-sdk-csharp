@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
-            await sut.SendTelemetryAsync(new TelemetryMessage(new byte[0]), cancellationToken).ConfigureAwait(false);
+            await sut.SendTelemetryAsync(new TelemetryMessage(Array.Empty<byte>()), cancellationToken).ConfigureAwait(false);
 
             innerHandler.Verify(x => x.OpenAsync(cancellationToken), Times.Once);
             innerHandler.Verify(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), cancellationToken), Times.Once);
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // set initial operation result that throws
 
-            var message = new TelemetryMessage(new byte[0]);
+            var message = new TelemetryMessage(Array.Empty<byte>());
             bool isSetup = false;
             innerHandler
                 .Setup(x => x.SendTelemetryAsync(message, It.IsAny<CancellationToken>()))
