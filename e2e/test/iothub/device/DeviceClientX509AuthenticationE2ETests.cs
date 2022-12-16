@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_Enable_CertificateRevocationCheck_MqttTcp()
         {
             IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);
-            await DeviceClientX509AuthenticationE2ETests.SendMessageTestAsync(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_Enable_CertificateRevocationCheck_MqttWs()
         {
             IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
-            await DeviceClientX509AuthenticationE2ETests.SendMessageTestAsync(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_Enable_CertificateRevocationCheck_AmqpTcp()
         {
             IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);
-            await DeviceClientX509AuthenticationE2ETests.SendMessageTestAsync(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_Enable_CertificateRevocationCheck_AmqpWs()
         {
             IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
-            await DeviceClientX509AuthenticationE2ETests.SendMessageTestAsync(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_CustomWebSocket_AmqpWs()
         {
             IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCustomWebSocket(IotHubClientTransportProtocol.WebSocket);
-            await DeviceClientX509AuthenticationE2ETests.SendMessageTestAsync(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync().ConfigureAwait(false);
 
             // assert
-            DeviceClientX509AuthenticationE2ETests.ValidateCertsAreInstalled(chainCerts);
+            ValidateCertsAreInstalled(chainCerts);
         }
 
         [TestMethod]
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSetting));
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            var message = TelemetryE2ETests.ComposeD2cTestMessage(out string _, out string _);
+            TelemetryMessage message = TelemetryE2ETests.ComposeD2cTestMessage(out string _, out string _);
             await deviceClient.SendTelemetryAsync(message).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }

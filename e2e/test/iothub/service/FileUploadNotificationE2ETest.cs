@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            var counter = new FileUploadNotificationCounter();
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             await serviceClient.FileUploadNotifications.OpenAsync().ConfigureAwait(false);
             await UploadFile().ConfigureAwait(false);
-            await FileUploadNotificationE2ETest.WaitForFileUploadNotification(counter, 1);
+            await WaitForFileUploadNotification(counter, 1);
             await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
@@ -64,14 +64,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_Operation_OpenCloseOpen(IotHubTransportProtocol protocol)
         {
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            var options = new IotHubServiceClientOptions()
             {
                 Protocol = protocol
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            var counter = new FileUploadNotificationCounter();
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // Client should still be able to receive file upload notifications after being closed and re-opened.
             await UploadFile().ConfigureAwait(false);
-            await FileUploadNotificationE2ETest.WaitForFileUploadNotification(counter, 1);
+            await WaitForFileUploadNotification(counter, 1);
             await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
@@ -97,14 +97,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection(IotHubTransportProtocol protocol)
         {
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            var options = new IotHubServiceClientOptions()
             {
                 Protocol = protocol
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            var counter = new FileUploadNotificationCounter();
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // The open file upload notification processor should be able to receive more than one
             // file upload notification without closing and re-opening as long as there is more
             // than one file upload notification to consume.
-            await FileUploadNotificationE2ETest.WaitForFileUploadNotification(counter, 2);
+            await WaitForFileUploadNotification(counter, 2);
             await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
