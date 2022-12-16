@@ -177,17 +177,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
+            // If there are no policy errors then return the remote certificate validation is a pass.
             if (sslPolicyErrors == SslPolicyErrors.None)
             {
                 return true;
             }
 
+            // If there is a certificate name mismatch and server certificate validation is turned off, then it is a pass.
             if (_disableServerCertificateValidation
                 && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
             {
                 return true;
             }
 
+            // If there are remote certificate chain errors due to unknown revocation status check, then it is a pass only if
+            // remote certificate revocation check has been turned off.
             if (!_amqpTransportSettings.CertificateRevocationCheck
                 && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors
                 && CausedByRevocationCheckError(chain))
@@ -195,6 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 return true;
             }
 
+            // For all other cases, it is a fail.
             return false;
         }
 

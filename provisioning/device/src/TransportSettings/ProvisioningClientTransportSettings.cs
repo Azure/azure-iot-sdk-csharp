@@ -61,14 +61,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public SslProtocols SslProtocols { get; set; } = SslProtocols.None;
 
         /// <summary>
+        /// To enable certificate revocation check.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Defaults to false.
+        /// </para>
+        /// <para>
+        /// For connections over AMQP, this check is used in conjunction with the <see cref="RemoteCertificateValidationCallback"/>.
+        /// For connections over MQTT, this check is set directly on the TLS settings.
+        /// </para>
+        /// </remarks>
+        public bool CertificateRevocationCheck { get; set; }
+
+        /// <summary>
         /// A callback for remote certificate validation.
         /// </summary>
         /// <remarks>
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// <para>
-        /// This feature is only applicable for MQTT over TCP, MQTT over web socket, AMQP
-        /// over TCP. AMQP web socket communication does not support this feature. For users who want
-        /// this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
+        /// This feature is only applicable for MQTT over TCP, MQTT over web socket and AMQP over TCP.
+        /// AMQP web socket communication does not support this feature.
+        /// For users who want this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
         /// instance with the desired callback and other websocket options (eg. proxy, keep-alive etc.) set.
         /// </para>
         /// </remarks>

@@ -64,7 +64,13 @@ namespace Microsoft.Azure.Devices.Client
         /// To enable certificate revocation check.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Defaults to false.
+        /// </para>
+        /// <para>
+        /// For connections over AMQP, this check is used in conjunction with the <see cref="IotHubClientAmqpSettings.RemoteCertificateValidationCallback"/>.
+        /// For connections over MQTT, this check is set directly on the TLS settings.
+        /// </para>
         /// </remarks>
         public bool CertificateRevocationCheck { get; set; }
 

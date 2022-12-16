@@ -64,6 +64,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 IdleTimeout = IdleTimeout,
                 ClientWebSocket = ClientWebSocket,
                 WebSocketKeepAlive = WebSocketKeepAlive,
+                CertificateRevocationCheck = CertificateRevocationCheck,
+                RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
             };
         }
     }
