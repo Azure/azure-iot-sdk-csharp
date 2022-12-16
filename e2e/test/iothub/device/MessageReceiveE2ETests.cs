@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             received.Should().BeTrue($"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTime}.");
         }
 
-        private async Task ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
+        private static async Task ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        private async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
+        private static async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             testDeviceCallbackHandler.Dispose();
         }
 
-        private async Task ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
+        private static async Task ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));

@@ -1,14 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -35,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
             mockMqttClient.Verify(p => p.ConnectAsync(It.IsAny<MqttClientOptions>(), cancellationToken));
         }
 
-        internal MqttTransportHandler CreateTransportHandler(IMqttClient mockMqttClient)
+        internal static MqttTransportHandler CreateTransportHandler(IMqttClient mockMqttClient)
         {
             var pipelineContext = new PipelineContext();
             var clientConfigurationMock = new IotHubConnectionCredentials();

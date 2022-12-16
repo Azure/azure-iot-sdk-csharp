@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher
+    internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher, IDisposable
     {
         private static readonly string[] s_accessRightsStringArray = new[] { "DeviceConnect" };
         private readonly Uri _amqpEndpoint;
@@ -169,6 +169,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             // If the shared access key name is not null then this is a group SAS authenticated client.
             // SAS tokens granted to a group SAS authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
             return connectionCredentials.HostName;
+        }
+
+        public void Dispose()
+        {
+            _loopCancellationTokenSource?.Dispose();
         }
     }
 }

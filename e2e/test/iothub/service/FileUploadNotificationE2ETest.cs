@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            var counter = new FileUploadNotificationCounter();
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
@@ -64,14 +64,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_Operation_OpenCloseOpen(IotHubTransportProtocol protocol)
         {
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            var options = new IotHubServiceClientOptions()
             {
                 Protocol = protocol
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            var counter = new FileUploadNotificationCounter();
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
@@ -97,14 +97,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection(IotHubTransportProtocol protocol)
         {
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            var options = new IotHubServiceClientOptions()
             {
                 Protocol = protocol
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            var counter = new FileUploadNotificationCounter();
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         /// </summary>
         /// <param name="fileUploadNotificationReceivedCount">The current number of file upload notifications received.</param>
         /// <param name="expectedFileUploadNotificationReceivedCount">The expected number of file upload notifications to receive in this test.</param>
-        private async Task WaitForFileUploadNotification(FileUploadNotificationCounter counter, int expectedFileUploadNotificationReceivedCount)
+        private static async Task WaitForFileUploadNotification(FileUploadNotificationCounter counter, int expectedFileUploadNotificationReceivedCount)
         {
             var timer = Stopwatch.StartNew();
             try

@@ -15,39 +15,11 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class IotHubModuleClientTests
     {
-        private const string DeviceId = "module-twin-test";
-        private const string ModuleId = "mongo-server";
         private const string ConnectionStringWithModuleId = "GatewayHostName=edge.iot.microsoft.com;HostName=acme.azure-devices.net;DeviceId=module-twin-test;ModuleId=mongo-server;SharedAccessKey=dGVzdFN0cmluZzQ=";
         private const string ConnectionStringWithoutModuleId = "GatewayHostName=edge.iot.microsoft.com;HostName=acme.azure-devices.net;DeviceId=module-twin-test;SharedAccessKey=dGVzdFN0cmluZzQ=";
         private const string FakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;ModuleId=dummyModuleId;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         public const string NoModuleTwinJson = "{ \"maxConnections\": 10 }";
-
-        public readonly string ValidDeviceTwinJson = string.Format(
-            @"
-{{
-    ""{1}"": {{
-        ""properties"": {{
-            ""desired"": {{
-                ""maxConnections"": 10,
-                ""$metadata"": {{
-                    ""$lastUpdated"": ""2017-05-30T22:37:31.1441889Z"",
-                    ""$lastUpdatedVersion"": 2
-                }}
-            }}
-        }}
-    }},
-    ""nginx-server"": {{
-        ""properties"": {{
-            ""desired"": {{
-                ""forwardUrl"": ""http://example.com""
-            }}
-        }}
-    }}
-}}
-",
-            DeviceId,
-            ModuleId);
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]

@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
 
             AmqpUnit addedUnit = pool.CreateAmqpUnit(testDevice, null, amqpSettings, null, null, null, null);
 
-            injectedDictionary[sharedAccessKeyName].Count().Should().Be((int)poolSize);
+            injectedDictionary[sharedAccessKeyName].Length.Should().Be((int)poolSize);
 
             pool.RemoveAmqpUnit(addedUnit);
 
@@ -63,9 +63,9 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             }
         }
 
-        private IConnectionCredentials CreatePooledSasGroupedClientIdentity(string sharedAccessKeyName)
+        private static IConnectionCredentials CreatePooledSasGroupedClientIdentity(string sharedAccessKeyName)
         {
-            Mock<IConnectionCredentials> clientIdentity = new Mock<IConnectionCredentials>();
+            var clientIdentity = new Mock<IConnectionCredentials>();
 
             clientIdentity.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
             clientIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);

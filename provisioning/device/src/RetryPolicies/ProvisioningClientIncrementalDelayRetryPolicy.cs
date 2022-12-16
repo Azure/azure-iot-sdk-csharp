@@ -50,9 +50,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         internal protected bool UseJitter { get; }
 
         /// <inheritdoc/>
-        public override bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+        public override bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay)
         {
-            if (!base.ShouldRetry(currentRetryCount, lastException, out retryInterval))
+            if (!base.ShouldRetry(currentRetryCount, lastException, out retryDelay))
             {
                 return false;
             }
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 currentRetryCount * DelayIncrement.TotalMilliseconds,
                 MaxDelay.TotalMilliseconds);
 
-            retryInterval = UseJitter
+            retryDelay = UseJitter
                 ? UpdateWithJitter(waitDurationMs)
                 : TimeSpan.FromMilliseconds(waitDurationMs);
 

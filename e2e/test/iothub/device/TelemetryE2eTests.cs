@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient.SendTelemetryBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
         }
 
-        private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
+        private static async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
         {
             TelemetryMessage testMessage = ComposeD2cTestMessage(out string _, out string _);
 

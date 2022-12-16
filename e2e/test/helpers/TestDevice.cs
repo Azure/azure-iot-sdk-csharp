@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         Device,
     }
 
-    public class TestDevice : IDisposable
+    public sealed class TestDevice : IDisposable
     {
         private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 

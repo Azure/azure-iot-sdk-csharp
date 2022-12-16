@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 
 namespace Microsoft.Azure.Devices
 {
@@ -51,7 +50,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Create a module identity in your IoT hub's registry.
         /// </summary>
-        /// <param name="module">The module identity to register.</param>
+        /// <param name="moduleIdentity">The module identity to register.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered module with the generated keys and ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
@@ -61,18 +60,18 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<Module> CreateAsync(Module module, CancellationToken cancellationToken = default)
+        public virtual async Task<Module> CreateAsync(Module moduleIdentity, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating module: {module?.Id} on device: {module?.DeviceId}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId}", nameof(CreateAsync));
 
-            Argument.AssertNotNull(module, nameof(module));
+            Argument.AssertNotNull(moduleIdentity, nameof(moduleIdentity));
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.Id), _credentialProvider, moduleIdentity);
                 HttpResponseMessage response = null;
 
                 await _internalRetryHandler
@@ -98,13 +97,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating module {module?.Id} on device {module?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating module: {module?.Id} on device: {module?.DeviceId}", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId}", nameof(CreateAsync));
             }
         }
 
@@ -174,7 +173,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Replace a module identity's state with the provided module identity's state.
         /// </summary>
-        /// <param name="module">The module identity's new state.</param>
+        /// <param name="moduleIdentity">The module identity's new state.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
         /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
@@ -190,19 +189,19 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<Module> SetAsync(Module module, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task<Module> SetAsync(Module moduleIdentity, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
 
-            Argument.AssertNotNull(module, nameof(module));
+            Argument.AssertNotNull(moduleIdentity, nameof(moduleIdentity));
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
-                HttpMessageHelper.ConditionallyInsertETag(request, module.ETag, onlyIfUnchanged);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.Id), _credentialProvider, moduleIdentity);
+                HttpMessageHelper.ConditionallyInsertETag(request, moduleIdentity.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = null;
 
                 await _internalRetryHandler
@@ -228,13 +227,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating module {module?.Id} on device {module?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
             }
         }
 
@@ -263,7 +262,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Delete the module identity from your IoT hub's registry.
         /// </summary>
-        /// <param name="module">
+        /// <param name="moduleIdentity">
         /// The module identity to delete from your IoT hub's registry. If the provided module's ETag
         /// is out of date, this operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.PreconditionFailed"/>
         /// An up-to-date ETag can be retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
@@ -284,19 +283,19 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task DeleteAsync(Module module, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(Module moduleIdentity, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
 
-            Argument.AssertNotNull(module, nameof(module));
+            Argument.AssertNotNull(moduleIdentity, nameof(moduleIdentity));
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
-                HttpMessageHelper.ConditionallyInsertETag(request, module.ETag, onlyIfUnchanged);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.Id), _credentialProvider);
+                HttpMessageHelper.ConditionallyInsertETag(request, moduleIdentity.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = null;
 
                 await _internalRetryHandler
@@ -321,13 +320,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting module {module?.Id} on device {module?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
             }
         }
 

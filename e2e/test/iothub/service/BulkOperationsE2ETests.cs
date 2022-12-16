@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
-        private string ResultErrorsToString(BulkRegistryOperationResult result)
+        private static string ResultErrorsToString(BulkRegistryOperationResult result)
         {
             string errorString = "";
 

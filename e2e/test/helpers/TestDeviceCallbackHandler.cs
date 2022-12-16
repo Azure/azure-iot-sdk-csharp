@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    public class TestDeviceCallbackHandler : IDisposable
+    public sealed class TestDeviceCallbackHandler : IDisposable
     {
         private readonly IotHubDeviceClient _deviceClient;
         private readonly TestDevice _testDevice;

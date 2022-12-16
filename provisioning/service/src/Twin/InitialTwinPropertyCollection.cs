@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Represents a collection of properties for device twin.
     /// </summary>
     [JsonConverter(typeof(InitialTwinPropertiesJsonConverter))]
-    public class InitialTwinPropertyCollection : IEnumerable
+    public class InitialTwinPropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {
         internal const string MetadataName = "$metadata";
         internal const string LastUpdatedName = "$lastUpdated";
@@ -191,8 +191,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return JObject.TryGetValue(propertyName, out _);
         }
 
-        /// <inheritdoc />
-        public IEnumerator GetEnumerator()
+        /// <inheritdoc/>
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             foreach (KeyValuePair<string, JToken> kvp in JObject)
             {
@@ -203,6 +203,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                 yield return new KeyValuePair<string, dynamic>(kvp.Key, this[kvp.Key]);
             }
+        }
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         /// <summary>

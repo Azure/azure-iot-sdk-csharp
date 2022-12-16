@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             result.TotalMessagesPurged.Should().Be(numberOfSends);
         }
 
-        private Message ComposeD2CTestMessage()
+        private static Message ComposeD2CTestMessage()
         {
             return new Message(Encoding.UTF8.GetBytes("some payload"));
         }

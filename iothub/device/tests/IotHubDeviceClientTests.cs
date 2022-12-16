@@ -3,22 +3,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using Moq;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class IotHubDeviceClientTests : IDisposable
+    public sealed class IotHubDeviceClientTests : IDisposable
     {
         private const string FakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
         private const string FakeHostName = "acme.azure-devices.net";
@@ -29,27 +27,27 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
         private static readonly X509Certificate2Collection s_certs = new();
 
-        private DirectMethodResponse _directMethodResponseWithPayload = new(200)
+        private readonly DirectMethodResponse _directMethodResponseWithPayload = new(200)
         {
             Payload = 123,
         };
 
-        private DirectMethodResponse _directMethodResponseWithEmptyByteArrayPayload = new(200)
+        private readonly DirectMethodResponse _directMethodResponseWithEmptyByteArrayPayload = new(200)
         {
-            Payload = new byte[0]
+            Payload = Array.Empty<byte>()
         };
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()
         {
-            Action act = () => new ClientAuthenticationWithX509Certificate(null, "device1");
+            Action act = () => _= new ClientAuthenticationWithX509Certificate(null, "device1");
 
             act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificateChain_Throws()
-        {            Action act = () => new ClientAuthenticationWithX509Certificate(s_cert, certificateChain: null, "device1");
+        {            Action act = () => _ = new ClientAuthenticationWithX509Certificate(s_cert, certificateChain: null, "device1");
 
             act.Should().Throw<ArgumentException>();
         }
@@ -221,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
-            Action act = () => new IotHubDeviceClient("HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1");
+            Action act = () => _ = new IotHubDeviceClient("HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1");
             act.Should().Throw<InvalidOperationException>();
         }
 
@@ -1042,7 +1040,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             // act
-            Action createDeviceClientAuth = () => { new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
+            Action createDeviceClientAuth = () => _ = new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, TimeSpan.FromSeconds(-60));
 
             // assert
             createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
@@ -1053,7 +1051,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             // act
-            Action createDeviceClientAuth = () => { new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, sasTokenRenewalBuffer: 200); };
+            Action createDeviceClientAuth = () => _ = new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, sasTokenRenewalBuffer: 200);
 
             // assert
             createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
@@ -1127,7 +1125,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public void IotHubDeviceClient_InitWithMqttTransportAndModelId_DoesNotThrow(IotHubClientTransportProtocol protocol)
         {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(protocol));
+            IotHubDeviceClientTests.IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(protocol));
         }
 
         [TestMethod]
@@ -1135,7 +1133,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public void IotHubDeviceClient_InitWithAmqpTransportAndModelId_DoesNotThrow(IotHubClientTransportProtocol protocol)
         {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(protocol));
+            IotHubDeviceClientTests.IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(protocol));
         }
 
         [TestMethod]
@@ -1235,7 +1233,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await act.Should().ThrowAsync<OperationCanceledException>();
         }
 
-        private void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(IotHubClientTransportSettings transportSettings)
+        private static void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(IotHubClientTransportSettings transportSettings)
         {
             // arrange
 

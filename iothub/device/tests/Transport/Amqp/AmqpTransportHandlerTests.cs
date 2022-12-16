@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -104,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             }
         }
 
-        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        private static async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             using var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
@@ -117,7 +116,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             catch (OperationCanceledException) { }
         }
 
-        private AmqpTransportHandler CreateFromConnectionString()
+        private static AmqpTransportHandler CreateFromConnectionString()
         {
             var pipelineContext = new PipelineContext
             {

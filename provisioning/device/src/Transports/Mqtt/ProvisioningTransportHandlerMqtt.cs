@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
 
-                if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter))
+                if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter, StringComparison.Ordinal))
                 {
                     throw new ProvisioningClientException($"Received unexpected subscription to topic '{subscribeResult.TopicFilter.Topic}'.", true);
                 }
