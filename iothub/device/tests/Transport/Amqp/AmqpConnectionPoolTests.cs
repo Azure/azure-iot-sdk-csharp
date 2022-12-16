@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         {
             string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
-            IConnectionCredentials testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName);
+            IConnectionCredentials testDevice = AmqpConnectionPoolTests.CreatePooledSasGroupedClientIdentity(sharedAccessKeyName);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
             var amqpSettings = new IotHubClientAmqpSettings
             {

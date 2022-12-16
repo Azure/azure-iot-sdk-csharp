@@ -24,19 +24,19 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(token)).ConfigureAwait(false);
+            await AmqpTransportHandlerTests.TestOperationCanceledByToken(token => AmqpTransportHandlerTests.CreateFromConnectionString().OpenAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task AmqpTransportHandlerSendTelemetryAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryAsync(new TelemetryMessage(), token)).ConfigureAwait(false);
+            await AmqpTransportHandlerTests.TestOperationCanceledByToken(token => AmqpTransportHandlerTests.CreateFromConnectionString().SendTelemetryAsync(new TelemetryMessage(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task AmqpTransportHandlerSendTelemetryAsyncMultipleMessagesTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryBatchAsync(new List<TelemetryMessage>(), token)).ConfigureAwait(false);
+            await AmqpTransportHandlerTests.TestOperationCanceledByToken(token => AmqpTransportHandlerTests.CreateFromConnectionString().SendTelemetryBatchAsync(new List<TelemetryMessage>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
