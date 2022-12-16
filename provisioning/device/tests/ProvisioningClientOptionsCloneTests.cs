@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 IdleTimeout = TimeSpan.FromSeconds(1),
                 CertificateRevocationCheck = true,
             };
-            ProvisioningClientOptions options = new ProvisioningClientOptions(amqpSettings)
+            var options = new ProvisioningClientOptions(amqpSettings)
             {
                 AdditionalUserAgentInfo = "info"
             };
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 PublishToServerQoS = QualityOfService.AtMostOnce,
                 CertificateRevocationCheck = true,
             };
-            ProvisioningClientOptions options = new ProvisioningClientOptions(mqttSettings)
+            var options = new ProvisioningClientOptions(mqttSettings)
             {
                 AdditionalUserAgentInfo = "info"
             };
