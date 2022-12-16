@@ -195,6 +195,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ThrowIfDisposed();
         }
 
+        public virtual Task StopLoopAsync()
+        {
+            ThrowIfDisposed();
+
+            return NextHandler?.StopLoopAsync() ?? Task.CompletedTask;
+        }
+
         ~DefaultDelegatingHandler()
         {
             Dispose(false);

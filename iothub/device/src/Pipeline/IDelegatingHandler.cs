@@ -41,6 +41,8 @@ namespace Microsoft.Azure.Devices.Client
 
         void SetRefreshesOn(CancellationToken cancellationToken);
 
+        Task StopLoopAsync();
+
         // Twin.
         Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken);
 

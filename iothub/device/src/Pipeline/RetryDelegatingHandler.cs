@@ -466,37 +466,51 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _handlerSemaphore?.Release();
             }
         }
-        public override async void SetRefreshesOn(CancellationToken cancellationToken)
+
+
+        public override void SetRefreshesOn(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(SetRefreshesOn));
 
-            DateTime refreshesOn = GetRefreshesOn();
-            if (refreshesOn < DateTime.MaxValue)
+            if (_refreshLoop == null)
             {
-                await StartLoopAsync(refreshesOn, cancellationToken);
+                if (_loopCancellationTokenSource != null)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "_loopCancellationTokenSource was already initialized, which was unexpected. Canceling and disposing the previous instance.", nameof(SetRefreshesOn));
+
+                    try
+                    {
+                        _loopCancellationTokenSource.Cancel();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
+                    _loopCancellationTokenSource.Dispose();
+                }
+                _loopCancellationTokenSource = new CancellationTokenSource();
+
+                DateTime refreshesOn = GetRefreshesOn();
+                if (refreshesOn < DateTime.MaxValue)
+                {
+                    StartLoop(refreshesOn, cancellationToken);
+                }
             }
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, cancellationToken, nameof(SetRefreshesOn));
         }
 
-        private async Task StartLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
+        private void StartLoop(DateTime refreshesOn, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, refreshesOn, nameof(StartLoopAsync));
+                Logging.Enter(this, refreshesOn, nameof(StartLoop));
 
-            if (_loopCancellationTokenSource == null
-                || _refreshLoop == null)
-            {
-                await StopLoopAsync();
-            }
-
-            _loopCancellationTokenSource = new CancellationTokenSource();
             _refreshLoop = RefreshLoopAsync(refreshesOn, cancellationToken);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, refreshesOn, nameof(StartLoopAsync));
+                Logging.Exit(this, refreshesOn, nameof(StartLoop));
         }
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
@@ -528,27 +542,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Exit(this, refreshesOn, nameof(RefreshLoopAsync));
         }
 
-        private async Task StopLoopAsync()
+        public override async Task StopLoopAsync()
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(StopLoopAsync));
-
-            _loopCancellationTokenSource?.Cancel();
-            if (_refreshLoop != null)
+            try
             {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, nameof(StopLoopAsync));
+
                 try
+                {
+                    _loopCancellationTokenSource?.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopLoopAsync));
+                }
+
+                if (_refreshLoop != null)
                 {
                     await _refreshLoop.ConfigureAwait(false);
                 }
-                catch (OperationCanceledException) { }
-                _refreshLoop = null;
             }
-
-            _loopCancellationTokenSource?.Dispose();
-            _loopCancellationTokenSource = null;
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, nameof(StopLoopAsync));
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Caught exception when stopping token refresh loop: {ex}");
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(StopLoopAsync));
+            }
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
