@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (_refresherCancellationTokenSource != null)
             {
                 if (Logging.IsEnabled)
-                    Logging.Info(this, "_refresherCancellationTokenSource was already initialized, whhich was unexpected. Canceling and disposing the previous instance.", nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
+                    Logging.Info(this, "_refresherCancellationTokenSource was already initialized, which was unexpected. Canceling and disposing the previous instance.", nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
 
                 try
                 {
