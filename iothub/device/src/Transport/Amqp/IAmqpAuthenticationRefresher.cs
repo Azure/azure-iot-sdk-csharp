@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal interface IAmqpAuthenticationRefresher : IDisposable
     {
         Task InitLoopAsync(TimeSpan timeout);
-        void StopLoop();
         void StartLoop(DateTime refreshOn, CancellationToken cancellationToken);
+        Task StopLoopAsync();
     }
 }

@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             catch (Exception)
             {
-                Cleanup();
+                await CleanupAsync().ConfigureAwait(false);
                 throw;
             }
             finally
@@ -168,11 +168,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     try
                     {
-                        await _amqpIoTSession.CloseAsync(timeout).ConfigureAwait(false);
+                        await _amqpIotSession.CloseAsync(cancellationToken).ConfigureAwait(false);
+
+                        if (_amqpAuthenticationRefresher != null)
+                        {
+                            await _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
+                        }
                     }
                     finally
                     {
-                        Cleanup();
+                        await CleanupAsync().ConfigureAwait(false);
                     }
                 }
             }
@@ -185,18 +190,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
-        private void Cleanup()
+        private async Task CleanupAsync()
         {
-            Logging.Enter(this, nameof(Cleanup));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(CleanupAsync));
 
-            _amqpIoTSession?.SafeClose();
-            _amqpAuthenticationRefresher?.StopLoop();
-            if (!_deviceIdentity.IsPooling())
+            _amqpIotSession?.SafeClose();
+
+            if (_amqpAuthenticationRefresher != null)
             {
-                _amqpConnectionHolder?.Shutdown();
+                await _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
             }
 
-            Logging.Exit(this, nameof(Cleanup));
+            if (!_deviceIdentity.IsPooling() && _amqpConnectionHolder != null)
+            {
+                await _amqpConnectionHolder.ShutdownAsync().ConfigureAwait(false);
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, nameof(CleanupAsync));
         }
 
         #endregion Open-Close
@@ -804,7 +816,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             Logging.Enter(this, nameof(OnConnectionDisconnected));
 
-            _amqpAuthenticationRefresher?.StopLoop();
+            _ = _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
             _onUnitDisconnected();
 
             Logging.Exit(this, nameof(OnConnectionDisconnected));
@@ -816,7 +828,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (ReferenceEquals(o, _amqpIoTSession))
             {
-                _amqpAuthenticationRefresher?.StopLoop();
+                _ = _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
+
+                // calls TransportHandler.OnTransportDisconnected() which sets the transport layer up to retry
                 _onUnitDisconnected();
             }
             Logging.Exit(this, o, nameof(OnSessionDisconnected));
@@ -834,31 +848,45 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
-
-            _disposed = true;
-
-            if (disposing)
-            {
-                Logging.Enter(this, disposing, nameof(Dispose));
-
-                Cleanup();
-                if (!_deviceIdentity.IsPooling())
+                if (Logging.IsEnabled)
                 {
-                    _amqpConnectionHolder?.Dispose();
+                    Logging.Enter(this, $"Device pooling={_deviceIdentity?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
                 }
 
-                _sessionSemaphore?.Dispose();
-                _messageReceivingLinkSemaphore?.Dispose();
-                _messageReceivingCallbackSemaphore?.Dispose();
-                _eventReceivingLinkSemaphore?.Dispose();
-                _methodLinkSemaphore?.Dispose();
-                _twinLinksSemaphore?.Dispose();
+                if (!_disposed)
+                {
+                    if (disposing)
+                    {
+                        if (!_deviceIdentity.IsPooling())
+                        {
+                            _amqpConnectionHolder?.Dispose();
+                        }
 
-                Logging.Exit(this, disposing, nameof(Dispose));
+                        // For device sas authenticated clients the authentication refresher is associated with the AMQP unit itself,
+                        // so it needs to be explicitly disposed.
+                        _amqpAuthenticationRefresher?.Dispose();
+
+                        _sessionSemaphore?.Dispose();
+                        _messageReceivingLinkSemaphore?.Dispose();
+                        _messageReceivingCallbackSemaphore?.Dispose();
+                        _eventReceivingLinkSemaphore?.Dispose();
+                        _methodLinkSemaphore?.Dispose();
+                        _twinLinksSemaphore?.Dispose();
+
+                        Logging.Exit(this, disposing, nameof(Dispose));
+                    }
+                }
+
+                _disposed = true;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Device pooling={_deviceIdentity?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
+                }
             }
         }
 

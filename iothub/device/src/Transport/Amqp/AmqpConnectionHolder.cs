@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (_amqpIoTConnection != null && ReferenceEquals(_amqpIoTConnection, o))
             {
-                _amqpAuthenticationRefresher?.StopLoop();
+                _ = _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
@@ -92,19 +92,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public void Shutdown()
+        public async Task ShutdownAsync()
         {
             if (Logging.IsEnabled)
+                Logging.Enter(this, _amqpIotConnection, nameof(ShutdownAsync));
+
+            if (_amqpAuthenticationRefresher != null)
             {
-                Logging.Enter(this, _amqpIoTConnection, $"{nameof(Shutdown)}");
+                await _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
             }
 
-            _amqpAuthenticationRefresher?.StopLoop();
-            _amqpIoTConnection?.SafeClose();
+            _amqpIotConnection?.SafeClose();
+
             if (Logging.IsEnabled)
-            {
-                Logging.Exit(this, _amqpIoTConnection, $"{nameof(Shutdown)}");
-            }
+                Logging.Exit(this, _amqpIotConnection, nameof(ShutdownAsync));
         }
 
         public void Dispose()
@@ -232,8 +233,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                amqpAuthenticationRefresher?.StopLoop();
-                amqpIoTConnection?.SafeClose();
+                if (amqpAuthenticationRefresher != null)
+                {
+                    await amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
+                }
+
+                amqpIotConnection?.SafeClose();
                 throw;
             }
             finally
@@ -261,7 +266,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (_amqpUnits.Count == 0)
                 {
                     // TODO #887: handle gracefulDisconnect
-                    Shutdown();
+                    _ = ShutdownAsync().ConfigureAwait(false);
                 }
             }
             if (Logging.IsEnabled)

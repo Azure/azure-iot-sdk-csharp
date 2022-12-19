@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         // then log the exception and continue.
                         // This task runs on an unmonitored thread so there is no point throwing these exceptions.
                         if (Logging.IsEnabled)
-                            Logging.Error(this, refreshesOn, $"{_amqpIotCbsTokenProvider} refresh token failed {ex}");
+                            Logging.Error(this, refreshesOn, $"{_amqpIotCbsTokenProvider} refresh token failed: {ex}");
                     }
                     finally
                     {
@@ -162,23 +162,37 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public void StopLoop()
+        public async Task StopLoopAsync()
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(StopLoop));
-
             try
             {
-                _refresherCancellationTokenSource?.Cancel();
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, nameof(StopLoopAsync));
+
+                try
+                {
+                    _refresherCancellationTokenSource?.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopLoopAsync));
+                }
+
+                // Await the completion of _refreshLoop.
+                // This will ensure that when StopLoopAsync has been exited then no more token refresh attempts are in-progress.
+                await _refreshLoop.ConfigureAwait(false);
             }
-            catch (ObjectDisposedException)
+            catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopLoop));
+                    Logging.Error(this, $"Caught exception when stopping token refresh loop: {ex}");
             }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, nameof(StopLoop));
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(StopLoopAsync));
+            }
         }
 
         public void Dispose()
