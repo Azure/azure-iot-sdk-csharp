@@ -28,22 +28,6 @@ jobs:
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
-        inputs:
-          packageType: sdk
-          version: 5.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
       - task: DownloadBuildArtifacts@0
         inputs:
           buildType: 'specific'
@@ -166,6 +150,14 @@ jobs:
     pool:
       name: Hosted VS2017
     steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: DownloadBuildArtifacts@0
         inputs:
           buildType: 'specific'

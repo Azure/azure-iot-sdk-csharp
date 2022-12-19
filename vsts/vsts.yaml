@@ -39,7 +39,6 @@ jobs:
           command: "Run an image"
           imageName: aziotbld/testtpm
           containerName: "testtpm-instance"
-
           ports: |
             127.0.0.1:2321:2321
             127.0.0.1:2322:2322
@@ -107,23 +106,13 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
         condition: always()
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
         inputs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
-
         condition: always()
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
@@ -131,7 +120,6 @@ jobs:
           testRunner: VSTest
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
-
         condition: always()
         
 
@@ -158,7 +146,6 @@ jobs:
           command: "Run an image"
           imageName: aziotbld/testtpm
           containerName: "testtpm-instance"
-
           ports: |
             127.0.0.1:2321:2321
             127.0.0.1:2322:2322
@@ -179,14 +166,6 @@ jobs:
         inputs:
           packageType: sdk
           version: 2.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -242,23 +221,13 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
         condition: always()
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
         inputs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
-
         condition: always()
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
-        inputs:
-          packageType: sdk
-          version: 2.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
@@ -266,7 +235,6 @@ jobs:
           testRunner: VSTest
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
-
         condition: always()
 
   ### Windows build 1 ###
@@ -343,7 +311,6 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
         condition: always()
 
       - task: CopyFiles@2
@@ -352,28 +319,13 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.etl"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
         condition: always()
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults"
         inputs:
           ArtifactName: testresults_windows_$(FRAMEWORK)
-
         condition: always()
-
-      - task: CmdLine@2
-        displayName: 'Install .NET 4.5.1'
-        inputs:
-          script: 'choco install dotnet4.5.1'
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
@@ -383,7 +335,6 @@ jobs:
           testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
-
         condition: always()
 
   ### Windows build 2 ###
@@ -409,6 +360,14 @@ jobs:
         displayName: "Install Squid"
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
@@ -455,13 +414,13 @@ jobs:
           PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
           DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID)
           DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
+
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
         condition: always()
 
       - task: CopyFiles@2
@@ -470,28 +429,13 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.etl"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
         condition: always()
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults"
         inputs:
           ArtifactName: testresults_windows_$(FRAMEWORK)
-
         condition: always()
-
-      - task: CmdLine@2
-        displayName: 'Install .NET 4.5.1'
-        inputs:
-          script: 'choco install dotnet4.5.1'
-    
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
-        inputs:
-          packageType: sdk
-          version: 2.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
@@ -501,7 +445,6 @@ jobs:
           testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
-
         condition: always()
 
   ### WINDOWS Analyzers ###
