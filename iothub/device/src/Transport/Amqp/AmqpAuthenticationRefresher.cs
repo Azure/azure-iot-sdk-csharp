@@ -213,9 +213,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
-                }
 
                 if (!_disposed)
                 {
