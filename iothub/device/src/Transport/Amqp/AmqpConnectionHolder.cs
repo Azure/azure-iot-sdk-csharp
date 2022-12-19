@@ -227,6 +227,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     await amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
                 }
+
                 amqpIotConnection?.SafeClose();
                 throw;
             }

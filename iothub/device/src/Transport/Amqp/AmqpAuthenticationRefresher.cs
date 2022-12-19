@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         // then log the exception and continue.
                         // This task runs on an unmonitored thread so there is no point throwing these exceptions.
                         if (Logging.IsEnabled)
-                            Logging.Error(this, refreshesOn, $"{_amqpIotCbsTokenProvider} refresh token failed {ex}");
+                            Logging.Error(this, refreshesOn, $"{_amqpIotCbsTokenProvider} refresh token failed: {ex}");
                     }
                     finally
                     {
