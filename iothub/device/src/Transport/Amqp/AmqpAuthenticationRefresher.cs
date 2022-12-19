@@ -13,13 +13,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher, IDisposable
     {
-        private static readonly string[] AccessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
+        private static readonly string[] s_accessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
         private readonly AmqpIoTCbsLink _amqpIoTCbsLink;
         private readonly IotHubConnectionString _connectionString;
         private readonly AmqpIoTCbsTokenProvider _amqpIoTCbsTokenProvider;
         private readonly string _audience;
-        private CancellationTokenSource _cancellationTokenSource;
-        private TimeSpan _operationTimeout;
+        private readonly TimeSpan _operationTimeout;
         private Task _refreshLoop;
         private bool _disposed;
         private CancellationTokenSource _refresherCancellationTokenSource;
@@ -50,18 +49,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Enter(this, timeout, $"{nameof(InitLoopAsync)}");
             }
 
-            CancellationTokenSource oldTokenSource = _cancellationTokenSource;
-            _cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken newToken = _cancellationTokenSource.Token;
-            oldTokenSource?.Cancel();
-
             DateTime refreshOn = await _amqpIoTCbsLink
                 .SendTokenAsync(
                     _amqpIoTCbsTokenProvider,
                     _connectionString.AmqpEndpoint,
                     _audience,
                     _audience,
-                    AccessRightsStringArray,
+                    s_accessRightsStringArray,
                     timeout)
                 .ConfigureAwait(false);
 
@@ -119,12 +113,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (Logging.IsEnabled)
-                    Logging.Info(this, refreshesOn, $"{_amqpIotCbsTokenProvider} before {nameof(RefreshLoopAsync)}");
+                    Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} before {nameof(RefreshLoopAsync)}");
 
                 if (waitTime > TimeSpan.Zero)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, refreshesOn, $"{_amqpIotCbsTokenProvider} waiting {waitTime} {nameof(RefreshLoopAsync)}.");
+                        Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} waiting {waitTime} {nameof(RefreshLoopAsync)}.");
 
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }
@@ -139,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                                 _connectionString.AmqpEndpoint,
                                 _audience,
                                 _audience,
-                                AccessRightsStringArray,
+                                s_accessRightsStringArray,
                                 _operationTimeout)
                             .ConfigureAwait(false);
                     }
@@ -149,12 +143,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         // then log the exception and continue.
                         // This task runs on an unmonitored thread so there is no point throwing these exceptions.
                         if (Logging.IsEnabled)
-                            Logging.Error(this, refreshesOn, $"{_amqpIotCbsTokenProvider} refresh token failed: {ex}");
+                            Logging.Error(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} refresh token failed: {ex}");
                     }
                     finally
                     {
                         if (Logging.IsEnabled)
-                            Logging.Info(this, refreshesOn, $"{_amqpIotCbsTokenProvider} after {nameof(RefreshLoopAsync)}");
+                            Logging.Info(this, refreshesOn, $"{_amqpIoTCbsTokenProvider} after {nameof(RefreshLoopAsync)}");
                     }
 
                     waitTime = refreshesOn - DateTime.UtcNow;
@@ -215,7 +209,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (disposing)
                     {
                         _refresherCancellationTokenSource?.Dispose();
-                        _amqpIotCbsTokenProvider?.Dispose();
                     }
 
                     _disposed = true;
