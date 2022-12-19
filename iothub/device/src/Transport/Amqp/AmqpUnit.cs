@@ -1061,10 +1061,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(OnConnectionDisconnected));
 
-            if (_amqpAuthenticationRefresher != null)
-            {
-                _ =  _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
-            }
+            _ =  _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
             _onUnitDisconnected();
 
             if (Logging.IsEnabled)
@@ -1078,10 +1075,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (ReferenceEquals(o, _amqpIotSession))
             {
-                if (_amqpAuthenticationRefresher != null)
-                {
-                    _ =  _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
-                }
+                _ =  _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
 
                 // calls TransportHandler.OnTransportDisconnected() which sets the transport layer up to retry
                 _onUnitDisconnected();
