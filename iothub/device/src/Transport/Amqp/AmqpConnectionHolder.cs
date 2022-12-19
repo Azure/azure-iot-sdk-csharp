@@ -95,17 +95,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public async Task ShutdownAsync()
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, _amqpIotConnection, nameof(ShutdownAsync));
+                Logging.Enter(this, _amqpIoTConnection, nameof(ShutdownAsync));
 
             if (_amqpAuthenticationRefresher != null)
             {
                 await _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
             }
 
-            _amqpIotConnection?.SafeClose();
+            _amqpIoTConnection?.SafeClose();
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, _amqpIotConnection, nameof(ShutdownAsync));
+                Logging.Exit(this, _amqpIoTConnection, nameof(ShutdownAsync));
         }
 
         public void Dispose()
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     await amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
                 }
 
-                amqpIotConnection?.SafeClose();
+                amqpIoTConnection?.SafeClose();
                 throw;
             }
             finally

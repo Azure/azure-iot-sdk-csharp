@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     try
                     {
-                        await _amqpIotSession.CloseAsync(cancellationToken).ConfigureAwait(false);
+                        await _amqpIoTSession.CloseAsync(timeout).ConfigureAwait(false);
 
                         if (_amqpAuthenticationRefresher != null)
                         {
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(CleanupAsync));
 
-            _amqpIotSession?.SafeClose();
+            _amqpIoTSession?.SafeClose();
 
             if (_amqpAuthenticationRefresher != null)
             {
