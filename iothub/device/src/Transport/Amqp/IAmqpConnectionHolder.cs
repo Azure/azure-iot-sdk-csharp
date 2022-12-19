@@ -12,6 +12,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         Task<AmqpIoTSession> OpenSessionAsync(DeviceIdentity deviceIdentity, TimeSpan timeout);
         Task<AmqpIoTConnection> EnsureConnectionAsync(TimeSpan timeout);
         Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout);
-        void Shutdown();
+        Task ShutdownAsync();
     }
 }

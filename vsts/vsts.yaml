@@ -485,10 +485,13 @@ jobs:
         inputs:
           script: 'choco install dotnet4.5.1'
     
-      - task: CmdLine@2
-        displayName: 'Install .NET Core 2.1'
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
         inputs:
-          script: 'choco install dotnetcore-2.1-sdk'
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
