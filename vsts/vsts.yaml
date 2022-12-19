@@ -162,6 +162,14 @@ jobs:
           restartPolicy: unlessStopped
 
       - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 2.1'
         inputs:
           packageType: sdk
@@ -360,6 +368,14 @@ jobs:
         displayName: "Install Squid"
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 2.1'
