@@ -515,10 +515,10 @@ jobs:
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
       
       - task: PublishCodeCoverageResults@1  
-        displayName: 'Publish code coverage **/*coverage.cobertura.xml'  
+        displayName: 'Publish code coverage **/*.coverage'  
         inputs:  
           codeCoverageTool: Cobertura  
-          summaryFileLocation: '**/*.xml'
+          summaryFileLocation: '**/*.coverage'
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
