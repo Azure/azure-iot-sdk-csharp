@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (Exception)
             {
-                Cleanup();
+                await CleanupAsync().ConfigureAwait(false);
                 throw;
             }
             finally
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     }
                     finally
                     {
-                        Cleanup();
+                        await CleanupAsync().ConfigureAwait(false);
                     }
                 }
             }
@@ -226,20 +226,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void Cleanup()
+        private async Task CleanupAsync()
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(Cleanup));
+                Logging.Enter(this, nameof(CleanupAsync));
 
             _amqpIotSession?.SafeClose();
 
-            if (!_deviceIdentity.IsPooling())
+            if (_amqpAuthenticationRefresher != null)
             {
-                _amqpConnectionHolder?.Shutdown();
+                await _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
+            }
+
+            if (!_deviceIdentity.IsPooling() && _amqpConnectionHolder != null)
+            {
+                await _amqpConnectionHolder.ShutdownAsync().ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, nameof(Cleanup));
+                Logging.Exit(this, nameof(CleanupAsync));
         }
 
         #endregion Open-Close
@@ -1102,7 +1107,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 {
                     if (disposing)
                     {
-                        Cleanup();
                         if (!_deviceIdentity.IsPooling())
                         {
                             _amqpConnectionHolder?.Dispose();
