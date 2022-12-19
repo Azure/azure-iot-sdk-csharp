@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     _ = _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
                 }
-
+                
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
@@ -230,6 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     await amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
                 }
+
                 amqpIotConnection?.SafeClose();
                 throw;
             }

@@ -1065,6 +1065,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 _ =  _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
             }
+
             _onUnitDisconnected();
 
             if (Logging.IsEnabled)
