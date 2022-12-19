@@ -70,7 +70,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (_amqpIotConnection != null && ReferenceEquals(_amqpIotConnection, o))
             {
                 _ = _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
-
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
