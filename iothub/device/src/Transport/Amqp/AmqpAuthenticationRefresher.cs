@@ -18,8 +18,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly IConnectionCredentials _connectionCredentials;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
+        private CancellationTokenSource _refresherCancellationTokenSource;
         private Task _refreshLoop;
-        private CancellationTokenSource _loopCancellationTokenSource;
+        private bool _disposed;
 
         internal AmqpAuthenticationRefresher(IConnectionCredentials connectionCredentials, AmqpIotCbsLink amqpCbsLink)
         {
@@ -51,54 +52,81 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     cancellationToken)
                 .ConfigureAwait(false);
 
+            // This cancellation token source is disposed when the authentication refresher is disposed
+            // or if this code block is executed more than once per instance of AmqpAuthenticationRefresher (not expected).
+
+            if (_refresherCancellationTokenSource != null)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Info(this, "_refresherCancellationTokenSource was already initialized, whhich was unexpected. Canceling and disposing the previous instance.", nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
+
+                try
+                {
+                    _refresherCancellationTokenSource.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+                _refresherCancellationTokenSource.Dispose();
+            }
+            _refresherCancellationTokenSource = new CancellationTokenSource();
+
+            // AmqpAuthenticationRefresher.StartLoop 
+            // TODO
             if (refreshOn < DateTime.MaxValue
                 && this is IAmqpAuthenticationRefresher refresher)
             {
-                refresher.StartLoop(refreshOn);
+                refresher.StartLoop(refreshOn, _refresherCancellationTokenSource.Token);
             }
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.InitLoopAsync));
         }
 
-        void IAmqpAuthenticationRefresher.StartLoop(DateTime refreshOn)
+        void IAmqpAuthenticationRefresher.StartLoop(DateTime refreshOn, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, refreshOn, nameof(IAmqpAuthenticationRefresher.StartLoop));
 
-            if (_loopCancellationTokenSource == null
-                || _refreshLoop == null)
-            {
-                (this as IAmqpAuthenticationRefresher)?.StopLoop();
-            }
-
-            _loopCancellationTokenSource = new CancellationTokenSource();
-            _refreshLoop = RefreshLoopAsync(
-                refreshOn,
-                _loopCancellationTokenSource.Token);
+            // This task runs in the background and is unmonitored.
+            // When this refresher is disposed it signals this task to be cancelled.
+            _refreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, refreshOn, nameof(IAmqpAuthenticationRefresher.StartLoop));
         }
 
-        async void IAmqpAuthenticationRefresher.StopLoop()
+        async Task IAmqpAuthenticationRefresher.StopLoopAsync()
         {
-            _loopCancellationTokenSource?.Cancel();
-            if (_refreshLoop != null)
+            try
             {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, nameof(IAmqpAuthenticationRefresher.StopLoopAsync));
+
                 try
                 {
-                    await _refreshLoop.ConfigureAwait(false);
+                    _refresherCancellationTokenSource?.Cancel();
                 }
-                catch (OperationCanceledException) { }
-                _refreshLoop = null;
+                catch (ObjectDisposedException)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(IAmqpAuthenticationRefresher.StopLoopAsync));
+                }
+
+                // Await the completion of _refreshLoop.
+                // This will ensure that when StopLoopAsync has been exited then no more token refresh attempts are in-progress.
+                await _refreshLoop.ConfigureAwait(false);
             }
-
-            _loopCancellationTokenSource?.Dispose();
-            _loopCancellationTokenSource = null;
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, nameof(IAmqpAuthenticationRefresher.StopLoop));
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Caught exception when stopping token refresh loop: {ex}");
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.StopLoopAsync));
+            }
         }
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
@@ -109,10 +137,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (Logging.IsEnabled)
-                    Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)} with wait time {waitTime}.");
+                    Logging.Info(this, refreshesOn, $"{_amqpIotCbsTokenProvider} before {nameof(RefreshLoopAsync)} with wait time {waitTime}.");
 
                 if (waitTime > TimeSpan.Zero)
                 {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, refreshesOn, $"{_amqpIotCbsTokenProvider} waiting {waitTime} {nameof(RefreshLoopAsync)}.");
+
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }
 
@@ -133,7 +164,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.NetworkErrors)
                     {
                         if (Logging.IsEnabled)
-                            Logging.Error(this, refreshesOn, $"Refresh token failed {ex}");
+                            Logging.Error(this, refreshesOn, $"{_amqpIotCbsTokenProvider} refresh token failed {ex}");
                     }
                     catch (OperationCanceledException)
                     {
@@ -173,7 +204,36 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public void Dispose()
         {
-            _loopCancellationTokenSource?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
+                }
+
+                if (!_disposed)
+                {
+                    if (disposing)
+                    {
+                        _refresherCancellationTokenSource?.Dispose();
+                    }
+
+                    _disposed = true;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
+                }
+            }
         }
     }
 }
