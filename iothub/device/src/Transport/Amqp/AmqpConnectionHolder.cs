@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (_amqpIotConnection != null && ReferenceEquals(_amqpIotConnection, o))
             {
-                _amqpAuthenticationRefresher?.StopLoop();
+                _ = _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
@@ -85,16 +85,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Exit(this, o, nameof(OnConnectionClosed));
         }
 
-        public void Shutdown()
+        public async Task ShutdownAsync()
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, _amqpIotConnection, nameof(Shutdown));
+                Logging.Enter(this, _amqpIotConnection, nameof(ShutdownAsync));
 
-            _amqpAuthenticationRefresher?.StopLoop();
+            if (_amqpAuthenticationRefresher != null)
+            {
+                await _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
+            }
+
             _amqpIotConnection?.SafeClose();
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, _amqpIotConnection, nameof(Shutdown));
+                Logging.Exit(this, _amqpIotConnection, nameof(ShutdownAsync));
         }
 
         public void Dispose()
@@ -218,7 +222,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                amqpAuthenticationRefresher?.StopLoop();
+                if (amqpAuthenticationRefresher != null)
+                {
+                    await amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
+                }
+
                 amqpIotConnection?.SafeClose();
                 throw;
             }
@@ -244,7 +252,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (_amqpUnits.Count == 0)
                 {
                     // TODO #887: handle gracefulDisconnect
-                    Shutdown();
+                    _ = ShutdownAsync().ConfigureAwait(false);
                 }
             }
 
