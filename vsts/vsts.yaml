@@ -325,6 +325,14 @@ jobs:
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
+      - task: CopyFiles@2
+        displayName: "Copy coverage files to the artifacts folder"
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          SourceFolder: "$(Build.SourcesDirectory)"
+          Contents: "**/*.coverage"
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
         condition: eq(variables.SHOULD_RUN, 'True')
@@ -339,6 +347,12 @@ jobs:
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
 
+      - task: PublishCodeCoverageResults@1  
+        displayName: 'Publish code coverage **/*.coverage'  
+        inputs:  
+          codeCoverageTool: Cobertura  
+          summaryFileLocation: '**/*.coverage'
+      
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
         condition: eq(variables.SHOULD_RUN, 'True')
