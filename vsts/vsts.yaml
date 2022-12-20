@@ -332,6 +332,7 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.coverage"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          flattenFolders: true
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
@@ -503,6 +504,7 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.coverage"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          flattenFolders: true
 
       - task: CopyFiles@2
         displayName: "Copy ETL files to the artifacts folder"
