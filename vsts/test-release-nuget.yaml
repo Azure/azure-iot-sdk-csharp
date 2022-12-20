@@ -152,7 +152,7 @@ jobs:
       matrix:
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.30:
+        .Net Core 2.1.18:
           FRAMEWORK: netcoreapp2.1.18
         .Net Framework 4.7.2:
           FRAMEWORK: net472
