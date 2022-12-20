@@ -67,12 +67,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return amqpUnit;
         }
 
-        public void Shutdown()
+        public async Task ShutdownAsync()
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, _amqpIotConnection, nameof(Shutdown));
+                Logging.Enter(this, _amqpIotConnection, nameof(ShutdownAsync));
 
-            _amqpAuthenticationRefresher?.StopLoop();
+            if (_amqpAuthenticationRefresher != null)
+            {
+                await _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
+            }
+
             if (_amqpIotConnection != null)
             {
                 _amqpIotConnection.Closed -= OnConnectionClosed;
@@ -80,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, _amqpIotConnection, nameof(Shutdown));
+                Logging.Exit(this, _amqpIotConnection, nameof(ShutdownAsync));
         }
 
         public void Dispose()
@@ -185,7 +189,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                amqpAuthenticationRefresher?.StopLoop();
+                if (_amqpAuthenticationRefresher != null)
+                {
+                    await _amqpAuthenticationRefresher.StopLoopAsync().ConfigureAwait(false);
+                }
+
                 amqpIotConnection?.SafeClose();
                 throw;
             }
@@ -213,7 +221,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // TODO #887: handle gracefulDisconnect
                     // Currently, when all devices got removed, AmqpConnectionHolder will terminate the TCP connection/websocket instead of graceful disconnect(CloseAsync).
                     // This is tracking work to add a mechanism to gracefully disconnect within the last device's CloseAsync task context.
-                    Shutdown();
+                    _ = ShutdownAsync().ConfigureAwait(false);
                 }
             }
 
@@ -233,7 +241,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (_amqpIotConnection != null && ReferenceEquals(_amqpIotConnection, o))
             {
-                _amqpAuthenticationRefresher?.StopLoop();
+                _ = _amqpAuthenticationRefresher?.StopLoopAsync().ConfigureAwait(false);
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
