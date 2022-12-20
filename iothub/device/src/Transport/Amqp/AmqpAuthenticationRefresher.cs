@@ -71,8 +71,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             _refresherCancellationTokenSource = new CancellationTokenSource();
 
-            // AmqpAuthenticationRefresher.StartLoop 
-            // TODO
+            // AmqpAuthenticationRefresher.StartLoop is implemented as an explicit interface implementation. 
+            // This is because we do not wish to make the interface and its methods public.
+            // Implicit interface implementation requires the interface and its methods to be public.
+            // Since StartLoop can only be accessed through an AmqpAuthenticationRefresher instance, we have to add the instance check.
             if (refreshOn < DateTime.MaxValue
                 && this is IAmqpAuthenticationRefresher refresher)
             {
