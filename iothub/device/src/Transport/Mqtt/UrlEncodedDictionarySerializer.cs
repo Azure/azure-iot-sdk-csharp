@@ -43,23 +43,6 @@ namespace Microsoft.Azure.Devices.Client
             _tokenizer = new Tokenizer(value, startIndex);
         }
 
-        private void Deserialize()
-        {
-            string key = null;
-
-            foreach (Token token in _tokenizer.GetTokens())
-            {
-                if (token.Type == TokenType.Key)
-                {
-                    key = token.Value;
-                }
-                if (token.Type == TokenType.Value)
-                {
-                    _output[key] = token.Value;
-                }
-            }
-        }
-
         /// <summary>
         /// Deserialize the string of properties to a dictionary.
         /// </summary>
@@ -104,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client
         public static string Serialize(IEnumerable<KeyValuePair<string, string>> properties)
         {
             IList<KeyValuePair<string, string>> keyValuePairs = properties as IList<KeyValuePair<string, string>> ?? properties.ToList();
-            if (properties == null || !keyValuePairs.Any())
+            if (!keyValuePairs.Any())
             {
                 return string.Empty;
             }
@@ -175,6 +158,23 @@ namespace Microsoft.Azure.Devices.Client
             {
                 Type = tokenType;
                 Value = value == null ? null : Uri.UnescapeDataString(value);
+            }
+        }
+
+        private void Deserialize()
+        {
+            string key = null;
+
+            foreach (Token token in _tokenizer.GetTokens())
+            {
+                if (token.Type == TokenType.Key)
+                {
+                    key = token.Value;
+                }
+                if (token.Type == TokenType.Value)
+                {
+                    _output[key] = token.Value;
+                }
             }
         }
 

@@ -273,6 +273,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        [ExpectedException(typeof(IotHubClientException))]
+        public async Task IotHubDeviceClient_GetFileUploadSasUri_Throws()
+        {
+            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
+            await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest("blob")).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task IotHubDeviceClient_Verify_FileUploadSasUriRequest()
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);

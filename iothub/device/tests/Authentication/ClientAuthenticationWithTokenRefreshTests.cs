@@ -240,6 +240,47 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(token1, token2.TokenValue);
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ClientAuthenticationWithSakRefresh_InvalidKey_Throws()
+        {
+            var builder = new SharedAccessSignatureBuilder()
+            {
+                Key = TestSharedAccessKey + "123",
+            };
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ClientAuthenticationWithSakRefresh_InvalidKey1_Throws()
+        {
+            var TestSharedAccessKey_temp = TestSharedAccessKey.Replace('Y', '-');
+            var builder = new SharedAccessSignatureBuilder()
+            {
+                Key = TestSharedAccessKey_temp,
+            };
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ClientAuthenticationWithSakRefresh_NullKey_Throws()
+        {
+            var builder = new SharedAccessSignatureBuilder()
+            {
+                Key = null,
+            };
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ClientAuthenticationWithSakRefresh_EmptyKey_Throws()
+        {
+            var builder = new SharedAccessSignatureBuilder()
+            {
+                Key = "",
+            };
+        }
+
         private static string CreateToken(int suggestedTimeToLiveSeconds)
         {
             var builder = new SharedAccessSignatureBuilder()

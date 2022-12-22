@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -123,6 +124,35 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public async Task IotHubDeviceClient_FileUploadTransport_Proxy()
+        {
+            // arrange
+            const string hostName = "acme.azure-devices.net";
+            var authMethod = new ClientAuthenticationWithX509Certificate(new X509Certificate2(), "device1");
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
+            options.FileUploadTransportSettings = new IotHubClientHttpSettings()
+            {
+                Proxy = new WebProxy(),
+            };
+
+            // act
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task IotHubDeviceClient_HTTPTransport_Throws()
+        {
+            // arrange
+            const string hostName = "acme.azure-devices.net";
+            var authMethod = new ClientAuthenticationWithX509Certificate(null, "device1");
+            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
+
+            // act
+            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public async Task IotHubDeviceClient_NullX509CertificateChain()
         {
@@ -189,6 +219,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             options.GatewayHostName = "newHost";
             options.Should().NotBeEquivalentTo(clone);
+        
+            settings.WillMessage.Payload.Should().NotBeNull();
+            settings.WillMessage.QualityOfService.Should().Be(QualityOfService.AtMostOnce);
         }
 
         [TestMethod]

@@ -97,10 +97,17 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_Verify_GetTwinResponse()
         {
             // arrange
+            var reported = new ReportedProperties()
+            {
+                PayloadConvention = DefaultPayloadConvention.Instance,
+            };
+            reported["$version"] = "1";
+            reported.Add("key", "value");
+            var desired = new DesiredProperties(new Dictionary<string, object>() { { "$version", "1" } });
             GetTwinResponse twinResponse = new GetTwinResponse()
             {
                 Status = 404,
-                Twin = new TwinProperties(new DesiredProperties(new Dictionary<string, object>() { { "$version", "1"} }), new ReportedProperties()),
+                Twin = new TwinProperties(desired, reported),
                 ErrorResponseMessage = new IotHubClientErrorResponseMessage()
                 {
                     ErrorCode = 404,
@@ -118,7 +125,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             twinResponse.ErrorResponseMessage.TrackingId.Should().Be(twinResponse.ErrorResponseMessage?.TrackingId);
             twinResponse.ErrorResponseMessage.Message.Should().Be(twinResponse.ErrorResponseMessage?.Message);
             twinResponse.ErrorResponseMessage.OccurredOnUtc.Should().Be(twinResponse.ErrorResponseMessage?.OccurredOnUtc);
-
+            twinResponse.Twin.Desired.Should().Equal(desired);
+            twinResponse.Twin.Reported["$version"].Should().Be("1");
+            twinResponse.Twin.Reported.GetObjectBytes().Should().NotBeNull();
         }
 
         [TestMethod]

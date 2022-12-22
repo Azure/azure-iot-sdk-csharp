@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // act
 
-            var toh = new TimeoutHelper(timeout, startTimeout: false);
+            var toh = new TimeoutHelper(timeout);
             await Task.Delay(timeout).ConfigureAwait(false);
 
             // assert

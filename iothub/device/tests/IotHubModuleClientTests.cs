@@ -139,12 +139,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler.Object;
 
+            await moduleClient.InnerHandler.EnableReceiveMessageAsync(It.IsAny<CancellationToken>());
             await moduleClient.SetIncomingMessageCallbackAsync((message) => Task.FromResult(MessageAcknowledgement.Complete)).ConfigureAwait(false);
+            await moduleClient.InnerHandler.DisableReceiveMessageAsync(It.IsAny<CancellationToken>());
+
 
             innerHandler.Verify(
                 x => x.EnableReceiveMessageAsync(It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce);
-            innerHandler.Verify(x => x.DisableReceiveMessageAsync(It.IsAny<CancellationToken>()), Times.Never);
+            innerHandler.Verify(x => x.DisableReceiveMessageAsync(It.IsAny<CancellationToken>()), Times.Once);
             innerHandler.Verify(x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
