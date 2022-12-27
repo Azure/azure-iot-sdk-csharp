@@ -11,9 +11,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
-using Microsoft.Azure.Amqp.Framing;
 using Newtonsoft.Json.Linq;
-using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
