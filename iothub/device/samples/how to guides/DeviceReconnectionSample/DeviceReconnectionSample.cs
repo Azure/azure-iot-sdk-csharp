@@ -144,8 +144,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         }
                         else
                         {
-                            // Otherwise instantiate it for the first time.
-                            s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
+                            // if the certificate is provided, initialize the client using certificate
+                            if (!String.IsNullOrWhiteSpace(_certificatePath) && !String.IsNullOrWhiteSpace(_certificatePassword))
+                            {
+                                using var deviceCert = new X509Certificate2(_certificatePath, _certificatePassword);
+                                var auth = new ClientAuthenticationWithX509Certificate(deviceCert, _deviceId);
+                                s_deviceClient = new IotHubDeviceClient(_hostname, auth, _clientOptions);
+                            }
+                            else
+                            {
+                                // Otherwise instantiate it for the first time.
+                                s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
+                            }
                         }
 
                         s_deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandlerAsync;
