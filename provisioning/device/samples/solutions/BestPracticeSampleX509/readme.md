@@ -114,7 +114,7 @@ In this step, we will use the chained device certificate to provision a device t
     dotnet run --h <assigned IoT hub hostname> --d <device Id> --p <your password> --n <path to device certificate pfx file>
 ```
 
-![x509-bootsequence](media/bootsequence.png)
+![samples](media/samples.png)
 > **Note**\
 > To learn more about device twins, see [here](https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins).
 
