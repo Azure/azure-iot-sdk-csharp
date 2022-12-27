@@ -105,7 +105,6 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcore21'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET Core SDK 2.1'
           inputs:
@@ -399,7 +398,6 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcore21'], 'True') }}:
         - task: CmdLine@2
           displayName: 'Install .NET Core 2.1'
           inputs:
