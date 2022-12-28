@@ -1,5 +1,50 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
+# https://docs.microsoft.com/azure/devops/pipelines/process/runtime-parameters
+parameters:
+- name: maxParallelJobs
+  displayName: Maximum jobs to run in parallel. Change maxParallel to 1 make OS builds run in serial rather than in parallel.
+  type: number
+  # Reasonable target to avoid throttling and contention with several PRs running.
+  default: 4
+- name: jobTimeoutInMinutes
+  displayName: Timeout for each job
+  type: number
+  default: 120
+- name: testTargets
+  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (netcore3.1) are aggregates of the remaining values.
+  type: string
+  values:
+    - default
+    - all
+    - min-matrix
+    - netcore3.1
+    - netcore2.1
+    - net4.7.2
+    - net4.5.1
+  default: default
+
+variables:
+# Variables for the buid/test matrix based on the 'testTargets' that turn on/off various test targets specifically or based on the 2 aggregates.
+  ${{ if and(eq(parameters['testTargets'], 'default'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+    allTestTargets: 'False'
+    minMatrix: 'True'
+  ${{ elseif eq(parameters['testTargets'], 'default') }}:
+    allTestTargets: 'True'
+    minMatrix: 'True'
+  ${{ else }}:
+    allTestTargets: ${{ contains(parameters['testTargets'], 'all') }}
+    # We wish to run the minimum test matrix targets if 1) directly specified, 2) if all targets was chosen.
+    minMatrix: ${{ or(eq(parameters['testTargets'], 'min-matrix'), eq(variables['allTestTargets'], 'True')) }}
+
+# The minimum matrix build/test targets.
+  testNetcore31: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
+
+# The remaining build/test targets.
+  testNetcore21: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore2.1')) }}
+  testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
+  testNet451: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.5.1')) }}
+
 trigger:
   batch: true
   branches:
@@ -17,32 +62,194 @@ resources:
     clean: true
 
 jobs:
-  ### Linux build 1 ###
-  - job: LINUX1
-    displayName: Linux pri 1 .NET targets
-    timeoutInMinutes: 120
+  ### Linux build ###
+  - job: LINUX
+    displayName: Linux
+    timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
-      # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 100
+      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
-        .Net Core 3.1:
+        .NET CoreApp 3.1:
           FRAMEWORK: netcoreapp3.1
+          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
+        .NET CoreApp 2.1.18:
+          FRAMEWORK: netcoreapp2.1.18
+          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
 
     condition: succeeded()
     pool:
       vmImage: ubuntu-20.04
     steps:
+      - task: PowerShell@2
+        displayName: 'Print vars'
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
+            Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
+            Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
+            Write-Host "minMatrix: ${{ variables.minMatrix }}"
+            Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
+            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
+            Write-Host "testNet472: ${{ variables.testNet472 }}"
+            Write-Host "testNet451: ${{ variables.testNet451 }}"
+
+      # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+
+      - ${{ if eq(variables['testNetcore31'], 'True') }}:
+        - task: UseDotNet@2
+          displayName: 'Use .NET Core SDK 3.1'
+          inputs:
+            packageType: sdk
+            version: 3.1.x
+            performMultiLevelLookup: true
+            installationPath: $(Agent.ToolsDirectory)/dotnet
+
+        - task: UseDotNet@2
+          displayName: 'Use .NET Core SDK 2.1'
+          inputs:
+            packageType: sdk
+            version: 2.1.x
+            performMultiLevelLookup: true
+            installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: Docker@2
+        displayName: "Login to ACR"
+        inputs:
+          command: "login"
+          containerRegistry: "Azure IoT ACR"
+
+      # The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
+      # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
+      # Explicit installation of an older docker version through DockerInstaller@0 task doesn't help as the hosted agent keeps referencing the newer version that comes pre-installed.
+
+      # - task: DockerInstaller@0
+      #   displayName: "Cert Validation - Install Docker CLI"
+      #   inputs:
+      #     dockerVersion: '20.10.17'
+
+      # The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
+      # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
+      # Explicit installation of an older docker version through DockerInstaller@0 task doesn't help as the hosted agent keeps referencing the newer version that comes pre-installed.
+
+      # - task: PowerShell@2
+      #   displayName: 'Cert Validation - Setup Certificate Proxy'
+      #   inputs:
+      #     targetType: 'inline'
+      #     script: |
+      #       Write-Host "============"
+      #       Write-Host "check docker"
+      #       Write-Host "============"
+      #       docker images
+      #       docker ps -a
+      #       gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
+      #       Write-Host "==========================="
+      #       Write-Host "uncompress self-signed cert"
+      #       Write-Host "==========================="
+      #       gzip -d -N -S ".bin" $(Build.SourcesDirectory)/e2e/test/docker/haproxy/haproxy.bin
+      #       gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
+      #       Write-Host "====================="
+      #       Write-Host "Docker run containers"
+      #       Write-Host "====================="
+      #       docker run -h invalidcertgde1.westus.cloudapp.azure.com --name invalid-gde --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxygde.cfg
+      #       docker run -h invalidcertdps1.westus.cloudapp.azure.com --name invalid-dps --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxydps.cfg
+      #       docker run -h invalidcertiothub1.westus.cloudapp.azure.com --name invalid-hub --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxyhub.cfg
+      #       docker ps -a
+
+      # The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
+      # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
+      # Explicit installation of an older docker version through DockerInstaller@0 task doesn't help as the hosted agent keeps referencing the newer version that comes pre-installed.
+
+      # - task: Bash@3
+      #   displayName: 'Cert Validation - Setup local hostname'
+      #   name: CVTEST_NET
+      #   inputs:
+      #     targetType: 'inline'
+      #     script: |
+      #       echo "==============="
+      #       echo "Inspect network"
+      #       echo "==============="
+      #       ip -4 addr
+      #       export CVTEST_HOST_IP=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+')
+      #       export CVTEST_HOST_NETWORK=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+/*\d.')
+      #       export CVTEST_HOST_SUBNET=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+' | grep -Po '[\d]{1,3}.[\d]{1,3}.[\d]{1,3}')
+      #       export CVTEST_HOST_SUBNET_MASK=$(ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+/*\d.' | grep -Po '/[\d]{1,2}')
+      #       export CVTEST_CONTAINER_IP=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+      #       echo "HOST=$CVTEST_HOST_IP"
+      #       echo "HOST NETWORK=$CVTEST_HOST_NETWORK"
+      #       echo "HOST SUBNET=$CVTEST_HOST_SUBNET"
+      #       echo "HOST SUBNET MASK=$CVTEST_HOST_SUBNET_MASK"
+      #       echo "CONTAINER=$CVTEST_CONTAINER_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_HOST;isoutput=true;]$CVTEST_HOST_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_NETWORK;isoutput=true;]$CVTEST_HOST_NETWORK"
+      #       #echo "##vso[task.setvariable variable=AGENT_SUBNET;isoutput=true;]$CVTEST_HOST_SUBNET"
+      #       #echo "##vso[task.setvariable variable=AGENT_SUBNET_MASK;isoutput=true;]$CVTEST_HOST_SUBNET_MASK"
+      #       #echo "##vso[task.setvariable variable=AGENT_CONTAINER;isoutput=true;]$CVTEST_CONTAINER_IP"
+      #       #echo "=========="
+      #       #echo "Ping hosts"
+      #       #echo "=========="
+      #       #ping -c 5 $CVTEST_HOST_IP
+      #       #ping -c 5 $CVTEST_CONTAINER_IP
+      #       #echo "=================="
+      #       #echo "Inspect containers"
+      #       #echo "=================="
+      #       #docker ps -a
+      #       #docker inspect invalid-gde
+      #       #docker inspect invalid-dps
+      #       #docker inspect invalid-hub
+      #       export CVTEST_GDE_IP=$(docker inspect invalid-gde | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
+      #       export CVTEST_DPS_IP=$(docker inspect invalid-dps | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
+      #       export CVTEST_HUB_IP=$(docker inspect invalid-hub | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
+      #       echo "invalid-gde=$CVTEST_GDE_IP"
+      #       echo "invalid-dps=$CVTEST_DPS_IP"
+      #       echo "invalid-hub=$CVTEST_HUB_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_GDE_IP;isoutput=true;]$CVTEST_GDE_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_DPS_IP;isoutput=true;]$CVTEST_DPS_IP"
+      #       #echo "##vso[task.setvariable variable=AGENT_HUB_IP;isoutput=true;]$CVTEST_HUB_IP"
+      #       #echo "==============="
+      #       #echo "Ping containers"
+      #       #echo "==============="
+      #       #docker ps -a
+      #       #ping -c 2 $CVTEST_GDE_IP
+      #       #ping -c 2 $CVTEST_DPS_IP
+      #       #ping -c 2 $CVTEST_HUB_IP
+      #       #cat /etc/hosts
+      #       echo "================="
+      #       echo "Update hosts file"
+      #       echo "================="
+      #       sudo bash -c 'mv /etc/hosts /etc/hosts.org'
+      #       sudo bash -c 'cp /etc/hosts.org /etc/hosts'
+      #       echo "$CVTEST_GDE_IP invalidcertgde1.westus.cloudapp.azure.com"
+      #       echo "$CVTEST_DPS_IP invalidcertdps1.westus.cloudapp.azure.com"
+      #       echo "$CVTEST_HUB_IP invalidcertiothub1.westus.cloudapp.azure.com"
+      #       echo "" >> /tmp/hosts.cvtest
+      #       echo "# Local host for invalid cert test" >> /tmp/hosts.cvtest
+      #       echo "$CVTEST_GDE_IP invalidcertgde1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
+      #       echo "$CVTEST_DPS_IP invalidcertdps1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
+      #       echo "$CVTEST_HUB_IP invalidcertiothub1.westus.cloudapp.azure.com" >> /tmp/hosts.cvtest
+      #       sudo bash -c 'cat /tmp/hosts.cvtest >> /etc/hosts'
+      #       cat /etc/hosts
+      #       echo "====================="
+      #       echo "Ping containers (URL)"
+      #       echo "====================="
+      #       docker ps -a
+      #       route
+      #       ping -c 2 invalidcertgde1.westus.cloudapp.azure.com
+      #       ping -c 2 invalidcertdps1.westus.cloudapp.azure.com
+      #       ping -c 2 invalidcertiothub1.westus.cloudapp.azure.com
+
       - task: Docker@1
         displayName: "Start TPM Simulator"
         inputs:
           containerregistrytype: "Container Registry"
           command: "Run an image"
-          imageName: aziotbld/testtpm
+          azureContainerRegistry: aziotacr.azurecr.io
+          imageName: aziotacr.azurecr.io/aziotbld/testtpm
           containerName: "testtpm-instance"
-
           ports: |
             127.0.0.1:2321:2321
             127.0.0.1:2322:2322
+
           restartPolicy: unlessStopped
 
       - task: Docker@1
@@ -50,7 +257,8 @@ jobs:
         inputs:
           containerregistrytype: "Container Registry"
           command: "Run an image"
-          imageName: aziotbld/testproxy
+          azureContainerRegistry: aziotacr.azurecr.io
+          imageName: aziotacr.azurecr.io/aziotbld/testproxy
           containerName: "testproxy-instance"
           ports: "127.0.0.1:8888:8888"
           restartPolicy: unlessStopped
@@ -58,41 +266,51 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
+          # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
           IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
-          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
           IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
-          DPS_IDSCOPE: $(DPS-IDSCOPE)
-          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
-          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
-          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
-          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
-          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
-          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
-          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
-          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
-          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
-          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
-          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
-          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
+
           IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
           IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
+          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
+
+          # Environment variables for DPS E2E tests
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
           X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
           X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
           X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
           X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
-          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
           E2E_IKEY: $(E2E-IKEY)
+
+          # Environment variables for the DevOps pipeline
+          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
-          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
-          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
-          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
-          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
+
+          # Environment variables for invalid certificate tests
+          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
+          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
+          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
+          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+
+          # Environment variables used by Log Analytics Workspace for Azure Security Center
+          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
 
           # Environment variable for running samples/cleanups
           PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
@@ -109,21 +327,12 @@ jobs:
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
         condition: always()
-
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
         inputs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
 
         condition: always()
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
@@ -134,202 +343,135 @@ jobs:
 
         condition: always()
         
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
 
-  ### Linux build 2 ###
-  - job: LINUX2
-    displayName: Linux pri 2 .NET targets
-    timeoutInMinutes: 75
+ ### Windows build ###
+  - job: WINDOWS
+    displayName: Windows
+    timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
-      # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 100
+      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
-        .Net Core 2.1.18:
-          FRAMEWORK: netcoreapp2.1.18
-
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-    pool:
-      # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: ubuntu-20.04
-    steps:
-      - task: Docker@1
-        displayName: "Start TPM Simulator"
-        inputs:
-          containerregistrytype: "Container Registry"
-          command: "Run an image"
-          imageName: aziotbld/testtpm
-          containerName: "testtpm-instance"
-
-          ports: |
-            127.0.0.1:2321:2321
-            127.0.0.1:2322:2322
-          restartPolicy: unlessStopped
-
-      - task: Docker@1
-        displayName: "Start Test Proxy"
-        inputs:
-          containerregistrytype: "Container Registry"
-          command: "Run an image"
-          imageName: aziotbld/testproxy
-          containerName: "testproxy-instance"
-          ports: "127.0.0.1:8888:8888"
-          restartPolicy: unlessStopped
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
-        inputs:
-          packageType: sdk
-          version: 2.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - powershell: ./vsts/gatedBuild.ps1
-        displayName: build
-        env:
-          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
-          IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
-          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
-          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
-          DPS_IDSCOPE: $(DPS-IDSCOPE)
-          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
-          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
-          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
-          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
-          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
-          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
-          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
-          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
-          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
-          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
-          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
-          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
-          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
-          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
-          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
-          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
-          E2E_IKEY: $(E2E-IKEY)
-          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
-          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
-          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
-          FRAMEWORK: $(FRAMEWORK)
-          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
-          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
-          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
-          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
-
-          # Environment variable for running samples/cleanups
-          PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
-          PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
-          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
-          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID)
-          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
-
-      - task: CopyFiles@2
-        displayName: "Copy files to the artifacts folder"
-        inputs:
-          SourceFolder: "$(Build.SourcesDirectory)"
-          Contents: "**/*.trx"
-          TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
-        condition: always()
-
-      - task: PublishBuildArtifacts@1
-        displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
-        inputs:
-          ArtifactName: testresults_linux_$(FRAMEWORK)
-
-        condition: always()
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
-        inputs:
-          packageType: sdk
-          version: 2.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: PublishTestResults@2
-        displayName: "Publish Test Results **/*.trx"
-        inputs:
-          testRunner: VSTest
-          testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
-          testResultsFiles: "**/*.trx"
-
-        condition: always()
-
-  ### Windows build 1 ###
-  - job: WINDOWS1
-    displayName: Windows pri 1 .NET targets
-    timeoutInMinutes: 75
-    strategy:
-      # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 100
-      matrix:
-        .Net Core 3.1:
+        .NET CoreApp 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Framework 4.5.1:
+          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
+        .NET CoreApp 2.1.18:
+          FRAMEWORK: netcoreapp2.1.18
+          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
+        .NET 4.7.2:
+          FRAMEWORK: net472
+          SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
+        .NET 4.5.1:
           FRAMEWORK: net451
+          SHOULD_RUN: ${{ eq(variables['testNet451'], 'True') }}
 
     condition: succeeded()
     pool:
       vmImage: windows-2022
     steps:
+      - task: PowerShell@2
+        displayName: 'Print vars'
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
+            Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
+            Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
+            Write-Host "minMatrix: ${{ variables.minMatrix }}"
+            Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
+            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
+            Write-Host "testNet472: ${{ variables.testNet472 }}"
+            Write-Host "testNet451: ${{ variables.testNet451 }}"
+
+      - ${{ if eq(variables['testNetcore31'], 'True') }}:
+        - task: UseDotNet@2
+          displayName: 'Use .NET Core SDK 3.1'
+          inputs:
+            packageType: sdk
+            version: 3.1.x
+            performMultiLevelLookup: true
+            installationPath: $(Agent.ToolsDirectory)/dotnet
+
+        - task: CmdLine@2
+          displayName: 'Install .NET Core 2.1'
+          inputs:
+            script: 'choco install dotnetcore-2.1-sdk'
+
+      - ${{ if eq(variables['testNet472'], 'True') }}:
+        - task: CmdLine@2
+          displayName: 'Install .NET 4.7.2'
+          inputs:
+            script: 'choco install netfx-4.7.2-devpack'
+
+      - ${{ if eq(variables['testNet451'], 'True') }}:
+        - task: CmdLine@2
+          displayName: 'Install .NET 4.5.1'
+          inputs:
+            script: 'choco install dotnet4.5.1'
+
       - script: |
           choco install -y squid
+
         displayName: "Install Squid"
+
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
+          # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
           IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
-          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
           IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
-          DPS_IDSCOPE: $(DPS-IDSCOPE)
-          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
-          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
-          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
-          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
-          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
-          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
-          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
-          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
-          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
-          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
-          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
-          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
+
           IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
           IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
+          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
+
+          # Environment variables for DPS E2E tests
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
           X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
           X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
           X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
           X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
-          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
           E2E_IKEY: $(E2E-IKEY)
+
+          # Environment variables for the DevOps pipeline
+          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
-          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
-          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
-          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
-          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
+
+          # Environment variables for invalid certificate tests
+          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
+          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
+          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
+          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+
+          # Environment variables used by Log Analytics Workspace for Azure Security Center
+          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+
           # Environment variable for running samples/cleanups
           PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
           PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
@@ -362,19 +504,6 @@ jobs:
 
         condition: always()
 
-      - task: CmdLine@2
-        displayName: 'Install .NET 4.5.1'
-        inputs:
-          script: 'choco install dotnet4.5.1'
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.1'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
@@ -386,132 +515,21 @@ jobs:
 
         condition: always()
 
-  ### Windows build 2 ###
-  - job: WINDOWS2
-    displayName: Windows pri 2 .NET targets
-    timeoutInMinutes: 75
-    strategy:
-      # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 100
-      matrix:
-        .Net Core 2.1.18:
-          FRAMEWORK: netcoreapp2.1.18
-        .Net Framework 4.7.2:
-          FRAMEWORK: net472
-
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-    pool:
-      # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: windows-2022
-    steps:
-      - script: |
-          choco install -y squid
-        displayName: "Install Squid"
-      - powershell: ./vsts/start_tpm_windows.ps1
-        displayName: "Start TPM Simulator"
-
-      - powershell: ./vsts/gatedBuild.ps1
-        displayName: build
-        env:
-          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
-          IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
-          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
-          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
-          DPS_IDSCOPE: $(DPS-IDSCOPE)
-          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
-          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
-          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
-          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
-          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
-          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
-          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
-          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
-          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
-          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
-          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
-          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
-          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
-          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
-          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
-          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
-          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
-          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
-          E2E_IKEY: $(E2E-IKEY)
-          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
-          FRAMEWORK: $(FRAMEWORK)
-          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
-          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
-          IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
-          IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
-          
-          # Environment variable for running samples/cleanups
-          PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
-          PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
-          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
-          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID)
-          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
-      - task: CopyFiles@2
-        displayName: "Copy TRX files to the artifacts folder"
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
         inputs:
-          SourceFolder: "$(Build.SourcesDirectory)"
-          Contents: "**/*.trx"
-          TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
         condition: always()
 
-      - task: CopyFiles@2
-        displayName: "Copy ETL files to the artifacts folder"
-        inputs:
-          SourceFolder: "$(Build.SourcesDirectory)"
-          Contents: "**/*.etl"
-          TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
-        condition: always()
-
-      - task: PublishBuildArtifacts@1
-        displayName: "Publish Artifact: testresults"
-        inputs:
-          ArtifactName: testresults_windows_$(FRAMEWORK)
-
-        condition: always()
-
-      - task: CmdLine@2
-        displayName: 'Install .NET 4.5.1'
-        inputs:
-          script: 'choco install dotnet4.5.1'
-    
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
-        inputs:
-          packageType: sdk
-          version: 2.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - task: PublishTestResults@2
-        displayName: "Publish Test Results **/*.trx"
-        inputs:
-          testRunner: VSTest
-          testResultsFiles: "**/*.trx"
-          testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
-          platform: Windows
-          configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
-
-        condition: always()
-
-  ### WINDOWS Analyzers ###
-  - job: Analyzers
-    displayName: Analyzers
+  ### .Net SDL Analyzers ###
+  - job: DOTNet_SDL_Analyzers
+    displayName: .Net SDL Analyzers
     timeoutInMinutes: 60
 
     condition: succeeded()
     pool:
-      name: Azure Pipelines
       vmImage: windows-2022
     steps:
       - script: |
@@ -519,7 +537,9 @@ jobs:
           dotnet new
           rem Start build
           build.cmd -clean -build -configuration Debug -package
+
         displayName: build
+
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
       
@@ -585,6 +605,14 @@ jobs:
         displayName: "Create Security Analysis Report"
         inputs:
           AllTools: true
+          
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
         displayName: "TSA upload"
