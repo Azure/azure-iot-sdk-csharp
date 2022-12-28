@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
             var msg = new Message(payloadBytes);
             msg.Payload.Should().BeEquivalentTo(payloadBytes);
+            msg.HasPayload.Should().BeTrue();
         }
 
         [TestMethod]
@@ -27,6 +28,31 @@ namespace Microsoft.Azure.Devices.Api.Test
             var msg = new Message(Array.Empty<byte>());
             msg.Payload.Should().NotBeNull();
             msg.Payload.Length.Should().Be(0);
+        }
+
+
+        [TestMethod]
+        public void Message_DefaultPayload()
+        {
+            var msg = new Message();
+            msg.Payload.Should().NotBeNull();
+            msg.Payload.Should().BeEquivalentTo(Array.Empty<byte>());
+            msg.Payload.Length.Should().Be(0);
+            msg.HasPayload.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void Message_PropertiesNotNull()
+        {
+            var msg = new Message();
+            msg.Properties.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public void Message_SystemPropertiesNotNull()
+        {
+            var msg = new Message();
+            msg.SystemProperties.Should().NotBeNull();
         }
     }
 }
