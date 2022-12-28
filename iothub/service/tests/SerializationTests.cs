@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -24,7 +25,8 @@ namespace Microsoft.Azure.Devices.Tests
  ""lastActivityTime"": ""2018-06-29T21:17:08.7759733"",
 }";
 
-            JsonConvert.DeserializeObject<ClientTwin>(jsonString);
+            ClientTwin clientTwin = JsonConvert.DeserializeObject<ClientTwin>(jsonString);
+            clientTwin.DeviceId.Should().Be("test");
         }
 
         [TestMethod]
@@ -45,7 +47,9 @@ namespace Microsoft.Azure.Devices.Tests
   }
 }";
 
-            JsonConvert.DeserializeObject<Configuration>(jsonString);
+            Configuration configuration = JsonConvert.DeserializeObject<Configuration>(jsonString);
+            configuration.Id.Should().Be("aa");
+            configuration.SchemaVersion.Should().Be("1.0");
         }
 
         [TestMethod]
@@ -63,8 +67,9 @@ namespace Microsoft.Azure.Devices.Tests
     }
   }
 }";
-
-            JsonConvert.DeserializeObject<Configuration>(jsonString);
+            Configuration configuration = JsonConvert.DeserializeObject<Configuration>(jsonString);
+            configuration.Id.Should().Be("aa");
+            configuration.SchemaVersion.Should().Be("1.0");
         }
     }
 }
