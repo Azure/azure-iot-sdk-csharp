@@ -32,6 +32,31 @@ var options = new IotHubClientOptions(new IotHubClientMqttSettings())
 deviceClient = new IotHubDeviceClient(connectionString, options);
 ```
 
+```csharp
+// X.509 certificate:
+// Run provisioning/device/samples/getting started/X509Sample/GenerateTestCertificate.ps1 script to generate a test X.509 certificate.
+// Azure portal -
+// Navigate to your IoT Hub and copy the hostname.
+// 
+// Transport:
+// The transport to use to communicate with IoT ub. Possible values include Mqtt and Amqp.
+//
+// Transport protocol:
+// The protocol to use to communicate with IoT hub. Possible values include Tcp and WebSocket.
+var deviceCert = new X509Certificate2(devicePfxPath, devicePfxPassword);
+var auth = new ClientAuthenticationWithX509Certificate(deviceCert, deviceName);
+// This option is helpful in delegating the assignment of Message.MessageId to the sdk.
+// If the user doesn't set a value for Message.MessageId, the sdk will assign it a random GUID before sending the message.
+var options = new IotHubClientOptions(new IotHubClientMqttSettings())
+{
+    SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+};
+deviceClient = new IotHubDeviceClient(
+    hostName,
+    auth,
+    options);
+```
+
 ### Send device to cloud telemetry:
 
 ```csharp

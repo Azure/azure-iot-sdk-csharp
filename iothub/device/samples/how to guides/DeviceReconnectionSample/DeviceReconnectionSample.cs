@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly List<string> _deviceConnectionStrings;
         private readonly IotHubClientOptions _clientOptions;
         private readonly IIotHubClientRetryPolicy _customRetryPolicy;
+
+        // These fields are specific for X.509 certificate authentication
+        private readonly string _certificatePath;
+        private readonly string _certificatePassword;
+        private readonly string _deviceId;
+        private readonly string _hostname;
 
         // An UnauthorizedException is handled in the connection status change handler through its corresponding status change event.
         // We will ignore this exception when thrown by client API operations.
@@ -53,8 +60,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // if any more are remaining, will try the next one.
             // To test this, either pass an invalid connection string as the first one, or rotate it while the sample is running, and wait about
             // 5 minutes.
-            if (deviceConnectionStrings == null
+            if ((deviceConnectionStrings == null
                 || !deviceConnectionStrings.Any())
+                && parameters.CertificateName == null)
             {
                 throw new ArgumentException("At least one connection string must be provided.", nameof(deviceConnectionStrings));
             }
@@ -66,6 +74,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
                 RetryPolicy = _customRetryPolicy,
             };
+
+            if (!String.IsNullOrWhiteSpace(parameters.DeviceId)){
+                _deviceId = parameters.DeviceId;
+            }
+
+            if (!String.IsNullOrWhiteSpace(parameters.CertificateName)){
+                _certificatePath = parameters.CertificateName;
+            }
+
+            if (!String.IsNullOrWhiteSpace(parameters.CertificatePassword)){
+                _certificatePassword = parameters.CertificatePassword;
+            }
+
+            if (!String.IsNullOrWhiteSpace(parameters.HostName)){
+                _hostname = parameters.HostName;
+            }
         }
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
@@ -120,8 +144,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         }
                         else
                         {
-                            // Otherwise instantiate it for the first time.
-                            s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
+                            // if the certificate is provided, initialize the client using certificate
+                            if (!String.IsNullOrWhiteSpace(_certificatePath) && !String.IsNullOrWhiteSpace(_certificatePassword))
+                            {
+                                using var deviceCert = new X509Certificate2(_certificatePath, _certificatePassword);
+                                var auth = new ClientAuthenticationWithX509Certificate(deviceCert, _deviceId);
+                                s_deviceClient = new IotHubDeviceClient(_hostname, auth, _clientOptions);
+                            }
+                            else
+                            {
+                                // Otherwise instantiate it for the first time.
+                                s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
+                            }
                         }
 
                         s_deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandlerAsync;
