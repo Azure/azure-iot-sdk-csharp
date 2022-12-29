@@ -85,6 +85,22 @@ In this step, we will use the chained device certificate to provision a device t
 ```powershell
     dotnet run --s <IdScope> --n <Device certificate pfx file> --p <your password>
 ```
+> **Note**\
+> You can specify the retry policy in [ProvisioningClientOptions](https://learn.microsoft.com/dotnet/api/microsoft.azure.devices.provisioning.client.provisioningclientoptions?view=azure-dotnet-preview). It defaults to a nearly infinite exponential backoff. You can set it to any of the built-in retry policies such as [ProvisioningClientFixedDelayRetryPolicy](https://learn.microsoft.com/dotnet/api/microsoft.azure.devices.provisioning.client.provisioningclientfixeddelayretrypolicy?view=azure-dotnet-preview) or [ProvisioningClientIncrementalDelayRetryPolicy](https://learn.microsoft.com/dotnet/api/microsoft.azure.devices.provisioning.client.provisioningclientincrementaldelayretrypolicy?view=azure-dotnet-preview) or a custom one by inheriting from [IProvisioningClientRetryPolicy](https://learn.microsoft.com/dotnet/api/microsoft.azure.devices.provisioning.client.iprovisioningclientretrypolicy?view=azure-dotnet-preview). For example,
+
+```csharp
+    var options = new ProvisioningClientOptions{
+        ...
+        // Perform retry up to 10 times every 2 seconds
+        RetryPolicy = new ProvisioningClientFixedDelayRetryPolicy(10, TimeSpan.FromSeconds(2));
+    }
+    
+    provisioningClient = new ProvisioningDeviceClient(
+        globalDeviceEndpoint,
+        idScope,
+        security,
+        options);
+```
 
 4. From terminal, navigate to the [device reconnection sample folder](</iothub/device/samples/how to guides/DeviceReconnectionSample>). Read [readme.md](</iothub/device/samples/how to guides/DeviceReconnectionSample/readme.md>) to learn how to initialize the device client, send device to cloud telemetry, receive cloud to device message, receive twin desired property update notifications, and update device twin's reported properties. Then execute the following command and check for build errors:
 

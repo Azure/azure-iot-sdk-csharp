@@ -56,9 +56,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             using X509Certificate2 certificate = LoadProvisioningCertificate();
             var security = new AuthenticationProviderX509(certificate);
 
-            // Perform exponential backoff retry policy with inifinite retries
-            s_clientOptions.RetryPolicy = new ProvisioningClientExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(10), true);
-
             _logger.LogInformation("Initializing the device provisioning client...");
 
             try
