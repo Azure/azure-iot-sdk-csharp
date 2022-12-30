@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         private static readonly TimeSpan s_defaultInterval = TimeSpan.FromSeconds(2);
 
         [TestMethod]
-        public void GetRetryFromRejectedSuccess()
+        public void GetRetryFromRejected_Success()
         {
             int expectedSeconds = 32;
             var rejected = new Rejected
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryFromRejectedFallsBackToDefaultIfNegativeRetryAfterProvided()
+        public void GetRetryFromRejected_FallsBackToDefault_IfNegativeRetryAfterProvided()
         {
             int expectedSeconds = -1;
             var rejected = new Rejected
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryFromRejectedFallsBackToDefaultIfRetryAfterProvidedIs0()
+        public void GetRetryFromRejected_FallsBackToDefault_IfRetryAfterProvidedIsZero()
         {
             int expectedSeconds = 0;
             var rejected = new Rejected
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryFromRejectedReturnsNullIfNoErrorInfoEntries()
+        public void GetRetryFromRejected_ReturnsNull_IfNoErrorInfoEntries()
         {
             var rejected = new Rejected
             {
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryFromRejectedReturnsNullIfNoErrorInfo()
+        public void GetRetryFromRejected_ReturnsNull_IfNoErrorInfo()
         {
             var rejected = new Rejected
             {
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryFromRejectedReturnsNullIfNoError()
+        public void GetRetryFromRejected_ReturnsNull_IfNoError()
         {
             var rejected = new Rejected();
 
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryAfterFromApplicationPropertiesSuccess()
+        public void GetRetryAfterFromApplicationProperties_Success()
         {
             int expectedRetryAfter = 42;
             using var amqpResponse = AmqpMessage.Create();
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryAfterFromApplicationPropertiesReturnsDefaultIfRetryAfterValueIsNegative()
+        public void GetRetryAfterFromApplicationProperties_ReturnsDefault_IfRetryAfterValueIsNegative()
         {
             int expectedRetryAfter = -1;
             using var amqpResponse = AmqpMessage.Create();
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryAfterFromApplicationPropertiesReturnsDefaultIfRetryAfterValueIsZero()
+        public void GetRetryAfterFromApplicationProperties_ReturnsDefault_IfRetryAfterValueIsZero()
         {
             int expectedRetryAfter = 0;
             using var amqpResponse = AmqpMessage.Create();
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryAfterFromApplicationPropertiesReturnsNullIfNoRetryAfterApplicationProperty()
+        public void GetRetryAfterFromApplicationProperties_ReturnsNull_IfNoRetryAfterApplicationProperty()
         {
             using var amqpResponse = AmqpMessage.Create();
             amqpResponse.ApplicationProperties = new ApplicationProperties();
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void GetRetryAfterFromApplicationPropertiesReturnsNullIfNoApplicationProperties()
+        public void GetRetryAfterFromApplicationProperties_ReturnsNull_IfNoApplicationProperties()
         {
             using var amqpResponse = AmqpMessage.Create();
             TimeSpan? actual = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultInterval);
