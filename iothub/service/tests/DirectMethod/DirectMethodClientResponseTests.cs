@@ -190,6 +190,37 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             actual.CustomString.Should().Be(expectedPayload.CustomString);
         }
 
+        [TestMethod]
+        public void DirectMethodClientResponse_Payload_Null()
+        {
+            //arrange
+            const int expectedStatus = 200;
+            var source = new DirectMethodClientResponse
+            {
+                Status = expectedStatus,
+                JsonPayload = null,
+            };
+
+            // act and assert
+            source.TryGetPayload(out string _).Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void DirectMethodClientResponse_Payload_ThrowsException()
+        {
+            //arrange
+            const int expectedStatus = 200;
+            var source = new DirectMethodClientResponse
+            {
+                Status = expectedStatus,
+                JsonPayload = new JRaw(JsonConvert.SerializeObject(TimeSpan.FromSeconds(30)))
+            };
+
+            // act and assert
+            // deliberately throw serialzation exception
+            source.TryGetPayload(out string[] _).Should().BeFalse();
+        }
+
         private class CustomType
         {
             [JsonProperty("customInt")]
