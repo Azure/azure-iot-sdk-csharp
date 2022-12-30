@@ -28,5 +28,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // assert
             retryInterval.Should().Be(expected);
         }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void FixedDelayRetryPolicy_ProvisioningClientException_ReturnsTrueWhenTransient(bool isTransient)
+        {
+            // arrange
+            var retryPolicy = new ProvisioningClientFixedDelayRetryPolicy(0, TimeSpan.FromMinutes(100), false);
+            var ex = new ProvisioningClientException("", isTransient);
+
+            // act - assert
+            retryPolicy.ShouldRetry(1, ex, out _).Should().Be(isTransient);
+        }
     }
 }

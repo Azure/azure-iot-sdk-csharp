@@ -10,10 +10,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class ProvisioningClientOptionsCloneTests
+    public class ProvisioningClientOptionsTests
     {
         [TestMethod]
-        public void ProvisioningClientAmqpSettings()
+        public void ProvisioningClient_DefaultTransportSettings()
+        {
+            // arrange - act
+            var options = new ProvisioningClientOptions();
+
+            // assert
+            options.TransportSettings.Should().BeOfType<ProvisioningClientMqttSettings>();
+        }
+
+        [TestMethod]
+        public void ProvisioningClient_Clone_AmqpSettings()
         {
             // arrange
             var amqpSettings = new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.Tcp)
@@ -39,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void ProvisioningClientMqttSettings()
+        public void ProvisioningClient_Clone_MqttSettings()
         {
             // arrange
             var mqttSettings = new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp)

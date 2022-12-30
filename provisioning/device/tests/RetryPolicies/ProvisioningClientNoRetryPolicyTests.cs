@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // arrange
             var noRetryPolicy = new ProvisioningClientNoRetry();
 
-            // act and assert
+            // act - assert
             noRetryPolicy.ShouldRetry(0, null, out TimeSpan retryInterval).Should().BeFalse();
             retryInterval.Should().Be(TimeSpan.Zero);
         }
