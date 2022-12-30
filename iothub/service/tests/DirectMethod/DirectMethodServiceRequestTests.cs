@@ -61,5 +61,19 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             dcmr.ResponseTimeoutInSeconds.Should().Be(1);
             dcmr.ConnectionTimeoutInSeconds.Should().Be(1);
         }
+
+        [TestMethod]
+        public void DirectMethodServiceRequest_ConnectionResponseTimeout_ShouldBeNull()
+        {
+            // arrange
+            var expectedTimeout = TimeSpan.FromSeconds(1);
+            var dcmr = new DirectMethodServiceRequest("123")
+            {
+                Payload = "test"
+            };
+
+            dcmr.ResponseTimeoutInSeconds.Should().Be(null);
+            dcmr.ConnectionTimeoutInSeconds.Should().Be(null);
+        }
     }
 }
