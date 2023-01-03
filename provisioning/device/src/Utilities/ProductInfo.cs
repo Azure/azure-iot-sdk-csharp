@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
+    [ExcludeFromCodeCoverage]
     internal class ProductInfo
     {
         public string Extra { get; set; } = "";

@@ -53,19 +53,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Checks an argument to ensure that its value isn't negative.
         /// </summary>
-        /// <param name="argumentValue">The value of the argument.</param>
-        /// <param name="argumentName">The name of the argument for diagnostic purposes.</param>
-        internal static void AssertNotNegativeValue<T>(T argumentValue, string argumentName)
+        /// <param name="value">The value of the argument.</param>
+        /// <param name="name">The name of the argument for diagnostic purposes.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is negative.</exception>
+        internal static void AssertNotNegativeValue<T>(T value, string name)
         {
-            // Currently we check "argumentValue" in types of uint and TimeSpan only,
+            // Currently we check "value" in types of uint and TimeSpan only,
             // and we might need to add check for other types as well in the future.
-            if (argumentValue is uint intVal && intVal < 0
-                || argumentValue is TimeSpan timeVal && timeVal < TimeSpan.Zero)
+            if (value is uint intVal && intVal < 0
+                || value is TimeSpan timeVal && timeVal < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
-                    argumentName,
-                    argumentValue,
-                    $"The value of '{argumentName}' cannot be negative. It is currently '{argumentValue}'.");
+                    name,
+                    value,
+                    $"The value of '{name}' cannot be negative. It is currently '{value}'.");
             }
         }
 
