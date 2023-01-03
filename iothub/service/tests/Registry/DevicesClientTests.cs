@@ -219,12 +219,12 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DevicesClient_CreateWithTwinAsync()
         {
             // arrange
-            var TestTagName = "DevicesClient_Tag";
-            var TestTagValue = 100;
+            var testTagName = "DevicesClient_Tag";
+            var testTagValue = 100;
             var goodDevice1 = new Device("123") { ConnectionState = ClientConnectionState.Connected };
-            ClientTwin clientTwin1 = new ClientTwin("123")
+            var clientTwin1 = new ClientTwin("123")
             {
-                Tags = { { TestTagName, TestTagValue } },
+                Tags = { { testTagName, testTagValue } },
             };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             var TestTagName = "DevicesClient_Tag";
             var TestTagValue = 100;
-            ClientTwin clientTwin1 = new ClientTwin("123")
+            var clientTwin1 = new ClientTwin("123")
             {
                 Tags = { { TestTagName, TestTagValue } },
             };

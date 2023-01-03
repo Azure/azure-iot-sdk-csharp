@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void Twin_JsonDateParse_Ok()
         {
+            const string expectedDeviceId = "test";
             const string jsonString = @"
 {
  ""deviceId"": ""test"",
@@ -26,12 +27,14 @@ namespace Microsoft.Azure.Devices.Tests
 }";
 
             ClientTwin clientTwin = JsonConvert.DeserializeObject<ClientTwin>(jsonString);
-            clientTwin.DeviceId.Should().Be("test");
+            clientTwin.DeviceId.Should().Be(expectedDeviceId);
         }
 
         [TestMethod]
         public void Configuration_TestWithSchema_Ok()
         {
+            const string expectedDeviceId = "aa";
+            const string expectedSchemaVersion = "1.0";
             const string jsonString = @"
 {
   ""id"": ""aa"",
@@ -48,13 +51,15 @@ namespace Microsoft.Azure.Devices.Tests
 }";
 
             Configuration configuration = JsonConvert.DeserializeObject<Configuration>(jsonString);
-            configuration.Id.Should().Be("aa");
-            configuration.SchemaVersion.Should().Be("1.0");
+            configuration.Id.Should().Be(expectedDeviceId);
+            configuration.SchemaVersion.Should().Be(expectedSchemaVersion);
         }
 
         [TestMethod]
         public void Configuration_TestNullSchema_Ok()
         {
+            const string expectedDeviceId = "aa";
+            const string expectedSchemaVersion = "1.0";
             const string jsonString = @"
 {
   ""id"": ""aa"",
@@ -68,8 +73,8 @@ namespace Microsoft.Azure.Devices.Tests
   }
 }";
             Configuration configuration = JsonConvert.DeserializeObject<Configuration>(jsonString);
-            configuration.Id.Should().Be("aa");
-            configuration.SchemaVersion.Should().Be("1.0");
+            configuration.Id.Should().Be(expectedDeviceId);
+            configuration.SchemaVersion.Should().Be(expectedSchemaVersion);
         }
     }
 }

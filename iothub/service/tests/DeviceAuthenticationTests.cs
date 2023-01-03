@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
 
         [TestMethod]
-        public async Task DeviceAuthentication_SymmetricKeyAuthConfigTest1()
+        public async Task DeviceAuthentication_GeneratedSymmetricKeysAuthConfigTest()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthentication_CertificateAuthConfigTest1()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_WithMatchingSecondaryThumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthentication_CertificateAuthConfigTest2()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_NullSecondaryThumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthentication_CertificateAuthConfigTest3()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_NullPrimaryThumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthentication_SymmetricKeyAuthConfigTest2()
+        public async Task DeviceAuthentication_GeneratedSymmetricKeysAuthConfigTest_NullThumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthentication_CertificateAuthConfigTest4()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_NullSymmetricKey()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthentication_CertificateAuthConfigTest4_SHA256()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_Sha256Thumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -282,7 +282,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthentication_CertificateAuthConfigTest5()
+        public async Task DeviceAuthentication_CertificateAuthConfig_NullSymmetricKeyAndThumbprint()
         {
             var deviceWithoutThumbprint = new Device("123")
             {
