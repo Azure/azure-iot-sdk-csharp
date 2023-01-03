@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.GetRefreshesOn() ?? DateTime.MaxValue;
         }
 
-        public virtual void SetRefreshesOn(CancellationToken cancellationToken)
+        public virtual void SetSasTokenRefreshesOn(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
         }

@@ -18,10 +18,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly IConnectionCredentials _connectionCredentials;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
-        //private Task _refreshLoop;
-        //private CancellationTokenSource _loopCancellationTokenSource;
 
-        DateTime IAmqpAuthenticationRefresher.RefreshOn { get; set; }
+        DateTime IAmqpAuthenticationRefresher.RefreshesOn { get; set; }
 
         internal AmqpAuthenticationRefresher(IConnectionCredentials connectionCredentials, AmqpIotCbsLink amqpCbsLink)
         {
@@ -65,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             try
             {
-                DateTime refreshOn = await _amqpIotCbsLink
+                DateTime refreshesOn = await _amqpIotCbsLink
                     .SendTokenAsync(
                         _amqpIotCbsTokenProvider,
                         _amqpEndpoint,
@@ -75,13 +73,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         cancellationToken)
                     .ConfigureAwait(false);
 
-                if (refreshOn < DateTime.MaxValue
+                if (refreshesOn < DateTime.MaxValue
                     && this is IAmqpAuthenticationRefresher refresher)
                 {
-                    refresher.RefreshOn = refreshOn;
+                    refresher.RefreshesOn = refreshesOn;
                 }
 
-                return refreshOn;
+                return refreshesOn;
             }
             finally
             {
@@ -89,26 +87,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.RefreshTokenAsync));
             }
         }
-
-        //// return internal  
-        //async Task IAmqpAuthenticationRefresher.StopLoop()
-        //{
-        //    _loopCancellationTokenSource?.Cancel();
-        //    if (_refreshLoop != null)
-        //    {
-        //        try
-        //        {
-        //            await _refreshLoop.ConfigureAwait(false);
-        //        }
-        //        catch (OperationCanceledException) { }
-        //        _refreshLoop = null;
-        //    }
-
-        //    _loopCancellationTokenSource?.Dispose();
-        //    _loopCancellationTokenSource = null;
-
-        //    if (Logging.IsEnabled)
-        //        Logging.Info(this, nameof(IAmqpAuthenticationRefresher.StopLoop));
-        //}
     }
 }

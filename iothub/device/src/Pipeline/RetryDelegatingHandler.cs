@@ -468,17 +468,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 
 
-        public override void SetRefreshesOn(CancellationToken cancellationToken)
+        public override void SetSasTokenRefreshesOn(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(SetRefreshesOn));
+                Logging.Enter(this, cancellationToken, nameof(SetSasTokenRefreshesOn));
 
             if (_refreshLoop == null)
             {
                 if (_loopCancellationTokenSource != null)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, "_loopCancellationTokenSource was already initialized, which was unexpected. Canceling and disposing the previous instance.", nameof(SetRefreshesOn));
+                        Logging.Info(this, "_loopCancellationTokenSource was already initialized, which was unexpected. Canceling and disposing the previous instance.", nameof(SetSasTokenRefreshesOn));
 
                     try
                     {
@@ -499,7 +499,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, cancellationToken, nameof(SetRefreshesOn));
+                Logging.Exit(this, cancellationToken, nameof(SetSasTokenRefreshesOn));
         }
 
         private void StartLoop(DateTime refreshesOn, CancellationToken cancellationToken)
@@ -515,31 +515,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, refreshesOn, nameof(RefreshLoopAsync));
-
-            TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
-
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
                 if (Logging.IsEnabled)
-                    Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)} with wait time {waitTime}.");
+                    Logging.Enter(this, refreshesOn, nameof(RefreshLoopAsync));
 
-                if (waitTime > TimeSpan.Zero)
+                TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
+
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)} with wait time {waitTime}.");
+
+                    if (waitTime > TimeSpan.Zero)
+                    {
+                        await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    refreshesOn = await RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, refreshesOn, "Token has been refreshed.");
+
+                    waitTime = refreshesOn - DateTime.UtcNow;
                 }
-
-                refreshesOn = await RefreshTokenAsync(cancellationToken).ConfigureAwait(false);
-
+            }
+            catch (OperationCanceledException){ return; }
+            finally
+            {
                 if (Logging.IsEnabled)
-                    Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
-
-                waitTime = refreshesOn - DateTime.UtcNow;
+                    Logging.Exit(this, refreshesOn, nameof(RefreshLoopAsync));
             }
 
-            if (Logging.IsEnabled)
-                Logging.Exit(this, refreshesOn, nameof(RefreshLoopAsync));
         }
 
         public override async Task StopLoopAsync()
@@ -559,10 +566,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopLoopAsync));
                 }
 
-                if (_refreshLoop != null)
-                {
-                    await _refreshLoop.ConfigureAwait(false);
-                }
+                // Await the completion of _refreshLoop.
+                // This will ensure that when StopLoopAsync has been exited then no more token refresh attempts are in-progress.
+                await _refreshLoop.ConfigureAwait(false);
             }
             catch (Exception ex)
             {

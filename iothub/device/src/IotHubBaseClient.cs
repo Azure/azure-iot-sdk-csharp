@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client
             
             if (_clientOptions.TransportSettings is IotHubClientAmqpSettings)
             {
-                InnerHandler.SetRefreshesOn(cancellationToken);
+                InnerHandler.SetSasTokenRefreshesOn(cancellationToken);
             }
         }
 

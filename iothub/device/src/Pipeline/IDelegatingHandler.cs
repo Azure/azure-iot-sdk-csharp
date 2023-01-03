@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
 
         DateTime GetRefreshesOn();
 
-        void SetRefreshesOn(CancellationToken cancellationToken);
+        void SetSasTokenRefreshesOn(CancellationToken cancellationToken);
 
         Task StopLoopAsync();
 

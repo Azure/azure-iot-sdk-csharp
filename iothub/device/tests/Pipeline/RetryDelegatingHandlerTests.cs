@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryDelegatingHandler_RefreshTokenAsyncDoesNotRetryOnNonNetworkErrorCode()
+        public async Task RetryDelegatingHandler_RefreshTokenAsync_DoesNotRetryOnNonNetworkErrorCode()
         {
             // arrange
             int callCounter = 0;
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryDelegatingHandler_RefreshTokenAsyncRetries()
+        public async Task RetryDelegatingHandler_RefreshTokenAsync_Retries()
         {
             // arrange
             int callCounter = 0;

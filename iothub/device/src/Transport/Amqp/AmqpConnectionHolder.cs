@@ -185,7 +185,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                //amqpAuthenticationRefresher?.StopLoop();
                 amqpIotConnection?.SafeClose();
                 throw;
             }
@@ -233,7 +232,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (_amqpIotConnection != null && ReferenceEquals(_amqpIotConnection, o))
             {
-                //_amqpAuthenticationRefresher?.StopLoop();
                 HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
