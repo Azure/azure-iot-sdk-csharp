@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -177,6 +178,41 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_CreateAsync()
+        {
+            // arrange
+            var goodDevice = new Device("123") { ConnectionState = ClientConnectionState.Connected };
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult()),
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.CreateAsync(new List<Device> { goodDevice }).ConfigureAwait(false);
+
+            // assert
+            await act.Should().NotThrowAsync().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -799,6 +835,28 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
+        public async Task DevicesClient_CancelJobAsync()
+        {
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.CancelJobAsync("1234").ConfigureAwait(false);
+
+            // assert
+            await act.Should().NotThrowAsync().ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task DevicesClient_CancelJobAsync_NullJobIdThrows()
         {
             // arrange
@@ -862,6 +920,257 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_GetModulesAsync()
+        {
+            // arrange
+            var module1 = new Module("1234", "module1");
+            var module2 = new Module("1234", "module2");
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            var modulesToReturn = new List<Module>() { module1, module2 };
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                Content = HttpMessageHelper.SerializePayload(modulesToReturn),
+                StatusCode = HttpStatusCode.OK,
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            // act
+            var modulesResult = await devicesClient.GetModulesAsync("1234").ConfigureAwait(false);
+
+            // assert
+            modulesResult.Count().Should().Be(2);
+            mockHttpClient.VerifyAll();
+        }
+
+
+        [TestMethod]
+        public async Task DevicesClient_GetModulesAsync_NullDeviceId_Throws()
+        {
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.CancelJobAsync(null).ConfigureAwait(false);
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_GetModulesAsync_EmptyDeviceId_Throws()
+        {
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.CancelJobAsync("").ConfigureAwait(false);
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_GetRegistryStatisticsAsync()
+        {
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            var registryStatisticsToReturn = new RegistryStatistics
+            {
+                TotalDeviceCount = 100,
+                EnabledDeviceCount = 80,
+                DisabledDeviceCount = 20
+            };
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                Content = HttpMessageHelper.SerializePayload(registryStatisticsToReturn),
+                StatusCode = HttpStatusCode.OK,
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            RegistryStatistics statistics = await devicesClient.GetRegistryStatisticsAsync();
+            statistics.Should().NotBeNull();
+            statistics.EnabledDeviceCount.Should().Be(80);
+            statistics.TotalDeviceCount.Should().Be(100);
+            statistics.DisabledDeviceCount.Should().Be(20);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_GetServiceStatisticsAsync()
+        {
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            var serviceStatisticsToReturn = new ServiceStatistics
+            {
+                ConnectedDeviceCount = 100
+            };
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                Content = HttpMessageHelper.SerializePayload(serviceStatisticsToReturn),
+                StatusCode = HttpStatusCode.OK,
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            ServiceStatistics statistics = await devicesClient.GetServiceStatisticsAsync();
+            statistics.Should().NotBeNull();
+            statistics.ConnectedDeviceCount.Should().Be(100);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_ImportAsync_nullJobParametersThrows()
+        {
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.ImportAsync(null).ConfigureAwait(false);
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_ImportAsync_EmptyJobParametersThrows()
+        {
+            ImportJobProperties badImportJobProperties = new ImportJobProperties
+            {
+                OutputBlobContainerUri = new Uri(" ")
+            };
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_ExportAsync_nullJobParametersThrows()
+        {
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.ExportAsync(null).ConfigureAwait(false);
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_ExportAsync_EmptyJobParametersThrows()
+        {
+            ImportJobProperties badImportJobProperties = new ImportJobProperties
+            {
+                OutputBlobContainerUri = new Uri(" ")
+            };
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
         }
     }
 }
