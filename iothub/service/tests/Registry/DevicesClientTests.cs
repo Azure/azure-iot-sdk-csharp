@@ -702,7 +702,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
                 .Returns(s_validMockAuthenticationHeaderValue);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var jobToReturn = new IotHubJobResponse() { JobId = jobId, Status = jobStatus };
+            var jobToReturn = new IotHubJobResponse{ JobId = jobId, Status = jobStatus };
             using var mockHttpResponse = new HttpResponseMessage
             {
                 Content = HttpMessageHelper.SerializePayload(jobToReturn),
@@ -832,28 +832,6 @@ namespace Microsoft.Azure.Devices.Tests
             jobsResult.ElementAt(0).JobId.Should().Be(jobId);
             jobsResult.ElementAt(0).Status.Should().Be(jobStatus);
             mockHttpClient.VerifyAll();
-        }
-
-        [TestMethod]
-        public async Task DevicesClient_CancelJobAsync()
-        {
-            // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var devicesClient = new DevicesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory.Object,
-                s_retryHandler);
-
-            // act
-            Func<Task> act = async () => await devicesClient.CancelJobAsync("1234").ConfigureAwait(false);
-
-            // assert
-            await act.Should().NotThrowAsync().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -1103,11 +1081,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_ImportAsync_EmptyJobParametersThrows()
+        public async Task DevicesClient_ImportAsync_MissingContainerNameInJobParametersThrows()
         {
             ImportJobProperties badImportJobProperties = new ImportJobProperties
             {
-                OutputBlobContainerUri = new Uri(" ")
+                OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/")
             };
             // arrange
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -1125,6 +1103,31 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_ImportAsync_EmptyContainerNameInJobParametersThrows()
+        {
+            ImportJobProperties badImportJobProperties = new ImportJobProperties
+            {
+                OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/ ")
+            };
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
+            // assert
+            await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -1149,11 +1152,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_ExportAsync_EmptyJobParametersThrows()
+        public async Task DevicesClient_ExportAsync_MissingContainerNameInJobParametersThrows()
         {
             ImportJobProperties badImportJobProperties = new ImportJobProperties
             {
-                OutputBlobContainerUri = new Uri(" ")
+                OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/")
             };
             // arrange
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -1171,6 +1174,31 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DevicesClient_ExportAsync_EmptyContainerNameInJobParametersThrows()
+        {
+            ImportJobProperties badImportJobProperties = new ImportJobProperties
+            {
+                OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/ ")
+            };
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var devicesClient = new DevicesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory.Object,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
+            // assert
+            await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
         }
     }
 }
