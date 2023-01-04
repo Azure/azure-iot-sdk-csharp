@@ -835,28 +835,6 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DevicesClient_CancelJobAsync()
-        {
-            // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var devicesClient = new DevicesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory.Object,
-                s_retryHandler);
-
-            // act
-            Func<Task> act = async () => await devicesClient.CancelJobAsync("1234").ConfigureAwait(false);
-
-            // assert
-            await act.Should().NotThrowAsync().ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task DevicesClient_CancelJobAsync_NullJobIdThrows()
         {
             // arrange
@@ -1136,7 +1114,6 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/ ")
             };
-
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
             var mockHttpClient = new Mock<HttpClient>();
