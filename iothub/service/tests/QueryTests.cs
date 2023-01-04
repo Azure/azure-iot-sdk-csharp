@@ -297,26 +297,27 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void QueryResult_OverrideDefaultJsonSerializer_ExceedMaxDepthThrows()
         {
-            // simulate json serialize/deserialize
-            var serverQueryResult = new QueryResult
-            {
-                Type = QueryResultType.Twin,
-                Items = new List<Twin>
-                {
-                    new Twin
-                    {
-                        DeviceId = "test",
-                    }
-                },
-                ContinuationToken = "GYUVJDBJFKJ"
-            };
-
             var settings = new JsonSerializerSettings { MaxDepth = 2 };
-            // serialize
-            var jsonQueryResult = JsonConvert.SerializeObject(serverQueryResult, settings);
-            jsonQueryResult.Should().Be("{\"type\":\"twin\",\"items\":[{\"deviceId\":\"test\",\"etag\":null,\"version\":null,\"properties\":{\"desired\":{},\"reported\":{}}}],\"continuationToken\":\"GYUVJDBJFKJ\"}");            // deserialize
+            // simulate json deserialize
+            const string jsonString = @"
+{
+""type"":""twin"",
+""items"":
+    [{
+        ""deviceId"": ""test"",
+        ""etag"":null,
+        ""version"":null,
+        ""properties"":
+            {
+                ""desired"":{},
+                ""reported"":{}
+            }
+    }],
+""continuationToken"":""GYUVJDBJFKJ""
+}";
+            // deserialize
             // act
-            Func<QueryResult> act = () => JsonConvert.DeserializeObject<QueryResult>(jsonQueryResult, settings);
+            Func<QueryResult> act = () => JsonConvert.DeserializeObject<QueryResult>(jsonString, settings);
 
             // assert
             act.Should().Throw<Newtonsoft.Json.JsonReaderException>();
