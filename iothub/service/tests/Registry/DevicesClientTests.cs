@@ -260,11 +260,11 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DevicesClient_CreateWithTwinAsync_NullDeviceThrows()
         {
             // arrange
-            var TestTagName = "DevicesClient_Tag";
-            var TestTagValue = 100;
+            var testTagName = "DevicesClient_Tag";
+            var testTagValue = 100;
             var clientTwin1 = new ClientTwin("123")
             {
-                Tags = { { TestTagName, TestTagValue } },
+                Tags = { { testTagName, testTagValue } },
             };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
