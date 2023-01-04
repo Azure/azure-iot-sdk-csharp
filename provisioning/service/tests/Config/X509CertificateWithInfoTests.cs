@@ -8,7 +8,7 @@ using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Test
+namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
     [TestClass]
     [TestCategory("Unit")]

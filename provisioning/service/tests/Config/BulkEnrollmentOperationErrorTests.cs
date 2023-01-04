@@ -4,7 +4,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Test
+namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
