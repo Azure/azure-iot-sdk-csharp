@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
         {
-            await Twin_DeviceReportedPropertiesRecovery(
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
                     Client.TransportType.Mqtt_Tcp_Only,
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
-            await Twin_DeviceReportedPropertiesRecovery(
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
                     Client.TransportType.Mqtt_WebSocket_Only,
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Amqp()
         {
-            await Twin_DeviceReportedPropertiesRecovery(
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
         {
-            await Twin_DeviceReportedPropertiesRecovery(
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
         {
-            await Twin_DeviceReportedPropertiesRecovery(
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
                     Client.TransportType.Mqtt_Tcp_Only,
                     FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
                     FaultInjectionConstants.FaultCloseReason_Bye)
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
         {
-            await Twin_DeviceReportedPropertiesRecovery(
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
                     Client.TransportType.Mqtt_WebSocket_Only,
                     FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
                     FaultInjectionConstants.FaultCloseReason_Bye)
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Amqp()
         {
-            await Twin_DeviceReportedPropertiesRecovery(
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye)
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
         {
-            await Twin_DeviceReportedPropertiesRecovery(
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye)
@@ -212,7 +212,55 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        private async Task Twin_DeviceReportedPropertiesRecovery(
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DoNotParallelize]
+        public async Task Twin_DeviceDesiredPropertyUpdateQuotaExceededRecovery_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjectionConstants.FaultType_QuotaExceeded,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DoNotParallelize]
+        public async Task Twin_DeviceDesiredPropertyUpdateQuotaExceededRecovery_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjectionConstants.FaultType_QuotaExceeded,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DoNotParallelize]
+        public async Task Twin_DeviceReportedPropertiesQuotaExceededRecovery_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjectionConstants.FaultType_QuotaExceeded,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DoNotParallelize]
+        public async Task Twin_DeviceReportedPropertiesQuotaExceededRecovery_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjectionConstants.FaultType_QuotaExceeded,
+                    FaultInjectionConstants.FaultCloseReason_Boom)
+                .ConfigureAwait(false);
+        }
+
+        private async Task Twin_DeviceReportedPropertiesRecoveryAsync(
             Client.TransportType transport,
             string faultType,
             string reason,
