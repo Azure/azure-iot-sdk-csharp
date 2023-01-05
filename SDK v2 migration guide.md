@@ -149,6 +149,7 @@ Find a client you currently use below, read the table of API name changes and us
     1. Manually call `await client.DisposeAsync();`.
     1. Initialize the client with the **await** keyword: `await using client = new IotHubDeviceClient(...);`. The client will be disposed when it goes out of scope.
   - For more information, see <https://learn.microsoft.com/dotnet/api/system.iasyncdisposable>.
+  - `DirectMethodRequest` constructor for module-initiated direct method calls requires the method name as a parameter; the property is not settable directly.
 
 #### Notable additions
 
@@ -372,6 +373,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
 - ETag fields on the classes `IndividualEnrollment`, `EnrollmentGroup`, and `DeviceRegistrationState` are now taken as the `Azure.ETag` type instead of strings.
 - Twin.Tags is now of type `IDictionary<string, object>`.
+- `CustomAllocationDefinition.WebhookUri` is now of type `System.Uri` instead of `System.String`.
 
 #### Notable additions
 

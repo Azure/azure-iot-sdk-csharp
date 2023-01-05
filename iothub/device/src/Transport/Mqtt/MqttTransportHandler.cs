@@ -1031,10 +1031,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = queryStringKeyValuePairs.Get(RequestIdTopicKey);
             string methodName = tokens[3];
 
-            var methodRequest = new DirectMethodRequest
+            var methodRequest = new DirectMethodRequest(methodName)
             {
                 PayloadConvention = _payloadConvention,
-                MethodName = methodName,
                 RequestId = requestId,
                 Payload = payload,
             };

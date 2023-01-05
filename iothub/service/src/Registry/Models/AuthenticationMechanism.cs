@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
-using System.ComponentModel;
 
 namespace Microsoft.Azure.Devices
 {
@@ -61,7 +60,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the authentication type.
         /// </summary>
-        [DefaultValue(ClientAuthenticationType.Sas)]
         [JsonProperty("type")]
         public ClientAuthenticationType Type { get; set; }
     }
