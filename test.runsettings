@@ -1,12 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
-   <MSTest>
-      <!--
+    <MSTest>
+        <!--
          Specify timeout in milliseconds.
-         Current timeout is set to 11mins 
+         Current timeout is set to 11mins
          (Long running test - DeviceClient_CreateFromConnectionString_TokenIsRefreshed_Mqtt takes a little over 10mins to complete.)
          (Long running tests - DeviceClient_TokenIsRefreshed_Ok_Mqtt, DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP take a little over 5mins to complete.)
       -->
-      <TestTimeout>660000</TestTimeout>
-   </MSTest>
+        <TestTimeout>660000</TestTimeout>
+    </MSTest>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="Code Coverage"
+                           uri="datacollector://Microsoft/CodeCoverage/2.0"
+                           assemblyQualifiedName="Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollector, Microsoft.VisualStudio.TraceCollector, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+                <Configuration>
+                    <CodeCoverage>
+                        <ModulePaths>
+                            <Exclude>
+                                <ModulePath>.*tests\.dll$</ModulePath>
+                            </Exclude>
+                        </ModulePaths>
+                    </CodeCoverage>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
 </RunSettings>
