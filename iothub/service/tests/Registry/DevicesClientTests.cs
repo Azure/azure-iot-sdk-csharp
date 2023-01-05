@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Device returnedDevice = await devicesClient.SetAsync(deviceToReturn).ConfigureAwait(false);
+            var returnedDevice = await devicesClient.SetAsync(deviceToReturn).ConfigureAwait(false);
 
             // assert
             returnedDevice.Id.Should().Be(deviceToReturn.Id);
@@ -807,7 +807,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
                 .Returns(s_validMockAuthenticationHeaderValue);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var jobsToReturn = new List<IotHubJobResponse>() { new IotHubJobResponse() { JobId = jobId, Status = jobStatus } };
+            var jobsToReturn = new List<IotHubJobResponse> { new IotHubJobResponse { JobId = jobId, Status = jobStatus } };
             using var mockHttpResponse = new HttpResponseMessage
             {
                 Content = HttpMessageHelper.SerializePayload(jobsToReturn),
