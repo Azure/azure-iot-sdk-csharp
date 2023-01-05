@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Test
+namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
     /// <summary>
     /// Utility methods for generating cryptographically secure keys and passwords.
