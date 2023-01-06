@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
             }
 
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettings();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettingsDelegate();
 
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 

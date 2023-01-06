@@ -5,10 +5,12 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -309,7 +311,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -1564,6 +1565,46 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
             messageWithId.MessageId.Should().Be(messageId);
+        }
+
+        [TestMethod]
+        public void DeviceClient_DefaultMaxDepth()
+        {
+            // arrange
+            string hostName = "acme.azure-devices.net";
+            var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
+
+            using var deviceClient = DeviceClient.Create(hostName, authMethod);
+
+            // above arragement is only for setting the defaultJsonSerializerSettings
+
+            var defaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettings();
+            defaultSettings.MaxDepth.Should().Be(128);
+        }
+
+        [TestMethod]
+        public void DeviceClient_OverrideDefaultMaxDepth_ExceedMaxDepthThrows()
+        {
+            // arrange
+            const string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
+            using var deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Http1, new ClientOptions
+            {
+                ModelId = "TestModel"
+            });
+            // above arragement is only for setting the defaultJsonSerializerSettings
+
+            //Create a string representation of a nested object (JSON serialized)
+            int nRep = 3;
+            string json = string.Concat(Enumerable.Repeat("{a:", nRep)) + "1" +
+            string.Concat(Enumerable.Repeat("}", nRep));
+
+            var settings = new JsonSerializerSettings { MaxDepth = 2 };
+            //// deserialize
+            // act
+            Func<object> act = () => JsonConvert.DeserializeObject(json, settings);
+
+            // assert
+            act.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
     }
 }

@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the connectionString is <code>null</code>, empty, or invalid.</exception>
         private ProvisioningServiceClient(string connectionString, HttpTransportSettings httpTransportSettings)
         {
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettings();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettingsDelegate();
 
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_002: [The constructor shall throw ArgumentException if the provided connectionString is null or empty.] */
             if (string.IsNullOrWhiteSpace(connectionString ?? throw new ArgumentNullException(nameof(connectionString))))

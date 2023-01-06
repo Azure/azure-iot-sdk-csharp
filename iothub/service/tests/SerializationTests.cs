@@ -74,6 +74,10 @@ namespace Microsoft.Azure.Devices.Test
         public void Twin_Json_OverrideDefaultJsonSerializer_ExceedMaxDepthThrows()
         {
             // arrange
+            string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
+            var ServiceClinet = ServiceClient.CreateFromConnectionString(fakeConnectionString);
+            // above arragement is only for setting the defaultJsonSerializerSettings
+
             const string jsonString = @"
 {
  ""deviceId"": ""test"",

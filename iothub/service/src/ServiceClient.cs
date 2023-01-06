@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ServiceClient()
         {
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettings();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettingsDelegate();
             TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 

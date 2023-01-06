@@ -10,10 +10,12 @@ namespace Microsoft.Azure.Devices.Api.Test
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
+    using Newtonsoft.Json;
 
     [TestClass]
     [TestCategory("Unit")]
@@ -888,6 +890,40 @@ namespace Microsoft.Azure.Devices.Api.Test
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
             await registryManager.CloseAsync().ConfigureAwait(false);
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
+        }
+
+        [TestMethod]
+        public void RegistryManager_DefaultMaxDepth()
+        {
+            // arrange
+            string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
+            var registryManager = RegistryManager.CreateFromConnectionString(fakeConnectionString);
+            // above arragement is only for setting the defaultJsonSerializerSettings
+
+            var defaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettings();
+            defaultSettings.MaxDepth.Should().Be(128);
+        }
+
+        [TestMethod]
+        public void RegistryManager_OverrideDefaultMaxDepth_ExceedMaxDepthThrows()
+        {
+            // arrange
+            string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
+            var registryManager = RegistryManager.CreateFromConnectionString(fakeConnectionString);
+            // above arragement is only for setting the defaultJsonSerializerSettings
+
+            //Create a string representation of a nested object (JSON serialized)
+            int nRep = 3;
+            string json = string.Concat(Enumerable.Repeat("{a:", nRep)) + "1" +
+            string.Concat(Enumerable.Repeat("}", nRep));
+
+            var settings = new JsonSerializerSettings { MaxDepth = 2 };
+            //// deserialize
+            // act
+            Func<object> act = () => JsonConvert.DeserializeObject(json, settings);
+
+            // assert
+            act.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
     }
 }

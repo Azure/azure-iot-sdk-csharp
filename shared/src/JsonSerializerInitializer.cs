@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// A static class to initialize JsonSerializerSettings with the default MaxDepth of 128 for the project
+    /// A class to initialize JsonSerializerSettings with the default MaxDepth of 128 for the project
     /// </summary>
     public static class JsonSerializerSettingsInitializer
     {
@@ -19,11 +19,19 @@ namespace Microsoft.Azure.Devices.Shared
         };
 
         /// <summary>
-        /// Returns DefaultJsonSerializerSettings
+        /// Returns DefaultJsonSerializerSettings Func delegate
         /// </summary>
-        public static Func<JsonSerializerSettings> GetDefaultJsonSerializerSettings()
+        public static Func<JsonSerializerSettings> GetDefaultJsonSerializerSettingsDelegate()
         {
             return () => SettingsInstance;
+        }
+
+        /// <summary>
+        /// For testing only, returns DefaultJsonSerializerSettings
+        /// </summary>
+        public static JsonSerializerSettings GetDefaultJsonSerializerSettings()
+        {
+            return JsonConvert.DefaultSettings();
         }
     }
 }

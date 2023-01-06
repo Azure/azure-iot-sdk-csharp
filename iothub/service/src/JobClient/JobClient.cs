@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices
             {
                 throw new ArgumentNullException(nameof(transportSettings), "HTTP Transport settings cannot be null.");
             }
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettings();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettingsDelegate();
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);

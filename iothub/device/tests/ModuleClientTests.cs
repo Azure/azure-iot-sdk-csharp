@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using NSubstitute;
 
 namespace Microsoft.Azure.Devices.Client.Test
@@ -265,6 +269,38 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             _ = new MethodInvokeRequest(request.Name, request.DataAsJson, request.ResponseTimeout, request.ConnectionTimeout);
+        }
+
+        [TestMethod]
+        public void ModuleClient_DefaultMaxDepth()
+        {
+            // arrange
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            // above arragement is only for setting the defaultJsonSerializerSettings
+
+            var defaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettings();
+            defaultSettings.MaxDepth.Should().Be(128);
+        }
+
+        [TestMethod]
+        public void ModuleClient_OverrideDefaultMaxDepth_ExceedMaxDepthThrows()
+        {
+            // arrange
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            // above arragement is only for setting the defaultJsonSerializerSettings
+
+            //Create a string representation of a nested object (JSON serialized)
+            int nRep = 3;
+            string json = string.Concat(Enumerable.Repeat("{a:", nRep)) + "1" +
+            string.Concat(Enumerable.Repeat("}", nRep));
+
+            var settings = new JsonSerializerSettings { MaxDepth = 2 };
+            //// deserialize
+            // act
+            Func<object> act = () => JsonConvert.DeserializeObject(json, settings);
+
+            // assert
+            act.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
     }
 }

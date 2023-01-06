@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices
             _client = new IotHubGatewayServiceAPIs(uri, credentials, handlers);
             _protocolLayer = new DigitalTwin(_client);
 
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettings();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettingsDelegate();
         }
 
         /// <summary>
