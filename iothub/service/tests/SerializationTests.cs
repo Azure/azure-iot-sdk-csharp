@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -13,6 +14,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void Twin_JsonDateParse_Ok()
         {
+            const string expectedDeviceId = "test";
             const string jsonString = @"
 {
  ""deviceId"": ""test"",
@@ -24,12 +26,15 @@ namespace Microsoft.Azure.Devices.Tests
  ""lastActivityTime"": ""2018-06-29T21:17:08.7759733"",
 }";
 
-            JsonConvert.DeserializeObject<ClientTwin>(jsonString);
+            ClientTwin clientTwin = JsonConvert.DeserializeObject<ClientTwin>(jsonString);
+            clientTwin.DeviceId.Should().Be(expectedDeviceId);
         }
 
         [TestMethod]
         public void Configuration_TestWithSchema_Ok()
         {
+            const string expectedDeviceId = "aa";
+            const string expectedSchemaVersion = "1.0";
             const string jsonString = @"
 {
   ""id"": ""aa"",
@@ -45,12 +50,16 @@ namespace Microsoft.Azure.Devices.Tests
   }
 }";
 
-            JsonConvert.DeserializeObject<Configuration>(jsonString);
+            Configuration configuration = JsonConvert.DeserializeObject<Configuration>(jsonString);
+            configuration.Id.Should().Be(expectedDeviceId);
+            configuration.SchemaVersion.Should().Be(expectedSchemaVersion);
         }
 
         [TestMethod]
         public void Configuration_TestNullSchema_Ok()
         {
+            const string expectedDeviceId = "aa";
+            const string expectedSchemaVersion = "1.0";
             const string jsonString = @"
 {
   ""id"": ""aa"",
@@ -63,8 +72,9 @@ namespace Microsoft.Azure.Devices.Tests
     }
   }
 }";
-
-            JsonConvert.DeserializeObject<Configuration>(jsonString);
+            Configuration configuration = JsonConvert.DeserializeObject<Configuration>(jsonString);
+            configuration.Id.Should().Be(expectedDeviceId);
+            configuration.SchemaVersion.Should().Be(expectedSchemaVersion);
         }
     }
 }
