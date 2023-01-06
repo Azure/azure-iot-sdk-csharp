@@ -12,6 +12,7 @@ using Microsoft.Azure.Devices.Shared;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Newtonsoft.Json;
 
 #if NET451
 
@@ -155,6 +156,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
             }
+
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettingsDelegate();
 
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
@@ -989,7 +992,7 @@ namespace Microsoft.Azure.Devices.Client
                     methodResponseInternal?.Dispose();
                 }
                 finally
-                { 
+                {
                     // Need to release this semaphore even if the above dispose call fails
                     _methodsDictionarySemaphore.Release();
                 }
@@ -1405,7 +1408,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the 
+            // Grab this semaphore so that there is no chance that the _deviceReceiveMessageCallback instance is set in between the read of the
             // item1 and the read of the item2
             await _deviceReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
             ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;

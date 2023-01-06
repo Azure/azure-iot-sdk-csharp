@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Newtonsoft.Json;
     using Microsoft.Azure.Devices.Shared;
+    using FluentAssertions;
 
     [TestClass]
     [TestCategory("Unit")]
@@ -291,6 +292,35 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsInstanceOfType(r.ElementAt(0), typeof(Twin));
             Assert.AreEqual("test", r.ElementAt(0).DeviceId);
             Assert.IsTrue(q.HasMoreResults);
+        }
+
+        [TestMethod]
+        public void QueryResult_OverrideDefaultJsonSerializer_ExceedMaxDepthThrows()
+        {
+            var settings = new JsonSerializerSettings { MaxDepth = 2 };
+            // simulate json deserialize
+            const string jsonString = @"
+{
+""type"":""twin"",
+""items"":
+    [{
+        ""deviceId"": ""test"",
+        ""etag"":null,
+        ""version"":null,
+        ""properties"":
+            {
+                ""desired"":{},
+                ""reported"":{}
+            }
+    }],
+""continuationToken"":""GYUVJDBJFKJ""
+}";
+            // deserialize
+            // act
+            Func<QueryResult> act = () => JsonConvert.DeserializeObject<QueryResult>(jsonString, settings);
+
+            // assert
+            act.Should().Throw<Newtonsoft.Json.JsonReaderException>();
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -39,6 +40,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ServiceClient()
         {
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettingsDelegate();
             TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 
@@ -64,7 +66,8 @@ namespace Microsoft.Azure.Devices
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing) { }
+        protected virtual void Dispose(bool disposing)
+        { }
 
         /// <summary>
         /// Create an instance of ServiceClient from the specified IoT Hub connection string using specified Transport Type.

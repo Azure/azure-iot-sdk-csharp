@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
@@ -35,6 +36,7 @@ namespace Microsoft.Azure.Devices
             {
                 throw new ArgumentNullException(nameof(transportSettings), "HTTP Transport settings cannot be null.");
             }
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetDefaultJsonSerializerSettingsDelegate();
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
@@ -52,7 +54,8 @@ namespace Microsoft.Azure.Devices
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing) { }
+        protected virtual void Dispose(bool disposing)
+        { }
 
         /// <summary>
         /// Explicitly open the JobClient instance.
