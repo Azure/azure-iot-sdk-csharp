@@ -21,6 +21,8 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             hubCs.SharedAccessKey.Should().NotBeNull();
             hubCs.SharedAccessKeyName.Should().NotBeNull();
             hubCs.SharedAccessSignature.Should().BeNull();
+            hubCs.GetPassword().Should().NotBeNull();
+            hubCs.GetAuthorizationHeader().Should().NotBeNull();
 
             cs = "HostName=acme.azure-devices.net;CredentialType=SharedAccessSignature;SharedAccessKeyName=AllAccessKey;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey";
             hubCs = IotHubConnectionStringParser.Parse(cs);
@@ -28,6 +30,8 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             hubCs.SharedAccessKey.Should().BeNull();
             hubCs.SharedAccessKeyName.Should().NotBeNull();
             hubCs.SharedAccessSignature.Should().NotBeNull();
+            hubCs.GetPassword().Should().BeEquivalentTo(hubCs.SharedAccessSignature);
+            hubCs.GetAuthorizationHeader().Should().BeEquivalentTo(hubCs.SharedAccessSignature);
         }
     }
 }
