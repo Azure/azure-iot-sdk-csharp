@@ -377,8 +377,50 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await configurationsClient.SetAsync(configurationToReturnWithoutETag, true).ConfigureAwait(false);
 
             // assert
-            await act.Should().NotThrowAsync<ArgumentException>().ConfigureAwait(false);
+            await act.Should().NotThrowAsync().ConfigureAwait(false);
         }
+
+        [TestMethod]
+        public async Task ConfigurationClients_DeleteAsync()
+        {
+            // arrange
+            string configurationId = Guid.NewGuid().ToString().ToLower(); // Configuration Id characters must be all lower-case.
+            var configuration= new Configuration(configurationId)
+            {
+                Priority = 1,
+                Labels = new Dictionary<string, string>
+                {
+                    { "App", "Mongo" }
+                }
+            };
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NoContent
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var configurationsClient = new ConfigurationsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await configurationsClient.DeleteAsync(configuration).ConfigureAwait(false);
+
+            // assert
+            await act.Should().NotThrowAsync().ConfigureAwait(false);
+        }
+
 
         [TestMethod]
         public async Task ConfigurationClients_DeleteAsync_NullConfigurationIdThrows()

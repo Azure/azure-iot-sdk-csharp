@@ -1083,11 +1083,12 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task DevicesClient_ImportAsync_MissingContainerNameInJobParametersThrows()
         {
+            // arrange
             ImportJobProperties badImportJobProperties = new ImportJobProperties
             {
                 OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/")
             };
-            // arrange
+
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
             var mockHttpClient = new Mock<HttpClient>();
@@ -1108,11 +1109,12 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task DevicesClient_ImportAsync_EmptyContainerNameInJobParametersThrows()
         {
+            // arrange
             ImportJobProperties badImportJobProperties = new ImportJobProperties
             {
                 OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/ ")
             };
-            // arrange
+
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
             var mockHttpClient = new Mock<HttpClient>();
@@ -1154,11 +1156,12 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task DevicesClient_ExportAsync_MissingContainerNameInJobParametersThrows()
         {
+            // arrange
             ImportJobProperties badImportJobProperties = new ImportJobProperties
             {
                 OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/")
             };
-            // arrange
+
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
             var mockHttpClient = new Mock<HttpClient>();
@@ -1179,11 +1182,12 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task DevicesClient_ExportAsync_EmptyContainerNameInJobParametersThrows()
         {
+
+            // arrange
             ImportJobProperties badImportJobProperties = new ImportJobProperties
             {
                 OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/ ")
             };
-            // arrange
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
             var mockHttpClient = new Mock<HttpClient>();
