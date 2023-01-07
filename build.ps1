@@ -391,12 +391,6 @@ try
         $testCategory += "&TestCategory!=FaultInjection"
         $testCategory += "&TestCategory!=Flaky"
 
-        # Invalid certificate tests are currently disabled on both Windows and Linux
-        # Windows - Invalid cert tests don't currently work with docker on Windows within pipeline agent setup because of virtual host networking configuration issue
-        # Linux - The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
-        # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
-        $testCategory += "&TestCategory!=InvalidServiceCertificate"
-
         if ($skipIotHubTests)
         {
             $testCategory += "&TestCategory!=IoTHub"
@@ -452,15 +446,14 @@ try
         # Tests categories to include
         $testCategory = "("
         $testCategory += "TestCategory=E2E"
+        # Invalid Service Cert Tests currently work with docker on Linux agent only.
+        # TODO: remove this condition in future docker on windows version when this is working.
+        if (-not(IsWindows)) 
+        {
+            $testCategory += "|"
+            $testCategory += "TestCategory=InvalidServiceCertificate"
+        }
         $testCategory += ")"
-
-        # Tests categories to exclude
-
-        # Invalid certificate tests are currently disabled on both Windows and Linux
-        # Windows - Invalid cert tests don't currently work with docker on Windows within pipeline agent setup because of virtual host networking configuration issue
-        # Linux - The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
-        # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
-        $testCategory += "&TestCategory!=InvalidServiceCertificate"
 
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
