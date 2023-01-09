@@ -293,9 +293,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                     })
                 .ConfigureAwait(false);
 
-            var DirectMethodRequest = new DirectMethodRequest
+            var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
@@ -327,9 +326,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             var payload = new CustomDirectMethodPayload { Grade = "good" };
-            var DirectMethodRequest = new DirectMethodRequest
+            var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -365,9 +363,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             string payload = "test";
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -405,9 +402,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             bool boolean = true;
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(boolean)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -445,9 +441,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             byte[] bytes = new byte[] { 1, 2, 3 };
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(bytes)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -484,10 +479,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                     })
                 .ConfigureAwait(false);
 
-            List<double> list = new List<double>() { 1.0, 2.0, 3.0 };
-            var directMethodRequest = new DirectMethodRequest
+            var list = new List<double>() { 1.0, 2.0, 3.0 };
+            var directMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(list)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -525,9 +519,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             var map = new Dictionary<string, object>() { { "key1", "val1" }, { "key2", 2 } };
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(map)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -562,9 +555,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             var payload = new CustomDirectMethodPayload { Grade = "good" };
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -589,9 +581,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler.Object;
 
             var payload = new CustomDirectMethodPayload { Grade = "good" };
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -629,9 +620,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodName = "TestMethodName";
             var methodBody = new CustomDirectMethodPayload { Grade = "good" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest(methodName)
             {
-                MethodName = methodName,
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -644,8 +634,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce);
             methodCallbackCalled.Should().BeTrue();
-            methodName.Should().Be(actualMethodName);
-            methodBody.Should().BeEquivalentTo(actualMethodBody);
+            actualMethodName.Should().Be(methodName);
+            actualMethodBody.Should().BeEquivalentTo(methodBody);
 
             // arrange
             bool methodCallbackCalled2 = false;
@@ -661,9 +651,8 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var methodBody2 = new CustomDirectMethodPayload { Grade = "bad" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback2).ConfigureAwait(false);
-            directMethodRequest = new DirectMethodRequest
+            directMethodRequest = new DirectMethodRequest(methodName)
             {
-                MethodName = methodName,
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody2)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -676,8 +665,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 x => x.EnableMethodsAsync(It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce);
             methodCallbackCalled2.Should().BeTrue();
-            methodName.Should().Be(actualMethodName2);
-            methodBody2.Should().BeEquivalentTo(actualMethodBody2);
+            actualMethodName2.Should().Be(methodName);
+            actualMethodBody2.Should().BeEquivalentTo(methodBody2);
         }
 
         [TestMethod]
@@ -704,9 +693,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodName = "TestMethodName";
             var methodBody = new CustomDirectMethodPayload { Grade = "good" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
-            var directMethodRequest = new DirectMethodRequest
+            var directMethodRequest = new DirectMethodRequest(methodName)
             {
-                MethodName = methodName,
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -720,15 +708,14 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Times.AtLeastOnce);
 
             methodCallbackCalled.Should().BeTrue();
-            methodName.Should().Be(actualMethodName);
-            methodBody.Should().BeEquivalentTo(actualMethodBody);
+            actualMethodName.Should().Be(methodName);
+            actualMethodBody.Should().BeEquivalentTo(methodBody);
 
             // arrange
             methodCallbackCalled = false;
             await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
-            directMethodRequest = new DirectMethodRequest
+            directMethodRequest = new DirectMethodRequest(methodName)
             {
-                MethodName = methodName,
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -764,12 +751,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
 
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -805,12 +792,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
+            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
             // current status = disabled
 
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -834,13 +821,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler.Object;
             var sender = new object();
             bool handlerCalled = false;
-            ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
+            var connectionStatusInfo = new ConnectionStatusInfo();
+            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
             };
-            deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
+            deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
 
             // current status = disabled
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
@@ -861,7 +848,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task MessageIdDefaultNotSet_SendEventDoesNotSetMessageId()
         {
             // arrange
-            var messageId = Guid.NewGuid().ToString();
+            string messageId = Guid.NewGuid().ToString();
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
@@ -888,7 +875,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task MessageIdDefaultSetToNull_SendEventDoesNotSetMessageId()
         {
             // arrange
-            var messageId = Guid.NewGuid().ToString();
+            string messageId = Guid.NewGuid().ToString();
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
@@ -919,7 +906,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task MessageIdDefaultSetToGuid_SendEventSetMessageIdIfNotSet()
         {
             // arrange
-            var messageId = Guid.NewGuid().ToString();
+            string messageId = Guid.NewGuid().ToString();
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
@@ -950,7 +937,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task MessageIdDefaultNotSet_SendEventBatchDoesNotSetMessageId()
         {
             // arrange
-            var messageId = Guid.NewGuid().ToString();
+            string messageId = Guid.NewGuid().ToString();
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
@@ -977,7 +964,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task MessageIdDefaultSetToNull_SendEventBatchDoesNotSetMessageId()
         {
             // arrange
-            var messageId = Guid.NewGuid().ToString();
+            string messageId = Guid.NewGuid().ToString();
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
@@ -1008,7 +995,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task MessageIdDefaultSetToGuid_SendEventBatchSetMessageIdIfNotSet()
         {
             // arrange
-            var messageId = Guid.NewGuid().ToString();
+            string messageId = Guid.NewGuid().ToString();
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
@@ -1071,7 +1058,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
 
             // assert
-            var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
+            ClientAuthenticationWithTokenRefresh sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
             sasTokenRefresher.Should().BeAssignableTo<ClientAuthenticationWithSharedAccessKeyRefresh>();
 
             // The calculation of the sas token expiration will begin once the ClientAuthenticationWithTokenRefresh object has been initialized.
@@ -1081,11 +1068,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // The initial expiration time calculated is (current UTC time - sas TTL supplied).
             // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas TTL supplied.
 
-            var expectedExpirationTime = startTime.Add(-sasTokenTimeToLive);
+            DateTime expectedExpirationTime = startTime.Add(-sasTokenTimeToLive);
             sasTokenRefresher.ExpiresOnUtc.Should().BeCloseTo(expectedExpirationTime, buffer);
 
             int expectedBufferSeconds = (int)(sasTokenTimeToLive.TotalSeconds * ((float)sasTokenRenewalBuffer / 100));
-            var expectedRefreshTime = expectedExpirationTime.AddSeconds(-expectedBufferSeconds);
+            DateTime expectedRefreshTime = expectedExpirationTime.AddSeconds(-expectedBufferSeconds);
             sasTokenRefresher.RefreshesOnUtc.Should().BeCloseTo(expectedRefreshTime, buffer);
         }
 
@@ -1103,7 +1090,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
 
             // assert
-            var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
+            ClientAuthenticationWithTokenRefresh sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
 
             // The calculation of the sas token expiration will begin once the ClientAuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
@@ -1125,7 +1112,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public void IotHubDeviceClient_InitWithMqttTransportAndModelId_DoesNotThrow(IotHubClientTransportProtocol protocol)
         {
-            IotHubDeviceClientTests.IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(protocol));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(protocol));
         }
 
         [TestMethod]
@@ -1133,13 +1120,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public void IotHubDeviceClient_InitWithAmqpTransportAndModelId_DoesNotThrow(IotHubClientTransportProtocol protocol)
         {
-            IotHubDeviceClientTests.IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(protocol));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(protocol));
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_SendTelemetryAsync_Cancelled_ThrowsOperationCanceledException()
         {
-            //arrange
+            // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             // act
