@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.16.4</Version>
+    <Version>1.16.5</Version>
     <Title>Microsoft Azure IoT Provisioning Service Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
