@@ -233,9 +233,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(typeof(AmqpIotSession), connectionCredentials, nameof(OpenSendingAmqpLinkAsync));
-            }
 
             var amqpLinkSettings = new AmqpLinkSettings
             {

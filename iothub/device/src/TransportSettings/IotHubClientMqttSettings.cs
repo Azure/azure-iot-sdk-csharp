@@ -110,7 +110,6 @@ namespace Microsoft.Azure.Devices.Client
                 WillMessage = WillMessage,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
                 AuthenticationChain = AuthenticationChain,
-
             };
         }
     }
