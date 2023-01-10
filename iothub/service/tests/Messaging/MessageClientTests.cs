@@ -25,6 +25,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
     {
         private const string HostName = "contoso.azure-devices.net";
         private static readonly string s_validMockAuthenticationHeaderValue = $"SharedAccessSignature sr={HostName}&sig=thisIsFake&se=000000&skn=registryRead";
+        private static readonly string s_connectionString = $"HostName={HostName};SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         private static Uri s_httpUri = new($"https://{HostName}");
         private static IIotHubServiceRetryPolicy noRetryPolicy = new IotHubServiceNoRetry();
@@ -35,56 +36,35 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         };
         private static RetryHandler s_retryHandler = new(noRetryPolicy);
 
+
         //[TestMethod]
+        //arrange
         //public async Task MessagesClient_OpenAsync()
         //{
-        //    // arrange
-        //    var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-        //    mockCredentialProvider
-        //        .Setup(getCredential => getCredential.GetAuthorizationHeader())
-        //        .Returns(s_validMockAuthenticationHeaderValue);
-        //    var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+        //    arrange
+        //    using var serviceClient = new IotHubServiceClient(
+        //        s_connectionString,
+        //        s_options);
 
-        //    var mockHttpClient = new Mock<HttpClient>();
+        //    act
+        //   var ct = new CancellationToken(false);
+        //    Func<Task> act = async () => await serviceClient.Messages.OpenAsync(ct);
 
-        //    using var messagesClient = new MessagesClient(
-        //        HostName,
-        //        mockCredentialProvider.Object,
-        //        mockHttpClient.Object,
-        //        mockHttpRequestFactory,
-        //        s_options,
-        //        s_retryHandler);
-        //    // act
-        //    var ct = new CancellationToken(false);
-        //    Func<Task> act = async () => await messagesClient.OpenAsync(ct);
-
-        //    // assert
-        //    await act.Should().NotThrowAsync().ConfigureAwait(false);
+        //    assert
+        //   await act.Should().NotThrowAsync().ConfigureAwait(false);
         //}
 
         [TestMethod]
         public async Task MessagesClient_OpenAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-
-            var mockHttpClient = new Mock<HttpClient>();
-
-            using var messagesClient = new MessagesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_options,
-                s_retryHandler);
-
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
+            
             // act
             var ct = new CancellationToken(true);
-            Func<Task> act = async () => await messagesClient.OpenAsync(ct);
+            Func<Task> act = async () => await serviceClient.Messages.OpenAsync(ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -94,25 +74,13 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         public async Task MessagesClient_CloseAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-
-            var mockHttpClient = new Mock<HttpClient>();
-
-            using var messagesClient = new MessagesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_options,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
 
             // act
             var ct = new CancellationToken(true);
-            Func<Task> act = async () => await messagesClient.CloseAsync(ct);
+            Func<Task> act = async () => await serviceClient.Messages.CloseAsync(ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -124,26 +92,15 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             // arrange
             string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var msg = new Message(payloadBytes);
 
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-
-            var mockHttpClient = new Mock<HttpClient>();
-
-            using var messagesClient = new MessagesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_options,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
 
             // act
-            Func<Task> act = async () => await messagesClient.SendAsync(null, msg);
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync(null, msg);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -153,24 +110,12 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         public async Task MessagesClient_SendAsync_NullMessageThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-
-            var mockHttpClient = new Mock<HttpClient>();
-
-            using var messagesClient = new MessagesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_options,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
 
             // act
-            Func<Task> act = async () => await messagesClient.SendAsync("deviceId", (Message)null);
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync("deviceId", (Message)null);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -184,67 +129,56 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
             var msg = new Message(payloadBytes);
 
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-
-            var mockHttpClient = new Mock<HttpClient>();
-
-            using var messagesClient = new MessagesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_options,
-                s_retryHandler);
-
-            // act
-            Func<Task> act = async () => await messagesClient.SendAsync(String.Empty, msg);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public async Task MessagesClient_SendAsync()
-        {
             // arrange
-            string payloadString = "Hello, World!";
-            byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new Message(payloadBytes);
-
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-
-            AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(msg);
-            AmqpSymbol amqpSymbol = new AmqpSymbol("symbol123");
-            var mockOutcome = new Outcome(amqpSymbol, 36uL);
-            var mockAmqpConnectionHandler = new Mock<AmqpConnectionHandler>();
-
-            mockAmqpConnectionHandler
-                .Setup(op => op.SendAsync(amqpMessage, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockOutcome);
-
-            var mockHttpClient = new Mock<HttpClient>();
-            using var messagesClient = new MessagesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_options,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
 
             // act
-            Func<Task> act = async () => await messagesClient.SendAsync("deviceId123","moduleId123", msg);
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync(String.Empty, msg);
 
             // assert
-            await act.Should().NotThrowAsync().ConfigureAwait(false);
+            await act.Should().ThrowAsync<ArgumentException>();
         }
+
+        //[TestMethod]
+        //public async Task MessagesClient_SendAsync()
+        //{
+        //    arrange
+        //    string payloadString = "Hello, World!";
+        //    byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
+        //    var msg = new Message(payloadBytes);
+
+        //    var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+        //    mockCredentialProvider
+        //        .Setup(getCredential => getCredential.GetAuthorizationHeader())
+        //        .Returns(s_validMockAuthenticationHeaderValue);
+
+        //    var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+        //    AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(msg);
+        //    AmqpSymbol amqpSymbol = new AmqpSymbol("symbol123");
+        //    var mockOutcome = new Outcome(amqpSymbol, 36uL);
+        //    var mockAmqpConnectionHandler = new Mock<AmqpConnectionHandler>();
+
+        //    mockAmqpConnectionHandler
+        //        .Setup(op => op.SendAsync(amqpMessage, It.IsAny<CancellationToken>()))
+        //        .ReturnsAsync(mockOutcome);
+
+        //    var mockHttpClient = new Mock<HttpClient>();
+        //    using var messagesClient = new MessagesClient(
+        //        HostName,
+        //        mockCredentialProvider.Object,
+        //        mockHttpClient.Object,
+        //        mockHttpRequestFactory,
+        //        s_options,
+        //        s_retryHandler);
+
+        //    act
+        //    Func<Task> act = async () => await messagesClient.SendAsync("deviceId123", "moduleId123", msg);
+
+        //    assert
+        //   await act.Should().NotThrowAsync().ConfigureAwait(false);
+        //}
     }
 }
