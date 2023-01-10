@@ -276,12 +276,10 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (taskResult.IsCompleted)
             {
+                // If the task is canceled, this will throw a TaskCanceledException, which we expect to bubble up to the user
                 args.BytesTransfered = taskResult.Result;
+
                 args.CompletedSynchronously = ((IAsyncResult)taskResult).CompletedSynchronously;
-                return true;
-            }
-            else if (taskResult.IsCanceled)
-            {
                 return true;
             }
 
