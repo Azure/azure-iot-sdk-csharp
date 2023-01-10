@@ -75,6 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
         private ProvisioningTransportHandler GetTransportHandler()
         {
+            Console.WriteLine($"Using transport type {_parameters.TransportType}.");
             return _parameters.TransportType switch
             {
                 TransportType.Mqtt => new ProvisioningTransportHandlerMqtt(),
