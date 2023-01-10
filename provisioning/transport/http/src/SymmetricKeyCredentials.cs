@@ -32,6 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string sasToken = ProvisioningSasBuilder.BuildSasSignature(
                 Registration,
                 _symmetricKey,
+                // These values may come in encoded, so decode them for the SAS token
                 $"{WebUtility.UrlDecode(segments[0])}/{WebUtility.UrlDecode(segments[1])}/{WebUtility.UrlDecode(segments[2])}",
                 TimeSpan.FromDays(1));
             SetAuthorizationHeader(request, sasToken);
