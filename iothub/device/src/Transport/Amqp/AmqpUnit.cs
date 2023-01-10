@@ -171,11 +171,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                     _amqpIotSession.Closed += OnSessionDisconnected;
 
-                    _messageSendingLink = await _amqpIotSession.OpenTelemetrySenderLinkAsync(
-                        _connectionCredentials,
-                        _additionalClientInformation,
-                        _amqpSettings,
-                        cancellationToken).ConfigureAwait(false);
+                    _messageSendingLink = await _amqpIotSession
+                        .OpenTelemetrySenderLinkAsync(
+                            _connectionCredentials,
+                            _additionalClientInformation,
+                            _amqpSettings,
+                            cancellationToken)
+                        .ConfigureAwait(false);
 
                     _messageSendingLink.Closed += (obj, arg) =>
                     {
@@ -191,8 +193,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     throw new IotHubClientException("Device is now offline.");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Exception observed when establishing session {ex}", nameof(EnsureSessionIsOpenAsync));
+
                 await CleanupAsync().ConfigureAwait(false);
                 throw;
             }
