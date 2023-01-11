@@ -412,14 +412,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = null;
             if (enrollmentType == EnrollmentType.Group)
             {
-                if (attestationType == AttestationMechanismType.X509)
-                {
-                    groupId = Configuration.Provisioning.X509GroupEnrollmentName;
-                }
-                else
-                {
-                    groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-                }
+                groupId = attestationType == AttestationMechanismType.X509
+                    ? Configuration.Provisioning.X509GroupEnrollmentName
+                    : $"{_idPrefix}{AttestationTypeToString(attestationType)}-{Guid.NewGuid()}";
             }
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType);
             using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
@@ -771,7 +766,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");
 
-            string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            // Using a colon tests the encoding/decoding code path as it is used in the URL for registration and is an invalid character in a URI path which requires encoding
+            char separator = attestationType == AttestationMechanismType.SymmetricKey
+                ? ':'
+                : '-';
+            string registrationId = $"{AttestationTypeToString(attestationType)}{separator}{Guid.NewGuid()}";
+
             var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
 
             switch (attestationType)
@@ -868,14 +868,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 .ConfigureAwait(false);
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
                             var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
-                            string registrationIdSymmetricKey = _idPrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;
 
-                            string primaryKeyIndividual = ComputeDerivedSymmetricKey(Convert.FromBase64String(primaryKeyEnrollmentGroup), registrationIdSymmetricKey);
-                            string secondaryKeyIndividual = ComputeDerivedSymmetricKey(Convert.FromBase64String(secondaryKeyEnrollmentGroup), registrationIdSymmetricKey);
+                            string primaryKeyIndividual = ComputeDerivedSymmetricKey(Convert.FromBase64String(primaryKeyEnrollmentGroup), registrationId);
+                            string secondaryKeyIndividual = ComputeDerivedSymmetricKey(Convert.FromBase64String(secondaryKeyEnrollmentGroup), registrationId);
 
-                            return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKeyIndividual, secondaryKeyIndividual);
+                            return new SecurityProviderSymmetricKey(registrationId, primaryKeyIndividual, secondaryKeyIndividual);
 
                         case EnrollmentType.Individual:
                             IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollmentAsync(
@@ -892,7 +891,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
                             symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;
 
-                            registrationIdSymmetricKey = symmetricKeyEnrollment.RegistrationId;
+                            string registrationIdSymmetricKey = symmetricKeyEnrollment.RegistrationId;
                             string primaryKey = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKey = symmetricKeyAttestation.SecondaryKey;
                             return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKey, secondaryKey);
