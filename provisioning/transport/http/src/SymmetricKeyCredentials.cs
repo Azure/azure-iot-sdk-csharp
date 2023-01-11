@@ -42,7 +42,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private static void SetAuthorizationHeader(HttpRequestMessage request, string sasToken)
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue(SasHeaderName, sasToken.Substring(SasHeaderName.Length + 1));
+            request.Headers.Authorization = new AuthenticationHeaderValue(
+                SasHeaderName,
+                sasToken.Substring(SasHeaderName.Length + 1));
         }
     }
 }
