@@ -31,7 +31,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             msg.Payload.Length.Should().Be(0);
         }
 
-
         [TestMethod]
         public void Message_DefaultPayload()
         {

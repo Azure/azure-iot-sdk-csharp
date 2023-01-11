@@ -36,24 +36,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         };
         private static RetryHandler s_retryHandler = new(noRetryPolicy);
 
-
-        //[TestMethod]
-        //arrange
-        //public async Task MessagesClient_OpenAsync()
-        //{
-        //    arrange
-        //    using var serviceClient = new IotHubServiceClient(
-        //        s_connectionString,
-        //        s_options);
-
-        //    act
-        //   var ct = new CancellationToken(false);
-        //    Func<Task> act = async () => await serviceClient.Messages.OpenAsync(ct);
-
-        //    assert
-        //   await act.Should().NotThrowAsync().ConfigureAwait(false);
-        //}
-
         [TestMethod]
         public async Task MessagesClient_OpenAsync_Cancelled_ThrowsOperationCanceledException()
         {
@@ -141,44 +123,73 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             await act.Should().ThrowAsync<ArgumentException>();
         }
 
-        //[TestMethod]
-        //public async Task MessagesClient_SendAsync()
-        //{
-        //    arrange
-        //    string payloadString = "Hello, World!";
-        //    byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-        //    var msg = new Message(payloadBytes);
+        [TestMethod]
+        public async Task MessageClient_SendAsync_WithoutExplicitOpenAsync_ThrowsIotHubServiceException()
+        {
+            // arrange
+            string payloadString = "Hello, World!";
+            byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
+            var msg = new Message(payloadBytes);
 
-        //    var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-        //    mockCredentialProvider
-        //        .Setup(getCredential => getCredential.GetAuthorizationHeader())
-        //        .Returns(s_validMockAuthenticationHeaderValue);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
 
-        //    var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            // act
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync("deviceId123", msg);
 
-        //    AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(msg);
-        //    AmqpSymbol amqpSymbol = new AmqpSymbol("symbol123");
-        //    var mockOutcome = new Outcome(amqpSymbol, 36uL);
-        //    var mockAmqpConnectionHandler = new Mock<AmqpConnectionHandler>();
+            // assert
+            await act.Should().ThrowAsync<IotHubServiceException>();
+        }
 
-        //    mockAmqpConnectionHandler
-        //        .Setup(op => op.SendAsync(amqpMessage, It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync(mockOutcome);
+        [TestMethod]
+        public async Task MessageClient_PurgeMessageQueueAsync_WithoutExplicitOpenAsync_ThrowsIotHubServiceException()
+        {
+            // arrange
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
 
-        //    var mockHttpClient = new Mock<HttpClient>();
-        //    using var messagesClient = new MessagesClient(
-        //        HostName,
-        //        mockCredentialProvider.Object,
-        //        mockHttpClient.Object,
-        //        mockHttpRequestFactory,
-        //        s_options,
-        //        s_retryHandler);
+            // act
+            Func<Task> act = async () => await serviceClient.Messages.PurgeMessageQueueAsync("deviceId123");
 
-        //    act
-        //    Func<Task> act = async () => await messagesClient.SendAsync("deviceId123", "moduleId123", msg);
+            // assert
+            await act.Should().ThrowAsync<IotHubServiceException>();
+        }
 
-        //    assert
-        //   await act.Should().NotThrowAsync().ConfigureAwait(false);
-        //}
+        [TestMethod]
+        public async Task MessageClient_PurgeMessageQueueAsync_NullDeviceIdThrows()
+        {
+            // arrange
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
+
+            // act
+            Func<Task> act = async () => await serviceClient.Messages.PurgeMessageQueueAsync(null);
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public async Task MessageClient_PurgeMessageQueueAsync_EmptyDeviceIdThrows()
+        {
+            // arrange
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
+
+            // act
+            Func<Task> act = async () => await serviceClient.Messages.PurgeMessageQueueAsync(String.Empty);
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+
+        private void OnConnectionClosed(object sender, EventArgs e)
+        {
+
+        }
     }
 }
