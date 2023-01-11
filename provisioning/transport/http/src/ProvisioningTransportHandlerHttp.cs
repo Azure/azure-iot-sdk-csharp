@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportHandlerHttp : ProvisioningTransportHandler
     {
-        private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
         private const int DefaultHttpsPort = 443;
+        private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerHttp class.

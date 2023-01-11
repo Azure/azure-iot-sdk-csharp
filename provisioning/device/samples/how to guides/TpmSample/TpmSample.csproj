@@ -3,7 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <RootDir>$(MSBuildProjectDirectory)\..\..\..\..</RootDir>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
