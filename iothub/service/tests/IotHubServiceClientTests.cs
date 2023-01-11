@@ -3,10 +3,12 @@
 
 using System;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -38,25 +40,49 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void IotHubServiceClient_CreateWithAAD()
         {
+            // arrange
             string hostName = "acme.azure-devices.net";
+            var tokenCrediential = new TestTokenCredential(new DateTimeOffset(DateTime.Now + TimeSpan.FromHours(1)));
+
+            // act
+            using var serviceClient = new IotHubServiceClient(hostName, tokenCrediential);
+
+            // assert
+            serviceClient.Devices.Should().NotBeNull();
+            serviceClient.Modules.Should().NotBeNull();
+            serviceClient.Configurations.Should().NotBeNull();
+            serviceClient.DirectMethods.Should().NotBeNull();
+            serviceClient.Query.Should().NotBeNull();
+            serviceClient.ScheduledJobs.Should().NotBeNull();
+            serviceClient.DigitalTwins.Should().NotBeNull();
+            serviceClient.Twins.Should().NotBeNull();
+            serviceClient.MessageFeedback.Should().NotBeNull();
+            serviceClient.FileUploadNotifications.Should().NotBeNull();
+            serviceClient.Messages.Should().NotBeNull();
         }
 
         [TestMethod]
         public void IotHubServiceClient_CreateWithSasToken()
         {
+            // arrange
+            string hostName = "acme.azure-devices.net";
+            var sasCredential = new AzureSasCredential("test");
 
-        }
+            // act
+            using var serviceClient = new IotHubServiceClient(hostName, sasCredential);
 
-        [TestMethod]
-        public void IotHubServiceClient_InitializeSubclients()
-        {
-
-        }
-
-        [TestMethod]
-        public void IotHubServiceClient_Dispose()
-        {
-
+            // assert
+            serviceClient.Devices.Should().NotBeNull();
+            serviceClient.Modules.Should().NotBeNull();
+            serviceClient.Configurations.Should().NotBeNull();
+            serviceClient.DirectMethods.Should().NotBeNull();
+            serviceClient.Query.Should().NotBeNull();
+            serviceClient.ScheduledJobs.Should().NotBeNull();
+            serviceClient.DigitalTwins.Should().NotBeNull();
+            serviceClient.Twins.Should().NotBeNull();
+            serviceClient.MessageFeedback.Should().NotBeNull();
+            serviceClient.FileUploadNotifications.Should().NotBeNull();
+            serviceClient.Messages.Should().NotBeNull();
         }
     }
 }
