@@ -46,5 +46,20 @@ namespace Microsoft.Azure.Devices.Tests
             retryPolicy.ShouldRetry(retryCount, new IotHubServiceException("") { IsTransient = true }, out TimeSpan retryInterval);
             retryInterval.Should().BeCloseTo(expected, TimeSpan.FromMilliseconds(500));
         }
+
+        [TestMethod]
+        public void FixedDelayRetryPolicy_ShouldRetry_IsFalse()
+        {
+            // arrange
+            uint retryCount = 10;
+            var expected = TimeSpan.FromSeconds(10);
+            var retryPolicy = new IotHubServiceFixedDelayRetryPolicy(0, expected);
+
+            // act
+            bool shouldRetry = retryPolicy.ShouldRetry(retryCount, new Exception(), out TimeSpan retryDelay);
+
+            // assert
+            shouldRetry.Should().BeFalse();
+        }
     }
 }
