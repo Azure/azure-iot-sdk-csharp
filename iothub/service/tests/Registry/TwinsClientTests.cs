@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var mockHttpResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult())
+                Content = HttpMessageHelper.SerializePayload(goodTwin2)
             };
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient

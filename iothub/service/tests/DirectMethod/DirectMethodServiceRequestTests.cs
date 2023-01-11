@@ -45,13 +45,12 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         {
             // arrange
             var expectedTimeout = TimeSpan.FromSeconds(1);
-            var dcmr = new DirectMethodServiceRequest("123")
+            var dcmr = new DirectMethodServiceRequest("setTelemetryInterval")
             {
                 ConnectionTimeout = expectedTimeout,
                 ResponseTimeout = expectedTimeout,
                 Payload = "test"
             };
-
 
             // act + assert
             dcmr.ConnectionTimeout.Should().Be(expectedTimeout);

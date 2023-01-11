@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         }
 
         [TestMethod]
-        public void IotHubConnectionStringBuildTokenTest()
+        public void IotHubConnectionStringBuildToken_Succeeds()
         {
             string cs = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
             IotHubConnectionString hubCs = IotHubConnectionStringParser.Parse(cs);
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         }
 
         [TestMethod]
-        public async Task IotHubConnectionStringGetTokenAysncTest()
+        public async Task IotHubConnectionStringGetTokenAysnc_Succeeds()
         {
             string cs = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
             IotHubConnectionString hubCs = IotHubConnectionStringParser.Parse(cs);

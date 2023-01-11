@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         [TestMethod]
         public void DirectMethodClientResponse_Get_PayloadAsString()
         {
-
+            // arrage
             const int expectedStatus = 200;
             DateTimeOffset expectedPayload = DateTimeOffset.UtcNow;
             var source = new DirectMethodClientResponse
@@ -28,11 +28,11 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             };
 
             // act
-            string payloadAsStringDcmr = source.PayloadAsString;
+            string payloadAsStringDmcr = source.PayloadAsString;
             string payloadAsStringManualConvert = source.JsonPayload.ToString();
 
             // assert
-            payloadAsStringDcmr.Should().Be(payloadAsStringManualConvert);
+            payloadAsStringDmcr.Should().Be(payloadAsStringManualConvert);
         }
 
         [TestMethod]
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         [TestMethod]
         public void DirectMethodClientResponse_Payload_Null()
         {
-            //arrange
+            // arrange
             const int expectedStatus = 200;
             var source = new DirectMethodClientResponse
             {
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         [TestMethod]
         public void DirectMethodClientResponse_Payload_ThrowsException()
         {
-            //arrange
+            // arrange
             const int expectedStatus = 200;
             var source = new DirectMethodClientResponse
             {
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             };
 
             // act and assert
-            // deliberately throw serialzation exception
+            // deliberately throw serialzation exception to ensure TryGetPayload() returns false
             source.TryGetPayload(out string[] _).Should().BeFalse();
         }
 
