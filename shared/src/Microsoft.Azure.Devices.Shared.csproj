@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.27.2</Version>
+    <Version>1.27.3</Version>
     <Title>Microsoft Azure IoT Devices Shared</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
