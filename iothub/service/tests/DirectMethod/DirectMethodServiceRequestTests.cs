@@ -39,5 +39,40 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             // assert
             dmcr.MethodName.Should().Be(expected);
         }
+
+        [TestMethod]
+        public void DirectMethodServiceRequest_ConnectionResponseTimeout()
+        {
+            // arrange
+            var expectedTimeout = TimeSpan.FromSeconds(1);
+            var dcmr = new DirectMethodServiceRequest("setTelemetryInterval")
+            {
+                ConnectionTimeout = expectedTimeout,
+                ResponseTimeout = expectedTimeout,
+                Payload = "test"
+            };
+
+            // act + assert
+            dcmr.ConnectionTimeout.Should().Be(expectedTimeout);
+            dcmr.ResponseTimeout.Should().Be(expectedTimeout);
+            dcmr.Payload.Should().Be("test");
+
+            dcmr.ResponseTimeoutInSeconds.Should().Be(1);
+            dcmr.ConnectionTimeoutInSeconds.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void DirectMethodServiceRequest_ConnectionResponseTimeout_ShouldBeNull()
+        {
+            // arrange
+            var expectedTimeout = TimeSpan.FromSeconds(1);
+            var dcmr = new DirectMethodServiceRequest("123")
+            {
+                Payload = "test"
+            };
+
+            dcmr.ResponseTimeoutInSeconds.Should().Be(null);
+            dcmr.ConnectionTimeoutInSeconds.Should().Be(null);
+        }
     }
 }

@@ -55,5 +55,26 @@ namespace Microsoft.Azure.Devices.Tests
             // assert
             delay.TotalMilliseconds.Should().BeApproximately(Math.Pow(2, exponent), 100);
         }
+
+        [TestMethod]
+        public void ExponentialBackoffRetryPolicy_ShouldRetry_UseJitter()
+        {
+            // arrange
+            const uint MaxRetryAttempts = 70;
+            const uint currentRetryCount = 50;
+
+            var exponentialBackoffJitter = new IotHubServiceExponentialBackoffRetryPolicy(MaxRetryAttempts, TimeSpan.FromDays(365), true);
+            var exponentialBackoffStandard = new IotHubServiceExponentialBackoffRetryPolicy(MaxRetryAttempts, TimeSpan.FromDays(365), false);
+
+            // act
+            exponentialBackoffJitter.ShouldRetry(currentRetryCount, new IotHubServiceException(""), out TimeSpan jitterDelay);
+            exponentialBackoffStandard.ShouldRetry(currentRetryCount, new IotHubServiceException(""), out TimeSpan regularDelay);
+
+            // assert
+            double min = regularDelay.TotalMilliseconds * 0.95d;
+            double max = regularDelay.TotalMilliseconds * 1.05d;
+
+            jitterDelay.TotalMilliseconds.Should().BeInRange(min, max);
+        }
     }
 }
