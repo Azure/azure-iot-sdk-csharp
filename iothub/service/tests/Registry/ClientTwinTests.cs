@@ -294,6 +294,29 @@ namespace Microsoft.Azure.Devices.Tests
             maxTempSinceLastRebootMetadata.LastUpdatedOnUtc.Should().Be(reportedPropertyLastUpdated);
         }
 
+        [TestMethod]
+        public void ClientTwin_Properties_ContainsTest()
+        {
+            // arrange
+            const string reportedStringKey = nameof(reportedStringKey);
+            const string reportedStringValue = nameof(reportedStringValue);
+     
+            var twin = new ClientTwin
+            {
+                Properties =
+                {
+                    Reported =
+                    {
+                        [reportedStringKey] = reportedStringValue,
+                    },
+                }
+            };
+
+            ClientTwinProperties twinPropertiesReported = twin.Properties.Reported;
+            bool contains = twinPropertiesReported.Contains(nameof(reportedStringKey));
+            contains.Should().BeTrue();
+        }
+
         private class CustomType
         {
             [JsonProperty("customInt")]
