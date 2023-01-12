@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
@@ -277,12 +276,10 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (taskResult.IsCompleted)
             {
+                // If the task is canceled, this will throw a TaskCanceledException, which we expect to bubble up to the user
                 args.BytesTransfered = taskResult.Result;
+
                 args.CompletedSynchronously = ((IAsyncResult)taskResult).CompletedSynchronously;
-                return true;
-            }
-            else if (taskResult.IsCanceled) // This should not happen since TaskCanceledException is handled in ReadAsyncCore.
-            {
                 return true;
             }
 

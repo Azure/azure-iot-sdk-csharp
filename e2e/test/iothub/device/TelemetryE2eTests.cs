@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Mqtt(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
-            await SendSingleMessage(testDeviceType, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
+            await SendSingleMessageAsync(testDeviceType, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 Proxy = new WebProxy(s_proxyServerAddress),
             };
 
-            await SendSingleMessage(TestDeviceType.X509, mqttTransportSettings).ConfigureAwait(false);
+            await SendSingleMessageAsync(TestDeviceType.X509, mqttTransportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 IdleTimeout = TimeSpan.FromMinutes(2),
             };
-            await SendSingleMessage(testDeviceType, amqpTransportSettings).ConfigureAwait(false);
+            await SendSingleMessageAsync(testDeviceType, amqpTransportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 Proxy = new WebProxy(s_proxyServerAddress),
             };
 
-            await SendSingleMessage(TestDeviceType.X509, amqpTransportSettings).ConfigureAwait(false);
+            await SendSingleMessageAsync(TestDeviceType.X509, amqpTransportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSendSingleLargeMessageAsync_Amqp(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
             var transportSettings = new IotHubClientAmqpSettings(protocol);
-            await SendSingleMessage(testDeviceType, transportSettings, LargeMessageSizeInBytes);
+            await SendSingleMessageAsync(testDeviceType, transportSettings, LargeMessageSizeInBytes);
         }
 
         [DataTestMethod]
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSendSingleLargeMessageAsync_Mqtt(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
             var transportSettings = new IotHubClientMqttSettings(protocol);
-            await SendSingleMessage(testDeviceType, transportSettings, LargeMessageSizeInBytes);
+            await SendSingleMessageAsync(testDeviceType, transportSettings, LargeMessageSizeInBytes);
         }
 
         // We cannot test this over MQTT since MQTT will disconnect the client if it receives an invalid payload.
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSendSingleOverlyLargeMessageAsync_Amqp(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
             var transportSettings = new IotHubClientAmqpSettings(protocol);
-            Func<Task> actionAsync = async () => await SendSingleMessage(testDeviceType, transportSettings, OverlyExceedAllowedMessageSizeInBytes);
+            Func<Task> actionAsync = async () => await SendSingleMessageAsync(testDeviceType, transportSettings, OverlyExceedAllowedMessageSizeInBytes);
             await actionAsync
                 .Should()
                 .ThrowAsync<IotHubClientException>()
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await OpenCloseOpenThenSendSingleMessage(TestDeviceType.Sasl, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
         }
 
-        private async Task SendSingleMessage(TestDeviceType type, IotHubClientTransportSettings transportSettings, int messageSize = 0)
+        private async Task SendSingleMessageAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings, int messageSize = 0)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);

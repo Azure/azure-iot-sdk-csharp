@@ -6,7 +6,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Test
+namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -21,32 +21,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             $"  \"errorCode\": {SampleErrorCode}, " +
             $"  \"errorStatus\": \"{SampleErrorStatus}\" " +
             "}";
-
-        [TestMethod]
-        public void BulkEnrollmentOperationResultConstructorThrowsOnInvalidParameters()
-        {
-            // arrange
-            string nonRegistrationId =
-                "{" +
-                "  \"isSuccessful\": true, \"errors\": [" +
-                "    {" +
-                $"      \"errorCode\": {SampleErrorCode}" +
-                "    }" +
-                "  ]" +
-                "}";
-
-            string nonStatus =
-                "{" +
-                $"  \"errors\": [ {s_sampleValidErrorJson} ] " +
-                "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(nonRegistrationId);
-            act.Should().Throw<JsonSerializationException>();
-
-            act = () => JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(nonStatus);
-            act.Should().Throw<JsonSerializationException>();
-        }
 
         [TestMethod]
         public void BulkEnrollmentOperationResultConstructorSucceed()

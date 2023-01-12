@@ -258,10 +258,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 using var ms = new MemoryStream();
                 amqpMessage.BodyStream.CopyTo(ms);
-                return new DirectMethodRequest
+                return new DirectMethodRequest(methodName)
                 {
                     PayloadConvention = payloadConvention,
-                    MethodName = methodName,
                     Payload = ms.ToArray(),
                     RequestId = methodRequestId,
                 };
@@ -271,15 +270,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the Method instance's properties to the AmqpMessage instance.
         /// </summary>
-        internal static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, DirectMethodResponse DirectMethodResponse)
+        internal static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, DirectMethodResponse directMethodResponse)
         {
-            Debug.Assert(DirectMethodResponse.RequestId != null, "Request Id is missing in the methodResponse.");
+            Debug.Assert(directMethodResponse.RequestId != null, "Request Id is missing in the methodResponse.");
 
-            amqpMessage.Properties.CorrelationId = new Guid(DirectMethodResponse.RequestId);
+            amqpMessage.Properties.CorrelationId = new Guid(directMethodResponse.RequestId);
 
             amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
-            amqpMessage.ApplicationProperties.Map[Status] = DirectMethodResponse.Status;
+            amqpMessage.ApplicationProperties.Map[Status] = directMethodResponse.Status;
         }
 
         #endregion AmqpMessage <--> Methods

@@ -16,21 +16,30 @@ namespace Microsoft.Azure.Devices.Client
     public class DirectMethodRequest
     {
         /// <summary>
+        /// For serialization.
+        /// </summary>
+        internal DirectMethodRequest()
+        {
+        }
+
+        /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
+        /// <param name="methodName">The method name to invoke.</param>
         /// <remarks>
         /// A direct method request can only be made by the service or a module;
         /// a device client app will not need to instantiate this class.
         /// </remarks>
-        public DirectMethodRequest()
+        public DirectMethodRequest(string methodName)
         {
+            MethodName = methodName;
         }
 
         /// <summary>
         /// The method name to invoke.
         /// </summary>
-        [JsonProperty("methodName", Required = Required.Always)]
-        public string MethodName { get; set; }
+        [JsonProperty("methodName")]
+        public string MethodName { get; private set; }
 
         /// <summary>
         /// The amount of time given to the service to connect to the device.
@@ -136,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string GetPayloadAsJsonString()
         {
-            return Payload.Length == 0
+            return Payload == null || Payload.Length == 0
                 ? null
                 : PayloadConvention.PayloadEncoder.ContentEncoding.GetString(Payload);
         }
