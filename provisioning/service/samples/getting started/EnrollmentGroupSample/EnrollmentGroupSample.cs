@@ -52,7 +52,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Console.WriteLine($"\nCreating a query for registrations within group '{group.EnrollmentGroupId}'...");
             using Query registrationQuery = _provisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(querySpecification, group.EnrollmentGroupId);
             Console.WriteLine($"\nQuerying the next registrations within group '{group.EnrollmentGroupId}'...");
-            while (registrationQuery.HasNext()) {
+            while (registrationQuery.HasNext())
+            {
                 QueryResult registrationQueryResult = await registrationQuery.NextAsync();
                 Console.WriteLine(registrationQueryResult.ToString());
             }
