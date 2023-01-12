@@ -116,5 +116,21 @@ namespace Microsoft.Azure.Devices.Tests
                 ex.Message.Should().Be($"There is no expiration time on {nameof(AzureSasCredential)} signature.");
             }
         }
+
+        [TestMethod]
+        public void TestCbsTokenGeneration_GetAuthorizationHeader()
+        {
+            // arrange
+            string token = string.Format(
+                CultureInfo.InvariantCulture,
+                "SharedAccessSignature sr={0}&sig={1}",
+                WebUtility.UrlEncode(_hostName),
+                WebUtility.UrlEncode("signature"));
+
+            var azureSasCredential = new AzureSasCredential(token);
+            var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
+
+            iotHubSasCredentialProperties.GetAuthorizationHeader().Should().Be("SharedAccessSignature sr=myiothub.azure-devices.net&sig=signature");
+        }
     }
 }
