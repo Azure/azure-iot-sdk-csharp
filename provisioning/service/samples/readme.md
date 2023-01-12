@@ -4,7 +4,7 @@
 
 - [Group certificate verification][group-cert-sample] sample
 - [Bulk operation][bulk-op-sample] sample
-- [Enrollment][enrollment-sample] sample
+- [Individual enrollment][enrollment-sample] sample
 - [Enrollment group][enrollment-group-sample] sample
 - [Clean up enrollments][clean-up-enrollments-sample] sample
 

@@ -2,14 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 using CommandLine;
-using EnrollmentSample;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class Program
     {
-        public static int Main(string[] args)
+        public static async Task Main(string[] args)
         {
             // Parse application parameters
             Parameters parameters = null;
@@ -30,11 +30,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             }
 
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString);
-            var sample = new EnrollmentSample(provisioningServiceClient);
-            sample.RunSampleAsync().GetAwaiter().GetResult();
+            var sample = new IndividualEnrollmentSample(provisioningServiceClient);
+            await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");
-            return 0;
         }
     }
 }

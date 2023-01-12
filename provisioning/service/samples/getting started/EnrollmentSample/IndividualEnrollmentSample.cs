@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
-    internal class EnrollmentSample
+    internal class IndividualEnrollmentSample
     {
         private const string RegistrationId = "myvalid-registratioid-csharp";
         private const string TpmEndorsementKey =
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
-        public EnrollmentSample(ProvisioningServiceClient provisioningServiceClient)
+        public IndividualEnrollmentSample(ProvisioningServiceClient provisioningServiceClient)
         {
             _provisioningServiceClient = provisioningServiceClient;
         }
