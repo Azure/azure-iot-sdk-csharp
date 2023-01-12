@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             else
             {
-                writer.WriteValue(eTag.ToString("H"));
+                writer.WriteValue(eTag.ToString());
             }
         }
     }

@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices
             {
                 // "Perform this operation only if the entity is unchanged"
                 // Sends the If-Match header with a value of the ETag.
-                string escapedETag = EscapeETag(eTag.ToString());
+                string escapedETag = eTag.ToString("H");
                 requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag, true));
             }
             else
@@ -101,27 +101,6 @@ namespace Microsoft.Azure.Devices
                 // Sends the If-Match header with a value of "*"
                 requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(s_eTagForce, true));
             }
-        }
-
-        // ETag values other than "*" need to be wrapped in escaped quotes if they are not
-        // already.
-        private static string EscapeETag(string eTag)
-        {
-            var escapedETagBuilder = new StringBuilder();
-
-            if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
-            {
-                escapedETagBuilder.Append('"');
-            }
-
-            escapedETagBuilder.Append(eTag);
-
-            if (!eTag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-            {
-                escapedETagBuilder.Append('"');
-            }
-
-            return escapedETagBuilder.ToString();
         }
     }
 }
