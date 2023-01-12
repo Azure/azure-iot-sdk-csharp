@@ -107,14 +107,14 @@ jobs:
           script: 'choco install dotnetcore-2.1-sdk'
       
       - task: CmdLine@2
-          displayName: 'Install .NET 4.7.2'
-          inputs:
-            script: 'choco install netfx-4.7.2-devpack'
+        displayName: 'Install .NET 4.7.2'
+        inputs:
+          script: 'choco install netfx-4.7.2-devpack'
 
       - task: CmdLine@2
-          displayName: 'Install .NET 4.5.1'
-          inputs:
-            script: 'choco install dotnet4.5.1'
+        displayName: 'Install .NET 4.5.1'
+        inputs:
+          script: 'choco install dotnet4.5.1'
 
       - task: UseDotNet@2
         displayName: 'Use .NET core SDK 2.x'
