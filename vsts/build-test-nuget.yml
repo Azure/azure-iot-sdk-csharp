@@ -124,10 +124,10 @@ jobs:
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
  
-     - script: |
-         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-         sn -Vr *,31bf3856ad364e35
-       displayName: 'Disable strong name validation'
+      - script: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
+          sn -Vr *,31bf3856ad364e35
+        displayName: 'Disable strong name validation'
 
       - script: |
           choco install -y squid
