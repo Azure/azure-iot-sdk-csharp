@@ -2,16 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -41,7 +37,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
-            
+
             // act
             var ct = new CancellationToken(true);
             Func<Task> act = async () => await serviceClient.Messages.OpenAsync(ct);
@@ -269,6 +265,53 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>();
+        }
+
+        [TestMethod]
+        public async Task MessageClient_PurgeMessage()
+        {
+            // arrange
+            var deviceId = "deviceId123";
+            var totalMessagesPurged = 1;
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            var purgeMessageQueueResultToReturn = new PurgeMessageQueueResult
+            {
+                DeviceId = deviceId,
+                TotalMessagesPurged = totalMessagesPurged
+            };
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                Content = HttpMessageHelper.SerializePayload(purgeMessageQueueResultToReturn),
+                StatusCode = HttpStatusCode.OK,
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            using var messageClient = new MessagesClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_options,
+                s_retryHandler);
+
+            // act
+            PurgeMessageQueueResult result = await messageClient.PurgeMessageQueueAsync(deviceId);
+
+            // assert
+            result.DeviceId.Should().Be(deviceId);
+            result.TotalMessagesPurged.Should().Be(totalMessagesPurged);
         }
     }
 }

@@ -19,29 +19,25 @@ namespace Microsoft.Azure.Devices.Tests.Registry
     {
         private const string HostName = "contoso.azure-devices.net";
         private static readonly string s_validMockAuthenticationHeaderValue = $"SharedAccessSignature sr={HostName}&sig=thisIsFake&se=000000&skn=registryRead";
-        
+        private static readonly string s_connectionString = $"HostName={HostName};SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
+
         private static readonly Uri s_httpUri = new($"https://{HostName}");
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
+        private static IotHubServiceClientOptions s_options = new IotHubServiceClientOptions
+        {
+            Protocol = IotHubTransportProtocol.Tcp,
+            RetryPolicy = new IotHubServiceNoRetry()
+        };
 
         [TestMethod]
         public async Task ModulesClient_CreateAsync_NullModuleThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.CreateAsync((Module)null).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.CreateAsync((Module)null).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -89,21 +85,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_GetAsync_NullDeviceIdThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.GetAsync(null, "moduleId").ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync(null, "moduleId").ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -113,21 +99,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_GetAsync_NullModuleIdThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.GetAsync("deviceId", null).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync("deviceId", null).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -137,21 +113,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_GetAsync_EmptyDeviceIdThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.GetAsync(String.Empty, "moduleId").ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync(String.Empty, "moduleId").ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
@@ -161,21 +127,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_GetAsync_EmptyModuleIdThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.GetAsync("deviceId", String.Empty).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync("deviceId", String.Empty).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
@@ -227,21 +183,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_SetAsync_NullModuleThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.SetAsync((Module)null).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.SetAsync((Module)null).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -296,21 +242,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_DeleteAsync_NullDeviceIdThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.DeleteAsync(null, "moduleId").ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.DeleteAsync(null, "moduleId").ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -320,21 +256,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_DeleteAsync_NullModuleIdThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.DeleteAsync("deviceId", null).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.DeleteAsync("deviceId", null).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -344,21 +270,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_DeleteAsync_EmptyDeviceIdThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.GetAsync(String.Empty, "moduleId").ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync(String.Empty, "moduleId").ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
@@ -368,21 +284,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_DeleteAsync_EmptyModuleIdThrows()
         {
             // arrange
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
-
-            var modulesClient = new ModulesClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
             // act
-            Func<Task> act = async () => await modulesClient.GetAsync("deviceId", String.Empty).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync("deviceId", String.Empty).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
@@ -424,6 +330,5 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             // assert
             await act.Should().NotThrowAsync().ConfigureAwait(false);
         }
-
     }
 }

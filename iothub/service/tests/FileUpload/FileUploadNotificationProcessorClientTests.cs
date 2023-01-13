@@ -81,5 +81,28 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
         }
+
+
+        [TestMethod]
+        public async Task FileUploadNotificationProcessorClient_OpenAsync()
+        {
+            // arrange
+            using var serviceClient = new IotHubServiceClient(
+                s_connectionString,
+                s_options);
+
+            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            {
+                return AcknowledgementType.Abandon;
+            };
+
+            serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+            // act
+            var ct = new CancellationToken(true);
+            Func<Task> act = async () => await serviceClient.FileUploadNotifications.CloseAsync(ct);
+
+            // assert
+            await act.Should().ThrowAsync<OperationCanceledException>();
+        }
     }
 }
