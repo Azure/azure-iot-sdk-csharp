@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CommandLine.Text;
 using CommandLine;
-using Newtonsoft.Json;
 
-namespace EnrollmentSample
+namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class Parameters
     {

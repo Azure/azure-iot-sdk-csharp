@@ -3,7 +3,7 @@
 
 using CommandLine;
 using System;
-using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
         /// </param>
-        public static int Main(string[] args)
+        public static async Task Main(string[] args)
         {
             // Parse application parameters
             Parameters parameters = null;
@@ -36,14 +36,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 Environment.Exit(1);
             }
 
-            var certificate = new X509Certificate2(parameters.CertificatePath);
-
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString);
-            var sample = new EnrollmentGroupSample(provisioningServiceClient, certificate);
-            sample.RunSampleAsync().GetAwaiter().GetResult();
+            var sample = new EnrollmentGroupSample(provisioningServiceClient);
+            await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");
-            return 0;
         }
     }
 }

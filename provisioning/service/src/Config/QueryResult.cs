@@ -77,6 +77,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Getter for the list of query result Items.
         /// </summary>
+        /// <remarks>
+        /// Depending on the <see cref="Type"/>, these items can be cast to a corresponding type:
+        /// <list type="bullet">
+        /// <item><description>
+        /// <see cref="QueryResultType.Enrollment"/>: <see cref="IndividualEnrollment"/>
+        /// </description></item>
+        /// <item><description>
+        /// <see cref="QueryResultType.EnrollmentGroup"/>: <see cref="EnrollmentGroup"/>
+        /// </description></item>
+        /// <item><description>
+        /// <see cref="QueryResultType.DeviceRegistration"/>: <see cref="DeviceRegistrationState"/>
+        /// </description></item>
+        /// </list>
+        /// </remarks>
         public IEnumerable<object> Items { get; private set; }
 
         /// <summary>

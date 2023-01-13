@@ -180,7 +180,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanupEnrollmentsSample", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupSample", "provisioning\service\samples\getting started\EnrollmentGroupSample\EnrollmentGroupSample.csproj", "{EDE1FB8E-5BD4-49E7-9745-6599687D34CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentSample", "provisioning\service\samples\getting started\EnrollmentSample\EnrollmentSample.csproj", "{C8639C47-5772-4E58-A5A1-9D4134577437}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentSample", "provisioning\service\samples\getting started\EnrollmentSample\IndividualEnrollmentSample.csproj", "{C8639C47-5772-4E58-A5A1-9D4134577437}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how to guides", "how to guides", "{E6205B13-D163-4247-80F5-905ACC7F0977}"
 EndProject
