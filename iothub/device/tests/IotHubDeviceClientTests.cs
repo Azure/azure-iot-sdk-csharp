@@ -41,32 +41,28 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_EmptyDeviceId_Throws()
         {
-            Action act = () => new ClientAuthenticationWithX509Certificate(s_cert, "");
-
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(s_cert, "");
             act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullDeviceId_Throws()
         {
-            Action act = () => new ClientAuthenticationWithX509Certificate(s_cert, null);
-
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(s_cert, null);
             act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_EmptyModuleId_Throws()
         {
-            Action act = () => new ClientAuthenticationWithX509Certificate(s_cert, "device1", "");
-
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(s_cert, "device1", "");
             act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()
         {
-            Action act = () => _= new ClientAuthenticationWithX509Certificate(null, "device1");
-
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(null, "device1");
             act.Should().Throw<ArgumentException>();
         }
 
@@ -78,75 +74,87 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task DeviceAuthenticationWithX509Certificate_ChainCertsAmqpWs_Throws()
+        public void DeviceAuthenticationWithX509Certificate_ChainCertsAmqpWs_Throws()
         {
             // arrange
-            string hostName = "acme.azure-devices.net";
+            const string hostName = "acme.azure-devices.net";
             var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            Action act = () => _ = new IotHubDeviceClient(hostName, authMethod, options);
+
+            // assert
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task DeviceAuthenticationWithX509Certificate_ChainCertsMqtttWs_Throws()
+        public void DeviceAuthenticationWithX509Certificate_ChainCertsMqtttWs_Throws()
         {
             // arrange
-            string hostName = "acme.azure-devices.net";
+            const string hostName = "acme.azure-devices.net";
             var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            Action act = () => _ = new IotHubDeviceClient(hostName, authMethod, options);
+
+            // assert
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
         public async Task DeviceAuthenticationWithX509Certificate_ChainCertsAmqpTcp_DoesNotThrow()
         {
             // arrange
-            string hostName = "acme.azure-devices.net";
+            const string hostName = "acme.azure-devices.net";
             var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options); };
 
-            // should not throw
+            // assert
+            await act.Should().NotThrowAsync();
         }
 
         [TestMethod]
         public async Task DeviceAuthenticationWithX509Certificate_ChainCertsMqtttTcp_DoesNotThrow()
         {
             // arrange
-            string hostName = "acme.azure-devices.net";
+            const string hostName = "acme.azure-devices.net";
             var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, "fakeDeviceId");
             var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options); };
 
-            // should not throw
+            // assert
+            await act.Should().NotThrowAsync();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_ParamsHostNameAuthMethod_Works()
         {
-            string hostName = "acme.azure-devices.net";
+            // arrange
+            const string hostName = "acme.azure-devices.net";
             var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 sharedAccessKey: s_iotHubConnectionCredentials.SharedAccessKey,
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName,
                 deviceId: "device1");
 
+            // act
             await using var deviceClient = new IotHubDeviceClient(hostName, authMethod);
+            
+            // assert
+            deviceClient.Should().NotBeNull();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_ParamsHostNameAuthMethodTransportType_Works()
         {
-            string hostName = "acme.azure-devices.net";
+            // arrange
+            const string hostName = "acme.azure-devices.net";
             var transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket);
             var options = new IotHubClientOptions(transportSettings);
 
@@ -155,14 +163,19 @@ namespace Microsoft.Azure.Devices.Client.Test
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName,
                 deviceId: "device1");
 
+            // act
             await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+
+            // assert
+            deviceClient.Should().NotBeNull();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_ParamsHostNameGatewayAuthMethod_Works()
         {
-            string hostName = "acme.azure-devices.net";
-            string gatewayHostName = "gateway.acme.azure-devices.net";
+            // arrange
+            const string hostName = "acme.azure-devices.net";
+            const string gatewayHostName = "gateway.acme.azure-devices.net";
             var options = new IotHubClientOptions(new IotHubClientMqttSettings()) { GatewayHostName = gatewayHostName };
 
             var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
@@ -170,14 +183,19 @@ namespace Microsoft.Azure.Devices.Client.Test
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName,
                 deviceId: "device1");
 
+            // act
             await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+
+            // assert
+            deviceClient.Should().NotBeNull();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_ParamsHostNameGatewayAuthMethodTransport_Works()
         {
-            string hostName = "acme.azure-devices.net";
-            string gatewayHostName = "gateway.acme.azure-devices.net";
+            // arrange
+            const string hostName = "acme.azure-devices.net";
+            const string gatewayHostName = "gateway.acme.azure-devices.net";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
             {
                 GatewayHostName = gatewayHostName,
@@ -188,7 +206,11 @@ namespace Microsoft.Azure.Devices.Client.Test
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName,
                 deviceId: "device1");
 
+            // act
             await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            
+            // assert
+            deviceClient.Should().NotBeNull();
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
@@ -196,13 +218,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_Params_GatewayAuthMethod_Works()
         {
-            string gatewayHostname = "myGatewayDevice";
+            // arrange
+            const string gatewayHostname = "myGatewayDevice";
             var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 sharedAccessKey: s_iotHubConnectionCredentials.SharedAccessKey,
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName,
                 deviceId: "device1");
 
+            // act
             await using var deviceClient = new IotHubDeviceClient(gatewayHostname, authMethod);
+        
+            // assert
+            deviceClient.Should().NotBeNull();
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
@@ -210,33 +237,37 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_ParamsGatewayAuthMethodTransport_ws_Works()
         {
-            string gatewayHostname = "myGatewayDevice";
+            // arrange
+            const string gatewayHostname = "myGatewayDevice";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
             var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 sharedAccessKey: s_iotHubConnectionCredentials.SharedAccessKey,
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName,
                 deviceId: "device1");
 
-            await using var deviceClient = new IotHubDeviceClient(
-                gatewayHostname,
-                authMethod,
-                options);
+            // act
+            await using var deviceClient = new IotHubDeviceClient(gatewayHostname, authMethod, options);
+
+            // assert
+            deviceClient.Should().NotBeNull();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_ParamsGatewayAuthMethodTransport_tcp_Works()
         {
-            string gatewayHostname = "myGatewayDevice";
+            // arrange
+            const string gatewayHostname = "myGatewayDevice";
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
             var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 sharedAccessKey: s_iotHubConnectionCredentials.SharedAccessKey,
                 sharedAccessKeyName: s_iotHubConnectionCredentials.SharedAccessKeyName,
                 deviceId: "device1");
 
-            await using var deviceClient = new IotHubDeviceClient(
-                gatewayHostname,
-                authMethod,
-                options);
+            // act
+            await using var deviceClient = new IotHubDeviceClient(gatewayHostname, authMethod, options);
+
+            // assert
+            deviceClient.Should().NotBeNull();
         }
 
         [TestMethod]
@@ -247,40 +278,33 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task IotHubDeviceClient_GetFileUploadSasUri_NullParam_Throws()
+        public async Task IotHubDeviceClient_GetFileUploadSasUri_NullParam_ThrowsAsync()
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            await deviceClient.GetFileUploadSasUriAsync(null).ConfigureAwait(false);
+            Action act = () => _ = deviceClient.GetFileUploadSasUriAsync(null).ConfigureAwait(false);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public async Task IotHubDeviceClient_GetFileUploadSasUri_NullThrows()
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest(null)).ConfigureAwait(false);
+            Action act = () => _ = deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest(null)).ConfigureAwait(false);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public async Task IotHubDeviceClient_GetFileUploadSasUri_EmptyThrows()
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest("")).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(IotHubClientException))]
-        public async Task IotHubDeviceClient_GetFileUploadSasUri_Throws()
-        {
-            await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest("blob")).ConfigureAwait(false);
+            Action act = () => _ = deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest("")).ConfigureAwait(false);
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_Verify_FileUploadSasUriRequest()
         {
+            // arrange and act
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var request = new FileUploadSasUriResponse()
             {
@@ -291,6 +315,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 SasToken = "token",
             };
 
+            // assert
             request.CorrelationId.Should().Be("123");
             request.HostName.Should().Be(FakeHostName);
             request.ContainerName.Should().Be("container");
@@ -300,38 +325,41 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public async Task IotHubDeviceClient_CompleteFileUpload_NullParam_Throws()
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            await deviceClient.CompleteFileUploadAsync(null).ConfigureAwait(false);
+            Action act = () => _ = deviceClient.CompleteFileUploadAsync(null).ConfigureAwait(false);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public async Task IotHubDeviceClient_CompleteFileUpload_NullThrows()
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            await deviceClient.CompleteFileUploadAsync(new FileUploadCompletionNotification(null, true)).ConfigureAwait(false);
+            Action act = () => _ = deviceClient.CompleteFileUploadAsync(new FileUploadCompletionNotification(null, true)).ConfigureAwait(false);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public async Task IotHubDeviceClient_CompleteFileUpload_EmptyThrows()
         {
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            await deviceClient.CompleteFileUploadAsync(new FileUploadCompletionNotification("", true)).ConfigureAwait(false);
+            Action act = () => _ = deviceClient.CompleteFileUploadAsync(new FileUploadCompletionNotification("", true)).ConfigureAwait(false);
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_Verify_FileUploadCompletionNotification()
         {
+            // arrange and act
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var notification = new FileUploadCompletionNotification("123", true)
             {
                 StatusCode = 200,
                 StatusDescription = "OK",
             };
+
+            // assert
             notification.CorrelationId.Should().Be("123");
             notification.IsSuccess.Should().BeTrue();
             notification.StatusCode.Should().Be(200);
@@ -415,10 +443,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                         return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
-            var DirectMethodRequest = new DirectMethodRequest
-            {
-                MethodName = "TestMethodName",
-            };
+            var DirectMethodRequest = new DirectMethodRequest("TestMethodName");
 
             // act
             await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
@@ -536,9 +561,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             var payload = new CustomDirectMethodPayload { Grade = "good" };
-            var DirectMethodRequest = new DirectMethodRequest
+            var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
             {
-                MethodName = "TestMethodName",
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                 PayloadConvention = DefaultPayloadConvention.Instance,
                 ResponseTimeout = TimeSpan.FromSeconds(-1),
@@ -580,7 +604,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     })
                 .ConfigureAwait(false);
 
-            string payload = "test";
+            const string payload = "test";
             var directMethodRequest = new DirectMethodRequest("TestMethodName")
             {
                 Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
@@ -832,7 +856,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubDeviceClient_SetMethodHandlerOverwriteExistingDelegate()
         {
             // arrange
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
+            const string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             await using var deviceClient = new IotHubDeviceClient(connectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
@@ -849,7 +873,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
             };
 
-            string methodName = "TestMethodName";
+            const string methodName = "TestMethodName";
             var methodBody = new CustomDirectMethodPayload { Grade = "good" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
             var directMethodRequest = new DirectMethodRequest(methodName)
@@ -905,7 +929,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubDeviceClient_SetMethodHandlerUnsetLastMethodHandler()
         {
             // arrange
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
+            const string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             await using var deviceClient = new IotHubDeviceClient(connectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
@@ -922,7 +946,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
             };
 
-            string methodName = "TestMethodName";
+            const string methodName = "TestMethodName";
             var methodBody = new CustomDirectMethodPayload { Grade = "good" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
             var directMethodRequest = new DirectMethodRequest(methodName)
@@ -965,13 +989,17 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerUnsetWhenNoMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
+            // arrange
+            const string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             await using var deviceClient = new IotHubDeviceClient(connectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler.Object;
 
+            // act
             await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
+            
+            // assert
             innerHandler.Verify(
                 x => x.DisableMethodsAsync(It.IsAny<CancellationToken>()),
                 Times.Never);
@@ -980,6 +1008,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnConnectionOpenedInvokeHandlerForStatusChange()
         {
+            // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
@@ -990,9 +1019,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
 
+            // act
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
+            // assert
             handlerCalled.Should().BeTrue();
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
             connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
@@ -1003,6 +1034,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnConnectionOpenedWithNullHandler()
         {
+            // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
@@ -1014,15 +1046,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
             deviceClient.ConnectionStatusChangeCallback = null;
 
+            // act
             // Connection status change from disconnected to connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
+            // assert
             handlerCalled.Should().BeFalse();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_OnConnectionOpenedNotInvokeHandlerWithoutStatusChange()
         {
+            // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
@@ -1034,22 +1069,27 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
             // current status = disabled
 
+            // act
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
+            // assert
             handlerCalled.Should().BeTrue();
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
             connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
             handlerCalled = false;
 
+            // act
             // current status = connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
+            // assert
             handlerCalled.Should().BeFalse();
         }
 
         [TestMethod]
         public async Task IotHubDeviceClient_OnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
         {
+            // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = new Mock<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler.Object;
@@ -1063,17 +1103,22 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
 
+            // act
             // current status = disabled
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            
+            // assert
             handlerCalled.Should().BeTrue();
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
             connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
 
             handlerCalled = false;
 
+            // act
             // current status = connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError));
 
+            // assert
             handlerCalled.Should().BeTrue();
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.DisconnectedRetrying);
         }
@@ -1081,6 +1126,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_OnConnectionClosed_InvokeHandlerAndQuit()
         {
+            // arrange
             await using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
             var innerHandler = new Mock<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler.Object;
@@ -1094,17 +1140,21 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
+            // act
             // current status = disabled
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            
+            // assert
             handlerCalled.Should().BeTrue();
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Connected);
             connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ConnectionOk);
 
+            // act
             handlerCalled = false;
-
             // current status = connected
             deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed));
 
+            // assert
             handlerCalled.Should().BeTrue();
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Closed);
         }
@@ -1217,7 +1267,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 MessageId = messageId,
             };
-
             await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
@@ -1248,7 +1297,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 MessageId = messageId,
             };
-
             await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
@@ -1279,7 +1327,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 MessageId = messageId,
             };
-
             await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
@@ -1290,8 +1337,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_CreateWithConnectionString_InvalidSasTimeToLive_ThrowsException()
         {
-            // arrange
-            // act
+            // arrange and act
             Action createDeviceClientAuth = () => _ = new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, TimeSpan.FromSeconds(-60));
 
             // assert
@@ -1301,8 +1347,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_CreateWithConnectionString_InvalidSasRenewalBuffer_ThrowsException()
         {
-            // arrange
-            // act
+            // arrange and act
             Action createDeviceClientAuth = () => _ = new ClientAuthenticationWithSharedAccessKeyRefresh(FakeConnectionString, sasTokenRenewalBuffer: 200);
 
             // assert

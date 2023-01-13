@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         [TestMethod]
         public void AmqpConnectionPool_Add_Remove_ConnectionHolderIsRemoved()
         {
-            string sharedAccessKeyName = "HubOwner";
+            const string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
             IConnectionCredentials testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
                 },
             };
 
-            AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
+            var pool = new AmqpConnectionPoolTest(injectedDictionary);
 
             AmqpUnit addedUnit = pool.CreateAmqpUnit(testDevice, null, amqpSettings, null, null, null, null);
 

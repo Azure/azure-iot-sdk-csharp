@@ -17,9 +17,11 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
         [TestMethod]
         public void UrlEncodedDictionarySerializer_Deserialize_Serialize()
         {
-            string propertiesSegment = "%24.to=%2Fdevices%2FdelMe%2Fmessages%2FdeviceBound&%24.ct=text%2Fplain%3B%20charset%3DUTF-8&%24.ce=utf-8";
+            // arrange and act
+            const string propertiesSegment = "%24.to=%2Fdevices%2FdelMe%2Fmessages%2FdeviceBound&%24.ct=text%2Fplain%3B%20charset%3DUTF-8&%24.ce=utf-8";
             Dictionary<string, string> properties = UrlEncodedDictionarySerializer.Deserialize(propertiesSegment, 0);
 
+            // assert
             properties.Count.Should().Be(3);
             properties.ContainsKey("$.to").Should().BeTrue();
             properties.ContainsKey("$.ct").Should().BeTrue();
@@ -29,30 +31,35 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
             properties["$.ct"].Should().Be("text/plain; charset=UTF-8");
             properties["$.ce"].Should().Be("utf-8");
 
+            // act
             string mergedProperties = UrlEncodedDictionarySerializer.Serialize(properties);
+            
+            // assert
             mergedProperties.Should().Be(propertiesSegment);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void UrlEncodedDictionarySerializer_Deserialize_ArgumentNull_Throws() 
         {
-            UrlEncodedDictionarySerializer.Deserialize(null, 0, null);
+            Action act = () => UrlEncodedDictionarySerializer.Deserialize(null, 0, null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
         public void UrlEncodedDictionarySerializer_Deserialize_InvalidStartIndex_DoesNotThrow()
         {
-            string propertiesSegment = "%24.to=%2Fdevices%2FdelMe%2Fmessages%2FdeviceBound&%24.ct=text%2Fplain%3B%20charset%3DUTF-8&%24.ce=utf-8";
+            //act
+            const string propertiesSegment = "%24.to=%2Fdevices%2FdelMe%2Fmessages%2FdeviceBound&%24.ct=text%2Fplain%3B%20charset%3DUTF-8&%24.ce=utf-8";
             Dictionary<string, string> properties = UrlEncodedDictionarySerializer.Deserialize(propertiesSegment, 300);
 
+            // assert
             properties.Count.Should().Be(0);
         }
 
         [TestMethod]
         public void UrlEncodedDictionarySerializer_Serialize_Empty_DoesNotThrows()
         {
-            var mergedProperties = UrlEncodedDictionarySerializer.Serialize(new Dictionary<string, string>());
+            string mergedProperties = UrlEncodedDictionarySerializer.Serialize(new Dictionary<string, string>());
             mergedProperties.Should().BeEmpty();
 
             mergedProperties = UrlEncodedDictionarySerializer.Serialize(new Dictionary<string, string>() { { "key", null } });

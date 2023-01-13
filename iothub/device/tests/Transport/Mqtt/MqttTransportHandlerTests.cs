@@ -5,6 +5,7 @@ using System;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -20,15 +21,16 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
         [TestMethod]
         public async Task MqttTransportHandler_OpenAsyncCallsConnectAsync()
         {
+            // arrange
             var cancellationToken = new CancellationToken();
             var options = new MqttClientOptions();
-
             var mockMqttClient = new Mock<IMqttClient>();
-
             using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
+            // act
             await mqttTransportHandler.OpenAsync(cancellationToken);
 
+            // assert
             mockMqttClient.Verify(p => p.ConnectAsync(It.IsAny<MqttClientOptions>(), cancellationToken));
         }
 
@@ -36,83 +38,93 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
         [TestMethod]
         public async Task MqttTransportHandler_CloseAsyncCallsConnectAsync()
         {
+            // arrange
             var cancellationToken = new CancellationToken();
             var options = new MqttClientOptions();
-
             var mockMqttClient = new Mock<IMqttClient>();
-
             using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
+            // act
             await mqttTransportHandler.CloseAsync(cancellationToken);
 
+            // assert
             mockMqttClient.Verify(p => p.DisconnectAsync(It.IsAny<MqttClientDisconnectOptions>(), cancellationToken));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public async Task MqttTransportHandler_SendTelemetryBatchAsync_Throws()
         {
+            // arrange
             var cancellationToken = new CancellationToken();
-
             var mockMqttClient = new Mock<IMqttClient>();
-
             using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
-            await mqttTransportHandler.SendTelemetryBatchAsync(new[] { new TelemetryMessage() }, cancellationToken);
+            // act
+            Func<Task> act = async () => await mqttTransportHandler.SendTelemetryBatchAsync(new[] { new TelemetryMessage() }, cancellationToken);
+            
+            // assert
+            await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(IotHubClientException))]
         public async Task MqttTransportHandler_SendTelemetryAsync()
         {
+            // arrange
             var cancellationToken = new CancellationToken();
-
             var mockMqttClient = new Mock<IMqttClient>();
-
             using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
-            await mqttTransportHandler.SendTelemetryAsync(new TelemetryMessage(), cancellationToken);
-            
+            // act
+            Func<Task> act = async () => await mqttTransportHandler.SendTelemetryAsync(new TelemetryMessage(), cancellationToken);
+
+            // assert
+            await act.Should().ThrowAsync<IotHubClientException>();
             mockMqttClient.Verify(p => p.PublishAsync(It.IsAny<MqttApplicationMessage>(), cancellationToken));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(IotHubClientException))]
         public async Task MqttTransportHandler_EnableMethodAsync_Throws()
         {
+            // arrange
             var cancellationToken = new CancellationToken();
-
             var mockMqttClient = new Mock<IMqttClient>();
-
             using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
-            await mqttTransportHandler.EnableMethodsAsync(cancellationToken);
+            // act
+            Func<Task> act = async () => await mqttTransportHandler.EnableMethodsAsync(cancellationToken);
+            
+            // assert
+            await act.Should().ThrowAsync<IotHubClientException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(IotHubClientException))]
         public async Task MqttTransportHandler_DisableMethodAsync_Throws()
         {
+            // arrange
             var cancellationToken = new CancellationToken();
-
             var mockMqttClient = new Mock<IMqttClient>();
-
             using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
 
-            await mqttTransportHandler.DisableMethodsAsync(cancellationToken);
+            // act
+            Func<Task> act = async () => await mqttTransportHandler.DisableMethodsAsync(cancellationToken);
+            
+            // assert
+            await act.Should().ThrowAsync<IotHubClientException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(IotHubClientException))]
         public async Task MqttTransportHandler_SendMethodResponseAsync_Throws()
         {
+            // arrange
             var cancellationToken = new CancellationToken();
-
             var mockMqttClient = new Mock<IMqttClient>();
-
             using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
-           
-            await mqttTransportHandler.SendMethodResponseAsync(new DirectMethodResponse(200), cancellationToken);
+
+            // act
+            Func<Task> act = async () => await mqttTransportHandler.SendMethodResponseAsync(new DirectMethodResponse(200), cancellationToken);
+            
+            // assert
+            await act.Should().ThrowAsync<IotHubClientException>();
         }
 
         internal MqttTransportHandler CreateTransportHandler(IMqttClient mockMqttClient)

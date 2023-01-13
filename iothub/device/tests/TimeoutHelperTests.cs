@@ -44,16 +44,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public async Task TimeoutHelper_Ctor_StartsTimeout()
         {
             // arrange
-
             var timeout = TimeSpan.FromSeconds(1);
 
             // act
-
             var toh = new TimeoutHelper(timeout, startTimeout: true);
             await Task.Delay(1).ConfigureAwait(false);
 
             // assert
-
             // As timeout did start, asking for it now should return something less than the original time
             var remainingTime = toh.GetRemainingTime();
             remainingTime.Should().BeLessThan(timeout);
@@ -63,15 +60,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void Timeouthelper_Ctor_NoTimeOut()
         {
             // arrange
-
             var timeout = TimeSpan.MaxValue;
 
             // act
-
             var toh = new TimeoutHelper(timeout, true);
 
             // assert
-
             TimeSpan remainingTime = toh.GetRemainingTime();
             remainingTime.Should().Be(timeout);
         }
@@ -86,7 +80,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var toh = new TimeoutHelper(timeout, true);
 
             // assert
-
             TimeSpan remainingTime = toh.GetRemainingTime();
             remainingTime.Should().NotBe(TimeSpan.Zero);
 

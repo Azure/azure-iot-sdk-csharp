@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -104,11 +103,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             reported["$version"] = "1";
             reported.Add("key", "value");
             var desired = new DesiredProperties(new Dictionary<string, object>() { { "$version", "1" } });
-            GetTwinResponse twinResponse = new GetTwinResponse()
+            GetTwinResponse twinResponse = new GetTwinResponse
             {
                 Status = 404,
                 Twin = new TwinProperties(desired, reported),
-                ErrorResponseMessage = new IotHubClientErrorResponseMessage()
+                ErrorResponseMessage = new IotHubClientErrorResponseMessage
                 {
                     ErrorCode = 404,
                     TrackingId = "Id",
@@ -149,7 +148,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public async Task IotHubDeviceClient_UpdateReportedPropertiesAsyncThrowsIfPatchIsNull()
         {
             // arrange
@@ -157,8 +155,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var client = new IotHubDeviceClient(fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
 
-            // act and assert
-            await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
+            // act
+            Func<Task> act = async () =>
+            {
+                await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
+            };
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
         [TestMethod]
@@ -186,9 +190,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act
             client.OnDesiredStatePatchReceived(myPatch);
 
-            //assert
-            Assert.AreEqual(callCount, 1);
-            Assert.ReferenceEquals(myPatch, receivedPatch);
+            // assert
+            callCount.Should().Be(1);
+            myPatch.Should().BeEquivalentTo(receivedPatch);
         }
 
         [TestMethod]
@@ -204,14 +208,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             int callCount = 0;
-            DesiredProperties receivedPatch = null;
             await client.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
 
             // act
             client.OnDesiredStatePatchReceived(myPatch);
 
             //assert
-            Assert.AreEqual(callCount, 0);
+            callCount.Should().Be(0);
         }
     }
 }

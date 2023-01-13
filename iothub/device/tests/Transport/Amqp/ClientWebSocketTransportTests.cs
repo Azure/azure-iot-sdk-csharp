@@ -39,16 +39,20 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(AmqpException))]
         public void ClientWebSocket_WriteAsync_NullParameter_Throws()
         {
+            // arrange
             using ClientWebSocket webSocket = new();
             EndPoint local = new UnixDomainSocketEndPoint(LocalEndPoint);
             EndPoint remote = new UnixDomainSocketEndPoint(RemoteEndPoint);
             using ClientWebSocketTransport transport = new ClientWebSocketTransport(webSocket, local, remote);
 
+            // act
             transport.SetMonitor(null);
-            transport.WriteAsync(null);
+            Action act = () => transport.WriteAsync(null);
+            
+            // assert
+            act.Should().Throw<AmqpException>();
         }
     }
 }

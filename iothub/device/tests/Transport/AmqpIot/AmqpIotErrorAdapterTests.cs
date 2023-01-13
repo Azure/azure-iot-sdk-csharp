@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_InternalError()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.InternalError,
             };
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_NotFound()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.NotFound,
             };
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_UnauthorizedAccess()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.UnauthorizedAccess,
             };
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_ResourceLimitExceeded()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.ResourceLimitExceeded,
             };
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_PreconditionFailed()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.PreconditionFailed,
             };
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_ResourceLocked()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.ResourceLocked,
             };
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_ConnectionForced()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.ConnectionForced,
             };
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_FramingError()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.FramingError,
             };
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_ConnectionRedirect()
         {
-            Error error = new ()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.ConnectionRedirect,
             };
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_WindowViolation()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.WindowViolation,
             };
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_ErrantLink()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.ErrantLink,
             };
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_HandleInUse()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.HandleInUse,
             };
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_UnattachedHandle()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.UnattachedHandle,
             };
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_DetachForced()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.DetachForced,
             };
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_TransferLimitExceeded()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.TransferLimitExceeded,
             };
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_LinkRedirect()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.LinkRedirect,
             };
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Stolen()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.Stolen,
             };
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_MessageSizeExceeded()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.MessageSizeExceeded,
             };
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_TransactionRollback()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.TransactionRollback,
             };
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_TransactionTimeout()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.TransactionTimeout,
             };
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_TransactionTimeout()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpIotConstants.Vendor + ":timeout",
             };
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_TimeoutError()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.NotFound,
             };
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_MessageLockLostError()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpIotConstants.Vendor + ":message-lock-lost",
             };
@@ -300,7 +300,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_UnauthorizedAccess()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.UnauthorizedAccess,
             };
@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_MessageSizeExceeded()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.MessageSizeExceeded,
             };
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_ResourceLimitExceeded()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.ResourceLimitExceeded,
             };
@@ -333,7 +333,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_DeviceContainerThrottled()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpIotConstants.Vendor + ":device-container-throttled",
             };
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_IotHubSuspended()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpIotConstants.Vendor + ":iot-hub-suspended",
                 Info = new Fields
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotExceptionAdapter_ConvertToIotHubException_OperationCanceledException()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.MessageSizeExceeded,
             };
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void AmqpIotExceptionAdapter_ConvertToIotHubException_AmqpException()
         {
-            Error error = new()
+            var error = new Error
             {
                 Condition = AmqpErrorCode.MessageSizeExceeded,
             };

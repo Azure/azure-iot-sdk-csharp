@@ -17,31 +17,31 @@ namespace Microsoft.Azure.Devices.Client.Test
     public class TransportSettingsTests
     {
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void IotHubClientOptions_None_Throw()
-        {
-            var options = new IotHubClientOptions(null);
+        {       
+            Action act = () => _ = new IotHubClientOptions(null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
         public void IotHubClientOptions_Mqtt_DoesNotThrow()
         {
-            // should not throw
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
+            Action act = () => _ = new IotHubClientOptions(new IotHubClientMqttSettings());
+            act.Should().NotThrow();
         }
 
         [TestMethod]
         public void IotHubClientOptions_Amqp_DoesNotThrow()
         {
-            // should not throw
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+            Action act = () => _ = new IotHubClientOptions(new IotHubClientAmqpSettings());
+            act.Should().NotThrow();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void IotHubClientOptions_Http_Throws()
         {
-            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
+            Action act = () => _ = new IotHubClientOptions(new IotHubClientHttpSettings());
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
@@ -77,10 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public void AmqpTransportSettings_RespectsCtorParameter(IotHubClientTransportProtocol protocol)
         {
-            // act
             var transportSetting = new IotHubClientAmqpSettings(protocol);
-
-            // assert
             transportSetting.Protocol.Should().Be(protocol);
         }
 
@@ -103,24 +100,15 @@ namespace Microsoft.Azure.Devices.Client.Test
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public void MqttTransportSettings_RespectsCtorParameter(IotHubClientTransportProtocol protocol)
         {
-            // act
             var transportSetting = new IotHubClientMqttSettings(protocol);
-
-            // assert
             transportSetting.Protocol.Should().Be(protocol);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task IotHubDeviceClient_NullX509Certificate()
+        public void IotHubDeviceClient_NullX509Certificate()
         {
-            // arrange
-            const string hostName = "acme.azure-devices.net";
-            var authMethod = new ClientAuthenticationWithX509Certificate(null, "device1");
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
-
-            // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(null, "device1");
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
@@ -136,54 +124,29 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options); };
+
+            // assert
+            await act.Should().NotThrowAsync();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task IotHubDeviceClient_HTTPTransport_Throws()
+        public void IotHubDeviceClient_NullX509CertificateChain()
         {
-            // arrange
-            const string hostName = "acme.azure-devices.net";
-            var authMethod = new ClientAuthenticationWithX509Certificate(null, "device1");
-            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
-
-            // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task IotHubDeviceClient_NullX509CertificateChain()
-        {
-            // arrange
-            const string hostName = "acme.azure-devices.net";
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
             using var cert = new X509Certificate2();
-            var authMethod = new ClientAuthenticationWithX509Certificate(cert, certificateChain: null, "device1");
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
-
-            // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(cert, certificateChain: null, "device1");
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task IotHubDeviceClient_NullX509Certificate_withChain()
+        public void IotHubDeviceClient_NullX509Certificate_withChain()
         {
-            // arrange
-            const string hostName = "acme.azure-devices.net";
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
-            using var cert = new X509Certificate2();
-            var authMethod = new ClientAuthenticationWithX509Certificate(clientCertificate: null, certificateChain: null, "device1");
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
-
-            // act
-            await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(null, certificateChain: null, "device1");
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        public void IotHubClientMqttSettings()
+        public void IotHubClientMqttSettings_Clone()
         {
             // arrange
             var settings = new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)
@@ -225,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void IotHubClientAmqpSettings()
+        public void IotHubClientAmqpSettings_Clone()
         {
             // arrange
             var ConnectionPoolSettings = new AmqpConnectionPoolSettings
@@ -273,16 +236,15 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void IotHubClientAmqpPoolSettings()
+        public void IotHubClientAmqpPoolSettings_ArgumentOutOfRange_Throws()
         {
-            var ConnectionPoolSettings = new AmqpConnectionPoolSettings
+            Action act = () => _ = new AmqpConnectionPoolSettings
             {
                 MaxPoolSize = 0,
                 UsePooling = true,
             };
+            act.Should().Throw<ArgumentOutOfRangeException>();
         }
-
 
         [TestMethod]
         public void IotHubClientNoRetry()

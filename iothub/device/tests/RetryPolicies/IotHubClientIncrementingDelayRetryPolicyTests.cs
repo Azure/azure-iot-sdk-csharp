@@ -31,6 +31,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
             for (uint i = 1; i < 10; ++i)
             {
                 retryPolicy.ShouldRetry(i, exception, out TimeSpan retryInterval);
+                
+                // assert
                 retryInterval.TotalSeconds.Should().Be(step.TotalSeconds * i);
             }
         }
