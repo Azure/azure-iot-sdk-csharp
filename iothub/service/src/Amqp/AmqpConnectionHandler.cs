@@ -42,6 +42,9 @@ namespace Microsoft.Azure.Devices.Amqp
         // The current delivery tag. Increments after each send operation to give a unique value.
         private int _sendingDeliveryTag;
 
+        protected AmqpConnectionHandler()
+        { }
+
         internal AmqpConnectionHandler(
             IotHubConnectionProperties credential,
             IotHubTransportProtocol protocol,
@@ -66,7 +69,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// Returns false otherwise.
         /// </summary>
         /// <returns>True if this connection, its sessions and its sessions' links are all open. False otherwise.</returns>
-        internal bool IsOpen => _connection != null
+        internal virtual bool IsOpen => _connection != null
             && _connection.State == AmqpObjectState.Opened
             && _cbsSession != null
             && _cbsSession.IsOpen()
@@ -78,7 +81,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// then opening all the required sessions and links.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        internal async Task OpenAsync(CancellationToken cancellationToken)
+        internal virtual async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Opening amqp connection.", nameof(OpenAsync));
@@ -233,7 +236,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        internal async Task<Outcome> SendAsync(AmqpMessage message, CancellationToken cancellationToken)
+        internal virtual async Task<Outcome> SendAsync(AmqpMessage message, CancellationToken cancellationToken)
         {
             ArraySegment<byte> deliveryTag = GetNextDeliveryTag();
             return await _workerSession.SendAsync(message, deliveryTag, cancellationToken).ConfigureAwait(false);
