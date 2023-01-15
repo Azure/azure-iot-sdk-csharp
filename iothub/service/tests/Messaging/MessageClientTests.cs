@@ -363,10 +363,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             var mockAmqpConnectionHandler = new Mock<AmqpConnectionHandler>();
 
             mockAmqpConnectionHandler
-                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-
-            mockAmqpConnectionHandler
                 .Setup(x => x.IsOpen)
                 .Returns(true);
 

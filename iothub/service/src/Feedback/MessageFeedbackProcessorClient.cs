@@ -29,6 +29,22 @@ namespace Microsoft.Azure.Devices
         protected MessageFeedbackProcessorClient()
         { }
 
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        internal MessageFeedbackProcessorClient(
+        string hostName,
+        IotHubConnectionProperties credentialProvider,
+        IotHubServiceClientOptions options,
+        RetryHandler retryHandler,
+        AmqpConnectionHandler amqpConnection)
+        {
+            _hostName = hostName;
+            _credentialProvider = credentialProvider;
+            _internalRetryHandler = retryHandler;
+            _amqpConnection = amqpConnection;
+        }
+
         internal MessageFeedbackProcessorClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,

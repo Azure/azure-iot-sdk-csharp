@@ -98,8 +98,6 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
                 .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-            var mockHttpClient = new Mock<HttpClient>();
 
             var mockAmqpConnectionHandler = new Mock<AmqpConnectionHandler>();
 
@@ -127,6 +125,38 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
             // assert
             await act.Should().NotThrowAsync().ConfigureAwait(false);
             mockAmqpConnectionHandler.Verify(x => x.OpenAsync(ct), Times.Once());
+        }
+
+        [TestMethod]
+        public async Task FileUploadNotificationProcessorClient_CloseAsync()
+        {
+            // arrange
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+
+
+            var mockAmqpConnectionHandler = new Mock<AmqpConnectionHandler>();
+
+            mockAmqpConnectionHandler
+                .Setup(x => x.CloseAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            using var fileUploadNotificationProcessorClient = new FileUploadNotificationProcessorClient(
+                HostName,
+                mockCredentialProvider.Object,
+                s_retryHandler,
+                mockAmqpConnectionHandler.Object);
+
+            var ct = new CancellationToken(false);
+
+            // act
+            Func<Task> act = async () => await fileUploadNotificationProcessorClient.CloseAsync().ConfigureAwait(false);
+
+            // assert
+            await act.Should().NotThrowAsync().ConfigureAwait(false);
+            mockAmqpConnectionHandler.Verify(x => x.CloseAsync(ct), Times.Once());
         }
     }
 }

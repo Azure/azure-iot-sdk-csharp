@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// Closes the AMQP connection. This closes all the open links and sessions prior to closing the connection.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        internal async Task CloseAsync(CancellationToken cancellationToken)
+        internal virtual async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Closing amqp connection.", nameof(CloseAsync));
