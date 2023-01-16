@@ -41,7 +41,10 @@ namespace Microsoft.Azure.Devices.Amqp
 
         // The current delivery tag. Increments after each send operation to give a unique value.
         private int _sendingDeliveryTag;
-
+        
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
         protected AmqpConnectionHandler()
         { }
 
