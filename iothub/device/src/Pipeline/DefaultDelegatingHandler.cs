@@ -135,6 +135,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0L);
         }
 
+        public virtual Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.RefreshSasTokenAsync(cancellationToken) ?? Task.FromResult(DateTime.Now);
+        }
+
+        public virtual DateTime GetSasTokenRefreshesOn()
+        {
+            ThrowIfDisposed();
+            return NextHandler?.GetSasTokenRefreshesOn() ?? DateTime.MaxValue;
+        }
+
+        public virtual void SetSasTokenRefreshesOn()
+        {
+            ThrowIfDisposed();
+        }
+
+        public virtual Task StopSasTokenLoopAsync()
+        {
+            ThrowIfDisposed();
+            return NextHandler?.StopSasTokenLoopAsync() ?? Task.CompletedTask;
+        }
+
         public virtual bool IsUsable => NextHandler?.IsUsable ?? true;
 
         public virtual void Dispose()

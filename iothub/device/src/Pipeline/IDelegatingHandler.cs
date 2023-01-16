@@ -35,6 +35,14 @@ namespace Microsoft.Azure.Devices.Client
 
         Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken);
 
+        Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken);
+
+        DateTime GetSasTokenRefreshesOn();
+
+        void SetSasTokenRefreshesOn();
+
+        Task StopSasTokenLoopAsync();
+
         // Twin.
         Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken);
 
@@ -43,5 +51,6 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
+
     }
 }

@@ -62,9 +62,10 @@ namespace Microsoft.Azure.Devices.Client
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
                 MessageEventCallback = OnMessageReceivedAsync,
+                RetryPolicy = _clientOptions.RetryPolicy ?? new IotHubClientNoRetry(),
             };
 
-            InnerHandler = pipelineBuilder.Build(PipelineContext, _clientOptions.RetryPolicy);
+            InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, _clientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
@@ -116,6 +117,12 @@ namespace Microsoft.Azure.Devices.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+            if (_clientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings
+                && IotHubConnectionCredentials.AuthenticationModel == AuthenticationModel.SasIndividual)
+            {
+                InnerHandler.SetSasTokenRefreshesOn();
+            }
         }
 
         /// <summary>
@@ -403,6 +410,12 @@ namespace Microsoft.Azure.Devices.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
+
+            if (_clientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings
+                && IotHubConnectionCredentials.AuthenticationModel == AuthenticationModel.SasIndividual)
+            {
+                await InnerHandler.StopSasTokenLoopAsync().ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc/>

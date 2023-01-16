@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         [Option(
             't',
             "Transport",
-            Default = Transport.Mqtt,
+            Default = Transport.Amqp,
             Required = false,
             HelpText = "The transport to use for the connection.")]
         public Transport Transport { get; set; }

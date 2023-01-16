@@ -29,16 +29,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
 
+        private CancellationTokenSource _loopCancellationTokenSource;
+        private Task _refreshLoop;
+
         internal RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
-            _retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(RetryMaxCount, TimeSpan.FromMinutes(2));
+            _retryPolicy = context.RetryPolicy;
             _internalRetryHandler = new RetryHandler(_retryPolicy);
 
             _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, _internalRetryHandler, nameof(SetRetryPolicy));
+                Logging.Associate(this, _internalRetryHandler, nameof(RetryDelegatingHandler));
         }
 
         internal virtual void SetRetryPolicy(IIotHubClientRetryPolicy retryPolicy)
@@ -467,6 +470,146 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
                 _handlerSemaphore?.Release();
+            }
+        }
+
+        public override async Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(RefreshSasTokenAsync));
+
+            try
+            {
+                return await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
+                            return await base.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(RefreshSasTokenAsync));
+            }
+        }
+
+        public override void SetSasTokenRefreshesOn()
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(SetSasTokenRefreshesOn));
+
+            if (_refreshLoop == null)
+            {
+                if (_loopCancellationTokenSource != null)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "_loopCancellationTokenSource was already initialized, which was unexpected. Canceling and disposing the previous instance.", nameof(SetSasTokenRefreshesOn));
+
+                    try
+                    {
+                        _loopCancellationTokenSource.Cancel();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
+                    _loopCancellationTokenSource.Dispose();
+                }
+                _loopCancellationTokenSource = new CancellationTokenSource();
+
+                DateTime refreshesOn = GetSasTokenRefreshesOn();
+                if (refreshesOn < DateTime.MaxValue)
+                {
+                    StartSasTokenLoop(refreshesOn, _loopCancellationTokenSource.Token);
+                }
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, nameof(SetSasTokenRefreshesOn));
+        }
+
+        public override async Task StopSasTokenLoopAsync()
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, nameof(StopSasTokenLoopAsync));
+
+                try
+                {
+                    _loopCancellationTokenSource?.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopSasTokenLoopAsync));
+                }
+
+                // Await the completion of _refreshLoop.
+                // This will ensure that when StopLoopAsync has been exited then no more token refresh attempts are in-progress.
+                await _refreshLoop.ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Caught exception when stopping token refresh loop: {ex}");
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(StopSasTokenLoopAsync));
+            }
+        }
+
+        private void StartSasTokenLoop(DateTime refreshesOn, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, refreshesOn, nameof(StartSasTokenLoop));
+
+            _refreshLoop = RefreshSasTokenLoopAsync(refreshesOn, cancellationToken);
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, refreshesOn, nameof(StartSasTokenLoop));
+        }
+
+        private async Task RefreshSasTokenLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, refreshesOn, nameof(RefreshSasTokenLoopAsync));
+
+                TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, refreshesOn, $"Before {nameof(RefreshSasTokenLoopAsync)} with wait time {waitTime}.");
+
+                    if (waitTime > TimeSpan.Zero)
+                    {
+                        await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    refreshesOn = await RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
+
+                    // what happens if refreshesOn is Date.Max
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, refreshesOn, "Token has been refreshed.");
+
+                    waitTime = refreshesOn - DateTime.UtcNow;
+                }
+            }
+            catch (OperationCanceledException) { return; }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, refreshesOn, nameof(RefreshSasTokenLoopAsync));
             }
         }
 
