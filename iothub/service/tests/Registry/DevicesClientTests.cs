@@ -1114,7 +1114,6 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 OutputBlobContainerUri = new Uri("https://myaccount.blob.core.windows.net/ ")
             };
-
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
             var mockHttpClient = new Mock<HttpClient>();

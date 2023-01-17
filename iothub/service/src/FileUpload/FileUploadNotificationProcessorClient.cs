@@ -27,6 +27,21 @@ namespace Microsoft.Azure.Devices
         protected FileUploadNotificationProcessorClient()
         { }
 
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        internal FileUploadNotificationProcessorClient(
+            string hostName,
+            IotHubConnectionProperties credentialProvider,
+            RetryHandler retryHandler,
+            AmqpConnectionHandler amqpConnection)
+        {
+            _hostName = hostName;
+            _credentialProvider = credentialProvider;
+            _internalRetryHandler = retryHandler;
+            _amqpConnection = amqpConnection;
+        }
+
         internal FileUploadNotificationProcessorClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
