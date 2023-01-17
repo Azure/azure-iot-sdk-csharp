@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -851,13 +850,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         _handleDisconnectCts?.Cancel();
                         _handleDisconnectCts?.Dispose();
+                        _loopCancellationTokenSource?.Dispose();
                         if (_handlerSemaphore != null && _handlerSemaphore.CurrentCount == 0)
                         {
                             _handlerSemaphore.Release();
                         }
                         _handlerSemaphore?.Dispose();
                         _handlerSemaphore = null;
-                        _loopCancellationTokenSource?.Dispose();
                     }
 
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
