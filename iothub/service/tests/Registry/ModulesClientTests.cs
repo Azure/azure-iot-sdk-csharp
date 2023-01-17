@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
 
         private static readonly Uri s_httpUri = new($"https://{HostName}");
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
-        private static IotHubServiceClientOptions s_options = new IotHubServiceClientOptions
+        private static IotHubServiceClientOptions s_options = new()
         {
             Protocol = IotHubTransportProtocol.Tcp,
             RetryPolicy = new IotHubServiceNoRetry()
@@ -36,6 +36,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
+
             // act
             Func<Task> act = async () => await serviceClient.Modules.CreateAsync((Module)null).ConfigureAwait(false);
 
@@ -74,6 +75,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
                 s_retryHandler);
+
             // act
             Func<Task> act = async () => await modulesClient.CreateAsync(module).ConfigureAwait(false);
 
@@ -82,56 +84,55 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-        public async Task ModulesClient_GetAsync_NullDeviceIdThrows()
+        [DataRow(null, "moduleId123")]
+        [DataRow("deviceId123", null)]
+        [DataRow("", "moduleId123")]
+        [DataRow("deviceId123", "")]
+        public async Task ModulesClient_GetAsync_NullParamsThrows(string deviceId, string moduleId)
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
+
             // act
-            Func<Task> act = async () => await serviceClient.Modules.GetAsync(null, "moduleId").ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task ModulesClient_GetAsync_NullModuleIdThrows()
+        [DataRow(null, "moduleId123")]
+        [DataRow("deviceId123", null)]
+        [DataRow("", "moduleId123")]
+        [DataRow("deviceId123", "")]
+        public async Task ModulesClient_CreateAs_NullParamsThrows(string deviceId, string moduleId)
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
+
             // act
-            Func<Task> act = async () => await serviceClient.Modules.GetAsync("deviceId", null).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task ModulesClient_GetAsync_EmptyDeviceIdThrows()
+        [DataRow(" ", "moduleId123")]
+        [DataRow("deviceId123", " ")]
+        public async Task ModulesClient_GetAsync_EmptyParamsThrows(string deviceId, string moduleId)
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
-            // act
-            Func<Task> act = async () => await serviceClient.Modules.GetAsync(String.Empty, "moduleId").ConfigureAwait(false);
 
-            // assert
-            await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModulesClient_GetAsync_EmptyModuleIdThrows()
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(
-                s_connectionString,
-                s_options);
             // act
-            Func<Task> act = async () => await serviceClient.Modules.GetAsync("deviceId", String.Empty).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
@@ -141,8 +142,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task ModulesClient_GetAsync()
         {
             // arrange
-            var moduleId = "moduleId123";
-            var deviceId = "deviceId123";
+            string moduleId = "moduleId123";
+            string deviceId = "deviceId123";
 
             var moduleToReturn = new Module("deviceId123", "moduleId123")
             {
@@ -172,6 +173,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
                 s_retryHandler);
+
             // act
             Func<Task> act = async () => await modulesClient.GetAsync(deviceId, moduleId).ConfigureAwait(false);
 
@@ -186,6 +188,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
+
             // act
             Func<Task> act = async () => await serviceClient.Modules.SetAsync((Module)null).ConfigureAwait(false);
 
@@ -231,6 +234,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
                 s_retryHandler);
+
             // act
             Func<Task> act = async () => await modulesClient.SetAsync(moduleToReplace).ConfigureAwait(false);
 
@@ -239,60 +243,38 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-        public async Task ModulesClient_DeleteAsync_NullDeviceIdThrows()
+        [DataRow(null, "moduleId123")]
+        [DataRow("deviceId123", null)]
+        public async Task ModulesClient_DeleteAsync_NullParamsThrows(string deviceId, string moduleId)
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
+
             // act
-            Func<Task> act = async () => await serviceClient.Modules.DeleteAsync(null, "moduleId").ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.DeleteAsync(deviceId, moduleId).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task ModulesClient_DeleteAsync_NullModuleIdThrows()
+        [DataRow(n)]
+        public async Task ModulesClient_DeleteAsync_EmptyParamsThrows(string deviceId, string moduleId)
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
-            // act
-            Func<Task> act = async () => await serviceClient.Modules.DeleteAsync("deviceId", null).ConfigureAwait(false);
 
-            // assert
-            await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ModulesClient_DeleteAsync_EmptyDeviceIdThrows()
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(
-                s_connectionString,
-                s_options);
             // act
-            Func<Task> act = async () => await serviceClient.Modules.GetAsync(String.Empty, "moduleId").ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
         }
 
-        [TestMethod]
-        public async Task ModulesClient_DeleteAsync_EmptyModuleIdThrows()
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(
-                s_connectionString,
-                s_options);
-            // act
-            Func<Task> act = async () => await serviceClient.Modules.GetAsync("deviceId", String.Empty).ConfigureAwait(false);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
-        }
         [TestMethod]
         public async Task ModulesClient_DeleteAsync()
         {
@@ -324,6 +306,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
                 s_retryHandler);
+
             // act
             Func<Task> act = async () => await modulesClient.DeleteAsync("deviceId123", "moduleId123").ConfigureAwait(false);
 

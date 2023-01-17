@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         private static readonly Uri s_httpUri = new($"https://{HostName}");
 
         private static IIotHubServiceRetryPolicy noRetryPolicy = new IotHubServiceNoRetry();
-        private static IotHubServiceClientOptions s_options = new IotHubServiceClientOptions
+        private static IotHubServiceClientOptions s_options = new()
         {
             Protocol = IotHubTransportProtocol.Tcp,
             RetryPolicy = noRetryPolicy
@@ -108,49 +108,11 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         }
 
         [TestMethod]
-        public async Task MessagesClient_SendAsync_WithModule_EmptyDeviceIdThrows()
-        {
-            // arrange
-            string payloadString = "Hello, World!";
-            byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-
-            var msg = new Message(payloadBytes);
-
-            using var serviceClient = new IotHubServiceClient(
-                s_connectionString,
-                s_options);
-
-            // act
-            Func<Task> act = async () => await serviceClient.Messages.SendAsync(String.Empty, "moduleId123", msg);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentException>();
-        }
-
-        [TestMethod]
-        public async Task MessagesClient_SendAsync_WithModule_EmptyModuleIdThrows()
-        {
-            // arrange
-            string payloadString = "Hello, World!";
-            byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-
-            var msg = new Message(payloadBytes);
-
-            using var serviceClient = new IotHubServiceClient(
-                s_connectionString,
-                s_options);
-
-            // act
-            Func<Task> act = async () => await serviceClient.Messages.SendAsync(null, String.Empty, msg);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentException>();
-        }
-
-        [TestMethod]
-        public async Task MessagesClient_SendAsync_NullDeviceIdThrows()
+        [DataRow(null, "moduleId123")]
+        [DataRow("deviceId123", null)]
+        [DataRow("", "moduleId123")]
+        [DataRow("deviceId123", "")]
+        public async Task MessagesClient_SendAsync_NullParamsThrows(string deviceId, string moduleId)
         {
             // arrange
             string payloadString = "Hello, World!";
@@ -161,31 +123,16 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
                 s_options);
-
             // act
-            Func<Task> act = async () => await serviceClient.Messages.SendAsync(null, msg);
-
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync(deviceId, moduleId, msg);
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
         [TestMethod]
-        public async Task MessagesClient_SendAsync_NullMessageThrows()
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(
-                s_connectionString,
-                s_options);
-
-            // act
-            Func<Task> act = async () => await serviceClient.Messages.SendAsync("deviceId", (Message)null);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public async Task MessagesClient_SendAsync_EmptyDeviceIdThrows()
+        [DataRow(" ", "moduleId123")]
+        [DataRow("deviceId123", " ")]
+        public async Task MessagesClient_SendAsync_EmptyAndSpaceInParamsThrows(string deviceId, string moduleId)
         {
             // arrange
             string payloadString = "Hello, World!";
@@ -198,7 +145,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
                 s_options);
 
             // act
-            Func<Task> act = async () => await serviceClient.Messages.SendAsync(String.Empty, msg);
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync(deviceId, moduleId, msg);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>();
@@ -254,21 +201,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         }
 
         [TestMethod]
-        public async Task MessageClient_PurgeMessageQueueAsync_WithoutExplicitOpenAsync_ThrowsIotHubServiceException()
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(
-                s_connectionString,
-                s_options);
-
-            // act
-            Func<Task> act = async () => await serviceClient.Messages.PurgeMessageQueueAsync("deviceId123");
-
-            // assert
-            await act.Should().ThrowAsync<IotHubServiceException>();
-        }
-
-        [TestMethod]
         public async Task MessageClient_PurgeMessageQueueAsync_NullDeviceIdThrows()
         {
             // arrange
@@ -292,7 +224,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
                 s_options);
 
             // act
-            Func<Task> act = async () => await serviceClient.Messages.PurgeMessageQueueAsync(String.Empty);
+            Func<Task> act = async () => await serviceClient.Messages.PurgeMessageQueueAsync(string.Empty);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>();
@@ -302,8 +234,8 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         public async Task MessageClient_PurgeMessage()
         {
             // arrange
-            var deviceId = "deviceId123";
-            var totalMessagesPurged = 1;
+            string deviceId = "deviceId123";
+            int totalMessagesPurged = 1;
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider

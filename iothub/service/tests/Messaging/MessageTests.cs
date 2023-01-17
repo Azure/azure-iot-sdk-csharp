@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         }
 
         [TestMethod]
-        public void Message_DefaultPayload()
+        public void Message_DefaultPayload_NotNull()
         {
             var msg = new Message();
             msg.Payload.Should().NotBeNull();
@@ -42,14 +42,14 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         }
 
         [TestMethod]
-        public void Message_PropertiesNotNull()
+        public void Message_Properties_DefaultNotNull()
         {
             var msg = new Message();
             msg.Properties.Should().NotBeNull();
         }
 
         [TestMethod]
-        public void Message_SystemPropertiesNotNull()
+        public void Message_SystemProperties_DefaultNotNull()
         {
             var msg = new Message();
             msg.SystemProperties.Should().NotBeNull();
@@ -65,9 +65,9 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             string to = Guid.NewGuid().ToString();
             string correlationId = Guid.NewGuid().ToString();
             string lockToken = Guid.NewGuid().ToString();
-            string messageSchema = "default@v1";
-            string contentType = "text/plain";
-            string contentEncoding = "utf-8";
+            const string messageSchema = "default@v1";
+            const string contentType = "text/plain";
+            const string contentEncoding = "utf-8";
             DateTimeOffset createdOnUtc = DateTimeOffset.UtcNow;
             DateTimeOffset enqueuedOnUtc = DateTimeOffset.UtcNow;
             DateTimeOffset expiresOnUtc = DateTimeOffset.MaxValue;

@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        protected AmqpConnectionHandler()
+        protected internal AmqpConnectionHandler()
         { }
 
         internal AmqpConnectionHandler(
@@ -70,6 +70,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <summary>
         /// Returns true if this connection, its sessions and its sessions' links are all open.
         /// Returns false otherwise.
+        /// Marked it virtual for unit testing purposes only.
         /// </summary>
         /// <returns>True if this connection, its sessions and its sessions' links are all open. False otherwise.</returns>
         internal virtual bool IsOpen => _connection != null

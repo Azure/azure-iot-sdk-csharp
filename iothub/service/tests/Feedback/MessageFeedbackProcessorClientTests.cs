@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -19,7 +17,7 @@ namespace Microsoft.Azure.Devices.Tests.Feedback
         private static readonly string s_connectionString = $"HostName={HostName};SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         private static IIotHubServiceRetryPolicy noRetryPolicy = new IotHubServiceNoRetry();
-        private static IotHubServiceClientOptions s_options = new IotHubServiceClientOptions
+        private static IotHubServiceClientOptions s_options = new()
         {
             Protocol = IotHubTransportProtocol.Tcp,
             RetryPolicy = noRetryPolicy

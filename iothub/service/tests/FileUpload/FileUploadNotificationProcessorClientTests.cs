@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
         private static readonly string s_validMockAuthenticationHeaderValue = $"SharedAccessSignature sr={HostName}&sig=thisIsFake&se=000000&skn=registryRead";
 
         private static IIotHubServiceRetryPolicy noRetryPolicy = new IotHubServiceNoRetry();
-        private static IotHubServiceClientOptions s_options = new IotHubServiceClientOptions
+        private static IotHubServiceClientOptions s_options = new ()
         {
             Protocol = IotHubTransportProtocol.Tcp,
             RetryPolicy = noRetryPolicy
@@ -59,6 +59,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
             };
 
             serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+
             // act
             var ct = new CancellationToken(true);
             Func<Task> act = async () => await serviceClient.FileUploadNotifications.OpenAsync(ct);
@@ -81,6 +82,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
             };
 
             serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+
             // act
             var ct = new CancellationToken(true);
             Func<Task> act = async () => await serviceClient.FileUploadNotifications.CloseAsync(ct);
@@ -135,7 +137,6 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
                 .Returns(s_validMockAuthenticationHeaderValue);
 
-
             var mockAmqpConnectionHandler = new Mock<AmqpConnectionHandler>();
 
             mockAmqpConnectionHandler
@@ -151,7 +152,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
             var ct = new CancellationToken(false);
 
             // act
-            Func<Task> act = async () => await fileUploadNotificationProcessorClient.CloseAsync().ConfigureAwait(false);
+            Func<Task> act = async () => await fileUploadNotificationProcessorClient.CloseAsync(ct).ConfigureAwait(false);
 
             // assert
             await act.Should().NotThrowAsync().ConfigureAwait(false);
