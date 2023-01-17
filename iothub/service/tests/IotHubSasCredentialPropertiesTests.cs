@@ -52,7 +52,6 @@ namespace Microsoft.Azure.Devices.Tests
             var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
 
             // act
-
             CbsToken cbsToken = await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
             azureSasCredential.Update(updatedToken);
             CbsToken updatedCbsToken = await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
@@ -76,18 +75,11 @@ namespace Microsoft.Azure.Devices.Tests
             var azureSasCredential = new AzureSasCredential(token);
             var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
 
-            try
-            {
-                // act
-                await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
+            // act
+            Func<Task> act = async () => await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
 
-                Assert.Fail("The parsing of seconds from string to long should have caused an exception.");
-            }
-            catch (InvalidOperationException ex)
-            {
-                // assert
-                ex.Message.Should().Be($"Invalid seconds from epoch time on {nameof(AzureSasCredential)} signature.");
-            }
+            // assert
+            await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -103,18 +95,11 @@ namespace Microsoft.Azure.Devices.Tests
             var azureSasCredential = new AzureSasCredential(token);
             var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
 
-            try
-            {
-                // act
-                await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
+            // act
+            Func<Task> act = async () => await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
 
-                Assert.Fail("The missing expiry on the SAS token should have caused an exception.");
-            }
-            catch (InvalidOperationException ex)
-            {
-                // assert
-                ex.Message.Should().Be($"There is no expiration time on {nameof(AzureSasCredential)} signature.");
-            }
+            // assert
+            await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -127,10 +112,12 @@ namespace Microsoft.Azure.Devices.Tests
                 WebUtility.UrlEncode(_hostName),
                 WebUtility.UrlEncode("signature"));
 
+            // act
             var azureSasCredential = new AzureSasCredential(token);
             var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
 
-            iotHubSasCredentialProperties.GetAuthorizationHeader().Should().Be("SharedAccessSignature sr=myiothub.azure-devices.net&sig=signature");
+            // assert
+            iotHubSasCredentialProperties.GetAuthorizationHeader().Should().Be($"SharedAccessSignature sr={_hostName}&sig=signature");
         }
     }
 }

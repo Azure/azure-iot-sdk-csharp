@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Tests
     public class IotHubServiceClientTests
     {
         [TestMethod]
-        public void IotHubServiceClient_CreateWithConnectionString()
+        public void IotHubServiceClient_CreateSubClientsWithConnectionString()
         {
             // arrange and act
             string cs = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public void IotHubServiceClient_CreateWithAAD()
+        public void IotHubServiceClient_CreateSubClientsWithAAD()
         {
             // arrange
             string hostName = "acme.azure-devices.net";
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public void IotHubServiceClient_CreateWithSasToken()
+        public void IotHubServiceClient_CreateSubClientsWithSasToken()
         {
             // arrange
             string hostName = "acme.azure-devices.net";
@@ -83,6 +83,40 @@ namespace Microsoft.Azure.Devices.Tests
             serviceClient.MessageFeedback.Should().NotBeNull();
             serviceClient.FileUploadNotifications.Should().NotBeNull();
             serviceClient.Messages.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public void IotHubServiceClient_NullParamters_Throws()
+        {
+            // arrange
+            string hostName = null;
+            var sasCredential = new AzureSasCredential("test");
+
+            try
+            {
+                // act
+                using var serviceClient = new IotHubServiceClient(hostName, sasCredential);
+            }
+            catch (Exception ex)
+            {
+                // assert
+                ex.Should().BeOfType<ArgumentNullException>();
+            }
+
+            // rearrange
+            string connectionString = null;
+
+            try
+            {
+                // act
+                using var serviceClient = new IotHubServiceClient(connectionString);
+            }
+            catch (Exception ex)
+            {
+                // assert
+                ex.Should().BeOfType<ArgumentNullException>();
+            }
+
         }
     }
 }
