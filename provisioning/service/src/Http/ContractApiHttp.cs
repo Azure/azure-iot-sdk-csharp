@@ -113,80 +113,80 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             ContractApiResponse response;
 
-            using (var msg = new HttpRequestMessage(httpMethod, requestUri))
+            using var msg = new HttpRequestMessage(
+                httpMethod,
+                new Uri($"{requestUri}?{SdkUtils.ApiVersionQueryString}", UriKind.Relative));
+            if (!string.IsNullOrEmpty(body))
             {
-                if (!string.IsNullOrEmpty(body))
+                msg.Content = new StringContent(body, Encoding.UTF8, MediaTypeForDeviceManagementApis);
+            }
+
+            msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
+            msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
+            if (customHeaders != null)
+            {
+                foreach (KeyValuePair<string, string> header in customHeaders)
                 {
-                    msg.Content = new StringContent(body, Encoding.UTF8, MediaTypeForDeviceManagementApis);
+                    msg.Headers.Add(header.Key, header.Value);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(eTag.ToString()))
+            {
+                string escapedETag = EscapeETag(eTag.ToString());
+                msg.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag));
+            }
+
+            try
+            {
+                using HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
+                if (httpResponse == null)
+                {
+                    throw new ProvisioningServiceException(
+                        $"The response message was null when executing operation {httpMethod}.", isTransient: true);
                 }
 
-                msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
-                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
-                if (customHeaders != null)
-                {
-                    foreach (KeyValuePair<string, string> header in customHeaders)
-                    {
-                        msg.Headers.Add(header.Key, header.Value);
-                    }
-                }
-                
-                if (!string.IsNullOrWhiteSpace(eTag.ToString()))
-                {
-                    string escapedETag = EscapeETag(eTag.ToString());
-                    msg.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag));
-                }
-
-                try
-                {
-                    using HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
-                    if (httpResponse == null)
-                    {
-                        throw new ProvisioningServiceException(
-                            $"The response message was null when executing operation {httpMethod}.", isTransient: true);
-                    }
-
-                    response = new ContractApiResponse(
-                        await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false),
-                        httpResponse.StatusCode,
-                        httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
-                        httpResponse.ReasonPhrase);
-                }
-                catch (AggregateException ex)
-                {
-                    ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
-                    if (innerExceptions.Any(e => e is TimeoutException))
-                    {
-                        throw new ProvisioningServiceException(ex.Message, ex, true);
-                    }
-
-                    throw;
-                }
-                catch (TimeoutException ex)
-                {
-                    throw new ProvisioningServiceException(ex.Message, HttpStatusCode.RequestTimeout, ex);
-                }
-                catch (IOException ex)
+                response = new ContractApiResponse(
+                    await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false),
+                    httpResponse.StatusCode,
+                    httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
+                    httpResponse.ReasonPhrase);
+            }
+            catch (AggregateException ex)
+            {
+                ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
+                if (innerExceptions.Any(e => e is TimeoutException))
                 {
                     throw new ProvisioningServiceException(ex.Message, ex, true);
                 }
-                catch (HttpRequestException ex)
-                {
-                    if (ContainsAuthenticationException(ex))
-                    {
-                        throw new ProvisioningServiceException(ex.Message, HttpStatusCode.Unauthorized, ex);
-                    }
-                    throw new ProvisioningServiceException(ex.Message, ex, true);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    // Unfortunately TaskCanceledException is thrown when HttpClient times out.
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        throw new OperationCanceledException(ex.Message, ex);
-                    }
 
-                    throw new ProvisioningServiceException($"The {httpMethod} operation timed out.", HttpStatusCode.RequestTimeout, ex);
+                throw;
+            }
+            catch (TimeoutException ex)
+            {
+                throw new ProvisioningServiceException(ex.Message, HttpStatusCode.RequestTimeout, ex);
+            }
+            catch (IOException ex)
+            {
+                throw new ProvisioningServiceException(ex.Message, ex, true);
+            }
+            catch (HttpRequestException ex)
+            {
+                if (ContainsAuthenticationException(ex))
+                {
+                    throw new ProvisioningServiceException(ex.Message, HttpStatusCode.Unauthorized, ex);
                 }
+                throw new ProvisioningServiceException(ex.Message, ex, true);
+            }
+            catch (TaskCanceledException ex)
+            {
+                // Unfortunately TaskCanceledException is thrown when HttpClient times out.
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(ex.Message, ex);
+                }
+
+                throw new ProvisioningServiceException($"The {httpMethod} operation timed out.", HttpStatusCode.RequestTimeout, ex);
             }
 
             ValidateHttpResponse(response);

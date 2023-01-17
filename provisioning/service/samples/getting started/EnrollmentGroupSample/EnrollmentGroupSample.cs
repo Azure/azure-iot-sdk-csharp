@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class EnrollmentGroupSample
     {
-        private const string EnrollmentGroupId = "enrollmentgrouptest";
+        private static readonly string s_enrollmentGroupId = $"enrollmentgrouptest-{Guid.NewGuid()}";
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
         public EnrollmentGroupSample(ProvisioningServiceClient provisioningServiceClient)
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task CreateEnrollmentGroupAsync()
         {
             Attestation attestation = new SymmetricKeyAttestation();
-            var enrollmentGroup = new EnrollmentGroup(EnrollmentGroupId, attestation);
+            var enrollmentGroup = new EnrollmentGroup(s_enrollmentGroupId, attestation);
             Console.WriteLine($"Creating an enrollment group: {JsonConvert.SerializeObject(enrollmentGroup)}");
 
             EnrollmentGroup group = await _provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup);
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         public async Task GetEnrollmentGroupInfoAsync()
         {
             Console.WriteLine("Getting the enrollment group information...");
-            EnrollmentGroup group = await _provisioningServiceClient.EnrollmentGroups.GetAsync(EnrollmentGroupId);
+            EnrollmentGroup group = await _provisioningServiceClient.EnrollmentGroups.GetAsync(s_enrollmentGroupId);
             Console.WriteLine($"Got {group.Id}: {JsonConvert.SerializeObject(group)}");
         }
 
@@ -83,8 +83,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task DeleteEnrollmentGroupAsync()
         {
-            Console.WriteLine($"Deleting the enrollment group {EnrollmentGroupId}...");
-            await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(EnrollmentGroupId);
+            Console.WriteLine($"Deleting the enrollment group {s_enrollmentGroupId}...");
+            await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(s_enrollmentGroupId);
         }
     }
 }

@@ -84,11 +84,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task QueryIndividualEnrollmentsAsync()
         {
-            Console.WriteLine("Creating a query for enrollments...");
-            Query query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
+            const string queryText = "";
+            Query query = _provisioningServiceClient.IndividualEnrollments.CreateQuery(queryText);
+            Console.WriteLine($"Querying for individual enrollments: {queryText}");
             while (query.HasNext())
             {
-                Console.WriteLine("Querying the next page of enrollments...");
                 QueryResult queryResult = await query.NextAsync();
                 foreach (IndividualEnrollment enrollment in queryResult.Items.Cast<IndividualEnrollment>())
                 {
@@ -99,9 +99,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task DeleteIndividualEnrollmentAsync()
         {
-            Console.WriteLine($"Deleting the individual enrollment '{_registrationId}'...");
             await _provisioningServiceClient.IndividualEnrollments.DeleteAsync(_registrationId);
-            Console.WriteLine($"Successfully deleted the individual enrollment '{_registrationId}'.");
+            Console.WriteLine($"Deleted the individual enrollment '{_registrationId}'.");
         }
     }
 }
