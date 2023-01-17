@@ -38,6 +38,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var mockHttpResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin)
             };
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
@@ -77,6 +78,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var mockHttpResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin)
             };
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
@@ -113,6 +115,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var mockHttpResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin)
             };
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
@@ -154,6 +157,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var mockHttpResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin) 
             };
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
