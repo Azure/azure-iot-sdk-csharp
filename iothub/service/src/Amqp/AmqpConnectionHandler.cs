@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <summary>
         /// Returns true if this connection, its sessions and its sessions' links are all open.
         /// Returns false otherwise.
-        /// Marked it virtual for unit testing purposes only.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <returns>True if this connection, its sessions and its sessions' links are all open. False otherwise.</returns>
         internal virtual bool IsOpen => _connection != null
@@ -83,6 +83,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <summary>
         /// Opens the AMQP connection. This involves creating the needed TCP or Websocket transport and
         /// then opening all the required sessions and links.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         internal virtual async Task OpenAsync(CancellationToken cancellationToken)
@@ -192,6 +193,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
         /// <summary>
         /// Closes the AMQP connection. This closes all the open links and sessions prior to closing the connection.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         internal virtual async Task CloseAsync(CancellationToken cancellationToken)
