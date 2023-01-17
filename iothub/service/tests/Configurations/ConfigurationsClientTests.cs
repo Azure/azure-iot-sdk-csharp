@@ -13,7 +13,7 @@ using System.Threading;
 using FluentAssertions;
 using Azure;
 
-namespace Microsoft.Azure.Devices.Tests
+namespace Microsoft.Azure.Devices.Tests.Configurations
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await configurationsClient.CreateAsync((Configuration)null).ConfigureAwait(false);
+            Func<Task> act = async () => await configurationsClient.CreateAsync(null).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await configurationsClient.SetAsync((Configuration)null).ConfigureAwait(false);
+            Func<Task> act = async () => await configurationsClient.SetAsync(null).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -385,7 +385,7 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             string configurationId = Guid.NewGuid().ToString().ToLower(); // Configuration Id characters must be all lower-case.
-            var configuration= new Configuration(configurationId)
+            var configuration = new Configuration(configurationId)
             {
                 Priority = 1,
                 Labels = new Dictionary<string, string>
@@ -438,7 +438,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await configurationsClient.DeleteAsync(null,false).ConfigureAwait(false);
+            Func<Task> act = async () => await configurationsClient.DeleteAsync(null, false).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
@@ -546,7 +546,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await configurationsClient.ApplyConfigurationContentOnDeviceAsync(String.Empty, null).ConfigureAwait(false);
+            Func<Task> act = async () => await configurationsClient.ApplyConfigurationContentOnDeviceAsync(string.Empty, null).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);

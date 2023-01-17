@@ -41,6 +41,12 @@ namespace Microsoft.Azure.Devices.Amqp
 
         // The current delivery tag. Increments after each send operation to give a unique value.
         private int _sendingDeliveryTag;
+        
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected internal AmqpConnectionHandler()
+        { }
 
         internal AmqpConnectionHandler(
             IotHubConnectionProperties credential,
@@ -64,9 +70,10 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <summary>
         /// Returns true if this connection, its sessions and its sessions' links are all open.
         /// Returns false otherwise.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <returns>True if this connection, its sessions and its sessions' links are all open. False otherwise.</returns>
-        internal bool IsOpen => _connection != null
+        internal virtual bool IsOpen => _connection != null
             && _connection.State == AmqpObjectState.Opened
             && _cbsSession != null
             && _cbsSession.IsOpen()
@@ -76,9 +83,10 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <summary>
         /// Opens the AMQP connection. This involves creating the needed TCP or Websocket transport and
         /// then opening all the required sessions and links.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        internal async Task OpenAsync(CancellationToken cancellationToken)
+        internal virtual async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Opening amqp connection.", nameof(OpenAsync));
@@ -185,9 +193,10 @@ namespace Microsoft.Azure.Devices.Amqp
 
         /// <summary>
         /// Closes the AMQP connection. This closes all the open links and sessions prior to closing the connection.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        internal async Task CloseAsync(CancellationToken cancellationToken)
+        internal virtual async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Closing amqp connection.", nameof(CloseAsync));
@@ -233,7 +242,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        internal async Task<Outcome> SendAsync(AmqpMessage message, CancellationToken cancellationToken)
+        internal virtual async Task<Outcome> SendAsync(AmqpMessage message, CancellationToken cancellationToken)
         {
             ArraySegment<byte> deliveryTag = GetNextDeliveryTag();
             return await _workerSession.SendAsync(message, deliveryTag, cancellationToken).ConfigureAwait(false);
