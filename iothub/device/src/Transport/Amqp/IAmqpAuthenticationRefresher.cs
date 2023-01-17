@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal interface IAmqpAuthenticationRefresher
     {
-        Task<DateTime> SasTokenRefreshTokenAsync(CancellationToken cancellationToken);
+        Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken);
         DateTime SasTokenRefreshesOn { get; set; }
     }
 }

@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                return await _amqpAuthenticationRefresher.SasTokenRefreshTokenAsync(cancellationToken).ConfigureAwait(false);
+                return await _amqpAuthenticationRefresher.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {

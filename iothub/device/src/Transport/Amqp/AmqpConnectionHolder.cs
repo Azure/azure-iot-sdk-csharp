@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Enter(this, connectionCredentials, nameof(CreateRefresherAsync));
 
             AmqpIotConnection amqpIotConnection = await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
-            IAmqpAuthenticationRefresher amqpAuthenticator = amqpIotConnection.CreateRefresher(connectionCredentials, cancellationToken);
+            IAmqpAuthenticationRefresher amqpAuthenticator = await amqpIotConnection.CreateRefresherAsync(connectionCredentials, cancellationToken);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, connectionCredentials, nameof(CreateRefresherAsync));
@@ -170,8 +170,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             Logging.Info(this, "Creating connection wide AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));
 
                         amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_connectionCredentials, amqpIotConnection.GetCbsLink());
-                        await amqpAuthenticationRefresher.SasTokenRefreshTokenAsync(cancellationToken).ConfigureAwait(false);
-                        //await amqpAuthenticationRefresher.InitLoopAsync(cancellationToken).ConfigureAwait(false);
+                        await amqpAuthenticationRefresher.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
                     }
 
                     _amqpIotConnection = amqpIotConnection;

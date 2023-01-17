@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal IAmqpAuthenticationRefresher CreateRefresher(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
+        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
         {
             if (_amqpConnection.IsClosing())
             {
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(connectionCredentials, _amqpIotCbsLink);
-                amqpAuthenticator.SasTokenRefreshTokenAsync(cancellationToken).ConfigureAwait(false);
+                await amqpAuthenticator.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
 
                 return amqpAuthenticator;
             }

@@ -36,10 +36,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        async Task<DateTime> IAmqpAuthenticationRefresher.SasTokenRefreshTokenAsync(CancellationToken cancellationToken)
+        async Task<DateTime> IAmqpAuthenticationRefresher.RefreshSasTokenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(IAmqpAuthenticationRefresher.SasTokenRefreshTokenAsync));
+                Logging.Enter(this, nameof(IAmqpAuthenticationRefresher.RefreshSasTokenAsync));
 
             try
             {
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.SasTokenRefreshTokenAsync));
+                    Logging.Exit(this, nameof(IAmqpAuthenticationRefresher.RefreshSasTokenAsync));
             }
         }
 
