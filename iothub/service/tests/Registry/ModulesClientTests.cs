@@ -260,7 +260,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-        [DataRow(n)]
+        [DataRow(" ", "moduleId123")]
+        [DataRow("deviceId123", " ")]
         public async Task ModulesClient_DeleteAsync_EmptyParamsThrows(string deviceId, string moduleId)
         {
             // arrange
