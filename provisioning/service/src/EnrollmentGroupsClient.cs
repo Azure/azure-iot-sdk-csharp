@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         contractApiResponse = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Put,
-                                GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
+                                GetEnrollmentUri(enrollmentGroup.Id),
                                 null,
                                 JsonConvert.SerializeObject(enrollmentGroup),
                                 enrollmentGroup.ETag,
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Delete,
-                                GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
+                                GetEnrollmentUri(enrollmentGroup.Id),
                                 null,
                                 null,
                                 enrollmentGroup.ETag,

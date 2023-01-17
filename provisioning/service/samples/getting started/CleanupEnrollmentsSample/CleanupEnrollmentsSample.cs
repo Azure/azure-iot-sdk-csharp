@@ -84,11 +84,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 IEnumerable<object> items = queryResult.Items;
                 foreach (EnrollmentGroup enrollment in items.Cast<EnrollmentGroup>())
                 {
-                    if (!_groupEnrollmentsToBeRetained.Contains(enrollment.EnrollmentGroupId, StringComparer.OrdinalIgnoreCase))
+                    if (!_groupEnrollmentsToBeRetained.Contains(enrollment.Id, StringComparer.OrdinalIgnoreCase))
                     {
-                        Console.WriteLine($"Enrollment group to be deleted: {enrollment.EnrollmentGroupId}");
+                        Console.WriteLine($"Enrollment group to be deleted: {enrollment.Id}");
                         s_enrollmentGroupsDeleted++;
-                        await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(enrollment.EnrollmentGroupId);
+                        await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(enrollment.Id);
                     }
                 }
             }

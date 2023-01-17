@@ -4,14 +4,13 @@
 using System;
 using System.Threading.Tasks;
 using CommandLine;
-using IndividualEnrollmentTpmSample;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class Program
     {
         /// <summary>
-        /// A sample to manage an individual enrollment in device provisioning service with a TPM.
+        /// A sample to manage enrollment groups in device provisioning service.
         /// </summary>
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
@@ -37,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             }
 
             using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
-            var sample = new IndividualEnrollmentTpmSample(provisioningServiceClient, parameters.DeviceId, parameters.RegistrationId, parameters.EndorsementKey);
+            var sample = new EnrollmentGroupSample(provisioningServiceClient);
             await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");

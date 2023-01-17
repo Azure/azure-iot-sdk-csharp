@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RunWithProvisioningServiceRetryAsync(
                         async () =>
                         {
-                            attestationMechanism = await provisioningServiceClient.EnrollmentGroups.GetAttestationAsync(enrollmentGroup.EnrollmentGroupId);
+                            attestationMechanism = await provisioningServiceClient.EnrollmentGroups.GetAttestationAsync(enrollmentGroup.Id);
                         },
                         s_provisioningServiceRetryPolicy,
                         CancellationToken.None)
@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (attestationMechanism == null)
                 {
-                    throw new ArgumentException($"The attestation mechanism for enrollment with group Id {enrollmentGroup.EnrollmentGroupId} could not retrieved, exiting test.");
+                    throw new ArgumentException($"The attestation mechanism for enrollment with group Id {enrollmentGroup.Id} could not retrieved, exiting test.");
                 }
 
                 if (attestationType == AttestationMechanismType.SymmetricKey)
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (enrollmentGroup != null)
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, null, enrollmentGroup.EnrollmentGroupId);
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, null, enrollmentGroup.Id);
                 }
             }
         }
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     .RunWithProvisioningServiceRetryAsync(
                         async () =>
                         {
-                            enrollmentGroupResult = await provisioningServiceClient.EnrollmentGroups.GetAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                            enrollmentGroupResult = await provisioningServiceClient.EnrollmentGroups.GetAsync(enrollmentGroup.Id).ConfigureAwait(false);
                         },
                         s_provisioningServiceRetryPolicy,
                         CancellationToken.None)
@@ -406,7 +406,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (enrollmentGroupResult == null)
                 {
-                    throw new ArgumentException($"The enrollment group with group Id {enrollmentGroup.EnrollmentGroupId} could not retrieved, exiting test.");
+                    throw new ArgumentException($"The enrollment group with group Id {enrollmentGroup.Id} could not retrieved, exiting test.");
                 }
 
                 Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
@@ -429,7 +429,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (enrollmentGroup != null)
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.Id).ConfigureAwait(false);
                 }
             }
         }

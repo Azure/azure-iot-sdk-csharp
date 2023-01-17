@@ -12,13 +12,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     internal class Parameters
     {
         [Option(
-            'p',
-            "CertificatePath",
-            Required = true,
-            HelpText = "The path to X509 certificate.")]
-        public string CertificatePath { get; set; }
-
-        [Option(
             'c',
             "ProvisioningConnectionString",
             Required = false,
