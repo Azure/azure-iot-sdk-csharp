@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
 
         [TestMethod]
-        public async Task FileUploadNotificationProcessorClient_OpenAsync_NotSettingMessageFeedbackProcessorThrows()
+        public async Task FileUploadNotificationProcessorClient_OpenAsync_NotSettingFileUploadNotificationProcessorThrows()
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(
