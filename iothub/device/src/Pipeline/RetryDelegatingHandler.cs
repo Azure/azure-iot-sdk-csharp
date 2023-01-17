@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -570,6 +571,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, refreshesOn, nameof(StartSasTokenLoop));
 
+            // This task runs in the background and is unmonitored.
+            // When this refresher is disposed it signals this task to be cancelled.
             _refreshLoop = RefreshSasTokenLoopAsync(refreshesOn, cancellationToken);
 
             if (Logging.IsEnabled)
@@ -592,12 +595,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (waitTime > TimeSpan.Zero)
                     {
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, refreshesOn, $"Token refreshes after {waitTime} {nameof(RefreshSasTokenLoopAsync)}.");
+
                         await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                     }
-
+                    
                     refreshesOn = await RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
 
-                    // what happens if refreshesOn is Date.Max
+                    // what happens if refreshesOn is DateTime.MaxValue ?
 
                     if (Logging.IsEnabled)
                         Logging.Info(this, refreshesOn, "Token has been refreshed.");
@@ -851,6 +857,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         _handlerSemaphore?.Dispose();
                         _handlerSemaphore = null;
+                        _loopCancellationTokenSource?.Dispose();
                     }
 
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
