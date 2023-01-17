@@ -35,20 +35,15 @@ namespace Microsoft.Azure.Devices.Tests
             // invalid hostname format
             string hostname = "5acme";
 
-            try
-            {
-                // act
-                string hubName = IotHubConnectionProperties.GetIotHubName(hostname);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                ex.Should().BeOfType<ArgumentException>();
-            }
+            //act
+            Action act = () => _ = IotHubConnectionProperties.GetIotHubName(hostname);
+            
+            // assert
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        public void IotHubConnectionPropertiesPropertiesTest()
+        public void IotHubConnectionPropertiesPropertiesAreSet()
         {
             // arrange and act
             string hostName = "acme.azure-devices.net";

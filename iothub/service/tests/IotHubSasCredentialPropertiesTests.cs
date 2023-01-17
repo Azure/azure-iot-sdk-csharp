@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public void TestCbsTokenGeneration_GetAuthorizationHeader()
+        public void TestCbsTokenGeneration_GetAuthorizationHeader_Validate()
         {
             // arrange
             string token = string.Format(

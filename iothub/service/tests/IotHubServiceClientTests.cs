@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Tests
     public class IotHubServiceClientTests
     {
         [TestMethod]
-        public void IotHubServiceClient_CreateSubClientsWithConnectionString()
+        public void IotHubServiceClient_SubClients_NotNull()
         {
             // arrange and act
             string cs = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public void IotHubServiceClient_CreateSubClientsWithAAD()
+        public void IotHubServiceClient_CreateSubClientsWithAad()
         {
             // arrange
             string hostName = "acme.azure-devices.net";
@@ -86,37 +86,26 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public void IotHubServiceClient_NullParamters_Throws()
+        public void IotHubServiceClient_NullParameters_Throws()
         {
             // arrange
             string hostName = null;
             var sasCredential = new AzureSasCredential("test");
 
-            try
-            {
-                // act
-                using var serviceClient = new IotHubServiceClient(hostName, sasCredential);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                ex.Should().BeOfType<ArgumentNullException>();
-            }
+            // act
+            Action act = () => _ = new IotHubServiceClient(hostName, sasCredential);
+            
+            // assert
+            act.Should().Throw<ArgumentNullException>();
 
             // rearrange
             string connectionString = null;
 
-            try
-            {
-                // act
-                using var serviceClient = new IotHubServiceClient(connectionString);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                ex.Should().BeOfType<ArgumentNullException>();
-            }
+            // act
+            act = () => _ = new IotHubServiceClient(connectionString);
 
+            // assert
+            act.Should().Throw<ArgumentNullException>();
         }
     }
 }

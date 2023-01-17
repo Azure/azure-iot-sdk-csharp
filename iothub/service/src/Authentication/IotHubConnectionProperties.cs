@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices
             // throw if hostname is invalid format
             if (index < 0)
             {
-                throw new ArgumentException("Invalid hostname format. Hostname should be in the format of IOTHUB_NAME.azure-devices.net");
+                throw new ArgumentException("Invalid host name format. Host names should be delimited by periods. E.g, \"IOTHUB_NAME.azure-devices.net\" for public endpoints.");
             }
 
             string iotHubName = hostName.Substring(0, index);
