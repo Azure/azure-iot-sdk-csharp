@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices
                 ? options.Clone()
                 : new();
 
-            _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
+            _credentialProvider = new IotHubTokenCredentialProperties(hostName, credential);
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
