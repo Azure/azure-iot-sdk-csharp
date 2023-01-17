@@ -124,7 +124,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             // act
             Func<Task> act = async () => await serviceClient.Messages.SendAsync(String.Empty, "moduleId123", msg);
 
-
             // assert
             await act.Should().ThrowAsync<ArgumentException>();
         }
@@ -145,7 +144,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
 
             // act
             Func<Task> act = async () => await serviceClient.Messages.SendAsync(null, String.Empty, msg);
-
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>();
