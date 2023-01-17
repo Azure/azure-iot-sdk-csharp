@@ -50,9 +50,14 @@ namespace Microsoft.Azure.Devices
             }
 
             int index = hostName.IndexOf(IotHubConnectionStringConstants.HostNameSeparator, StringComparison.OrdinalIgnoreCase);
-            string iotHubName = index >= 0
-                ? hostName.Substring(0, index)
-                : hostName;
+
+            // throw if hostname is invalid format
+            if (index < 0)
+            {
+                throw new ArgumentException("Invalid host name format. Host names should be delimited by periods. E.g, \"IOTHUB_NAME.azure-devices.net\" for public endpoints.");
+            }
+
+            string iotHubName = hostName.Substring(0, index);
             return iotHubName;
         }
     }
