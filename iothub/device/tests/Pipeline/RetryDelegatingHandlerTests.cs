@@ -483,14 +483,14 @@ namespace Microsoft.Azure.Devices.Client.Test
                     return Task.FromResult(DateTime.UtcNow);
                 });
 
-            var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // act
             await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             Func<Task> refreshToken = () => retryDelegatingHandler.RefreshSasTokenAsync(CancellationToken.None);
 
             // assert
-            var exception = await refreshToken.Should()
+            await refreshToken.Should()
                 .ThrowAsync<IotHubClientException>()
                 .ConfigureAwait(false);
             callCounter.Should().Be(1);
@@ -525,7 +525,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     return Task.FromResult(DateTime.UtcNow);
                 });
 
-            var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // act
             await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
