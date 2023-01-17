@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
             var settings = new IotHubClientMqttSettings() 
             { 
                 RemoteCertificateValidationCallback = callback,
-                WillMessage = new WillMessage()
+                WillMessage = new WillMessage
                 {
                     Payload= new byte[] { 1, 2, 3 },
                     QualityOfService = QualityOfService.AtMostOnce,

@@ -43,7 +43,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};ModuleId={ModuleId};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
             var connString = IotHubConnectionStringParser.Parse(connectionString);
             connString.ToString().Should().BeEquivalentTo(connectionString);
-
         }
 
         [TestMethod]
@@ -52,7 +51,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};ModuleId={ModuleId};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
             var connString = IotHubConnectionStringParser.Parse(connectionString);
             connString.ToString().Should().BeEquivalentTo(connectionString);
-
         }
 
         [TestMethod]
@@ -330,7 +328,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             iotHubConnectionCredentials.HostName.Should().Be(GatewayHostName);
             iotHubConnectionCredentials.SharedAccessKey.Should().Be(SharedAccessKey);
             iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<ClientAuthenticationWithSharedAccessKeyRefresh>();
-
             iotHubConnectionCredentials.SharedAccessSignature.Should().BeNull();
         }
     }

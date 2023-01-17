@@ -16,22 +16,22 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void IotHubDeviceClient_FatalException()
         {
-            OutOfMemoryException exception = new ();
+            OutOfMemoryException exception = new();
             Fx.IsFatal(exception).Should().BeTrue();
 
-            SEHException sEHException = new ();
+            SEHException sEHException = new();
             Fx.IsFatal(sEHException).Should().BeTrue();
 
-            NullReferenceException nullReferenceException = new ();
+            NullReferenceException nullReferenceException = new();
             Fx.IsFatal(nullReferenceException).Should().BeTrue();
 
-            TypeInitializationException typeInitializationException = new ("name", new OutOfMemoryException());
+            TypeInitializationException typeInitializationException = new("name", new OutOfMemoryException());
             Fx.IsFatal(typeInitializationException).Should().BeTrue();
 
-            TargetInvocationException targetInvocationException = new (new OutOfMemoryException());
+            TargetInvocationException targetInvocationException = new(new OutOfMemoryException());
             Fx.IsFatal(targetInvocationException).Should().BeTrue();
 
-            AggregateException aggregateException= new ("error", new OutOfMemoryException());
+            AggregateException aggregateException= new("error", new OutOfMemoryException());
             Fx.IsFatal(aggregateException).Should().BeTrue();
         }
 
@@ -41,10 +41,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             AggregateException aggregateException = new("error", new ArgumentException());
             Fx.IsFatal(aggregateException).Should().BeFalse();
 
-            ArgumentOutOfRangeException rangeException = new ();
+            ArgumentOutOfRangeException rangeException = new();
             Fx.IsFatal(rangeException).Should().BeFalse();
 
-            InvalidOperationException operationException= new ();
+            InvalidOperationException operationException= new();
             Fx.IsFatal(operationException).Should().BeFalse();
         }
     }

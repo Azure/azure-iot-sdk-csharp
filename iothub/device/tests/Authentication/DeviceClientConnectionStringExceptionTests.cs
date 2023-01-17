@@ -12,10 +12,16 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
     [TestCategory("Unit")]
     public class DeviceClientConnectionStringExceptionTests
     {
+        private const string HostName = "acme.azure-devices.net";
+        private const string DeviceId = "device1";
+        private const string ModuleId = "moduleId";
+        private const string SharedAccessKeyName = "AllAccessKey";
+        private const string SharedAccessKey = "dGVzdFN0cmluZzE=";
+
         [TestMethod]
         public async Task DeviceClientConnectionString_ExtraModuleId_ExceptionTest()
         {
-            const string connectionString = "SharedAccessKeyName=AllAccessKey;HostName=acme.azure-devices.net;DeviceId=device1;ModuleId=module1;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = $"HostName={HostName};DeviceId={DeviceId};ModuleId={ModuleId};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<InvalidOperationException>();
         }
@@ -23,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_MissingEndpoint_ExceptionTest()
         {
-            const string connectionString = "SharedAccessKeyName=AllAccessKey;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = $"DeviceId={DeviceId};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<FormatException>();
         }
@@ -31,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_MissingDeviceId_ExceptionTest()
         {
-            const string connectionString = "SharedAccessKeyName=AllAccessKey;HostName=acme.azure-devices.net;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
@@ -39,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_MissingSharedAccessKey_ExceptionTest()
         {
-            const string connectionString = "SharedAccessKeyName=AllAccessKey;HostName=acme.azure-devices.net;DeviceId=device1";
+            string connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKeyName={SharedAccessKeyName}";
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<FormatException>();
         }
@@ -47,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_MissingSharedAccessKeyNameAndKey_ExceptionTest()
         {
-            const string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1";
+            string connectionString = $"HostName={HostName};DeviceId={DeviceId}";
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<FormatException>();
         }
@@ -55,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_EmptySharedAccessKeyName_ExceptionTest()
         {
-            const string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=;SharedAccessKey=dGVzdFN0cmluZzE=;DeviceId=device1";
+            string connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKeyName=;SharedAccessKey={SharedAccessKey}";;
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<ArgumentException>();
         }
@@ -63,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_EmptySharedAccessKey_ExceptionTest()
         {
-            const string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=;DeviceId=device1";
+            string connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKey="; ;
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<ArgumentException>();
         }
@@ -71,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_EmptyDeviceId_ExceptionTest()
         {
-            const string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=dGVzdFN0cmluZzE=;DeviceId=";
+            string connectionString = $"HostName={HostName};DeviceId=;SharedAccessKey={SharedAccessKey}"; ;
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<ArgumentException>();
         }
@@ -79,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_EmptyEndpoint_ExceptionTest()
         {
-            const string connectionString = "HostName=;SharedAccessKey=dGVzdFN0cmluZzE=;DeviceId=device1";
+            string connectionString = $"HostName=;DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}"; ;
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<FormatException>();
         }
@@ -87,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_InvalidSharedAccessKey_ExceptionTest()
         {
-            const string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=INVALID;DeviceId=device1";
+            string connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKey=INVALID";
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<FormatException>();
         }
@@ -109,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_InvalidSharedAccessSignature_ExceptionTest()
         {
-            const string connectionString = "HostName=acme.azure-devices.net;SharedAccessSignature=INVALID;DeviceId=device1";
+            string connectionString = $"HostName={HostName};SharedAccessSignature=INVALID;DeviceId={DeviceId}";
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<InvalidOperationException>();
         }
@@ -131,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public async Task DeviceClientConnectionString_X509CertFalse_Test()
         {
-            const string connectionString = "HostName=acme.azure-devices.net;X509Cert=false;DeviceId=device";
+            string connectionString = $"HostName={HostName};X509Cert=false;DeviceId={DeviceId}";
             Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
             await act.Should().ThrowAsync<FormatException>();
         }

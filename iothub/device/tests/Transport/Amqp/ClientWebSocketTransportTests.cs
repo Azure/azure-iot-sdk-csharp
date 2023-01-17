@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         public void ClientWebSocket_CreateClient()
         {
             // arrange
-            using ClientWebSocket webSocket = new ();
+            using ClientWebSocket webSocket = new();
             EndPoint local = new UnixDomainSocketEndPoint(LocalEndPoint);
             EndPoint remote = new UnixDomainSocketEndPoint(RemoteEndPoint);
 

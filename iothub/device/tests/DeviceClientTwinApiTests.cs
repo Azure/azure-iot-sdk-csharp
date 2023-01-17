@@ -16,7 +16,11 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class DeviceClientTwinApiTests
     {
-        private static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+        static readonly string fakeHostName = "acme.azure-devices.net";
+        static readonly string fakeDeviceId = "fake";
+        static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzE=";
+        static readonly string fakeSharedAccessKeyName = "AllAccessKey";
+        static readonly string fakeConnectionString = $"HostName={fakeHostName};SharedAccessKeyName={fakeSharedAccessKeyName};DeviceId={fakeDeviceId};SharedAccessKey={fakeSharedAccessKey}";
 
         [TestMethod]
         public async Task IotHubDeviceClient_SetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()

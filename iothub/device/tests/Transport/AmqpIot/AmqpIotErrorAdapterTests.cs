@@ -27,7 +27,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             Exception ex = AmqpIotErrorAdapter.GetExceptionFromOutcome(new Rejected());
             ex.Should().BeEquivalentTo(new IotHubClientException("Unknown error."));
-
         }
 
         [TestMethod]
@@ -38,223 +37,66 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_InternalError()
+        [DataRow("amqp:internal-error", IotHubClientErrorCode.NetworkErrors)]
+        [DataRow("amqp:not-found", IotHubClientErrorCode.DeviceNotFound)]
+        [DataRow("amqp:unauthorized-access", IotHubClientErrorCode.Unauthorized)]
+        [DataRow("amqp:resource-limit-exceeded", IotHubClientErrorCode.QuotaExceeded)]
+        [DataRow("amqp:precondition-failed", IotHubClientErrorCode.PreconditionFailed)]
+        [DataRow("amqp:link:message-size-exceeded", IotHubClientErrorCode.MessageTooLarge)]
+        [DataRow("amqp:transaction:rollback", IotHubClientErrorCode.NetworkErrors)]
+        [DataRow("amqp:transaction:timeout", IotHubClientErrorCode.NetworkErrors)]
+        [DataRow("amqp:not-found", IotHubClientErrorCode.DeviceNotFound)]
+        
+        public void AmqpIotErrorAdapter_ToIotHubClientContract_AmqpException(string amqpErrorCode, IotHubClientErrorCode iotHubClientErrorCode)
         {
             var error = new Error
             {
-                Condition = AmqpErrorCode.InternalError,
+                Condition = amqpErrorCode,
             };
             IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
+            ex.ErrorCode.Should().Be(iotHubClientErrorCode);
         }
 
         [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_NotFound()
+        [DataRow("amqp:resource-limit-exceeded", IotHubClientErrorCode.QuotaExceeded)]
+        [DataRow("amqp:link:message-size-exceeded", IotHubClientErrorCode.MessageTooLarge)]
+        [DataRow("amqp:unauthorized-access", IotHubClientErrorCode.Unauthorized)]
+        [DataRow("amqp:not-found", IotHubClientErrorCode.DeviceNotFound)]
+        [DataRow(AmqpIotConstants.Vendor + ":timeout", IotHubClientErrorCode.Timeout)]
+        [DataRow(AmqpIotConstants.Vendor + ":message-lock-lost", IotHubClientErrorCode.DeviceMessageLockLost)]
+        [DataRow(AmqpIotConstants.Vendor + ":device-container-throttled", IotHubClientErrorCode.Throttled)]
+        [DataRow(AmqpIotConstants.Vendor + ":iot-hub-suspended", IotHubClientErrorCode.Suspended)]
+        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error(string amqpErrorCode, IotHubClientErrorCode iotHubClientErrorCode)
         {
             var error = new Error
             {
-                Condition = AmqpErrorCode.NotFound,
+                Condition = amqpErrorCode,
             };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceNotFound);
+            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
+            ex.ErrorCode.Should().Be(iotHubClientErrorCode);
         }
 
         [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_UnauthorizedAccess()
+        [DataRow("amqp:resource-locked")]
+        [DataRow("amqp:connection:forced")]
+        [DataRow("amqp:connection:framing-error")]
+        [DataRow("amqp:connection:redirect")]
+        [DataRow("amqp:session:window-violation")]
+        [DataRow("amqp:session-errant-link")]
+        [DataRow("amqp:session:handle-in-use")]
+        [DataRow("amqp:session:unattached-handle")]
+        [DataRow("amqp:link:detach-forced")]
+        [DataRow("amqp:link:transfer-limit-exceeded")]
+        [DataRow("amqp:link:redirect")]
+        [DataRow("amqp:link:stolen")]
+        public void AmqpIotErrorAdapter_ToIotHubClientContract_IsTransient(string amqpErrorCode)
         {
             var error = new Error
             {
-                Condition = AmqpErrorCode.UnauthorizedAccess,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_ResourceLimitExceeded()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.ResourceLimitExceeded,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.QuotaExceeded);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_PreconditionFailed()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.PreconditionFailed,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.PreconditionFailed);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_ResourceLocked()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.ResourceLocked,
+                Condition = amqpErrorCode,
             };
             IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
             ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_ConnectionForced()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.ConnectionForced,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_FramingError()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.FramingError,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_ConnectionRedirect()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.ConnectionRedirect,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_WindowViolation()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.WindowViolation,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_ErrantLink()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.ErrantLink,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_HandleInUse()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.HandleInUse,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_UnattachedHandle()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.UnattachedHandle,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_DetachForced()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.DetachForced,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_TransferLimitExceeded()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.TransferLimitExceeded,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_LinkRedirect()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.LinkRedirect,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Stolen()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.Stolen,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_MessageSizeExceeded()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.MessageSizeExceeded,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.MessageTooLarge);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_TransactionRollback()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.TransactionRollback,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_TransactionTimeout()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.TransactionTimeout,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(new AmqpException(error));
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
         }
 
         [TestMethod]
@@ -262,98 +104,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract((Error) null);
             ex.Should().BeEquivalentTo(new IotHubClientException("Unknown error."));
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_TransactionTimeout()
-        {
-            var error = new Error
-            {
-                Condition = AmqpIotConstants.Vendor + ":timeout",
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.Timeout);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_TimeoutError()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.NotFound,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceNotFound);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_MessageLockLostError()
-        {
-            var error = new Error
-            {
-                Condition = AmqpIotConstants.Vendor + ":message-lock-lost",
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceMessageLockLost);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_UnauthorizedAccess()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.UnauthorizedAccess,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_MessageSizeExceeded()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.MessageSizeExceeded,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.MessageTooLarge);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_ResourceLimitExceeded()
-        {
-            var error = new Error
-            {
-                Condition = AmqpErrorCode.ResourceLimitExceeded,
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.QuotaExceeded);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_DeviceContainerThrottled()
-        {
-            var error = new Error
-            {
-                Condition = AmqpIotConstants.Vendor + ":device-container-throttled",
-            };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.Throttled);
-        }
-
-        [TestMethod]
-        public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_IotHubSuspended()
-        {
-            var error = new Error
-            {
-                Condition = AmqpIotConstants.Vendor + ":iot-hub-suspended",
-                Info = new Fields
-                {
-                    { AmqpIotConstants.TrackingId, "1" }
-                },
-        };
-            IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract(error);
-            ex.ErrorCode.Should().Be(IotHubClientErrorCode.Suspended);
         }
 
         [TestMethod]
