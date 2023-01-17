@@ -65,7 +65,6 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
-        
         }
 
         [TestMethod]
