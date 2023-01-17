@@ -454,6 +454,87 @@ namespace Microsoft.Azure.Devices.Client.Test
             retryPolicy.Counter.Should().Be(2);
         }
 
+        [TestMethod]
+        public async Task RetryDelegatingHandler_RefreshTokenAsync_DoesNotRetryOnNonNetworkErrorCode()
+        {
+            // arrange
+            int callCounter = 0;
+
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { },
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
+
+            nextHandlerMock
+                .Setup(x => x.RefreshSasTokenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() =>
+                {
+                    if (++callCounter == 1)
+                    {
+                        throw new IotHubClientException("Device not found", IotHubClientErrorCode.DeviceNotFound);
+                    }
+                    return Task.FromResult(DateTime.UtcNow);
+                });
+
+            var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            // act
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            Func<Task> refreshToken = () => retryDelegatingHandler.RefreshSasTokenAsync(CancellationToken.None);
+
+            // assert
+            var exception = await refreshToken.Should()
+                .ThrowAsync<IotHubClientException>()
+                .ConfigureAwait(false);
+            callCounter.Should().Be(1);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandler_RefreshTokenAsync_Retries()
+        {
+            // arrange
+            int callCounter = 0;
+
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { },
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
+
+            nextHandlerMock
+                .Setup(x => x.RefreshSasTokenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() =>
+                {
+                    if (++callCounter == 1)
+                    {
+                        throw new IotHubClientException("network error", IotHubClientErrorCode.NetworkErrors);
+                    }
+                    return Task.FromResult(DateTime.UtcNow);
+                });
+
+            var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            // act
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await retryDelegatingHandler.RefreshSasTokenAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            callCounter.Should().Be(2);
+        }
+
         private class TestRetryPolicy : IIotHubClientRetryPolicy
         {
             public uint Counter { get; private set; }
