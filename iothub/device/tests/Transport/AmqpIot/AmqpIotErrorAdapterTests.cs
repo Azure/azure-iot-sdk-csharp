@@ -19,21 +19,21 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void AmqpIotErrorAdapter_ExceptionFromOutcome_Null()
         {
             Exception ex = AmqpIotErrorAdapter.GetExceptionFromOutcome(null);
-            ex.Should().BeEquivalentTo(new IotHubClientException("Unknown error."));
+            ex.Message.Should().Be(AmqpIotErrorAdapter.UnknownError);
         }
 
         [TestMethod]
         public void AmqpIotErrorAdapter_ExceptionFromOutcome_Rejected()
         {
             Exception ex = AmqpIotErrorAdapter.GetExceptionFromOutcome(new Rejected());
-            ex.Should().BeEquivalentTo(new IotHubClientException("Unknown error."));
+            ex.Message.Should().Be(AmqpIotErrorAdapter.UnknownError);
         }
 
         [TestMethod]
         public void AmqpIotErrorAdapter_ExceptionFromOutcome_Released()
         {
             Exception ex = AmqpIotErrorAdapter.GetExceptionFromOutcome(new Released());
-            ex.Should().BeEquivalentTo(new OperationCanceledException("AMQP link released."));
+            ex.Message.Should().Be(AmqpIotErrorAdapter.LinkReleased);
         }
 
         [TestMethod]
@@ -46,7 +46,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [DataRow("amqp:transaction:rollback", IotHubClientErrorCode.NetworkErrors)]
         [DataRow("amqp:transaction:timeout", IotHubClientErrorCode.NetworkErrors)]
         [DataRow("amqp:not-found", IotHubClientErrorCode.DeviceNotFound)]
-        
         public void AmqpIotErrorAdapter_ToIotHubClientContract_AmqpException(string amqpErrorCode, IotHubClientErrorCode iotHubClientErrorCode)
         {
             var error = new Error
@@ -103,25 +102,25 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void AmqpIotErrorAdapter_ToIotHubClientContract_Error_Null()
         {
             IotHubClientException ex = AmqpIotErrorAdapter.ToIotHubClientContract((Error) null);
-            ex.Should().BeEquivalentTo(new IotHubClientException("Unknown error."));
+            ex.ErrorCode.Should().Be(IotHubClientErrorCode.Unknown);
         }
 
         [TestMethod]
-        public void AmqpIotExceptionAdapter_ConvertToIotHubException_InvalidOperationException()
+        public void AmqpIotExceptionAdapter_ConvertToIotHubException_DisconnectedException()
         {
             InvalidOperationException exception = new("message");
             using var socket = new ClientWebSocket();
             using var source = new ClientWebSocketTransport(socket, null, null);
             source.SafeClose();
-            Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(exception, source);
-            ex.Should().BeEquivalentTo(new IotHubClientException("AMQP resource is disconnected.", IotHubClientErrorCode.NetworkErrors, exception));
+            var ex = (IotHubClientException)AmqpIotExceptionAdapter.ConvertToIotHubException(exception, source);
+            ex.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
         }
 
         [TestMethod]
         public void AmqpIotExceptionAdapter_ConvertToIotHubException_TimeoutException()
         {
             TimeoutException exception = new("message");
-            IotHubClientException ex = (IotHubClientException)AmqpIotExceptionAdapter.ConvertToIotHubException(exception, null);
+            var ex = (IotHubClientException)AmqpIotExceptionAdapter.ConvertToIotHubException(exception, null);
             ex.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
         }
 
@@ -141,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 Condition = AmqpErrorCode.MessageSizeExceeded,
             };
             OperationCanceledException exception = new("message", new AmqpException(error));
-            IotHubClientException ex = (IotHubClientException)AmqpIotExceptionAdapter.ConvertToIotHubException(exception, null);
+            var ex = (IotHubClientException)AmqpIotExceptionAdapter.ConvertToIotHubException(exception, null);
             ex.ErrorCode.Should().Be(IotHubClientErrorCode.MessageTooLarge);
         }
 
@@ -153,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 Condition = AmqpErrorCode.MessageSizeExceeded,
             };
             AmqpException exception = new (error);
-            IotHubClientException ex = (IotHubClientException)AmqpIotExceptionAdapter.ConvertToIotHubException(exception, null);
+            var ex = (IotHubClientException)AmqpIotExceptionAdapter.ConvertToIotHubException(exception, null);
             ex.ErrorCode.Should().Be(IotHubClientErrorCode.MessageTooLarge);
         }
     }

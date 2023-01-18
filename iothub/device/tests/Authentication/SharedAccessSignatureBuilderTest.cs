@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             WebUtility.UrlDecode(audience).Should().Be(token.Audience);
-            signature.Should().Be(token.Signature);
+            token.Signature.Should().Be(signature);
             token.KeyName.Should().Be(string.Empty);
             token.ExpiresOnUtc.Should().Be(SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)));
         }

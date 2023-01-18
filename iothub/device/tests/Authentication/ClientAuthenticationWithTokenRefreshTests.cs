@@ -19,16 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const string TestModuleId = "TestModuleID";
         private const string TestIotHubName = "contoso.azure-devices.net";
         private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
-        private static string TestSharedAccessKey;
-
-        static ClientAuthenticationWithTokenRefreshTests()
-        {
-            var rnd = new Random();
-            var rndBytes = new byte[32];
-            rnd.NextBytes(rndBytes);
-
-            TestSharedAccessKey = Convert.ToBase64String(rndBytes);
-        }
+        private const string TestSharedAccessKey = "dGVzdFN0cmluZzE=";
 
         [TestMethod]
         public void ClientAuthenticationWithTokenRefresh_Ctor_WrongArguments_Fail()
@@ -66,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // Until GetTokenAsync, the token is expired.
             DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(-DefaultTimeToLiveSeconds);
-            int timeDelta = (int)((refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds);
+            int timeDelta = (int)(refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds;
 
             Math.Abs(timeDelta).Should().BeLessThan(3, $"Expiration time delta is {timeDelta}");
             refresher.IsExpiring.Should().BeTrue();
@@ -87,10 +78,10 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             TestDeviceId.Should().Be(refresher.DeviceId);
 
-            int timeDelta = (int)((refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds);
+            int timeDelta = (int)(refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds;
             Math.Abs(timeDelta).Should().BeLessThan(3, $"Expiration time delta is {timeDelta}");
 
-            timeDelta = (int)((refresher.RefreshesOnUtc - expectedRefreshTime).TotalSeconds);
+            timeDelta = (int)(refresher.RefreshesOnUtc - expectedRefreshTime).TotalSeconds;
             Math.Abs(timeDelta).Should().BeLessThan(3, $"Expiration time delta is {timeDelta}");
 
             TimeSpan delayTime = refresher.RefreshesOnUtc - DateTime.UtcNow + TimeSpan.FromMilliseconds(500);
@@ -139,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
 
             expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl.TotalSeconds);
-            timeDelta = (int)((refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds);
+            timeDelta = (int)(refresher.ExpiresOnUtc - expectedExpiryTime).TotalSeconds;
             Math.Abs(timeDelta).Should().BeLessThan(3, $"Expiration time delta is {timeDelta}");
         }
 
@@ -253,19 +244,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void ClientAuthenticationWithSakRefresh_InvalidKey_Throws()
-        {
-            Action act = () => _ = new SharedAccessSignatureBuilder
-            {
-                // updating the key to change the length of it.
-                Key = TestSharedAccessKey + "123",
-            };
-            act.Should().Throw<FormatException>();
-        }
-
-        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
+        [DataRow(TestSharedAccessKey + "123")]
         public void ClientAuthenticationWithSakRefresh_InvalidKey_Throws(string key)
         {
             Action act = () => _ = new SharedAccessSignatureBuilder
