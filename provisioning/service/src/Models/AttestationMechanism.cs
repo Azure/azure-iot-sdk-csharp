@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        ///  Attestation Type.
+        ///  Attestation type.
         /// </summary>
         [DefaultValue(AttestationMechanismType.None)]
         [JsonProperty("type")]

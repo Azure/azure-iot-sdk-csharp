@@ -17,8 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <remarks>
         /// The provisioning service cannot parse the information in the body.
-        /// You shall cast the objects in the items using string and
-        /// parser it depending on the query the you sent.
+        /// Cast the objects in the items using string and parser it depending on the query the sent.
         /// </remarks>
         Unknown,
 
@@ -26,8 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// An individual enrollment.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of individual enrollments. You shall cast the
-        /// objects in the items using <see cref="IndividualEnrollment"/>.
+        /// The query result in a list of individual enrollments. Cast the objects in the items using <see cref="IndividualEnrollment"/>.
         /// </remarks>
         Enrollment,
 
@@ -35,8 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// An enrollment group.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of enrollment groups. You shall cast
-        /// the objects in the items using <see cref="Service.EnrollmentGroup"/>.
+        /// The query result in a list of enrollment groups. Cast the objects in the items using <see cref="Service.EnrollmentGroup"/>.
         /// </remarks>
         EnrollmentGroup,
 
@@ -44,8 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// A device registration.
         /// </summary>
         /// <remarks>
-        /// The query result in a list of device registrations. You shall cast
-        /// the objects in the items using <see cref="DeviceRegistrationState"/>.
+        /// The query result in a list of device registrations. Cast the objects in the items using <see cref="DeviceRegistrationState"/>.
         /// </remarks>
         DeviceRegistration,
     }

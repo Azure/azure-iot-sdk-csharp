@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string ContinuationTokenHeaderKey = "x-ms-continuation";
         private const string ItemTypeHeaderKey = "x-ms-item-type";
         private const string PageSizeHeaderKey = "x-ms-max-item-count";
-        private const string QueryUriFormat = "{0}/query?{1}";
+        private const string QueryUriFormat = "{0}/query";
 
         private readonly string _querySpecificationJson;
         private readonly IContractApiHttp _contractApiHttp;
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static Uri GetQueryUri(string path)
         {
-            return new Uri(string.Format(CultureInfo.InvariantCulture, QueryUriFormat, path, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, QueryUriFormat, path), UriKind.Relative);
         }
     }
 }

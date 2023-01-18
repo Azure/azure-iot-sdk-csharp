@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using CommandLine;
 
@@ -11,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     internal class Program
     {
         /// <summary>
-        /// A sample to manage enrollment groups in device provisioning service.
+        /// A sample to manage an individual enrollment in device provisioning service with an X.509 certificate.
         /// </summary>
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
@@ -30,16 +29,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     Environment.Exit(1);
                 });
 
-            if (string.IsNullOrWhiteSpace(parameters.ProvisioningConnectionString))
-            {
-                Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(result, null, null));
-                Environment.Exit(1);
-            }
-
-            using var certificate = new X509Certificate2(parameters.CertificatePath);
+            // This sample accepts the provisioning connection string as a parameter, if present.
+            Parameters.ValidateProvisioningConnectionString(parameters.ProvisioningConnectionString);
 
             using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
-            var sample = new EnrollmentGroupX509Sample(provisioningServiceClient, certificate);
+            var sample = new IndividualEnrollmentSample(provisioningServiceClient, parameters.DeviceId, parameters.RegistrationId);
             await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");

@@ -113,17 +113,31 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Getter for the query result type.
+        /// The query result type.
         /// </summary>
         public QueryResultType QueryType { get; protected private set; }
 
         /// <summary>
-        /// Getter for the list of query result items.
+        /// The list of query result items.
         /// </summary>
+        /// <remarks>
+        /// Depending on the <see cref="QueryType"/>, these items can be cast to a corresponding type:
+        /// <list type="bullet">
+        /// <item><description>
+        /// <see cref="QueryResultType.Enrollment"/>: <see cref="IndividualEnrollment"/>
+        /// </description></item>
+        /// <item><description>
+        /// <see cref="QueryResultType.EnrollmentGroup"/>: <see cref="EnrollmentGroup"/>
+        /// </description></item>
+        /// <item><description>
+        /// <see cref="QueryResultType.DeviceRegistration"/>: <see cref="DeviceRegistrationState"/>
+        /// </description></item>
+        /// </list>
+        /// </remarks>
         public IEnumerable<object> Items { get; protected private set; }
 
         /// <summary>
-        /// Getter for the query result continuation token.
+        /// The query result continuation token.
         /// </summary>
         public string ContinuationToken { get; protected private set; }
     }

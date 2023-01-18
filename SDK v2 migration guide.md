@@ -402,6 +402,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(...)` | `ProvisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(...)` | |
 | `DeviceRegistrationState.CreatedDateTimeUtc` | `DeviceRegistrationState.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
 | `DeviceRegistrationState.LastUpdatedDateTimeUtc` | `DeviceRegistrationState.LastUpdatedOnUtc` | See¹ |
+| `EnrollmentGroup.EnrollmentGroupId` | `EnrollmentGroup.Id` | Simplify property name. |
 | `EnrollmentGroup.CreatedDateTimeUtc` | `EnrollmentGroup.CreatedOnUtc` | See¹ |
 | `EnrollmentGroup.LastUpdatedDateTimeUtc` | `EnrollmentGroup.LastUpdatedOnUtc` | See¹ |
 | `IndividualEnrollment.CreatedDateTimeUtc` | `IndividualEnrollment.CreatedOnUtc` | See¹ |

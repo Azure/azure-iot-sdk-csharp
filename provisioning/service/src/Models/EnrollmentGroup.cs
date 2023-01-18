@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <para>
     /// To create or update an EnrollmentGroup on the provisioning service you should fill this object and call
     /// <see cref="EnrollmentGroupsClient.CreateOrUpdateAsync(EnrollmentGroup, System.Threading.CancellationToken)"/>.
-    /// The minimum information required by the provisioning service is the <see cref="EnrollmentGroup.EnrollmentGroupId"/>
+    /// The minimum information required by the provisioning service is the <see cref="EnrollmentGroup.Id"/>
     /// and <see cref="EnrollmentGroup.Attestation"/>.
     /// </para>
     /// <para>
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public EnrollmentGroup(string enrollmentGroupId, Attestation attestation)
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
-            EnrollmentGroupId = enrollmentGroupId;
+            Id = enrollmentGroupId;
             Attestation = attestation;
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNull(attestation, nameof(attestation));
 
-            EnrollmentGroupId = enrollmentGroupId;
+            Id = enrollmentGroupId;
             // This is the one reason why we can't use an empty constructor here.
             Attestation = attestation.GetAttestation();
             IotHubHostName = iotHubHostName;
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided string does not fit the enrollmentGroup Id requirements</exception>
         [JsonProperty("enrollmentGroupId")]
-        public string EnrollmentGroupId { get; internal set; }
+        public string Id { get; internal set; }
 
         /// <summary>
         /// Current registration state.

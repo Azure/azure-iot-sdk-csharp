@@ -13,14 +13,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="query"></param>
+        /// <param name="query">The query to issue.</param>
         internal QuerySpecification(string query)
         {
             Query = query;
         }
 
         /// <summary>
-        /// Operation mode
+        /// The query to issue.
         /// </summary>
         [JsonProperty("query")]
         internal string Query { get; set; }

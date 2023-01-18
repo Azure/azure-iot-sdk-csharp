@@ -22,10 +22,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class IndividualEnrollmentsClient
     {
         private const string ServiceName = "enrollments";
-        private const string EnrollmentIdUriFormat = "{0}/{1}?{2}";
+        private const string EnrollmentIdUriFormat = "{0}/{1}";
         private const string EnrollmentAttestationName = "attestationmechanism";
-        private const string EnrollmentUriFormat = "{0}?{1}";
-        private const string EnrollmentAttestationUriFormat = "{0}/{1}/{2}?{3}";
+        private const string EnrollmentUriFormat = "{0}";
+        private const string EnrollmentAttestationUriFormat = "{0}/{1}/{2}";
 
         private readonly IContractApiHttp _contractApiHttp;
         private readonly RetryHandler _internalRetryHandler;
@@ -310,19 +310,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static Uri GetEnrollmentUri(string registrationId)
         {
             registrationId = WebUtility.UrlEncode(registrationId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentIdUriFormat, ServiceName, registrationId, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentIdUriFormat, ServiceName, registrationId), UriKind.Relative);
         }
 
         private static Uri GetEnrollmentUri()
         {
-            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentUriFormat, ServiceName, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentUriFormat, ServiceName), UriKind.Relative);
         }
 
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
             return new Uri(
-                string.Format(CultureInfo.InvariantCulture, EnrollmentAttestationUriFormat, ServiceName, enrollmentGroupId, EnrollmentAttestationName, SdkUtils.ApiVersionQueryString),
+                string.Format(CultureInfo.InvariantCulture, EnrollmentAttestationUriFormat, ServiceName, enrollmentGroupId, EnrollmentAttestationName),
                 UriKind.Relative);
         }
     }
