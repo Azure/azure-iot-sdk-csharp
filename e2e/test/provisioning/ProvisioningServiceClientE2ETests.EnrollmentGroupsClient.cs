@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -28,6 +29,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningServiceClient_EnrollmentGroups_SymmetricKey_Update_Ok()
         {
             await ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(AttestationMechanismType.SymmetricKey, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task ProvisioningServiceClient_EnrollmentGroups_SymmetricKey_ForceUpdate_Ok()
+        {
+            await ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(AttestationMechanismType.SymmetricKey, true, true).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -177,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(AttestationMechanismType attestationType, bool update = default)
+        public static async Task ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(AttestationMechanismType attestationType, bool update = default, bool forceUpdate = default)
         {
             await ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(
                 attestationType,
@@ -185,7 +193,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 AllocationPolicy.Hashed,
                 null,
                 null,
-                update).ConfigureAwait(false);
+                update,
+                forceUpdate).ConfigureAwait(false);
         }
 
         public static async Task ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(
@@ -194,15 +203,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             IList<string> iothubs,
-            bool update)
+            bool update,
+            bool forceUpdate)
         {
             string groupId = s_devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService();
-            EnrollmentGroup enrollmentGroup = null;
+            EnrollmentGroup createdEnrollmentGroup = null;
 
             try
             {
-                enrollmentGroup = await CreateEnrollmentGroupAsync(
+                createdEnrollmentGroup = await CreateEnrollmentGroupAsync(
                         provisioningServiceClient,
                         attestationType,
                         groupId,
@@ -213,43 +223,73 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         null)
                     .ConfigureAwait(false);
 
-                EnrollmentGroup enrollmentGroupResult = null;
+                EnrollmentGroup retrievedEnrollmentGroup = null;
                 await RetryOperationHelper
                     .RunWithProvisioningServiceRetryAsync(
                         async () =>
                         {
-                            enrollmentGroupResult = await provisioningServiceClient.EnrollmentGroups.GetAsync(enrollmentGroup.Id).ConfigureAwait(false);
+                            retrievedEnrollmentGroup = await provisioningServiceClient.EnrollmentGroups.GetAsync(createdEnrollmentGroup.Id).ConfigureAwait(false);
                         },
                         s_provisioningServiceRetryPolicy,
                         CancellationToken.None)
                     .ConfigureAwait(false);
 
-                if (enrollmentGroupResult == null)
+                if (retrievedEnrollmentGroup == null)
                 {
-                    throw new ArgumentException($"The enrollment group with group Id {enrollmentGroup.Id} could not retrieved, exiting test.");
+                    throw new ArgumentException($"The enrollment group with group Id {createdEnrollmentGroup.Id} could not retrieved, exiting test.");
                 }
 
-                Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
+                retrievedEnrollmentGroup.ProvisioningStatus.Should().Be(ProvisioningStatus.Enabled);
 
                 if (reprovisionPolicy != null)
                 {
-                    Assert.AreEqual(reprovisionPolicy.MigrateDeviceData, enrollmentGroupResult.ReprovisionPolicy.MigrateDeviceData);
-                    Assert.AreEqual(reprovisionPolicy.UpdateHubAssignment, enrollmentGroupResult.ReprovisionPolicy.UpdateHubAssignment);
+                    retrievedEnrollmentGroup.ReprovisionPolicy.UpdateHubAssignment.Should().Be(reprovisionPolicy.UpdateHubAssignment);
+                    retrievedEnrollmentGroup.ReprovisionPolicy.MigrateDeviceData.Should().Be(reprovisionPolicy.MigrateDeviceData);
                 }
 
                 if (customAllocationDefinition != null)
                 {
-                    Assert.AreEqual(customAllocationDefinition.WebhookUrl, enrollmentGroupResult.CustomAllocationDefinition.WebhookUrl);
-                    Assert.AreEqual(customAllocationDefinition.ApiVersion, enrollmentGroupResult.CustomAllocationDefinition.ApiVersion);
+                    retrievedEnrollmentGroup.CustomAllocationDefinition.WebhookUrl.Should().Be(customAllocationDefinition.WebhookUrl);
+                    retrievedEnrollmentGroup.CustomAllocationDefinition.ApiVersion.Should().Be(customAllocationDefinition.ApiVersion);
                 }
 
-                Assert.AreEqual(allocationPolicy, enrollmentGroup.AllocationPolicy);
+                //allocation policy is never null
+                retrievedEnrollmentGroup.AllocationPolicy.Should().Be(allocationPolicy);
+
+                if (update)
+                {
+                    retrievedEnrollmentGroup.Capabilities = new InitialTwinCapabilities { IsIotEdge = true };
+
+                    if (forceUpdate)
+                    {
+                        retrievedEnrollmentGroup.ETag = ETag.All;
+                    }
+
+                    EnrollmentGroup updatedEnrollmentGroup = null;
+                    await RetryOperationHelper
+                        .RunWithProvisioningServiceRetryAsync(
+                            async () =>
+                            {
+                                updatedEnrollmentGroup = await provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(retrievedEnrollmentGroup).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+
+                    if (updatedEnrollmentGroup == null)
+                    {
+                        throw new ArgumentException($"The individual enrollment with registration Id {retrievedEnrollmentGroup.Id} could not updated, exiting test.");
+                    }
+
+                    updatedEnrollmentGroup.ProvisioningStatus.Should().Be(ProvisioningStatus.Enabled);
+                    updatedEnrollmentGroup.Id.Should().Be(retrievedEnrollmentGroup.Id);
+                }
             }
             finally
             {
-                if (enrollmentGroup != null)
+                if (createdEnrollmentGroup != null)
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", enrollmentGroup.Id).ConfigureAwait(false);
+                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", createdEnrollmentGroup.Id).ConfigureAwait(false);
                 }
             }
         }

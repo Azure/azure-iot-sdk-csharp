@@ -7,6 +7,7 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -41,6 +42,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        public async Task ProvisioningServiceClient_IndividualEnrollment_SymmetricKey_ForceUpdate_Ok()
+        {
+            await ProvisioningServiceClient_IndividualEnrollments_CreateOrUpdate_Ok("", AttestationMechanismType.SymmetricKey, true, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_IndividualEnrollment_SymmetricKey_Get_Ok()
         {
             await ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType.SymmetricKey);
@@ -61,6 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 AllocationPolicy.GeoLatency,
                 customAllocationDefinition,
                 null,
+                false,
                 false).ConfigureAwait(false);
         }
 
@@ -211,7 +220,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task ProvisioningServiceClient_IndividualEnrollments_CreateOrUpdate_Ok(string proxyServerAddress, AttestationMechanismType attestationType, bool update = default)
+        public static async Task ProvisioningServiceClient_IndividualEnrollments_CreateOrUpdate_Ok(string proxyServerAddress, AttestationMechanismType attestationType, bool update = default, bool forceUpdate = default)
         {
             await ProvisioningServiceClient_IndividualEnrollments_CreateOrUpdate_Ok(
                     proxyServerAddress,
@@ -220,7 +229,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AllocationPolicy.Hashed,
                     null,
                     null,
-                    update)
+                    update,
+                    forceUpdate)
                 .ConfigureAwait(false);
         }
 
@@ -231,7 +241,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
            AllocationPolicy allocationPolicy,
            CustomAllocationDefinition customAllocationDefinition,
            IList<string> iotHubsToProvisionTo,
-           bool update)
+           bool update,
+           bool forceUpdate)
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
@@ -288,6 +299,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     retrievedIndividualEnrollment.Capabilities = new InitialTwinCapabilities { IsIotEdge = true };
 
+                    if (forceUpdate)
+                    {
+                        retrievedIndividualEnrollment.ETag = ETag.All;
+                    }
+
                     IndividualEnrollment updatedIndividualEnrollment = null;
                     await RetryOperationHelper
                         .RunWithProvisioningServiceRetryAsync(
@@ -301,7 +317,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     if (updatedIndividualEnrollment == null)
                     {
-                        throw new ArgumentException($"The individual enrollment with registration Id {createdIndividualEnrollment.RegistrationId} could not updated, exiting test.");
+                        throw new ArgumentException($"The individual enrollment with registration Id {retrievedIndividualEnrollment.RegistrationId} could not updated, exiting test.");
                     }
 
                     updatedIndividualEnrollment.ProvisioningStatus.Should().Be(ProvisioningStatus.Enabled);
