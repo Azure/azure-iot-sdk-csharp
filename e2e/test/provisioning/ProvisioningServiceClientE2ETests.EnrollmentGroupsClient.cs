@@ -59,6 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 AllocationPolicy.GeoLatency,
                 customAllocationDefinition,
                 null,
+                false,
                 false).ConfigureAwait(false);
         }
 
