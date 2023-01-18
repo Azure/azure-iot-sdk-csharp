@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task ProvisioningServiceClient_EnrollmentGroups_SymmetricKey_Create_WithReprovisioningFields_Ok()
+        public async Task ProvisioningServiceClient_EnrollmentGroups_SymmetricKey_WithReprovisioningFields_Create_Ok()
         {
             // This webhook won't actually work for reprovisioning, but this test is only testing that the field is accepted by the service
             var customAllocationDefinition = new CustomAllocationDefinition { ApiVersion = "2019-03-31", WebhookUrl = new Uri("https://www.microsoft.com") };
