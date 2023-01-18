@@ -13,21 +13,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <remarks>
     /// User receive this info from the provisioning service as result of X509 operations.
     /// </remarks>
-    /// <example>
-    /// This info contains a set of parameters, The following JSON is an example of the X509 certificate info.
-    /// <code language="json">
-    /// {
-    ///     "subjectName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",
-    ///     "sha1Thumbprint": "0000000000000000000000000000000000",
-    ///     "sha256Thumbprint": "validEnrollmentGroupId",
-    ///     "issuerName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",
-    ///     "notBeforeUtc": "2017-11-14T12:34:18Z",
-    ///     "notAfterUtc": "2017-11-20T12:34:18Z",
-    ///     "serialNumber": "000000000000000000",
-    ///     "version": 3
-    /// }
-    /// </code>
-    /// </example>
     public class X509CertificateInfo
     {
         [JsonConstructor]

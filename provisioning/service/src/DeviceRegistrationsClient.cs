@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class DeviceRegistrationStatesClient
     {
         private const string ServiceName = "registrations";
-        private const string DeviceRegistrationStatusUriFormat = "{0}/{1}?{2}";
+        private const string DeviceRegistrationStatusUriFormat = "{0}/{1}";
 
         private readonly IContractApiHttp _contractApiHttp;
         private readonly RetryHandler _internalRetryHandler;
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             id = WebUtility.UrlEncode(id);
             return new Uri(
-                string.Format(CultureInfo.InvariantCulture, DeviceRegistrationStatusUriFormat, ServiceName, id, SdkUtils.ApiVersionQueryString),
+                string.Format(CultureInfo.InvariantCulture, DeviceRegistrationStatusUriFormat, ServiceName, id),
                 UriKind.Relative);
         }
     }

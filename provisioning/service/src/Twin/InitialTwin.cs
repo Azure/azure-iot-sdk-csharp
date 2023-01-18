@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         public InitialTwin()
         {
+            _properties ??= new InitialTwinProperties();
         }
 
         [JsonConstructor]
@@ -53,10 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             set => _properties = value == null
                 ? null
-                : new InitialTwinProperties
-                    {
-                        Desired = value,
-                    };
+                : new InitialTwinProperties { Desired = value };
         }
     }
 }
