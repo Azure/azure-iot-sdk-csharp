@@ -409,8 +409,7 @@ namespace Microsoft.Azure.Devices.Client
 
             await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
 
-            if (_clientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings
-                && IotHubConnectionCredentials.AuthenticationModel == AuthenticationModel.SasIndividual)
+            if (_clientOptions.TransportSettings is IotHubClientAmqpSettings)
             {
                 await InnerHandler.StopSasTokenLoopAsync().ConfigureAwait(false);
             }
