@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange - act
             var auth = new Mock<AuthenticationProvider>();
-            auth.Setup(p => p.GetRegistrationId()).Returns("registrationId");
 
             var request = new ProvisioningTransportRegisterRequest(
                 _globalDeviceEndpoint,
@@ -33,6 +32,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 auth.Object);
 
             // assert
+            request.GlobalDeviceEndpoint.Should().Be(_globalDeviceEndpoint);
+            request.IdScope.Should().Be(_idScope);
             request.Payload.Should().BeNull();
         }
 
@@ -41,7 +42,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange - act
             var auth = new Mock<AuthenticationProvider>();
-            auth.Setup(p => p.GetRegistrationId()).Returns("registrationId");
 
             var request = new ProvisioningTransportRegisterRequest(
                 _globalDeviceEndpoint, 
@@ -50,6 +50,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 new RegistrationRequestPayload());
 
             // assert
+            request.GlobalDeviceEndpoint.Should().Be(_globalDeviceEndpoint);
+            request.IdScope.Should().Be(_idScope);
             request.Payload.Should().BeEquivalentTo(new RegistrationRequestPayload());
         }
     }

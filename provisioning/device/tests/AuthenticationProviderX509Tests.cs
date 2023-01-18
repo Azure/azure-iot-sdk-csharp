@@ -14,7 +14,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         [TestMethod]
         public void AuthenticationProviderX509_ThrowsWhenMissingCert()
         {
+            // arrange - act
             Func<AuthenticationProviderX509> act = () => new AuthenticationProviderX509(null);
+
+            // assert
             act.Should().Throw<ArgumentException>();
         }
     }
