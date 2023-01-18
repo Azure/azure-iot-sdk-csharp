@@ -103,25 +103,6 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-        [DataRow(null, "moduleId123")]
-        [DataRow("deviceId123", null)]
-        [DataRow("", "moduleId123")]
-        [DataRow("deviceId123", "")]
-        public async Task ModulesClient_CreateAs_NullParamsThrows(string deviceId, string moduleId)
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(
-                s_connectionString,
-                s_options);
-
-            // act
-            Func<Task> act = async () => await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
-        }
-
-        [TestMethod]
         [DataRow(" ", "moduleId123")]
         [DataRow("deviceId123", " ")]
         public async Task ModulesClient_GetAsync_EmptyParamsThrows(string deviceId, string moduleId)
