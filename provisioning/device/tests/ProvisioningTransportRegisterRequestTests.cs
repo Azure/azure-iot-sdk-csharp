@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         private readonly string _idScope = "id";
 
         [TestMethod]
-        public void ProvisioningTransportRegisterRequest_DefaultConstructor()
+        public void ProvisioningTransportRegisterRequest_DefaultPayload()
         {
             // arrange - act
             var auth = new Mock<AuthenticationProvider>();
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 auth.Object);
 
             // assert
-            request.Should().NotBeNull();
+            request.Payload.Should().BeNull();
         }
 
         [TestMethod]
