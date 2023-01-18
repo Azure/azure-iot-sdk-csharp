@@ -45,7 +45,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 options);
             var sample = new EdgeModuleMessageSample(moduleClient, outputTarget, appRunTime);
             await sample.RunSampleAsync();
-            await moduleClient.CloseAsync();
 
             Console.WriteLine("Done.");
             return 0;

@@ -38,10 +38,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"{DateTime.Now}> Press Control+C at any time to quit the sample.");
 
             _moduleClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
-            await _moduleClient.OpenAsync(cts.Token).ConfigureAwait(false);
+            await _moduleClient.OpenAsync(cts.Token);
 
             // Now setting a callback for receiving a message from the module queue.
-            await _moduleClient.SetIncomingMessageCallbackAsync(PrintMessage).ConfigureAwait(false);
+            await _moduleClient.SetIncomingMessageCallbackAsync(PrintMessage);
             Console.WriteLine($"\n{DateTime.Now}> Subscribed to receive module messages over callback.");
 
             // Now wait to receive module messages through the callback.
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Now sending message to the module itself.
             var message = new TelemetryMessage(Encoding.ASCII.GetBytes("sample message"));
-            await _moduleClient.SendTelemetryAsync("toNextMod", message).ConfigureAwait(false);
+            await _moduleClient.SendTelemetryAsync("toNextMod", message);
             Console.WriteLine($"\n{DateTime.Now}> Sent telemetry message to the module.");
 
             // Now continue to send messages to the module with every key press of 'M'.
@@ -58,12 +58,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 if (Console.ReadKey().Key == ConsoleKey.M)
                 {
                     message = new TelemetryMessage(Encoding.ASCII.GetBytes("sample message"));
-                    await _moduleClient.SendTelemetryAsync(_outputTarget, message).ConfigureAwait(false);
+                    await _moduleClient.SendTelemetryAsync(_outputTarget, message);
                 }
             }
-
-            // Now disposing module client.
-            await _moduleClient.DisposeAsync().ConfigureAwait(false);
         }
 
         private static void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
@@ -92,6 +89,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 Console.WriteLine($"Could not deserialize the received message. Please check your serializer settings.");
             }
+            // The method signature requires a Task<MessageAcknowledgement> return value, but as this sample
+            // does not need to make any async calls, we simply return with Task.FromResult().
             return Task.FromResult(MessageAcknowledgement.Complete);
         }
     }
