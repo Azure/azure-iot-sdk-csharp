@@ -48,7 +48,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ValidateHostName()
         {
-            // missing hostname
             string connectionString = $"SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}";
             Action act = () => _ = new IotHubConnectionCredentials(connectionString);
             act.Should().Throw<FormatException>();
@@ -57,7 +56,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ValidateDeviceId()
         {
-            // missing device id
             string connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
             Action act = () => _ = new IotHubConnectionCredentials(connectionString);
             act.Should().Throw<ArgumentNullException>();
@@ -66,7 +64,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ValidateModuleId()
         {
-            // missing module id
             string connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceId};ModuleId={""};SharedAccessKey={SharedAccessKey}";
             Action act = () => _ = new IotHubConnectionCredentials(connectionString);
             act.Should().Throw<ArgumentException>();
@@ -75,7 +72,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ValidateKey()
         {
-            // missing access key
             string connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceId};";
             Action act = () => _ = new IotHubConnectionCredentials(connectionString);
             act.Should().Throw<FormatException>();
@@ -84,7 +80,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_Authx509_ValidateKey()
         {
-            // missing access key
             string connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceId};X509=true";
             Action act = () => _ = new IotHubConnectionCredentials(connectionString);
             act.Should().Throw<FormatException>();

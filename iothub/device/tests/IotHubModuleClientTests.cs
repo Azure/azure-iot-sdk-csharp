@@ -20,14 +20,14 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class IotHubModuleClientTests
     {
-        static readonly string deviceId = "module-twin-test";
-        static readonly string moduleId = "mongo-server";
-        static readonly string fakeHostName = "acme.azure-devices.net";
-        static readonly string fakeGatewayHostName = "edge.iot.microsoft.com";
-        static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzQ=";
-        static readonly string connectionStringWithModuleId = $"GatewayHostName={fakeGatewayHostName};HostName={fakeHostName};DeviceId={deviceId};ModuleId={moduleId};SharedAccessKey={fakeSharedAccessKey}";
-        static readonly string connectionStringWithoutModuleId = $"GatewayHostName={fakeGatewayHostName};HostName={fakeHostName};DeviceId={deviceId};SharedAccessKey={fakeSharedAccessKey}";
-        static readonly string fakeConnectionString = $"HostName={fakeHostName};SharedAccessKeyName=AllAccessKey;DeviceId={deviceId};ModuleId={moduleId};SharedAccessKey={fakeSharedAccessKey}";
+        private static readonly string deviceId = "module-twin-test";
+        private static readonly string moduleId = "mongo-server";
+        private static readonly string fakeHostName = "acme.azure-devices.net";
+        private static readonly string fakeGatewayHostName = "edge.iot.microsoft.com";
+        private static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzQ=";
+        private static readonly string connectionStringWithModuleId = $"GatewayHostName={fakeGatewayHostName};HostName={fakeHostName};DeviceId={deviceId};ModuleId={moduleId};SharedAccessKey={fakeSharedAccessKey}";
+        private static readonly string connectionStringWithoutModuleId = $"GatewayHostName={fakeGatewayHostName};HostName={fakeHostName};DeviceId={deviceId};SharedAccessKey={fakeSharedAccessKey}";
+        private static readonly string fakeConnectionString = $"HostName={fakeHostName};SharedAccessKeyName=AllAccessKey;DeviceId={deviceId};ModuleId={moduleId};SharedAccessKey={fakeSharedAccessKey}";
 #pragma warning disable SYSLIB0026 // Type or member is obsolete
         private static readonly X509Certificate2 s_cert = new();
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
@@ -165,7 +165,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             testMessage.Properties.Should().NotBeNull();
             testMessage.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
             testMessage1.InputName.Should().BeNull();
-
         }
 
         [TestMethod]
@@ -213,7 +212,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             testMessage.ConnectionModuleId.Should().Be("connectionModuleId");
 
             testMessage1.InputName.Should().BeNull();
-
         }
 
         [TestMethod]

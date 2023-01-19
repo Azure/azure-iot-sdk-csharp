@@ -19,11 +19,11 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public sealed class IotHubDeviceClientTests : IDisposable
     {
-        static readonly string fakeHostName = "acme.azure-devices.net";
-        static readonly string fakeDeviceId = "fake";
-        static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzE=";
-        static readonly string fakeSharedAccessKeyName = "AllAccessKey";
-        static readonly string fakeConnectionString = $"HostName={fakeHostName};SharedAccessKeyName={fakeSharedAccessKeyName};DeviceId={fakeDeviceId};SharedAccessKey={fakeSharedAccessKey}";
+        private static readonly string fakeHostName = "acme.azure-devices.net";
+        private static readonly string fakeDeviceId = "fake";
+        private static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzE=";
+        private static readonly string fakeSharedAccessKeyName = "AllAccessKey";
+        private static readonly string fakeConnectionString = $"HostName={fakeHostName};SharedAccessKeyName={fakeSharedAccessKeyName};DeviceId={fakeDeviceId};SharedAccessKey={fakeSharedAccessKey}";
 
         private static readonly IotHubConnectionCredentials s_iotHubConnectionCredentials = new(fakeConnectionString);
 #pragma warning disable SYSLIB0026 // Type or member is obsolete

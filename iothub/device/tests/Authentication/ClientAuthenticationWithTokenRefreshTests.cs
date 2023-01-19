@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const string TestDeviceId = "TestDeviceID";
         private const string TestModuleId = "TestModuleID";
         private const string TestIotHubName = "contoso.azure-devices.net";
-        private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
         private const string TestSharedAccessKey = "dGVzdFN0cmluZzE=";
+        private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
 
         [TestMethod]
         public void ClientAuthenticationWithTokenRefresh_Ctor_WrongArguments_Fail()
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             iotHubConnectionCredentials.SharedAccessSignature.Should().BeNull();
             TestDeviceId.Should().Be(iotHubConnectionCredentials.DeviceId);
             token1.Should().NotBeNull();
-            token1.Should().NotBeNull();
+            token2.Should().NotBeNull();
             token2.TokenValue.Should().Be(token1);
         }
 

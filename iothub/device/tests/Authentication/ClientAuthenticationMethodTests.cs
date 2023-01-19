@@ -10,12 +10,12 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
     [TestCategory("Unit")]
     public class ClientAuthenticationMethodTests
     {
-        static readonly string fakeHostName = "acme.azure-devices.net";
-        static readonly string fakeModuleId = "dummyModuleId";
-        static readonly string fakeDeviceId = "dummyDeviceId";
-        static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzE=";
-        static readonly string fakeConnectionString = $"HostName={fakeHostName};DeviceId={fakeDeviceId};ModuleId={fakeModuleId};SharedAccessKey={fakeSharedAccessKey}";
-        static readonly string fakeToken = $"HostName={fakeHostName};CredentialScope=Module;DeviceId={fakeDeviceId};ModuleID={fakeModuleId};SharedAccessSignature=SharedAccessSignature sr=iot-edge-1003.private.azure-devices-int.net%2Fdevices%2F{fakeDeviceId}%2Fmodules%2F{fakeModuleId}&sig=dGVzdFN0cmluZzY=&se=4102358400";
+        private static readonly string fakeHostName = "acme.azure-devices.net";
+        private static readonly string fakeModuleId = "dummyModuleId";
+        private static readonly string fakeDeviceId = "dummyDeviceId";
+        private static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzE=";
+        private static readonly string fakeConnectionString = $"HostName={fakeHostName};DeviceId={fakeDeviceId};ModuleId={fakeModuleId};SharedAccessKey={fakeSharedAccessKey}";
+        private static readonly string fakeToken = $"HostName={fakeHostName};CredentialScope=Module;DeviceId={fakeDeviceId};ModuleID={fakeModuleId};SharedAccessSignature=SharedAccessSignature sr=iot-edge-1003.private.azure-devices-int.net%2Fdevices%2F{fakeDeviceId}%2Fmodules%2F{fakeModuleId}&sig=dGVzdFN0cmluZzY=&se=4102358400";
 
         [TestMethod]
         public void IotHubDeviceClient_ClientAuthenticationWithRegistrySymmetricKey_Test()

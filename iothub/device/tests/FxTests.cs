@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             TargetInvocationException targetInvocationException = new(new OutOfMemoryException());
             Fx.IsFatal(targetInvocationException).Should().BeTrue();
 
-            AggregateException aggregateException= new("error", new OutOfMemoryException());
+            AggregateException aggregateException = new("error", new OutOfMemoryException());
             Fx.IsFatal(aggregateException).Should().BeTrue();
         }
 
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             ArgumentOutOfRangeException rangeException = new();
             Fx.IsFatal(rangeException).Should().BeFalse();
 
-            InvalidOperationException operationException= new();
+            InvalidOperationException operationException = new();
             Fx.IsFatal(operationException).Should().BeFalse();
         }
     }
