@@ -41,15 +41,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _moduleClient.OpenAsync(cts.Token);
 
             // Now setting a callback for receiving a message from the module queue.
-            await _moduleClient.SetIncomingMessageCallbackAsync(PrintMessage);
+            await _moduleClient.SetIncomingMessageCallbackAsync(PrintMessage, cts.Token);
             Console.WriteLine($"\n{DateTime.Now}> Subscribed to receive module messages over callback.");
 
             // Now wait to receive module messages through the callback.
             Console.WriteLine($"\n{DateTime.Now}> Module waiting to receive messages from the hub...");
 
             // Now sending message to the module itself.
-            var message = new TelemetryMessage(Encoding.ASCII.GetBytes("sample message"));
-            await _moduleClient.SendTelemetryAsync("toNextMod", message);
+            var message = new TelemetryMessage(Encoding.ASCII.GetBytes("Sample message"));
+            await _moduleClient.SendTelemetryAsync("toNextMod", message, cts.Token);
             Console.WriteLine($"\n{DateTime.Now}> Sent telemetry message to the module.");
 
             // Now continue to send messages to the module with every key press of 'M'.
@@ -57,8 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 if (Console.ReadKey().Key == ConsoleKey.M)
                 {
-                    message = new TelemetryMessage(Encoding.ASCII.GetBytes("sample message"));
-                    await _moduleClient.SendTelemetryAsync(_outputTarget, message);
+                    message = new TelemetryMessage(Encoding.ASCII.GetBytes("Sample message"));
+                    await _moduleClient.SendTelemetryAsync(_outputTarget, message, cts.Token);
                 }
             }
         }
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
             else
             {
-                Console.WriteLine($"Could not deserialize the received message. Please check your serializer settings.");
+                Console.WriteLine("Could not deserialize the received message. Please check your serializer settings.");
             }
             // The method signature requires a Task<MessageAcknowledgement> return value, but as this sample
             // does not need to make any async calls, we simply return with Task.FromResult().
