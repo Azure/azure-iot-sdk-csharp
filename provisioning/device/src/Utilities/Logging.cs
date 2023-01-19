@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -12,8 +11,6 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    // Logging is not part of the core functionality of the client, so we will not concern ourselves with code coverage of this class.
-    [ExcludeFromCodeCoverage]
     internal sealed partial class Logging : EventSource
     {
         /// <summary>The single event source instance to use for all logging.</summary>
