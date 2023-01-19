@@ -95,17 +95,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             BulkEnrollmentOperationResult createBulkEnrollmentResult = await provisioningServiceClient
                 .EnrollmentGroups
-                .RunBulkOperationAsync(BulkOperationMode.Create, createEnrollmentGroupList);
+                .RunBulkOperationAsync(BulkOperationMode.Create, createEnrollmentGroupList)
+                .ConfigureAwait(false);
 
             createBulkEnrollmentResult.IsSuccessful.Should().BeTrue();
 
             // update two enrollments in bulk
-            EnrollmentGroup retrievedEnrollment1 = await provisioningServiceClient.EnrollmentGroups.GetAsync(registrationId1);
+            EnrollmentGroup retrievedEnrollment1 = await provisioningServiceClient.EnrollmentGroups.GetAsync(registrationId1).ConfigureAwait(false);
             retrievedEnrollment1.Capabilities = new InitialTwinCapabilities
             {
                 IsIotEdge = true,
             };
-            EnrollmentGroup retrievedEnrollment2 = await provisioningServiceClient.EnrollmentGroups.GetAsync(registrationId2);
+            EnrollmentGroup retrievedEnrollment2 = await provisioningServiceClient.EnrollmentGroups.GetAsync(registrationId2).ConfigureAwait(false);
             retrievedEnrollment2.Capabilities = new InitialTwinCapabilities
             {
                 IsIotEdge = true,
@@ -114,18 +115,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             BulkEnrollmentOperationResult updateBulkEnrollmentResult = await provisioningServiceClient
                 .EnrollmentGroups
-                .RunBulkOperationAsync(BulkOperationMode.Update, updateEnrollmentGroupsList);
+                .RunBulkOperationAsync(BulkOperationMode.Update, updateEnrollmentGroupsList)
+                .ConfigureAwait(false);
 
             updateBulkEnrollmentResult.IsSuccessful.Should().BeTrue();
 
             // delete two enrollments in bulk
-            retrievedEnrollment1 = await provisioningServiceClient.EnrollmentGroups.GetAsync(registrationId1);
-            retrievedEnrollment2 = await provisioningServiceClient.EnrollmentGroups.GetAsync(registrationId2);
+            retrievedEnrollment1 = await provisioningServiceClient.EnrollmentGroups.GetAsync(registrationId1).ConfigureAwait(false);
+            retrievedEnrollment2 = await provisioningServiceClient.EnrollmentGroups.GetAsync(registrationId2).ConfigureAwait(false);
             var deleteEnrollmentGroupsList = new List<EnrollmentGroup> { retrievedEnrollment1, retrievedEnrollment2 };
 
             BulkEnrollmentOperationResult deleteBulkEnrollmentResult = await provisioningServiceClient
                 .EnrollmentGroups
-                .RunBulkOperationAsync(BulkOperationMode.Delete, deleteEnrollmentGroupsList);
+                .RunBulkOperationAsync(BulkOperationMode.Delete, deleteEnrollmentGroupsList)
+                .ConfigureAwait(false);
 
             deleteBulkEnrollmentResult.IsSuccessful.Should().BeTrue();
         }
