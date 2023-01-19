@@ -123,7 +123,8 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates ServiceClient from an IoT hub connection string.
+        /// Creates ServiceClient from an IoT hub connection string. This method is deprecated because this method declares a thrown IOException
+        /// even though it never throws an IOException.
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub.</param>
         /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
@@ -246,7 +247,8 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT hub connection string using specified Transport Type.
+        /// Create an instance of ServiceClient from the specified IoT hub connection string using specified Transport Type. This method is deprecated
+        /// because this method declares a thrown IOException even though it never throws an IOException.
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub.</param>
         /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
@@ -259,6 +261,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Create an instance of ServiceClient from the specified IoT hub connection string using specified Transport Type and transport settings.
+        /// This method is deprecated because this method declares a thrown IOException even though it never throws an IOException.
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub.</param>
         /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
