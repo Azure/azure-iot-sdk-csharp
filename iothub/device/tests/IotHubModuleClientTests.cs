@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private DirectMethodResponse _directMethodResponseWithEmptyByteArrayPayload = new(200)
         {
-            Payload = new byte[0],
+            Payload = Array.Empty<byte>(),
         };
 
         [TestMethod]
