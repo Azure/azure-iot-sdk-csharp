@@ -133,6 +133,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (!string.IsNullOrWhiteSpace(eTag.ToString()))
             {
+                // Azure.Core.ETag expects the format "H" for serializing ETags that go into the header.
+                // https://github.com/Azure/azure-sdk-for-net/blob/9c6238e0f0dd403d6583b56ec7902c77c64a2e37/sdk/core/Azure.Core/src/ETag.cs#L87-L114
                 string escapedETag = eTag.ToString("H");
                 msg.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag));
             }
