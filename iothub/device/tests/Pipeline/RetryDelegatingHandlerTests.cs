@@ -461,7 +461,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [DataRow(IotHubClientErrorCode.ServerError)]
         [DataRow(IotHubClientErrorCode.ServerBusy)]
         [DataRow(IotHubClientErrorCode.Timeout)]
-        public async Task RetryDelegatingHandler_RefreshTokenAsync_RetriesOnTransientErrors(IotHubClientErrorCode errorCode)
+        public async Task RetryDelegatingHandler_RefreshSasTokenAsync_RetriesOnTransientErrors(IotHubClientErrorCode errorCode)
         {
             // arrange
             int callCounter = 0;
@@ -508,7 +508,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [DataRow(IotHubClientErrorCode.Unauthorized)]
         [DataRow(IotHubClientErrorCode.TlsAuthenticationError)]
         [DataRow(IotHubClientErrorCode.ArgumentInvalid)]
-        public async Task RetryDelegatingHandler_RefreshTokenAsync_NoRetriesOnNonTransientErrors(IotHubClientErrorCode errorCode)
+        public async Task RetryDelegatingHandler_RefreshSasTokenAsync_NoRetriesOnNonTransientErrors(IotHubClientErrorCode errorCode)
         {
             // arrange
             int callCounter = 0;
