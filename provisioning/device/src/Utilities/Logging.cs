@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
+    // Logging is not part of the core functionality of the client, so we will not concern ourselves with code coverage of this class.
     [ExcludeFromCodeCoverage]
     internal sealed partial class Logging : EventSource
     {

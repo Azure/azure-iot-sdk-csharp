@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class ProvisioningTransportRegisterRequestTests
     {
-
         private readonly string _globalDeviceEndpoint = "endpoint";
         private readonly string _idScope = "id";
 

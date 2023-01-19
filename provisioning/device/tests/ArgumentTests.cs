@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
@@ -12,59 +13,52 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     public class ArgumentTests
     {
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void AssertNotNull_IfNull_Throws()
         {
-            string argument = null;
-            Argument.AssertNotNull<string>(argument, "");
+            Action act = () => Argument.AssertNotNull<string>(null, "parameterName");
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void AssertNotNullOrWhiteSpace_IfEmptyString_Throws()
         {
-            string argument = "";
-            Argument.AssertNotNullOrWhiteSpace(argument, "");
+            Action act = () => Argument.AssertNotNullOrWhiteSpace("", "parameterName");
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void AssertNotNullOrWhiteSpace_IfWhitespaces_Throws()
         {
-            string argument = " ";
-            Argument.AssertNotNullOrWhiteSpace(argument, "");
+            Action act = () => Argument.AssertNotNullOrWhiteSpace(" ", "parameterName");
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void AssertNotNullOrWhiteSpace_IfNull_Throws()
         {
-            string argument = null;
-            Argument.AssertNotNullOrWhiteSpace(argument, "");
+            Action act = () => Argument.AssertNotNullOrWhiteSpace(null, "parameterName");
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void AssertNotNegativeValue_IfNegative_Throws()
         {
-            var argument = TimeSpan.FromHours(-27.75);
-            Argument.AssertNotNegativeValue<TimeSpan>(argument, "");
+            Action act = () => Argument.AssertNotNegativeValue<TimeSpan>(TimeSpan.FromHours(-27.75), "parameterName");
+            act.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void AssertNotNullOrEmpty_IfEmpty_Throws()
         {
-            var argument = new List<string>();
-            Argument.AssertNotNullOrEmpty<string>(argument, "");
+            Action act = () => Argument.AssertNotNullOrEmpty<string>(new List<string>(), "parameterName");
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void AssertNotNullOrEmpty_IfNull_Throws()
         {
-            List<string> argument = null;
-            Argument.AssertNotNullOrEmpty<string>(argument, "");
+            Action act = () => Argument.AssertNotNullOrEmpty<string>(null, "parameterName");
+            act.Should().Throw<ArgumentNullException>();
         }
     }
 }
