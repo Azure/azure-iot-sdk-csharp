@@ -138,13 +138,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.RefreshSasTokenAsync(cancellationToken) ?? Task.FromResult(DateTime.Now);
+            return NextHandler?.RefreshSasTokenAsync(cancellationToken) ?? Task.FromResult(DateTime.UtcNow);
         }
 
         public virtual DateTime GetSasTokenRefreshesOn()
         {
             ThrowIfDisposed();
-            return NextHandler?.GetSasTokenRefreshesOn() ?? DateTime.MaxValue;
+            return NextHandler?.GetSasTokenRefreshesOn() ?? DateTime.UtcNow;
         }
 
         public virtual void SetSasTokenRefreshesOn()

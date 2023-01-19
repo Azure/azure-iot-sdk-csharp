@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,34 +86,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             // SAS tokens granted to a group SAS authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
             return connectionCredentials.HostName;
         }
-
-        //public void Dispose()
-        //{
-        //    Dispose(true);
-        //    GC.SuppressFinalize(this);
-        //}
-
-        //private void Dispose(bool disposing)
-        //{
-        //    try
-        //    {
-        //        if (Logging.IsEnabled)
-        //            Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
-
-        //        if (!_disposed)
-        //        {
-        //            if (disposing)
-        //            {
-        //            }
-
-        //            _disposed = true;
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        if (Logging.IsEnabled)
-        //            Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
-        //    }
-        //}
     }
 }

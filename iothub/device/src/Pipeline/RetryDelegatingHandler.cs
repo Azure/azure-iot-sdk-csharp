@@ -487,7 +487,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
                             return await base.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
                         },
-                        (Exception ex) => ex is IotHubClientException iex && iex.ErrorCode == IotHubClientErrorCode.NetworkErrors,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -602,14 +601,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     
                     refreshesOn = await RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
 
-                    // what happens if refreshesOn is DateTime.MaxValue ?
-
                     if (Logging.IsEnabled)
                         Logging.Info(this, refreshesOn, "Token has been refreshed.");
 
                     waitTime = refreshesOn - DateTime.UtcNow;
                 }
             }
+            // OperationCanceledException can be thrown when the connection is closing or the cancellationToken is signaled
             catch (OperationCanceledException) { return; }
             finally
             {
