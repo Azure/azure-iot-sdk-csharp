@@ -15,8 +15,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
-    public partial class ProvisioningServiceClientE2ETests : E2EMsTestBase
+    [TestClass]
+    [TestCategory("E2E")]
+    [TestCategory("DPS")]
+    public class ProvisioningServiceEnrollmentGroupTests : E2EMsTestBase
     {
+        private static readonly string s_devicePrefix = $"{nameof(ProvisioningServiceEnrollmentGroupTests)}_";
+        private static readonly ProvisioningServiceExponentialBackoffRetryPolicy s_provisioningServiceRetryPolicy = new(20, TimeSpan.FromSeconds(3), true);
+
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_EnrollmentGroups_SymmetricKey_Create_Ok()
@@ -58,7 +64,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 reprovisionPolicy,
                 AllocationPolicy.GeoLatency,
                 customAllocationDefinition,
-                null,
                 false,
                 false).ConfigureAwait(false);
         }
@@ -133,15 +138,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             deleteBulkEnrollmentResult.IsSuccessful.Should().BeTrue();
         }
 
-        public static async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
+        private static async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
         {
-            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+
             EnrollmentGroup enrollmentGroup = null;
 
             try
             {
-                enrollmentGroup = await CreateEnrollmentGroupAsync(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null);
+                enrollmentGroup = await CreateEnrollmentGroupAsync(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null);
 
                 AttestationMechanism attestationMechanism = null;
                 await RetryOperationHelper
@@ -184,34 +190,33 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (enrollmentGroup != null)
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, null, enrollmentGroup.Id);
+                    await DeleteCreatedEnrollmentAsync(provisioningServiceClient, enrollmentGroup.Id);
                 }
             }
         }
 
-        public static async Task ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(AttestationMechanismType attestationType, bool update = default, bool forceUpdate = default)
+        private static async Task ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(AttestationMechanismType attestationType, bool update = default, bool forceUpdate = default)
         {
             await ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(
                 attestationType,
                 null,
                 AllocationPolicy.Hashed,
                 null,
-                null,
                 update,
                 forceUpdate).ConfigureAwait(false);
         }
 
-        public static async Task ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(
+        private static async Task ProvisioningServiceClient_GroupEnrollments_CreateOrUpdate_Ok(
             AttestationMechanismType attestationType,
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            IList<string> iothubs,
             bool update,
             bool forceUpdate)
         {
             string groupId = s_devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService();
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+
             EnrollmentGroup createdEnrollmentGroup = null;
 
             try
@@ -222,9 +227,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         groupId,
                         reprovisionPolicy,
                         allocationPolicy,
-                        customAllocationDefinition,
-                        iothubs,
-                        null)
+                        customAllocationDefinition)
                     .ConfigureAwait(false);
 
                 EnrollmentGroup retrievedEnrollmentGroup = null;
@@ -293,20 +296,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (createdEnrollmentGroup != null)
                 {
-                    await DeleteCreatedEnrollmentAsync(EnrollmentType.Group, "", createdEnrollmentGroup.Id).ConfigureAwait(false);
+                    await DeleteCreatedEnrollmentAsync(provisioningServiceClient, createdEnrollmentGroup.Id).ConfigureAwait(false);
                 }
             }
         }
 
-        public static async Task<EnrollmentGroup> CreateEnrollmentGroupAsync(
+        private static async Task<EnrollmentGroup> CreateEnrollmentGroupAsync(
             ProvisioningServiceClient provisioningServiceClient,
             AttestationMechanismType attestationType,
             string groupId,
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
-            CustomAllocationDefinition customAllocationDefinition,
-            IList<string> iothubs,
-            InitialTwinCapabilities capabilities)
+            CustomAllocationDefinition customAllocationDefinition)
         {
             Attestation attestation;
 
@@ -325,11 +326,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             var enrollmentGroup = new EnrollmentGroup(groupId, attestation)
             {
-                Capabilities = capabilities,
                 ReprovisionPolicy = reprovisionPolicy,
                 AllocationPolicy = allocationPolicy,
                 CustomAllocationDefinition = customAllocationDefinition,
-                IotHubs = iothubs,
             };
 
             EnrollmentGroup createdEnrollmentGroup = null;
@@ -345,6 +344,40 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             return createdEnrollmentGroup
                 ?? throw new ArgumentException($"The enrollment entry with group Id {groupId} could not be created, exiting test.");
+        }
+
+        /// <summary>
+        /// Returns the registrationId compliant name for the provided attestation type
+        /// </summary>
+        private static string AttestationTypeToString(AttestationMechanismType attestationType)
+        {
+            return attestationType switch
+            {
+                AttestationMechanismType.SymmetricKey => "symmetrickey",
+                AttestationMechanismType.X509 => "x509",
+                _ => throw new NotSupportedException("Test code has not been written for testing this attestation type yet"),
+            };
+        }
+
+        private static async Task DeleteCreatedEnrollmentAsync(
+            ProvisioningServiceClient provisioningServiceClient,
+            string groupId)
+        {
+            try
+            {
+                await RetryOperationHelper
+                    .RunWithProvisioningServiceRetryAsync(
+                        async () =>
+                        {
+                            await provisioningServiceClient.EnrollmentGroups.DeleteAsync(groupId).ConfigureAwait(false);
+                        },
+                        s_provisioningServiceRetryPolicy)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                VerboseTestLogger.WriteLine($"Cleanup of enrollment failed due to {ex}.");
+            }
         }
     }
 }
