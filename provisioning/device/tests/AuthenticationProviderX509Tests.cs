@@ -9,17 +9,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class ProvisioningClientNoRetryPolicyTests
+    public class AuthenticationProviderX509Tests
     {
         [TestMethod]
-        public void NoRetryPolicy_RecommendsNo()
+        public void AuthenticationProviderX509_ThrowsWhenMissingCert()
         {
-            // arrange
-            var noRetryPolicy = new ProvisioningClientNoRetry();
+            // arrange - act
+            Func<AuthenticationProviderX509> act = () => new AuthenticationProviderX509(null);
 
-            // act - assert
-            noRetryPolicy.ShouldRetry(0, null, out TimeSpan retryInterval).Should().BeFalse();
-            retryInterval.Should().Be(TimeSpan.Zero);
+            // assert
+            act.Should().Throw<ArgumentException>();
         }
     }
 }

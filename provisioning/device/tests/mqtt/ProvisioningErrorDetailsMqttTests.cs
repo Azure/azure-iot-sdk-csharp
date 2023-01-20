@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         private static readonly TimeSpan s_defaultInterval = TimeSpan.FromSeconds(2);
 
         [TestMethod]
-        public void TestRetryAfterValidThrottled()
+        public void RetryAfter_ValidThrottled()
         {
             TimeSpan? actual = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(s_validTopicNameThrottled, s_defaultInterval);
             Assert.IsNotNull(actual);
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void TestRetryAfterValidAccepted()
+        public void RetryAfter_ValidAccepted()
         {
             TimeSpan? actual = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(s_validTopicNameAccepted, s_defaultInterval);
             Assert.IsNotNull(actual);
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void TestRetryAfterWithNoRetryAfterValue()
+        public void RetryAfter_WithNoRetryAfterValue()
         {
             const string invalidTopic = "$dps/registrations/res/429/?$rid=9&Retry-After=";
             TimeSpan? actual = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(invalidTopic, s_defaultInterval);
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void TestRetryAfterWithNoRetryAfterQueryKeyOrValue()
+        public void RetryAfter_WithNoRetryAfterQueryKeyOrValue()
         {
             const string invalidTopic = "$dps/registrations/res/429/?$rid=9";
             TimeSpan? actual = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(invalidTopic, s_defaultInterval);
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void TestRetryAfterWithNoQueryString()
+        public void RetryAfter_WithNoQueryString()
         {
             const string invalidTopic = "$dps/registrations/res/429/";
             TimeSpan? actual = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(invalidTopic, s_defaultInterval);
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void TestRetryAfterWithNoTopicString()
+        public void RetryAfter_WithNoTopicString()
         {
             const string invalidTopic = "";
             TimeSpan? actual = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(invalidTopic, s_defaultInterval);
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void TestRetryAfterWithTooSmallOfDelayChoosesDefault()
+        public void RetryAfter_WithTooSmallOfDelayChoosesDefault()
         {
             const string invalidTopic = "$dps/registrations/res/429/?$rid=9&Retry-After=0";
             TimeSpan? actual = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(invalidTopic, s_defaultInterval);
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         }
 
         [TestMethod]
-        public void TestRetryAfterWithNegativeDelayChoosesDefault()
+        public void RetryAfter_WithNegativeDelayChoosesDefault()
         {
             const string invalidTopic = "$dps/registrations/res/429/?$rid=9&Retry-After=-1";
             TimeSpan? actual = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(invalidTopic, s_defaultInterval);

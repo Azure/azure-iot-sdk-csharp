@@ -25,5 +25,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 retryInterval.TotalSeconds.Should().Be(step.TotalSeconds * i);
             }
         }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void IncrementalDelayRetryPolicy_ProvisioningClientException_ReturnsTrueWhenTransient(bool isTransient)
+        {
+            // arrange
+            var step = TimeSpan.FromSeconds(1);
+            var retryPolicy = new ProvisioningClientIncrementalDelayRetryPolicy(0, step, TimeSpan.FromMinutes(100), false);
+            var ex = new ProvisioningClientException("", isTransient);
+
+            // act - assert
+            retryPolicy.ShouldRetry(1, ex, out _).Should().Be(isTransient);
+        }
     }
 }

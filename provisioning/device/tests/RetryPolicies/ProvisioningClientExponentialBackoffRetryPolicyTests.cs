@@ -50,5 +50,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // assert
             delay.TotalMilliseconds.Should().BeApproximately(Math.Pow(2, exponent), 100);
         }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void ExponentialBackoffRetryPolicy_ProvisioningClientException_ReturnsTrueWhenTransient(bool isTransient)
+        {
+            // arrange
+            var retryPolicy = new ProvisioningClientExponentialBackoffRetryPolicy(0, TimeSpan.FromMinutes(100), false);
+            var ex = new ProvisioningClientException("", isTransient);
+
+            // act - assert
+            retryPolicy.ShouldRetry(1, ex, out _).Should().Be(isTransient);
+        }
     }
 }

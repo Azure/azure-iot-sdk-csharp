@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Security;
@@ -90,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
         // during the handshake.
-        private static bool DefaultRemoteCertificateValidation(
+        internal static bool DefaultRemoteCertificateValidation(
             object sender,
             X509Certificate certificate,
             X509Chain chain,

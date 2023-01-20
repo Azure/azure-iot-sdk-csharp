@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var retryPolicy = new ProvisioningClientTestRetryPolicy(maxRetries);
             var ex = new ProvisioningClientException("", true);
 
-            // act and assert
+            // act - assert
             retryPolicy.ShouldRetry(maxRetries - 1, ex, out _).Should().BeTrue();
             retryPolicy.ShouldRetry(maxRetries, ex, out _).Should().BeFalse();
         }
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var retryPolicy = new ProvisioningClientTestRetryPolicy(0);
             var ex = new ProvisioningClientException("", true);
 
-            // act and assert
+            // act - assert
             retryPolicy.ShouldRetry(uint.MaxValue, ex, out _).Should().BeTrue();
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var retryPolicy = new ProvisioningClientTestRetryPolicy(0);
             var ex = new ProvisioningClientException("", isTransient);
 
-            // act and assert
+            // act - assert
             retryPolicy.ShouldRetry(1, ex, out _).Should().Be(isTransient);
         }
 
