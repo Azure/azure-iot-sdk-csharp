@@ -133,7 +133,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-            msg.Headers.UserAgent.ParseAdd(_additionalClientInformation.ProductInfo?.ToString(UserAgentFormats.Http));
+            if (_additionalClientInformation.ProductInfo != null)
+            {
+                msg.Headers.UserAgent.ParseAdd(_additionalClientInformation.ProductInfo.ToString(UserAgentFormats.Http));
+            }
 
             AddCustomHeaders(msg, customHeaders);
             if (entity != null)

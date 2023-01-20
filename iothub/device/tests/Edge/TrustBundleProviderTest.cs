@@ -39,32 +39,28 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public void TestParseCertificates_Single_ShouldReturnCetificate()
         {
             IList<X509Certificate2> certs = TrustBundleProvider.ParseCertificates(CertificatesString);
-
-            Assert.AreEqual(certs.Count, 1);
+            certs.Count.Should().Be(1);
         }
 
         [TestMethod]
         public void TestParseCertificates_MultipleCerts_ShouldReturnCetificates()
         {
             IList<X509Certificate2> certs = TrustBundleProvider.ParseCertificates(CertificatesString + CertificatesString);
-
-            Assert.AreEqual(certs.Count, 2);
+            certs.Count.Should().Be(2);
         }
 
         [TestMethod]
         public void TestParseCertificates_WithNonCertificatesEntries_ShouldReturnCetificates()
         {
             IList<X509Certificate2> certs = TrustBundleProvider.ParseCertificates(CertificatesString + CertificatesString + "test");
-
-            Assert.AreEqual(certs.Count, 2);
+            certs.Count.Should().Be(2);
         }
 
         [TestMethod]
         public void TestParseCertificates_NoCertificatesEntries_ShouldReturnNoCetificates()
         {
             IList<X509Certificate2> certs = TrustBundleProvider.ParseCertificates("test");
-
-            Assert.AreEqual(certs.Count, 0);
+            certs.Count.Should().Be(0);
         }
 
         [TestMethod]

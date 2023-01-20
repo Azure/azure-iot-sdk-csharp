@@ -16,6 +16,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         // Error codes
         public static readonly AmqpSymbol DeadLetterName = AmqpIotConstants.Vendor + ":dead-letter";
 
+        public const string UnknownError = "Unknown error.";
+        public const string LinkReleased = "AMQP link released.";
         public const string DeadLetterReasonHeader = "DeadLetterReason";
         public const string DeadLetterErrorDescriptionHeader = "DeadLetterErrorDescription";
         public static readonly AmqpSymbol TimeoutError = AmqpIotConstants.Vendor + ":timeout";
@@ -31,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             Exception retException;
             if (outcome == null)
             {
-                retException = new IotHubClientException("Unknown error.");
+                retException = new IotHubClientException(UnknownError);
                 return retException;
             }
 
@@ -42,11 +44,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (outcome.DescriptorCode == Released.Code)
             {
-                retException = new OperationCanceledException("AMQP link released.");
+                retException = new OperationCanceledException(LinkReleased);
             }
             else
             {
-                retException = new IotHubClientException("Unknown error.");
+                retException = new IotHubClientException(UnknownError);
             }
 
             return retException;
@@ -132,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (error == null)
             {
-                return new IotHubClientException("Unknown error.");
+                return new IotHubClientException(UnknownError);
             }
 
             string message = error.Description;

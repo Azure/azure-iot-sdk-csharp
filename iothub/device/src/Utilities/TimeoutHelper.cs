@@ -14,8 +14,6 @@ namespace Microsoft.Azure.Devices.Client
         private bool _isDeadlineSet;
         private readonly TimeSpan _originalTimeout;
 
-        public static readonly TimeSpan MaxWait = TimeSpan.FromMilliseconds(int.MaxValue);
-
         public TimeoutHelper(TimeSpan timeout) :
             this(timeout, false)
         {

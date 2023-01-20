@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public void TestSerializeRequest_MethodMissing_ShouldSerializeRequest()
         {
-            string input = "GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
+            const string input = "GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
             using var request = new HttpRequestMessage();
             request.RequestUri = new Uri("http://localhost:8081/modules/testModule/sign?api-version=2018-06-28", UriKind.Absolute);
             request.Version = Version.Parse("1.1");
@@ -47,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public void TestSerializeRequest_VersionMissing_ShouldSerializeRequest()
         {
-            string input = "POST /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
+            const string input = "POST /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
             using var request = new HttpRequestMessage();
             request.RequestUri = new Uri("http://localhost:8081/modules/testModule/sign?api-version=2018-06-28", UriKind.Absolute);
             request.Method = HttpMethod.Post;
@@ -72,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public void TestSerializeRequest_ContentLengthMissing_ShouldSerializeRequest()
         {
-            string input = "POST /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 4\r\n\r\n";
+            const string input = "POST /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 4\r\n\r\n";
             using var request = new HttpRequestMessage();
             request.RequestUri = new Uri("http://localhost:8081/modules/testModule/sign?api-version=2018-06-28", UriKind.Absolute);
             request.Method = HttpMethod.Post;
@@ -96,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public void TestSerializeRequest_ContentIsNull_ShouldSerializeRequest()
         {
-            string input = "GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\n\r\n";
+            const string input = "GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\n\r\n";
             using var request = new HttpRequestMessage();
             request.RequestUri = new Uri("http://localhost:8081/modules/testModule/sign?api-version=2018-06-28", UriKind.Absolute);
             request.Method = HttpMethod.Get;
@@ -137,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public void TestSerializeRequest_ShouldSerializeRequest()
         {
-            string input = "POST /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nConnection: close\r\nHost: localhost:8081\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
+            const string input = "POST /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nConnection: close\r\nHost: localhost:8081\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
             using var request = new HttpRequestMessage();
             request.Method = HttpMethod.Post;
             request.RequestUri = new Uri("http://localhost:8081/modules/testModule/sign?api-version=2018-06-28", UriKind.Absolute);
@@ -175,6 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             ExceptionAssertions<IotHubClientException> error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
             error.And.IsTransient.Should().BeTrue();
+            error.And.TrackingId.Should().Be("");
         }
 
         [TestMethod]
