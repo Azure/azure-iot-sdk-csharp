@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Tests.Authentication
         private const string TokenValue = "token";
 
         [TestMethod]
-        public void IotHubTokenCredentialProperties_GetAuthorizationHeader_CloseToExpiry_GenerateNewToken()
+        public void IotHubTokenCredentialProperties_GetAuthorizationHeader_CloseToExpiry_GeneratesToken()
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Tests.Authentication
         }
 
         [TestMethod]
-        public void IotHubTokenCredentialProperties_GetAuthorizationHeader_NotCloseToExpiry_DoesNotGenerateNewToken()
+        public void IotHubTokenCredentialProperties_GetAuthorizationHeader_NotCloseToExpiry_DoesNotGeneratesToken()
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Tests.Authentication
         }
 
         [TestMethod]
-        public void IotHubTokenCredentialProperties_GetAuthorizationHeader_NoTokenValue_GenerateNewToken()
+        public void IotHubTokenCredentialProperties_GetAuthorizationHeader_NoTokenValue_GeneratesToken()
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Tests.Authentication
         }
 
         [TestMethod]
-        public async Task IotHubTokenCredentialProperties_GetTokenAsync()
+        public async Task IotHubTokenCredentialProperties_GetTokenAsync_Ok()
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
