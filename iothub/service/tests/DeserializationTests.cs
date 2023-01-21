@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-using System;
+
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class SerializationTests
+    public class DeserializationTests
     {
         [TestMethod]
         public void Twin_JsonDateParse_Ok()
@@ -75,6 +75,31 @@ namespace Microsoft.Azure.Devices.Tests
             Configuration configuration = JsonConvert.DeserializeObject<Configuration>(jsonString);
             configuration.Id.Should().Be(expectedDeviceId);
             configuration.SchemaVersion.Should().Be(expectedSchemaVersion);
+        }
+
+        [TestMethod]
+        public void ImportConfiguration_Deserialize_OK()
+        {
+            const string expectedDeviceId = "aa";
+            const string expectedSchemaVersion = "1.0";
+            const string jsonString = @"
+{
+  ""id"": ""aa"",
+  ""schemaVersion"": ""1.0"",
+  ""importMode"": ""CreateOrUpdateIfMatchETag"",
+  ""content"": {
+    ""modulesContent"": {
+        ""$edgeAgent"": {
+            ""properties.desired"": {
+            }
+        }
+    }
+  }
+}";
+            ImportConfiguration importConfiguration = JsonConvert.DeserializeObject<ImportConfiguration>(jsonString);
+            importConfiguration.Id.Should().Be(expectedDeviceId);
+            importConfiguration.SchemaVersion.Should().Be(expectedSchemaVersion);
+            importConfiguration.ImportMode.Should().Be(ConfigurationImportMode.CreateOrUpdateIfMatchETag);
         }
     }
 }
