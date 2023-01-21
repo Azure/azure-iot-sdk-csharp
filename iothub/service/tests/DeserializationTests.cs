@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class SerializationTests
+    public class DeserializationTests
     {
         [TestMethod]
         public void ClientTwin_JsonParse_Ok()
@@ -249,6 +249,31 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             statistics.Should().BeEquivalentTo(deviceJobStatistics);
+        }
+
+        [TestMethod]
+        public void ImportConfiguration_Deserialize_OK()
+        {
+            const string expectedDeviceId = "aa";
+            const string expectedSchemaVersion = "1.0";
+            const string jsonString = @"
+{
+  ""id"": ""aa"",
+  ""schemaVersion"": ""1.0"",
+  ""importMode"": ""CreateOrUpdateIfMatchETag"",
+  ""content"": {
+    ""modulesContent"": {
+        ""$edgeAgent"": {
+            ""properties.desired"": {
+            }
+        }
+    }
+  }
+}";
+            ImportConfiguration importConfiguration = JsonConvert.DeserializeObject<ImportConfiguration>(jsonString);
+            importConfiguration.Id.Should().Be(expectedDeviceId);
+            importConfiguration.SchemaVersion.Should().Be(expectedSchemaVersion);
+            importConfiguration.ImportMode.Should().Be(ConfigurationImportMode.CreateOrUpdateIfMatchETag);
         }
     }
 }
