@@ -58,6 +58,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="info"/> is null.</exception>
         protected IotHubServiceException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -95,6 +96,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="info"/> is null.</exception>
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
