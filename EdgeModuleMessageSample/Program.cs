@@ -2,9 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using CommandLine;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -33,18 +30,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Environment.Exit(1);
                 });
 
-            TimeSpan? appRunTime  = parameters.ApplicationRunningTime != null
-                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
-                : Timeout.InfiniteTimeSpan;
+            if (parameters != null)
+            {
+                TimeSpan? appRunTime = parameters.ApplicationRunningTime != null
+                    ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                    : Timeout.InfiniteTimeSpan;
 
-            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
-            await using var moduleClient = new IotHubModuleClient(
-                parameters.PrimaryConnectionString,
-                options);
-            var sample = new EdgeModuleMessageSample(moduleClient, appRunTime);
-            await sample.RunSampleAsync();
+                var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
+                await using var moduleClient = new IotHubModuleClient(
+                    parameters.PrimaryConnectionString,
+                    options);
+                var sample = new EdgeModuleMessageSample(moduleClient, appRunTime);
+                await sample.RunSampleAsync();
 
-            Console.WriteLine("Done.");
+                Console.WriteLine("Done.");
+            }
             return 0;
         }
     }
