@@ -14,7 +14,6 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
     public class IotHubServiceExceptionTests
     {
         private const string Message = "sample message";
-
         [TestMethod]
         [DataRow(IotHubServiceErrorCode.DeviceNotFound)]
         [DataRow(IotHubServiceErrorCode.InvalidProtocolVersion)]
@@ -92,6 +91,8 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             exception.Message.Should().Be(Message);
             exception.IsTransient.Should().BeFalse();
             exception.TrackingId.Should().BeNull();
+            exception.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
+
         }
 
         [TestMethod]
