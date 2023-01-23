@@ -73,6 +73,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.GetTwinAsync(cancellationToken));
         }
 
+        public override Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.RefreshSasTokenAsync(cancellationToken));
+        }
+
         public override Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
