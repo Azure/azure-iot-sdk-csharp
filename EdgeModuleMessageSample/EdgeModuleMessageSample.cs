@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     /// </remarks>
     public class EdgeModuleMessageSample
     {
+        private const string OutputName = "*";
         private readonly TimeSpan? _maxRunTime;
         private readonly IotHubModuleClient _moduleClient;
 
@@ -47,7 +48,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Now sending message to the module itself.
             var message = new TelemetryMessage(Encoding.ASCII.GetBytes("Sample message"));
-            await _moduleClient.SendTelemetryAsync("*", message, cts.Token);
+            // Setting output name to '*' will send telemetry from all output channels of the module.
+            await _moduleClient.SendTelemetryAsync(OutputName, message, cts.Token);
             Console.WriteLine($"\n{DateTime.Now}> Sent telemetry message to the module.");
 
             // Now continue to send messages to the module with every key press of 'M'.
@@ -56,7 +58,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 if (Console.ReadKey().Key == ConsoleKey.M)
                 {
                     message = new TelemetryMessage(Encoding.ASCII.GetBytes("Sample message"));
-                    await _moduleClient.SendTelemetryAsync("*", message, cts.Token);
+                    // Setting output name to '*' will send telemetry from all output channels of the module.
+                    await _moduleClient.SendTelemetryAsync(OutputName, message, cts.Token);
+                    Console.WriteLine($"\n{DateTime.Now}> Sent telemetry message to the module.");
                 }
             }
         }
@@ -69,11 +73,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static Task<MessageAcknowledgement> PrintMessage(IncomingMessage receivedMessage)
         {
-            bool messageDeserialized = receivedMessage.TryGetPayload(out string messageData);
+            bool messageDeserialized = receivedMessage.TryGetPayload(out byte[] messageData);
 
             if (messageDeserialized)
             {
-                var formattedMessage = new StringBuilder($"Received message: [{messageData}]\n");
+                var formattedMessage = new StringBuilder($"Received message: [{Encoding.ASCII.GetString(messageData)}]\n");
 
                 // User set application properties can be retrieved from the Message.Properties dictionary.
                 foreach (KeyValuePair<string, string> prop in receivedMessage.Properties)
