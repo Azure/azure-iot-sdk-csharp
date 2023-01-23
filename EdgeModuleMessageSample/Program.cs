@@ -2,6 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using CommandLine;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -30,12 +33,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Environment.Exit(1);
                 });
 
-            TimeSpan? appRunTime = null;
-            if (parameters.ApplicationRunningTime.HasValue)
-            {
-                Console.WriteLine($"Running sample for a max time of {parameters.ApplicationRunningTime.Value} seconds.");
-                appRunTime = TimeSpan.FromSeconds(parameters.ApplicationRunningTime.Value);
-            }
+            TimeSpan? appRunTime  = parameters.ApplicationRunningTime != null
+                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
+                : Timeout.InfiniteTimeSpan;
 
             var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
             await using var moduleClient = new IotHubModuleClient(
