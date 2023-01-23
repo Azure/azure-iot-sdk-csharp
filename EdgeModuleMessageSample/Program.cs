@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public static async Task<int> Main(string[] args)
         {
             // Parse application parameters
-            Parameters parameters = null;
+            Parameters? parameters = null;
             ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
                 .WithParsed(parsedParams =>
                 {

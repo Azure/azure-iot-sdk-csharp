@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using CommandLine;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -22,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             "PrimaryConnectionString",
             Required = true,
             HelpText = "The primary connection string for the module to simulate.")]
-        public string PrimaryConnectionString { get; set; }
+        public string? PrimaryConnectionString { get; set; }
 
         [Option(
             't',
