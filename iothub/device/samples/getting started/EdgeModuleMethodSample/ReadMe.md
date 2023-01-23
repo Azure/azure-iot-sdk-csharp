@@ -1,4 +1,4 @@
-﻿# Prerequisites for EdgeModuleMessageSample
+﻿# Prerequisites for EdgeModuleMethodSample
 
 Following instructions walk through steps to set up an Azure Edge device and an Azure Edge module.
 
@@ -50,7 +50,3 @@ Following instructions walk through steps to set up an Azure Edge device and an 
 - Navigate to Azure Portal -> Iot Hub -> <*specific Iot Hub*> -> Devices -> <*specific Edge device*> -> <*specific Edge module*>, and copy the connection string. 
 
 - Append GatewayHostName value to the connection string which you copied from last step and use this connection string as the parameter for the sample.
-
-- Navigate to Azure Portal -> Iot Hub -> <*specific Iot Hub*> -> Devices -> <*specific Edge device*> -> Set Modules -> Routes, and add the following route:   
-    * `FROM /messages/modules/<name of sender IotEdgeModule>/outputs/* INTO BrokeredEndpoint("/modules/<name of receiver IotEdgeModule>/inputs/*")`
-    > Note: This creates routes to be used when Edge device receives a message from the module. You also can send a message to the module itself.
