@@ -103,7 +103,6 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-<<<<<<< HEAD
         [DataRow(null, "moduleId123")]
         [DataRow("deviceId123", null)]
         [DataRow("", "moduleId123")]
@@ -123,8 +122,6 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-=======
->>>>>>> 205eabdbbcf3647e712753b99f27f9af97bec6b2
         [DataRow(" ", "moduleId123")]
         [DataRow("deviceId123", " ")]
         public async Task ModulesClient_GetAsync_EmptyParamsThrows(string deviceId, string moduleId)
