@@ -31,19 +31,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 });
 
             TimeSpan? appRunTime = null;
-            string outputTarget = null;
             if (parameters.ApplicationRunningTime.HasValue)
             {
                 Console.WriteLine($"Running sample for a max time of {parameters.ApplicationRunningTime.Value} seconds.");
                 appRunTime = TimeSpan.FromSeconds(parameters.ApplicationRunningTime.Value);
-                outputTarget = parameters.OutputTarget;
             }
 
             var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
             await using var moduleClient = new IotHubModuleClient(
                 parameters.PrimaryConnectionString,
                 options);
-            var sample = new EdgeModuleMessageSample(moduleClient, outputTarget, appRunTime);
+            var sample = new EdgeModuleMessageSample(moduleClient, appRunTime);
             await sample.RunSampleAsync();
 
             Console.WriteLine("Done.");

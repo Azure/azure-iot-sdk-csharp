@@ -38,13 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public IotHubClientTransportProtocol TransportProtocol { get; set; }
 
         [Option(
-            'o',
-            Default ="*",
-            Required = false,
-            HelpText = "Output target of the module receiving telemetry message.")]
-        public string OutputTarget { get; set; }
-
-        [Option(
             'r',
             "Application running time (in seconds)",
             Required = false,

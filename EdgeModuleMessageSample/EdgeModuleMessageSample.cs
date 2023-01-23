@@ -14,13 +14,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class EdgeModuleMessageSample
     {
         private readonly TimeSpan? _maxRunTime;
-        private readonly string _outputTarget;
         private readonly IotHubModuleClient _moduleClient;
 
-        public EdgeModuleMessageSample(IotHubModuleClient moduleClient, string outputTarget, TimeSpan? maxRunTime)
+        public EdgeModuleMessageSample(IotHubModuleClient moduleClient, TimeSpan? maxRunTime)
         {
             _moduleClient = moduleClient ?? throw new ArgumentNullException(nameof(moduleClient));
-            _outputTarget = outputTarget;
             _maxRunTime = maxRunTime;
         }
 
@@ -49,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Now sending message to the module itself.
             var message = new TelemetryMessage(Encoding.ASCII.GetBytes("Sample message"));
-            await _moduleClient.SendTelemetryAsync("toNextMod", message, cts.Token);
+            await _moduleClient.SendTelemetryAsync("*", message, cts.Token);
             Console.WriteLine($"\n{DateTime.Now}> Sent telemetry message to the module.");
 
             // Now continue to send messages to the module with every key press of 'M'.
@@ -58,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 if (Console.ReadKey().Key == ConsoleKey.M)
                 {
                     message = new TelemetryMessage(Encoding.ASCII.GetBytes("Sample message"));
-                    await _moduleClient.SendTelemetryAsync(_outputTarget, message, cts.Token);
+                    await _moduleClient.SendTelemetryAsync("*", message, cts.Token);
                 }
             }
         }
