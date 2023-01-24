@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Tests
+namespace Microsoft.Azure.Devices.Tests.Feedback
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -18,20 +19,26 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void FeedBackBatch_ctor_ok()
         {
-            using var amqpMessage = AmqpMessage.Create();
+            // arrange
             FeedbackRecord[] feedbackRecords = {
                 new FeedbackRecord(),
                 new FeedbackRecord()
             };
+
+            var expectedEnqueuedOnUtc = new DateTime(2008, 5, 1, 8, 30, 52);
+            string expectedHubName = "testhub";
+
             var feedbackBatch = new FeedbackBatch
             {
-                EnqueuedOnUtc = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedOn],
+                EnqueuedOnUtc = expectedEnqueuedOnUtc,
                 Records = feedbackRecords,
-                IotHubHostName = Encoding.UTF8.GetString(
-                    amqpMessage.Properties.UserId.Array,
-                    amqpMessage.Properties.UserId.Offset,
-                    amqpMessage.Properties.UserId.Count)
+                IotHubHostName = expectedHubName
             };
+
+            // assert
+            feedbackBatch.EnqueuedOnUtc.Should().Be(expectedEnqueuedOnUtc);
+            feedbackBatch.Records.Should().HaveCount(2);
+            feedbackBatch.IotHubHostName.Should().Be(expectedHubName);
         }
 
     }

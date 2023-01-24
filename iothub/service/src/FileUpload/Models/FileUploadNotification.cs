@@ -30,9 +30,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// URI path of the uploaded file.
         /// </summary>
-        // TODO: consider changing this to System.Uri before GA
         [JsonProperty("blobUri")]
-        public string BlobUriPath { get; protected internal set; }
+        public Uri BlobUriPath { get; protected internal set; }
 
         /// <summary>
         /// Name of the uploaded file.
