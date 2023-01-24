@@ -54,6 +54,8 @@ namespace Microsoft.Azure.Devices.Tests
                 StatusCode = HttpStatusCode.OK,
                 Content = HttpMessageHelper.SerializePayload(digitalTwin),
             };
+            //mockHttpResponse.Headers.Add("ETag", new List<string>() { new ETag("test").ToString() });
+            mockHttpResponse.Headers.Add("ETag", "ETag");
 
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
@@ -78,9 +80,8 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DigitalTwinsClient_GetAsync_HttpException()
         {
             // arrange
-            string cs = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
             string digitalTwinId = Guid.NewGuid().ToString();
-            using var serviceClient = new IotHubServiceClient(cs);
+            using var serviceClient = new IotHubServiceClient(s_connectionString);
             DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
 
             // act
@@ -95,12 +96,44 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DigitalTwinsClient_UpdateAsync()
         {
             // arrange
-            var digitalTwinsClient = new Mock<DigitalTwinsClient>();
-            string digitalTwinId = Guid.NewGuid().ToString();
-            string jsonPatch = "";
+            string digitalTwinId = "foo";
+            var digitalTwin = new BasicDigitalTwin
+            {
+                Id = digitalTwinId,
+            };
+            var contents = new Dictionary<string, object>
+            {
+                { "temperature", 8 }
+            };
+            var jsonPatch = new JsonPatchDocument();
+            jsonPatch.AppendAdd("bar", contents);
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(digitalTwin),
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var digitalTwinsClient = new DigitalTwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
 
             // act
-            Func<Task> act = async () => await digitalTwinsClient.Object.UpdateAsync(digitalTwinId, jsonPatch);
+            Func<Task> act = async () => await digitalTwinsClient.UpdateAsync(digitalTwinId, jsonPatch.ToString());
 
             // assert
             await act.Should().NotThrowAsync();
