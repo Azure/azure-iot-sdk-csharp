@@ -54,8 +54,8 @@ namespace Microsoft.Azure.Devices.Tests
                 StatusCode = HttpStatusCode.OK,
                 Content = HttpMessageHelper.SerializePayload(digitalTwin),
             };
-            //mockHttpResponse.Headers.Add("ETag", new List<string>() { new ETag("test").ToString() });
-            mockHttpResponse.Headers.Add("ETag", "ETag");
+            mockHttpResponse.Headers.Add("ETag", "1234");
+            //mockHttpResponse.Headers.Add("ETag", new ETag("test");
 
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
@@ -77,16 +77,31 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
+        public async Task DigitalTwinsClient_GetAsync_NullTwinIdThrows()
+        {
+            // arrange
+            string digitalTwinId = "";
+            using var serviceClient = new IotHubServiceClient(s_connectionString);
+            DigitalTwinsClient digitalTwinsClient = serviceClient.DigitalTwins;
+
+            // act
+            Func<Task> act = async () => await digitalTwinsClient.GetAsync<BasicDigitalTwin>(digitalTwinId);
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+
+        [TestMethod]
         public async Task DigitalTwinsClient_GetAsync_HttpException()
         {
             // arrange
             string digitalTwinId = Guid.NewGuid().ToString();
             using var serviceClient = new IotHubServiceClient(s_connectionString);
-            DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
+            DigitalTwinsClient digitalTwinsClient = serviceClient.DigitalTwins;
 
             // act
             // deliberately throw http exception by searching for twin that does not exist
-            Func<Task> act = async () => await digialTwinsClient.GetAsync<string>(digitalTwinId);
+            Func<Task> act = async () => await digitalTwinsClient.GetAsync<string>(digitalTwinId);
 
             // assert
             await act.Should().ThrowAsync<IotHubServiceException>();
