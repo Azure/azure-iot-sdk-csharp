@@ -65,10 +65,10 @@ You need to clone the repository or download the sample (the one you want to try
     ```
 
 [d-message-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/DeviceReconnectionSample
-[d-edge-module-message-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/tmahmood/update-sample-repo/iothub/device/samples/getting%20started/EdgeModuleMessageSample
+[d-edge-module-message-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/device/samples/getting%20started/EdgeModuleMessageSample
 [d-receive-message-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/MessageReceiveSample
 [d-method-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/MethodSample
-[d-edge-module-method-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/tmahmood/update-sample-repo/iothub/device/samples/getting%20started/EdgeModuleMethodSample 
+[d-edge-module-method-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/device/samples/getting%20started/EdgeModuleMethodSample 
 [d-twin-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/TwinSample
 [d-file-upload-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/FileUploadSample
 [d-x509-cert-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/how%20to%20guides/X509DeviceCertWithChainSample
@@ -77,7 +77,7 @@ You need to clone the repository or download the sample (the one you want to try
 [m-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/module/ModuleSample
 [lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
 [lnk-manage-iot-device]: https://github.com/Azure/azure-iot-device-ecosystem/blob/master/setup_iothub.md#create-new-device-in-the-iot-hub-device-identity-registry
-[lnk-setup-iot-edge]: https://github.com/Azure/azure-iot-sdk-csharp/blob/tmahmood/update-sample-repo/iothub/device/samples/getting%20started/EdgeModuleMessageSample/ReadMe.md
+[lnk-setup-iot-edge]: https://github.com/Azure/azure-iot-sdk-csharp/blob/previews/v2/iothub/device/samples/getting%20started/EdgeModuleMessageSample/ReadMe.md
 [d-read-d2c-messages-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/ReadD2cMessages
 [d-simulated-device-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/SimulatedDevice
 [d-simulated-device-with-command-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples/getting%20started/SimulatedDeviceWithCommand

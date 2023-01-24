@@ -37,7 +37,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await using var moduleClient = new IotHubModuleClient(
                     parameters.PrimaryConnectionString,
                     options);
-                var sample = new EdgeModuleMethodSample(moduleClient, appRunTime);
+                var iotHubConnectionCredentials = new IotHubConnectionCredentials(parameters.PrimaryConnectionString);
+                var sample = new EdgeModuleMethodSample(
+                    moduleClient,
+                    iotHubConnectionCredentials.DeviceId,
+                    iotHubConnectionCredentials.ModuleId,
+                    appRunTime);
                 await sample.RunSampleAsync();
 
                 Console.WriteLine("Done.");
