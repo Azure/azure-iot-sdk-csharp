@@ -25,5 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         internal Func<DirectMethodRequest, Task> MethodCallback { get; set; }
 
         internal Func<IncomingMessage, Task<MessageAcknowledgement>> MessageEventCallback { get; set; }
+
+        internal IIotHubClientRetryPolicy RetryPolicy { get; set; }
     }
 }

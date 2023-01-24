@@ -28,8 +28,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             var ct = CancellationToken.None;
-            PipelineContext contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
 
@@ -63,8 +66,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             var message = new TelemetryMessage(new byte[] { 1, 2, 3 });
@@ -105,8 +111,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
             var message = new TelemetryMessage(new byte[] { 1, 2, 3 });
 
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { }; // avoid NRE
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
 
@@ -140,8 +149,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             var message = new TelemetryMessage(new byte[] { 1, 2, 3 });
             IEnumerable<TelemetryMessage> messages = new[] { message };
@@ -181,6 +193,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var contextMock = new PipelineContext
             {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
                 ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
             };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
@@ -212,8 +225,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
                 .Setup(x => x.OpenAsync(CancellationToken.None))
@@ -243,8 +259,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task DeviceNotFoundExceptionReturnsDeviceDisabledStatus()
         {
             // arrange
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(1),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
@@ -280,8 +299,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var cts = new CancellationTokenSource(100);
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
                 .Setup(x => x.OpenAsync(cts.Token))
@@ -304,8 +326,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task RetryCancellationTokenCanceledOpen()
         {
             // arrange
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             var ct = new CancellationToken(true);
             nextHandlerMock
@@ -326,8 +351,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task RetryCancellationTokenCanceledSendEvent()
         {
             // arrange
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
@@ -352,8 +380,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task RetryCancellationTokenCanceledSendEventWithIEnumMessage()
         {
             // arrange
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { }; // avoid NRE
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
@@ -384,8 +415,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task RetrySetRetryPolicyVerifyInternalsSuccess()
         {
             // arrange
-            var contextMock = new PipelineContext();
-            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { }; // avoid NRE
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
 
@@ -420,6 +454,100 @@ namespace Microsoft.Azure.Devices.Client.Test
             retryPolicy.Counter.Should().Be(2);
         }
 
+        [TestMethod]
+        [DataRow(IotHubClientErrorCode.NetworkErrors)]
+        [DataRow(IotHubClientErrorCode.Throttled)]
+        [DataRow(IotHubClientErrorCode.QuotaExceeded)]
+        [DataRow(IotHubClientErrorCode.ServerError)]
+        [DataRow(IotHubClientErrorCode.ServerBusy)]
+        [DataRow(IotHubClientErrorCode.Timeout)]
+        public async Task RetryDelegatingHandler_RefreshSasTokenAsync_RetriesOnTransientErrors(IotHubClientErrorCode errorCode)
+        {
+            // arrange
+            int callCounter = 0;
+
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { },
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
+
+            nextHandlerMock
+                .Setup(x => x.RefreshSasTokenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() =>
+                {
+                    if (++callCounter == 1)
+                    {
+                        throw new IotHubClientException("Transient error occurred", errorCode);
+                    }
+                    return Task.FromResult(DateTime.UtcNow);
+                });
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            // act
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await retryDelegatingHandler.RefreshSasTokenAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            callCounter.Should().Be(2);
+        }
+
+        [TestMethod]
+        [DataRow(IotHubClientErrorCode.Unknown)]
+        [DataRow(IotHubClientErrorCode.DeviceMessageLockLost)]
+        [DataRow(IotHubClientErrorCode.DeviceNotFound)]
+        [DataRow(IotHubClientErrorCode.Suspended)]
+        [DataRow(IotHubClientErrorCode.PreconditionFailed)]
+        [DataRow(IotHubClientErrorCode.Unauthorized)]
+        [DataRow(IotHubClientErrorCode.TlsAuthenticationError)]
+        [DataRow(IotHubClientErrorCode.ArgumentInvalid)]
+        public async Task RetryDelegatingHandler_RefreshSasTokenAsync_NoRetriesOnNonTransientErrors(IotHubClientErrorCode errorCode)
+        {
+            // arrange
+            int callCounter = 0;
+
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(2),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { },
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
+
+            nextHandlerMock
+                .Setup(x => x.RefreshSasTokenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() =>
+                {
+                    if (++callCounter == 1)
+                    {
+                        throw new IotHubClientException("Non-transient error occurred", errorCode);
+                    }
+                    return Task.FromResult(DateTime.UtcNow);
+                });
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            // act
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            Func<Task> refreshToken = () => retryDelegatingHandler.RefreshSasTokenAsync(CancellationToken.None);
+
+            // assert
+            await refreshToken.Should()
+                .ThrowAsync<IotHubClientException>()
+                .ConfigureAwait(false);
+            callCounter.Should().Be(1);
+        }
         private class TestRetryPolicy : IIotHubClientRetryPolicy
         {
             public uint Counter { get; private set; }

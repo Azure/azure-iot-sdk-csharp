@@ -86,7 +86,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(connectionCredentials, _amqpIotCbsLink);
-                await amqpAuthenticator.InitLoopAsync(cancellationToken).ConfigureAwait(false);
+                await amqpAuthenticator.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
+
                 return amqpAuthenticator;
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))
