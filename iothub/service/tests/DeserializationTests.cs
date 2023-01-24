@@ -2,11 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-<<<<<<< HEAD
 using System.Collections.Generic;
 using Azure;
-=======
->>>>>>> 5dbfa15ac (Work in progress)
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -255,11 +252,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public void ImportConfiguration_Deserialize_OK()
+        public void ImportConfiguration_Deserialize_Ok()
         {
-            const string expectedDeviceId = "aa";
-            const string expectedSchemaVersion = "1.0";
-            const string jsonString = @"
+            const string ExpectedDeviceId = "aa";
+            const string ExpectedSchemaVersion = "1.0";
+            const string JsonString = @"
 {
   ""id"": ""aa"",
   ""schemaVersion"": ""1.0"",
@@ -273,22 +270,22 @@ namespace Microsoft.Azure.Devices.Tests
     }
   }
 }";
-            ImportConfiguration importConfiguration = JsonConvert.DeserializeObject<ImportConfiguration>(jsonString);
-            importConfiguration.Id.Should().Be(expectedDeviceId);
-            importConfiguration.SchemaVersion.Should().Be(expectedSchemaVersion);
+            ImportConfiguration importConfiguration = JsonConvert.DeserializeObject<ImportConfiguration>(JsonString);
+            importConfiguration.Id.Should().Be(ExpectedDeviceId);
+            importConfiguration.SchemaVersion.Should().Be(ExpectedSchemaVersion);
             importConfiguration.ImportMode.Should().Be(ConfigurationImportMode.CreateOrUpdateIfMatchETag);
         }
 
         [TestMethod]
-        public void FeedbackRecord_Deserialize_OK()
+        public void FeedbackRecord_Deserialize_Ok()
         {
-            const string originalMessageId = "1";
-            const string deviceMessageId = "2";
-            const string deviceId = "testDeviceId";
-            const string description = "Success";
-            DateTimeOffset enqueuedTimeUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32,
+            const string OriginalMessageId = "1";
+            const string DeviceMessageId = "2";
+            const string DeviceId = "testDeviceId";
+            const string Description = "Success";
+            var enqueuedTimeUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32,
                                                 new TimeSpan(1, 0, 0));
-            const string jsonString = @"
+            const string JsonString = @"
 {
   ""originalMessageId"": ""1"",
   ""deviceGenerationId"": ""2"",
@@ -297,13 +294,43 @@ namespace Microsoft.Azure.Devices.Tests
   ""statusCode"": ""0"",
   ""description"": ""Success"",
 }";
-            FeedbackRecord feedbackRecord = JsonConvert.DeserializeObject<FeedbackRecord>(jsonString);
-            feedbackRecord.OriginalMessageId.Should().Be(originalMessageId);
-            feedbackRecord.DeviceGenerationId.Should().Be(deviceMessageId);
-            feedbackRecord.DeviceId.Should().Be(deviceId);
+            FeedbackRecord feedbackRecord = JsonConvert.DeserializeObject<FeedbackRecord>(JsonString);
+            feedbackRecord.OriginalMessageId.Should().Be(OriginalMessageId);
+            feedbackRecord.DeviceGenerationId.Should().Be(DeviceMessageId);
+            feedbackRecord.DeviceId.Should().Be(DeviceId);
             feedbackRecord.StatusCode.Should().Be(FeedbackStatusCode.Success);
             feedbackRecord.EnqueuedOnUtc.Should().Be(enqueuedTimeUtc);
-            feedbackRecord.Description.Should().Be(description);
+            feedbackRecord.Description.Should().Be(Description);
+        }
+
+        [TestMethod]
+        public void FileUploadNotification_Deserialize_Ok()
+        {
+            var BlobUri = new Uri("https://myaccount.blob.core.windows.net");
+            const string BlobName = "testBlob";
+            const string DeviceId = "testDeviceId";
+            var lastUpdatedOnUtc = new DateTimeOffset(2023, 1, 19, 8, 7, 32,
+                                                new TimeSpan(1, 0, 0));
+            var enqueuedTimeUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32,
+                                                new TimeSpan(1, 0, 0));
+            const long BlobSizeInBytes = 50;
+            const string jsonString = @"
+{
+  ""blobUri"": ""https://myaccount.blob.core.windows.net"",
+  ""BlobName"": ""testBlob"",
+  ""deviceId"": ""testDeviceId"",
+  ""blobName"": ""testBlob"",
+  ""lastUpdatedTime"": ""1/19/2023 8:07:32 AM +01:00"", 
+  ""enqueuedTimeUtc"": ""1/20/2023 8:06:32 AM +01:00"",
+  ""blobSizeInBytes"": ""50""
+}";
+            FileUploadNotification fileUploadNotification = JsonConvert.DeserializeObject<FileUploadNotification>(jsonString);
+            fileUploadNotification.BlobUriPath.Should().Be(BlobUri);
+            fileUploadNotification.BlobName.Should().Be(BlobName);
+            fileUploadNotification.DeviceId.Should().Be(DeviceId);
+            fileUploadNotification.BlobSizeInBytes.Should().Be(BlobSizeInBytes);
+            fileUploadNotification.EnqueuedOnUtc.Should().Be(enqueuedTimeUtc);
+            fileUploadNotification.LastUpdatedOnUtc.Should().Be(lastUpdatedOnUtc);
         }
     }
 }
