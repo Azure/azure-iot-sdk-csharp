@@ -533,11 +533,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task StopSasTokenLoopAsync()
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(StopSasTokenLoopAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, nameof(StopSasTokenLoopAsync));
-
                 try
                 {
                     _loopCancellationTokenSource?.Cancel();
@@ -579,11 +579,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task RefreshSasTokenLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, refreshesOn, nameof(RefreshSasTokenLoopAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, refreshesOn, nameof(RefreshSasTokenLoopAsync));
-
                 TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
 
                 while (!cancellationToken.IsCancellationRequested)
@@ -601,10 +601,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     
                     refreshesOn = await RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
 
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, refreshesOn, "Token has been refreshed.");
-
                     waitTime = refreshesOn - DateTime.UtcNow;
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, refreshesOn, $"Token has been refreshed; valid until {refreshesOn}.");
                 }
             }
             // OperationCanceledException can be thrown when the connection is closing or the cancellationToken is signaled
