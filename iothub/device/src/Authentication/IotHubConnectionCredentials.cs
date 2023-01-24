@@ -310,25 +310,6 @@ namespace Microsoft.Azure.Devices.Client
                 throw new FormatException("Missing IoT hub host name.");
             }
 
-            // Host name
-            if (string.IsNullOrWhiteSpace(HostName))
-            {
-                throw new FormatException("Missing host name.");
-            }
-
-            // Device Id
-            if (string.IsNullOrWhiteSpace(DeviceId))
-            {
-                throw new FormatException("Device Id cannot be null or white space.");
-            }
-
-            // Module Id
-            if (ModuleId != null && string.IsNullOrWhiteSpace(ModuleId))
-            {
-                // A module Id is not required to provide, but if they do it must be a valid string.
-                throw new FormatException("Module Id cannot be white space.");
-            }
-
             // Shared access key
             if (!string.IsNullOrWhiteSpace(SharedAccessKey))
             {
@@ -344,36 +325,9 @@ namespace Microsoft.Azure.Devices.Client
                 _ = SharedAccessSignatureParser.Parse(SharedAccessSignature);
             }
 
-            // Either shared access key, shared access signature or X.509 certificate is required for authenticating the client with IoT hub.
-            // These values should be populated in the constructor. The only exception to this scenario is when the authentication method is
-            // ClientAuthenticationWithTokenRefresh, in which case the shared access signature is initially null and is generated on demand during client authentication.
-            if (ClientCertificate == null
-                && SharedAccessKey.IsNullOrWhiteSpace()
-                && SharedAccessSignature.IsNullOrWhiteSpace()
-                && AuthenticationMethod is not ClientAuthenticationWithTokenRefresh)
-            {
-                throw new FormatException(
-                        "Should specify either SharedAccessKey, SharedAccessSignature or X.509 certificate for authenticating the client with IoT hub.");
-            }
-
-            // If an X.509 certificate is supplied then neither shared access key nor shared access signature should be supplied.
-            if (ClientCertificate != null
-                && (!SharedAccessKey.IsNullOrWhiteSpace()
-                    || !SharedAccessSignature.IsNullOrWhiteSpace()))
-            {
-                throw new FormatException(
-                    "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used for authenticating the client with IoT hub.");
-            }
-
             // Validate certs.
             if (AuthenticationMethod is ClientAuthenticationWithX509Certificate)
             {
-                // Prep for certificate auth.
-                if (ClientCertificate == null)
-                {
-                    throw new FormatException("No certificate was found. To use certificate authentication certificate must be present.");
-                }
-
                 if (CertificateChain != null)
                 {
                     // Install all the intermediate certificates in the chain if specified.

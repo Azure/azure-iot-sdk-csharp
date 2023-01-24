@@ -28,44 +28,48 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestSetupCertificateValidation_Mqtt_ShouldSucceed()
         {
+            // arrange and act
             var transportSettings = new IotHubClientMqttSettings();
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             using var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
+            // assert
             transportSettings.RemoteCertificateValidationCallback.Should().NotBeNull();
         }
 
         [TestMethod]
         public void TestSetupCertificateValidation_Amqp_ShouldSucceed()
         {
+            // arrange and act
             var transportSettings = new IotHubClientAmqpSettings();
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             using var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
+            // assert
             transportSettings.RemoteCertificateValidationCallback.Should().NotBeNull();
         }
 
         [TestMethod]
         public void TestSetupCertificateValidation_Mqtt_CallbackAlreadySet_ShouldSucceed()
         {
+            // arrange and act
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
-
             RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) => true;
-
             var setting = new IotHubClientMqttSettings
             {
                 RemoteCertificateValidationCallback = callback,
             };
             using var customCertificateValidator = CustomCertificateValidator.Create(certs, setting);
 
+            // assert
             setting.RemoteCertificateValidationCallback.Should().Be(callback);
         }
 
         [TestMethod]
         public void TestSetupCertificateValidation_Amqp_CallbackAlreadySet_ShouldSucceed()
         {
+            // arrange and act
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
-
             RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) => true;
             var setting = new IotHubClientAmqpSettings
             {
@@ -73,6 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             };
             using var customCertificateValidator = CustomCertificateValidator.Create(certs, setting);
 
+            // assert
             setting.RemoteCertificateValidationCallback.Should().Be(callback);
         }
     }

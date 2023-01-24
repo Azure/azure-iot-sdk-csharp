@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public async Task TestReadLines_ShouldReturnResponse()
         {
-            string expected = "GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
+            const string expected = "GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1\r\nHost: localhost:8081\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n";
             byte[] expectedBytes = Encoding.UTF8.GetBytes(expected);
             var memory = new MemoryStream(expectedBytes, true);
             using var buffered = new HttpBufferedStream(memory);
@@ -34,12 +35,12 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
                 allLines.Add(currentLine);
             }
 
-            Assert.AreEqual(5, allLines.Count);
-            Assert.AreEqual("GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1", allLines[0]);
-            Assert.AreEqual("Host: localhost:8081", allLines[1]);
-            Assert.AreEqual("Connection: close", allLines[2]);
-            Assert.AreEqual("Content-Type: application/json", allLines[3]);
-            Assert.AreEqual("Content-Length: 100", allLines[4]);
+            allLines.Count.Should().Be(5);
+            allLines[0].Should().Be("GET /modules/testModule/sign?api-version=2018-06-28 HTTP/1.1");
+            allLines[1].Should().Be("Host: localhost:8081");
+            allLines[2].Should().Be("Connection: close");
+            allLines[3].Should().Be("Content-Type: application/json");
+            allLines[4].Should().Be("Content-Length: 100");
         }
     }
 }

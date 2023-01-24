@@ -32,8 +32,8 @@ namespace Microsoft.Azure.Devices.Client
             string deviceId,
             string moduleId = default)
         {
-            SetDeviceId(deviceId);
-            SetModuleId(moduleId);
+            DeviceId = deviceId;
+            ModuleId = moduleId;
             ClientCertificate = clientCertificate
                 ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(clientCertificate));
             CertificateChain = certificateChain
@@ -56,8 +56,8 @@ namespace Microsoft.Azure.Devices.Client
             string deviceId,
             string moduleId = default)
         {
-            SetDeviceId(deviceId);
-            SetModuleId(moduleId);
+            DeviceId = deviceId;
+            ModuleId = moduleId;
             ClientCertificate = certificate
                 ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(certificate));
         }

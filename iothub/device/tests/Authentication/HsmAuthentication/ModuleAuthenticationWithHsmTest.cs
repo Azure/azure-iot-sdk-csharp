@@ -42,18 +42,18 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 
             // assert
             httpClient.Verify();
-            Assert.IsNotNull(sasToken);
-            Assert.AreEqual(Signature, token.Signature);
-            Assert.AreEqual(audience, token.Audience);
-            Assert.AreEqual(string.Empty, token.KeyName);
+            sasToken.Should().NotBeNull();
+            Signature.Should().Be(token.Signature);
+            audience.Should().Be(token.Audience);
+            token.KeyName.Should().Be(string.Empty);
         }
 
         [TestMethod]
         public async Task TestSafeCreateNewToken_ShouldReturnSasToken_DeviceIdWithChars()
         {
             // arrange
-            string deviceId = "n@m.et#st";
-            string moduleId = "$edgeAgent";
+            const string deviceId = "n@m.et#st";
+            const string moduleId = "$edgeAgent";
             var httpClient = new Mock<ISignatureProvider>();
             httpClient.Setup(p => p.SignAsync(moduleId, GenerationId, It.IsAny<string>())).Returns(Task.FromResult(Signature));
 
@@ -70,10 +70,10 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 
             // assert
             httpClient.Verify();
-            Assert.IsNotNull(sasToken);
-            Assert.AreEqual(Signature, token.Signature);
-            Assert.AreEqual(audience, token.Audience);
-            Assert.AreEqual(string.Empty, token.KeyName);
+            sasToken.Should().NotBeNull();
+            Signature.Should().Be(token.Signature);
+            audience.Should().Be(token.Audience);
+            token.KeyName.Should().Be(string.Empty);
         }
 
         [TestMethod]

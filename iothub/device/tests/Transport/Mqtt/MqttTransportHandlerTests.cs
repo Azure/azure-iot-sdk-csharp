@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,8 +7,6 @@ using MQTTnet.Client;
 
 namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
 {
-    [TestClass]
-    [TestCategory("Unit")]
     public class MqttTransportHandlerTests
     {
         [TestMethod]
@@ -44,7 +39,6 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
                 // make the mqtt client used by the handler mocked so no network calls are actually made
                 _mqttClient = mockMqttClient
             };
-
             return transportHandler;
         }
     }

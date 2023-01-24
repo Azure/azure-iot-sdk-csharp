@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
@@ -15,8 +16,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="correlationId">The correlation Id of the SAS URI.</param>
         /// <param name="isSuccess">Whether the file upload was successful or not.</param>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="correlationId"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="correlationId"/> is empty or whitespace.</exception>
         public FileUploadCompletionNotification(string correlationId, bool isSuccess)
         {
+            Argument.AssertNotNullOrWhiteSpace(correlationId, nameof(correlationId));
             CorrelationId = correlationId;
             IsSuccess = isSuccess;
         }

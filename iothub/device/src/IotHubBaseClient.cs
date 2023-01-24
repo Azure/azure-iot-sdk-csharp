@@ -567,26 +567,6 @@ namespace Microsoft.Azure.Devices.Client
             return pipelineBuilder;
         }
 
-        private T GetDelegateHandler<T>() where T : DefaultDelegatingHandler
-        {
-            var handler = InnerHandler as DefaultDelegatingHandler;
-            bool isFound = false;
-
-            while (!isFound || handler == null)
-            {
-                if (handler is T)
-                {
-                    isFound = true;
-                }
-                else
-                {
-                    handler = handler.NextHandler as DefaultDelegatingHandler;
-                }
-            }
-
-            return !isFound ? default : (T)handler;
-        }
-
         internal async Task<MessageAcknowledgement> OnMessageReceivedAsync(IncomingMessage message)
         {
             if (Logging.IsEnabled)

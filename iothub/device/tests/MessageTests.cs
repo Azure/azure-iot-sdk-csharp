@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.IO;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ConstructorTakingPayloadTest()
         {
-            string payloadString = "Hello, World!";
+            const string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
             var msg = new Message(payloadBytes);
             msg.Payload.Should().BeEquivalentTo(payloadBytes);
@@ -34,12 +33,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void SettingMessageAsSecurityMessageTest()
         {
             var msg = new TelemetryMessage("security message test");
-
             msg.IsSecurityMessage.Should().BeFalse();
             msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId).Should().BeFalse();
 
             msg.SetAsSecurityMessage();
-
             msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId).Should().BeTrue();
             msg.SystemProperties[MessageSystemPropertyNames.InterfaceId].Should().Be(CommonConstants.SecurityMessageInterfaceId);
             msg.IsSecurityMessage.Should().BeTrue();
@@ -49,15 +46,15 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void CloneWithBodyTest()
         {
             // arrange
-            string contentEncoding = "gzip";
-            string contentType = "text/plain";
-            string userId = "JohnDoe";
+            const string contentEncoding = "gzip";
+            const string contentType = "text/plain";
+            const string userId = "JohnDoe";
+            const string propName1 = "test1";
+            const string propValue1 = "test_v_1";
+            const string propName2 = "test2";
+            const string propValue2 = "test_v_2";
+            const string originalMessageContent = "Original copy";
             string messageId = Guid.NewGuid().ToString();
-            string propName1 = "test1";
-            string propValue1 = "test_v_1";
-            string propName2 = "test2";
-            string propValue2 = "test_v_2";
-            string originalMessageContent = "Original copy";
             var originalMessage = new TelemetryMessage(originalMessageContent)
             {
                 MessageId = messageId,
@@ -72,8 +69,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            string clonedMessageContent = "Cloned version";
-            var clonedMessage = originalMessage.CloneWithBody(clonedMessageContent);
+            const string clonedMessageContent = "Cloned version";
+            TelemetryMessage clonedMessage = originalMessage.CloneWithBody(clonedMessageContent);
 
             // assert
             clonedMessage.Properties.Count.Should().Be(2);
@@ -92,11 +89,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void CloneWithBodyWithNullTest()
         {
             // arrange
-            string contentEncoding = "gzip";
-            string propName1 = "test1";
-            string propValue1 = "test_v_1";
-            string propName2 = "test2";
-            string originalMessageContent = "Original copy";
+            const string contentEncoding = "gzip";
+            const string propName1 = "test1";
+            const string propValue1 = "test_v_1";
+            const string propName2 = "test2";
+            const string originalMessageContent = "Original copy";
             var originalMessage = new TelemetryMessage(originalMessageContent)
             {
                 ContentEncoding = contentEncoding,
@@ -109,8 +106,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            string clonedMessageContent = "Cloned version";
-            var clonedMessage = originalMessage.CloneWithBody(clonedMessageContent);
+            const string clonedMessageContent = "Cloned version";
+            TelemetryMessage clonedMessage = originalMessage.CloneWithBody(clonedMessageContent);
 
             // assert
             clonedMessage.Properties.Count.Should().Be(2);
