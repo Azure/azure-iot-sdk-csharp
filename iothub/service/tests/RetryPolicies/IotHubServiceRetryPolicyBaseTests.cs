@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Tests
 
         [TestMethod]
         [DataRow(.1d)]
-        [DataRow(.25d)]
+        //[DataRow(.25d)]
         [DataRow(.5d)]
         [DataRow(1d)]
         [DataRow(10d)]

@@ -19,5 +19,19 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
             // assert
             updateDigitalTwinOptions.IfMatch.Should().Be(ETag.All);
         }
+
+        [TestMethod]
+        public void UpdateDigitalTwinOptions_ctor_Ok()
+        {
+            // arrange - act
+            var testETag = new ETag("1234");
+            var updateDigitalTwinOptions = new UpdateDigitalTwinOptions
+            {
+                IfMatch = new ETag("1234")
+            };
+
+            // assert
+            updateDigitalTwinOptions.IfMatch.Should().BeEquivalentTo(testETag);
+        }
     }
 }

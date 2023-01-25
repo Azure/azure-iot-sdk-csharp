@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
         {
             // arrange - act
             var eTag = new ETag("1234");
-            string location = "https://contoso.azure-devices.net/twins/sampleDevice";
+            string location = "https://contoso.azure-devices.net/digitaltwins/sampleDevice?api-version=2021-04-12";
             var digitalTwinUpdateResponse = new DigitalTwinUpdateResponse(eTag, location);
 
             // assert
