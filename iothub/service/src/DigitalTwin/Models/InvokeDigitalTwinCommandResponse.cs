@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices
     public class InvokeDigitalTwinCommandResponse
     {
         /// <summary>
-        /// This constructor is for deserialization and unit test mocking purposes.
+        /// This constructor is for unit test mocking purposes.
         /// </summary>
         /// <remarks>
         /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
