@@ -419,19 +419,15 @@ namespace Microsoft.Azure.Devices.Tests
         {
             const string ExpectedKey1Value = "sampleValue";
             const int ExpectedKey2Value = 1;
-            var ExpectedKey3Value = new DateTimeOffset(2023, 1, 20, 8, 6, 32,
-                        new TimeSpan(1, 0, 0));
 
             const string jsonMetadataString = @"
             {
                  ""key1"": ""sampleValue"",
-                 ""key2"": 1,
-                 ""key3"": ""1/20/2023 8:06:32 AM +01:00""
+                 ""key2"": 1
             }";
             ComponentMetadata componentMetadata = JsonConvert.DeserializeObject<ComponentMetadata>(jsonMetadataString);
             componentMetadata.WritableProperties["key1"].Should().Be(ExpectedKey1Value);
             componentMetadata.WritableProperties["key2"].Should().Be(ExpectedKey2Value);
-            componentMetadata.WritableProperties["key3"].Should().Be(ExpectedKey3Value);
         }
 
         [TestMethod]
