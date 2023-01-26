@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         private const string Message = "sample message";
 
         [TestMethod]
-        public void IotHubServiceException_ctor_not_transient_ok()
+        public void IotHubServiceException_Ctor_WithNonTransientErrorCode_Ok()
         {
             // arrange - act
             HttpStatusCode statusCode = HttpStatusCode.NotFound;
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         }
 
         [TestMethod]
-        public void IotHubServiceException_ctor_transient_ok()
+        public void IotHubServiceException_Ctor_WithTransidentErrorCode_Ok()
         {
             // arrange - act
             HttpStatusCode statusCode = HttpStatusCode.ServiceUnavailable;
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         }
 
         [TestMethod]
-        public void IotHubServiceException_UnknownErrorCode_NotTransient()
+        public void IotHubServiceException_UnknownErrorCode_IsNotTransient()
         {
             // arrange - act
             HttpStatusCode statusCode = HttpStatusCode.MovedPermanently; // not HttpStatusCode.RequestTimeout
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         }
 
         [TestMethod]
-        public void IotHubServiceException_UnknownErrorCode_Transient()
+        public void IotHubServiceException_UnknownErrorCode_IsTransient()
         {
             // arrange - act
             HttpStatusCode statusCode = HttpStatusCode.RequestTimeout;

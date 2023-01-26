@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
     public class DigitalTwinUpdateResponseTests
     {
         [TestMethod]
-        public void DigitalTwinUpdateResponse_ctor_defaultProperties()
+        public void DigitalTwinUpdateResponse_Ctor_defaultProperties()
         {
             // arrange - act
             var digitalTwinUpdateResponse = new DigitalTwinUpdateResponse();

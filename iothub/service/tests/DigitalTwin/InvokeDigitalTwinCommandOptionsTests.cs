@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
         }
 
         [TestMethod]
-        public void InvokeDigitalTwinCommandOptions_ctor_Default_ok()
+        public void InvokeDigitalTwinCommandOptions_Ctor_Default_ok()
         {
             // arrange - act
             var options = new InvokeDigitalTwinCommandOptions();
