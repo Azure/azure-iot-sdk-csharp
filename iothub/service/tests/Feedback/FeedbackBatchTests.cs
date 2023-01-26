@@ -17,10 +17,11 @@ namespace Microsoft.Azure.Devices.Tests.Feedback
     public class FeedbackBatchTests
     {
         [TestMethod]
-        public void FeedBackBatch_ctor_ok()
+        public void FeedBackBatch_Ctor_Ok()
         {
             // arrange
-            FeedbackRecord[] feedbackRecords = {
+            FeedbackRecord[] feedbackRecords = 
+            {
                 new FeedbackRecord(),
                 new FeedbackRecord()
             };

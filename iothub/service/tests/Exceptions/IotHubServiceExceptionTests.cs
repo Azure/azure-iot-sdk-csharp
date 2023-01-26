@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
     public class IotHubServiceExceptionTests
     {
         private const string Message = "sample message";
+
         [TestMethod]
         public void IotHubServiceException_ctor_not_transient_ok()
         {
@@ -102,7 +103,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             var sctx = new StreamingContext();
 
             // act
-            Action act =  () => exception.GetObjectData(null, sctx);
+            Action act = () => exception.GetObjectData(null, sctx);
 
             // assert
             act.Should().Throw<ArgumentNullException>();
@@ -129,4 +130,3 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         }
     }
 }
-

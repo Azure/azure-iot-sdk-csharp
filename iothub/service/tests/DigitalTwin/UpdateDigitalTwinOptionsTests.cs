@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
         }
 
         [TestMethod]
-        public void UpdateDigitalTwinOptions_ctor_Ok()
+        public void UpdateDigitalTwinOptions_Ctor_Ok()
         {
             // arrange - act
             var testETag = new ETag("1234");

@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
     public class InvokeDigitalTwinCommandOptionsTests
     {
         [TestMethod]
-        public void InvokeDigitalTwinCommandOptions_ctor_ok()
+        public void InvokeDigitalTwinCommandOptions_Ctor_Ok()
         {
             // arrange - act
             int samplePayload = 1;

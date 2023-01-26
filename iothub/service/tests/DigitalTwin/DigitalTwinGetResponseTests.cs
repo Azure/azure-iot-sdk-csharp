@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,18 +12,18 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
     public class DigitalTwinGetResponseTests
     {
         [TestMethod]
-        public void DigitalTwinGetResponse_ctor_ok()
+        public void DigitalTwinGetResponse_Ctor_Ok()
         {
             // arrange - act
-            const string TwinId = "twin1234";
-            const string ModelId = "model1234";
+            const string twinId = "twin1234";
+            const string modelId = "model1234";
 
             var simpleBasicDigitalTwin = new BasicDigitalTwin
             {
-                Id = TwinId,
+                Id = twinId,
                 Metadata = new DigitalTwinMetadata
                 {
-                    ModelId = ModelId
+                    ModelId = modelId
                 }
             };
 
@@ -38,8 +33,8 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
             // assert
             digitalTwinGetResponse.DigitalTwin.Should().Be(simpleBasicDigitalTwin);
             digitalTwinGetResponse.ETag.Should().Be(eTag);
-            digitalTwinGetResponse.DigitalTwin.Id.Should().Be(TwinId);
-            digitalTwinGetResponse.DigitalTwin.Metadata.ModelId.Should().Be(ModelId);
+            digitalTwinGetResponse.DigitalTwin.Id.Should().Be(twinId);
+            digitalTwinGetResponse.DigitalTwin.Metadata.ModelId.Should().Be(modelId);
             digitalTwinGetResponse.DigitalTwin.CustomProperties.Should().NotBeNull();
         }
     }
