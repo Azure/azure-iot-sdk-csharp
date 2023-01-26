@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -40,7 +39,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         {
             // arrange
             const int expectedStatus = 200;
-            DateTimeOffset expectedPayload = DateTimeOffset.UtcNow;
+            var expectedPayload = DateTimeOffset.UtcNow;
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,

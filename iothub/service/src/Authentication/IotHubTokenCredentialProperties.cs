@@ -21,6 +21,13 @@ namespace Microsoft.Azure.Devices
         private readonly object _tokenLock = new();
         private AccessToken? _cachedAccessToken;
 
+        // Creates an instance of this class. Provided for unit testing purposes only.
+        protected internal IotHubTokenCredentialProperties(string hostName, TokenCredential credential, AccessToken? accessToken) : base(hostName)
+        {
+            _credential = credential;
+            _cachedAccessToken = accessToken;
+        }
+
         public IotHubTokenCredentialProperties(string hostName, TokenCredential credential) : base(hostName)
         {
             _credential = credential;

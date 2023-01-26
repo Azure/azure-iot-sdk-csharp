@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
             }
             else
             {
-                writer.WriteValue(eTag.ToString("H"));
+                writer.WriteValue(eTag.ToString("G"));
             }
         }
     }

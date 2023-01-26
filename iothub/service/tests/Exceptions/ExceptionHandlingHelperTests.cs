@@ -9,7 +9,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Tests
+namespace Microsoft.Azure.Devices.Tests.Exceptions
 {
     [TestClass]
     [TestCategory("Unit")]
