@@ -155,9 +155,9 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 ModelId = "modelId1234",
                 WritableProperties =
-                    {
-                        { "additionalKey", "value" }
-                    }
+                {
+                    { "additionalKey", "value" }
+                }
             };
 
             var basicDigitalTwin = new BasicDigitalTwin
