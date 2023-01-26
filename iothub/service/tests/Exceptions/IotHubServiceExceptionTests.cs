@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
     public class IotHubServiceExceptionTests
     {
         private const string Message = "sample message";
+
         [TestMethod]
         [DataRow(IotHubServiceErrorCode.DeviceNotFound)]
         [DataRow(IotHubServiceErrorCode.InvalidProtocolVersion)]
