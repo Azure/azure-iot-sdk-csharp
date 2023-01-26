@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
     public class InvokeDigitalTwinCommandOptionsTests
     {
         [TestMethod]
-        public void InvokeDigitalTwinCommandOptions_Ctor_Ok()
+        public void InvokeDigitalTwinCommandOptions_PropertySetsAndGets()
         {
             // arrange - act
             int samplePayload = 1;
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
         }
 
         [TestMethod]
-        public void InvokeDigitalTwinCommandOptions_Ctor_Default_ok()
+        public void InvokeDigitalTwinCommandOptions_Ctor_DefaultProperties()
         {
             // arrange - act
             var options = new InvokeDigitalTwinCommandOptions();

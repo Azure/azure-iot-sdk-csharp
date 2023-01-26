@@ -33,7 +33,6 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             exception.IsTransient.Should().BeFalse();
             exception.TrackingId.Should().BeNull();
             exception.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
-
         }
 
         [TestMethod]

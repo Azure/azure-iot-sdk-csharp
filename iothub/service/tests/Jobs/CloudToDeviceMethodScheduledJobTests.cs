@@ -16,7 +16,8 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
     public class CloudToDeviceMethodScheduledJobTests
     {
         [TestMethod]
-        public void CloudToDeviceMethodScheduledJob_Ctor_Ok() {
+        public void CloudToDeviceMethodScheduledJob_Ctor_Ok()
+        {
             // arrange - act
             var request = new DirectMethodServiceRequest("TestMethod");
             var job = new CloudToDeviceMethodScheduledJob(request);

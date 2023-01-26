@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Tests.Feedback
     public class FeedbackBatchTests
     {
         [TestMethod]
-        public void FeedBackBatch_Ctor_Ok()
+        public void FeedBackBatch_PropertySetsAndGets()
         {
             // arrange
             FeedbackRecord[] feedbackRecords = 
@@ -38,9 +38,8 @@ namespace Microsoft.Azure.Devices.Tests.Feedback
 
             // assert
             feedbackBatch.EnqueuedOnUtc.Should().Be(expectedEnqueuedOnUtc);
-            feedbackBatch.Records.Should().HaveCount(2);
+            feedbackBatch.Records.Should().HaveCount(feedbackRecords.Length);
             feedbackBatch.IotHubHostName.Should().Be(expectedHubName);
         }
-
     }
 }

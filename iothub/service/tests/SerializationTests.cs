@@ -23,11 +23,9 @@ namespace Microsoft.Azure.Devices.Tests
                 ETag = new ETag("AAAAAAAAAAM="),
                 Version = 5,
                 Status = ClientStatus.Enabled,
-                StatusUpdatedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32,
-                        new TimeSpan(1, 0, 0)),
+                StatusUpdatedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0)),
                 ConnectionState = ClientConnectionState.Connected,
-                LastActiveOnUtc = new DateTimeOffset(2023, 1, 19, 8, 6, 32,
-                        new TimeSpan(1, 0, 0)),
+                LastActiveOnUtc = new DateTimeOffset(2023, 1, 19, 8, 6, 32, new TimeSpan(1, 0, 0)),
             };
 
             string clientTwinSerialized = JsonConvert.SerializeObject(clientTwin);
@@ -89,8 +87,7 @@ namespace Microsoft.Azure.Devices.Tests
                 OriginalMessageId = "1",
                 DeviceGenerationId = "2",
                 DeviceId = "testDeviceId",
-                EnqueuedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32,
-                                                new TimeSpan(1, 0, 0)),
+                EnqueuedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0)),
                 StatusCode = FeedbackStatusCode.Success,
                 Description = "Success"
             };
@@ -111,10 +108,8 @@ namespace Microsoft.Azure.Devices.Tests
                 BlobName = "testBlob",
                 BlobUriPath = new Uri("https://myaccount.blob.core.windows.net"),
                 BlobSizeInBytes = 50,
-                LastUpdatedOnUtc = new DateTimeOffset(2023, 1, 19, 8, 7, 32,
-                                                new TimeSpan(1, 0, 0)),
-                EnqueuedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32,
-                                                new TimeSpan(1, 0, 0))
+                LastUpdatedOnUtc = new DateTimeOffset(2023, 1, 19, 8, 7, 32, new TimeSpan(1, 0, 0)),
+                EnqueuedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0))
             };
 
             string fileUploadNotificationSerialized = JsonConvert.SerializeObject(fileUploadNotification);
@@ -192,8 +187,7 @@ namespace Microsoft.Azure.Devices.Tests
                 AckVersion = 1,
                 AckCode = 200,
                 AckDescription = "Ack Description",
-                LastUpdatedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32,
-                        new TimeSpan(1, 0, 0))
+                LastUpdatedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0))
             };
 
             string writablePropertySerialized = JsonConvert.SerializeObject(writableProperty);

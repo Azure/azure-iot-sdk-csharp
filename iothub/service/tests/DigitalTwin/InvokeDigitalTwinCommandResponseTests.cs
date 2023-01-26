@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
     public class InvokeDigitalTwinCommandResponseTests
     {
         [TestMethod]
-        public void InvokeDigitalTwinCommandResponse_Ctor_Ok()
+        public void InvokeDigitalTwinCommandResponse_PropertySetsAndGets()
         {
             // arrange - act
             const int Status = 0;
