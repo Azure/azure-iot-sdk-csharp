@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         [DataRow(IotHubServiceErrorCode.IotHubQuotaExceeded)]
         [DataRow(IotHubServiceErrorCode.ServiceUnavailable)]
         [DataRow(IotHubServiceErrorCode.ThrottlingException)]
-        public void IotHubServiceException_Ctor_WithTransidentErrorCode_Ok(IotHubServiceErrorCode errorCode)
+        public void IotHubServiceException_Ctor_WithTransientErrorCode_Ok(IotHubServiceErrorCode errorCode)
         {
             // arrange - act
             HttpStatusCode statusCode = HttpStatusCode.Accepted;  // set for simplicity
