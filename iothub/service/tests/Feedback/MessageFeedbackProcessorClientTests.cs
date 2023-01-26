@@ -80,10 +80,7 @@ namespace Microsoft.Azure.Devices.Tests.Feedback
                 s_retryHandler,
                 mockAmqpConnectionHandler.Object);
 
-            Func<FeedbackBatch, AcknowledgementType> messageFeedbackProcessor = (FeedbackBatch) =>
-            {
-                return AcknowledgementType.Complete;
-            };
+            AcknowledgementType messageFeedbackProcessor(FeedbackBatch FeedbackBatch) => AcknowledgementType.Complete;
 
             messageFeedbackProcessorClient.MessageFeedbackProcessor = messageFeedbackProcessor;
 

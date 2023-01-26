@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         }
 
         [TestMethod]
-        public void IotHubServiceException_UnknownErrorCode_IsNotTransient()
+        public void IotHubServiceException_UntrackedErrorCode_NotHttpStatusCodeRequestTimeout_IsNotTransient()
         {
             // arrange - act
             HttpStatusCode statusCode = HttpStatusCode.MovedPermanently; // not HttpStatusCode.RequestTimeout
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         }
 
         [TestMethod]
-        public void IotHubServiceException_UnknownErrorCode_IsTransient()
+        public void IotHubServiceException_UntrackedErrorCode_HttpStatusCodeRequestTimeout_IsTransient()
         {
             // arrange - act
             HttpStatusCode statusCode = HttpStatusCode.RequestTimeout;
