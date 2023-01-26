@@ -12,7 +12,8 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
     public class UpdateDigitalTwinOptionsTests
     {
         [TestMethod]
-        public void UpdateDigitalTwinOptions_Ctor_DefaultProperties() {
+        public void UpdateDigitalTwinOptions_Ctor_DefaultProperties()
+        {
             // arrange - act
             var updateDigitalTwinOptions = new UpdateDigitalTwinOptions();
 
