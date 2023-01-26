@@ -197,7 +197,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HubRoutingSample", "iothub\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X509DeviceCertWithChainSample", "iothub\device\samples\how to guides\X509DeviceCertWithChainSample\X509DeviceCertWithChainSample.csproj", "{CBAB50ED-91E9-42D7-878F-B547E98B953F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdgeModuleMessageSample", "EdgeModuleMessageSample\EdgeModuleMessageSample.csproj", "{939E5051-151A-42A8-A58F-EA4298DC8B78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdgeModuleMessageSample", "iothub\device\samples\getting started\EdgeModuleMessageSample\EdgeModuleMessageSample.csproj", "{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdgeModuleMethodSample", "iothub\device\samples\getting started\EdgeModuleMethodSample\EdgeModuleMethodSample.csproj", "{B7439987-3DAC-4490-B759-C77983D38EF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -385,10 +387,14 @@ Global
 		{CBAB50ED-91E9-42D7-878F-B547E98B953F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBAB50ED-91E9-42D7-878F-B547E98B953F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBAB50ED-91E9-42D7-878F-B547E98B953F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{939E5051-151A-42A8-A58F-EA4298DC8B78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{939E5051-151A-42A8-A58F-EA4298DC8B78}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{939E5051-151A-42A8-A58F-EA4298DC8B78}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{939E5051-151A-42A8-A58F-EA4298DC8B78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7439987-3DAC-4490-B759-C77983D38EF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7439987-3DAC-4490-B759-C77983D38EF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7439987-3DAC-4490-B759-C77983D38EF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7439987-3DAC-4490-B759-C77983D38EF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -464,7 +470,8 @@ Global
 		{FE579E0D-D55A-495E-A758-B611BA8C5C24} = {1C8A8E21-1EBC-4771-BB17-1E81434168B8}
 		{8F651FE8-BD4B-45C8-A57C-69A85DBAE366} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
 		{CBAB50ED-91E9-42D7-878F-B547E98B953F} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
-		{939E5051-151A-42A8-A58F-EA4298DC8B78} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
+		{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
+		{B7439987-3DAC-4490-B759-C77983D38EF1} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
