@@ -57,6 +57,38 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        internal ProvisioningDeviceClient(
+            string globalDeviceEndpoint,
+            string idScope,
+            AuthenticationProvider authenticationProvider,
+            ProvisioningTransportHandler provisioningTransportHandler,
+            ProvisioningClientOptions options = default)
+        {
+            if (authenticationProvider is AuthenticationProviderX509 x509Auth)
+            {
+                CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
+            }
+
+            _options = options != default
+                ? options.Clone()
+                : new();
+
+            _provisioningTransportHandler = provisioningTransportHandler;
+            _globalDeviceEndpoint = globalDeviceEndpoint;
+            _idScope = idScope;
+            _authentication = authenticationProvider;
+            _retryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
+            _retryHandler = new RetryHandler(_retryPolicy);
+
+            Logging.Associate(this, _authentication);
+            Logging.Associate(this, _options);
+        }
+
+        internal IProvisioningClientRetryPolicy RetryPolicy => _retryPolicy;
+
+        /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>

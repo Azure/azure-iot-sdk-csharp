@@ -16,7 +16,7 @@ using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal sealed class AmqpClientConnection : IDisposable
+    internal class AmqpClientConnection : IDisposable
     {
         private const string Amqpwsb10 = "AMQPWSB10";
         private const string UriSuffix = "/$iothub/websocket";
@@ -35,6 +35,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private TaskCompletionSource<TransportBase> _tcs;
         private TransportBase _transport;
         private ProtocolHeader _sentHeader;
+
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected internal AmqpClientConnection()
+        { }
 
         internal AmqpClientConnection(
             string host,

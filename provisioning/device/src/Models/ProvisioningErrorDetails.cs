@@ -33,6 +33,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Additional information.
         /// </summary>
         [JsonProperty("info", NullValueHandling = NullValueHandling.Ignore)]
-        public Dictionary<string, string> Info { get; private set; } = new();
+        public Dictionary<string, string> Info { get; internal set; } = new();
     }
 }

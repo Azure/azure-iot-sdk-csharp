@@ -14,8 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// For deserialization.
         /// </summary>
         protected internal SymmetricKeyRegistrationResult()
-        {
-        }
+        { }
 
         /// <summary>
         /// The Id of the enrollment group.

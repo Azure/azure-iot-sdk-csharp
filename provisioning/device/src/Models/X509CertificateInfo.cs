@@ -15,8 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// For deserialization.
         /// </summary>
         protected internal X509CertificateInfo()
-        {
-        }
+        { }
 
         /// <summary>
         /// The certificate subject name.
