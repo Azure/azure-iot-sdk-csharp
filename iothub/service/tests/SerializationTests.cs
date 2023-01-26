@@ -34,6 +34,9 @@ namespace Microsoft.Azure.Devices.Tests
             
             // assert
             ct.Should().BeEquivalentTo(clientTwin);
+
+            clientTwin.Version = 6; // modify a property value and ensure comparison fails
+            ct.Should().NotBeEquivalentTo(clientTwin);
         }
 
         [TestMethod]
@@ -59,6 +62,9 @@ namespace Microsoft.Azure.Devices.Tests
             // assert
             c.SchemaVersion.Should().Be(ExpectedSchemaVersion);
             c.Should().BeEquivalentTo(configuration);
+
+            configuration.ETag = new ETag("1234"); // set a property value and ensure comparison fails
+            c.Should().NotBeEquivalentTo(configuration);
         }
 
         [TestMethod]
@@ -76,6 +82,8 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             ic.Should().BeEquivalentTo(importConfiguration);
+            importConfiguration.ETag = new ETag("1234"); // set a property value and ensure comparison fails
+            ic.Should().NotBeEquivalentTo(importConfiguration);
         }
 
         [TestMethod]
@@ -96,6 +104,9 @@ namespace Microsoft.Azure.Devices.Tests
             // assert
             FeedbackRecord fr = JsonConvert.DeserializeObject<FeedbackRecord>(feedbackRecordSerialized);
             fr.Should().BeEquivalentTo(feedbackRecord);
+
+            feedbackRecord.EnqueuedOnUtc = new DateTimeOffset(2022, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0)); // modify a property value and ensure comparison fails
+            fr.Should().NotBeEquivalentTo(feedbackRecord);
         }
 
         [TestMethod]
@@ -118,6 +129,9 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             fun.Should().BeEquivalentTo(fileUploadNotification);
+
+            fileUploadNotification.BlobUriPath = new Uri("https://contoso.blob.core.windows.net"); // modify a property value and ensure comparison fails
+            fun.Should().NotBeEquivalentTo(fileUploadNotification);
         }
 
         [TestMethod]
@@ -138,6 +152,8 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             basicDigitalTwin.Should().BeEquivalentTo(bdt);
+            basicDigitalTwin.Metadata.ModelId = "modelId5678"; // modify a property value and ensure comparison fails
+            basicDigitalTwin.Should().NotBeEquivalentTo(bdt);
         }
 
         [TestMethod]
@@ -170,6 +186,8 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             basicDigitalTwin.Should().BeEquivalentTo(bdt);
+            basicDigitalTwin.Id = "updatedId1234"; // modify a property value and ensure comparison fails
+            basicDigitalTwin.Should().NotBeEquivalentTo(bdt);
         }
 
         [TestMethod]
@@ -191,6 +209,8 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             writableProperty.Should().BeEquivalentTo(wp);
+            writableProperty.DesiredValue = "updatedValue"; // modify a property value and ensure comparison fails
+            writableProperty.Should().NotBeEquivalentTo(wp);
         }
 
         [TestMethod]
@@ -210,23 +230,28 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             metaData.Should().BeEquivalentTo(componentMetadata);
+            componentMetadata.WritableProperties.Add("key3", "additionalKey"); // modify a property value and ensure comparison fails
+            metaData.Should().NotBeEquivalentTo(componentMetadata);
         }
 
         [TestMethod]
         public void CloudToDeviceMethodScheduledJob_JsonParse_Ok()
         {
             // arrange - act
-            var directMethodRequest = new DirectMethodServiceRequest("testMethod")
-            {
-                Payload = "testPayload"
-            };
-            var cloudToDeviceMethodScheduledJob = new CloudToDeviceMethodScheduledJob(directMethodRequest);
+            var cloudToDeviceMethodScheduledJob = new CloudToDeviceMethodScheduledJob(
+                new DirectMethodServiceRequest("testMethod")
+                {
+                    Payload = "testPayload"
+                }
+            );
 
             string cloudToDeviceMethodScheduledJobSerialized = JsonConvert.SerializeObject(cloudToDeviceMethodScheduledJob);
             CloudToDeviceMethodScheduledJob job = JsonConvert.DeserializeObject<CloudToDeviceMethodScheduledJob>(cloudToDeviceMethodScheduledJobSerialized);
 
             // assert
             job.Should().BeEquivalentTo(cloudToDeviceMethodScheduledJob);
+            cloudToDeviceMethodScheduledJob.DirectMethodRequest.Payload = "updatedPayload"; // modify a property value and ensure comparison fails
+            job.Should().NotBeEquivalentTo(cloudToDeviceMethodScheduledJob);
         }
 
         [TestMethod]
@@ -248,6 +273,9 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             statistics.Should().BeEquivalentTo(deviceJobStatistics);
+            deviceJobStatistics.DeviceCount = 110;
+            deviceJobStatistics.FailedCount = 60;
+            statistics.Should().NotBeEquivalentTo(deviceJobStatistics);
         }
     }
 }
