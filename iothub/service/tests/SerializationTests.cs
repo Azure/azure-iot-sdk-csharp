@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Tests
                     ModulesContent =
                     {
                         {
-                            "edgeAgent", new Dictionary<string, object> { { "properties.desired", "wef" } }
+                            "edgeAgent", new Dictionary<string, object> { { "properties.desired", "test" } }
                         }
                     }
                 }
@@ -124,15 +124,13 @@ namespace Microsoft.Azure.Devices.Tests
         public void BasicDigitalTwin_JsonParse_Ok()
         {
             // arrange - act
-            var digitalTwinMetadata = new DigitalTwinMetadata
-            {
-                ModelId = "modelId1234"
-            };
-
             var basicDigitalTwin = new BasicDigitalTwin
             {
                 Id = "twinId1234",
-                Metadata = digitalTwinMetadata
+                Metadata = new DigitalTwinMetadata
+                {
+                    ModelId = "modelId1234"
+                }
             };
 
             string basicDigitalTwinSerialized = JsonConvert.SerializeObject(basicDigitalTwin);
@@ -146,19 +144,17 @@ namespace Microsoft.Azure.Devices.Tests
         public void BasicDigitalTwin_WithCustomProperties_JsonParse_Ok()
         {
             // arrange - act
-            var digitalTwinMetadata = new DigitalTwinMetadata
-            {
-                ModelId = "modelId1234",
-                WritableProperties =
-                {
-                    { "additionalKey", "value" }
-                }
-            };
-
             var basicDigitalTwin = new BasicDigitalTwin
             {
                 Id = "twinId1234",
-                Metadata = digitalTwinMetadata,
+                Metadata = new DigitalTwinMetadata
+                {
+                    ModelId = "modelId1234",
+                    WritableProperties =
+                    {
+                        { "additionalKey", "value" }
+                    }
+                },
                 CustomProperties =
                 {
                     { "desiredValue", "sampleValue" },
