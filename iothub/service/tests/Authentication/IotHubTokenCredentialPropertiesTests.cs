@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Tests.Authentication
             var mockCredential = new Mock<TokenCredential>();
 
             string expectedAuthorizationHeader = $"{TokenType} {TokenValue}";
-            DateTime expiryDate = DateTime.UtcNow.AddMinutes(11); // Not Close to expiry
+            DateTime expiryDate = DateTime.UtcNow.AddMinutes(11); // Not close to expiry
             var testAccessToken = new AccessToken(TokenValue, expiryDate);
 
             var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, testAccessToken);
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Tests.Authentication
         }
 
         [TestMethod]
-        public void IotHubTokenCredentialProperties_GetAuthorizationHeader_NoTokenValue_GeneratesToken()
+        public void IotHubTokenCredentialProperties_GetAuthorizationHeader_NullTokenValue_GeneratesToken()
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
