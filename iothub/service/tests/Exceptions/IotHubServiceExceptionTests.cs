@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             Action act = () => exception.GetObjectData(sInfo, sctx);
 
             // assert
-            act.Should().NotThrow();
+            act.Should().NotThrow(); // With proper parameters, act should not throw
         }
     }
 }

@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void ClientTwin_JsonParse_Ok()
         {
+            // arrange - act
             var clientTwin = new ClientTwin("test")
             {
                 ETag = new ETag("AAAAAAAAAAM="),
@@ -32,12 +33,15 @@ namespace Microsoft.Azure.Devices.Tests
             string clientTwinSerialized = JsonConvert.SerializeObject(clientTwin);
 
             ClientTwin ct = JsonConvert.DeserializeObject<ClientTwin>(clientTwinSerialized);
+            
+            // assert
             ct.Should().BeEquivalentTo(clientTwin);
         }
 
         [TestMethod]
         public void Configuration_JsonParse_Ok()
         {
+            // arrange - act
             const string ExpectedSchemaVersion = "1.0";
             var configuration = new Configuration("aa")
             {
@@ -52,8 +56,9 @@ namespace Microsoft.Azure.Devices.Tests
                 }
             };
             string configurationSerialized = JsonConvert.SerializeObject(configuration);
-
             Configuration c = JsonConvert.DeserializeObject<Configuration>(configurationSerialized);
+
+            // assert
             c.SchemaVersion.Should().Be(ExpectedSchemaVersion);
             c.Should().BeEquivalentTo(configuration);
         }
@@ -61,6 +66,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void ImportConfiguration_JsonParse_Ok()
         {
+            // arrange - act
             var importConfiguration = new ImportConfiguration("aa")
             {
                 Id = "aa",
@@ -69,12 +75,15 @@ namespace Microsoft.Azure.Devices.Tests
             string importConfigurationSerialized = JsonConvert.SerializeObject(importConfiguration);
 
             ImportConfiguration ic = JsonConvert.DeserializeObject<ImportConfiguration>(importConfigurationSerialized);
+
+            // assert
             ic.Should().BeEquivalentTo(importConfiguration);
         }
 
         [TestMethod]
         public void FeedbackRecord_JsonParse_Ok()
         {
+            // arrange - act
             var feedbackRecord = new FeedbackRecord
             {
                 OriginalMessageId = "1",
@@ -87,6 +96,7 @@ namespace Microsoft.Azure.Devices.Tests
             };
             string feedbackRecordSerialized = JsonConvert.SerializeObject(feedbackRecord);
 
+            // assert
             FeedbackRecord fr = JsonConvert.DeserializeObject<FeedbackRecord>(feedbackRecordSerialized);
             fr.Should().BeEquivalentTo(feedbackRecord);
         }
@@ -94,6 +104,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void FileUploadNotification_JsonParse_Ok()
         {
+            // arrange - act
             var fileUploadNotification = new FileUploadNotification
             {
                 DeviceId = "testDeviceId",
@@ -110,12 +121,14 @@ namespace Microsoft.Azure.Devices.Tests
 
             FileUploadNotification fun = JsonConvert.DeserializeObject<FileUploadNotification>(fileUploadNotificationSerialized);
 
+            // assert
             fun.Should().BeEquivalentTo(fileUploadNotification);
         }
 
         [TestMethod]
         public void BasicDigitalTwin_JsonParse_Ok()
         {
+            // arrange - act
             var digitalTwinMetadata = new DigitalTwinMetadata
             {
                 ModelId = "modelId1234"
@@ -130,12 +143,14 @@ namespace Microsoft.Azure.Devices.Tests
             string basicDigitalTwinSerialized = JsonConvert.SerializeObject(basicDigitalTwin);
             BasicDigitalTwin bdt = JsonConvert.DeserializeObject<BasicDigitalTwin>(basicDigitalTwinSerialized);
 
+            // assert
             basicDigitalTwin.Should().BeEquivalentTo(bdt);
         }
 
         [TestMethod]
         public void BasicDigitalTwin_WithCustomProperties_JsonParse_Ok()
         {
+            // arrange - act
             var digitalTwinMetadata = new DigitalTwinMetadata
             {
                 ModelId = "modelId1234",
@@ -162,12 +177,14 @@ namespace Microsoft.Azure.Devices.Tests
             string basicDigitalTwinSerialized = JsonConvert.SerializeObject(basicDigitalTwin);
             BasicDigitalTwin bdt = JsonConvert.DeserializeObject<BasicDigitalTwin>(basicDigitalTwinSerialized);
 
+            // assert
             basicDigitalTwin.Should().BeEquivalentTo(bdt);
         }
 
         [TestMethod]
         public void WritableProperty_JsonParse_Ok()
         {
+            // arrange - act
             var writableProperty = new WritableProperty
             {
                 DesiredValue = "sampleValue",
@@ -182,12 +199,14 @@ namespace Microsoft.Azure.Devices.Tests
             string writablePropertySerialized = JsonConvert.SerializeObject(writableProperty);
             WritableProperty wp = JsonConvert.DeserializeObject<WritableProperty>(writablePropertySerialized);
 
+            // assert
             writableProperty.Should().BeEquivalentTo(wp);
         }
 
         [TestMethod]
         public void ComponentMetadata_JsonParse_Ok()
         {
+            // arrange - act
             var componentMetadata = new ComponentMetadata
             {
                 WritableProperties =
@@ -197,14 +216,16 @@ namespace Microsoft.Azure.Devices.Tests
                 }
             };
             string componentMetadataSerialized = JsonConvert.SerializeObject(componentMetadata);
-
             ComponentMetadata metaData = JsonConvert.DeserializeObject<ComponentMetadata>(componentMetadataSerialized);
+
+            // assert
             metaData.Should().BeEquivalentTo(componentMetadata);
         }
 
         [TestMethod]
         public void CloudToDeviceMethodScheduledJob_JsonParse_Ok()
         {
+            // arrange - act
             var directMethodRequest = new DirectMethodServiceRequest("testMethod")
             {
                 Payload = "testPayload"
@@ -212,14 +233,16 @@ namespace Microsoft.Azure.Devices.Tests
             var cloudToDeviceMethodScheduledJob = new CloudToDeviceMethodScheduledJob(directMethodRequest);
 
             string cloudToDeviceMethodScheduledJobSerialized = JsonConvert.SerializeObject(cloudToDeviceMethodScheduledJob);
-
             CloudToDeviceMethodScheduledJob job = JsonConvert.DeserializeObject<CloudToDeviceMethodScheduledJob>(cloudToDeviceMethodScheduledJobSerialized);
+
+            // assert
             job.Should().BeEquivalentTo(cloudToDeviceMethodScheduledJob);
         }
 
         [TestMethod]
         public void DeviceJobStatistics_JsonParse_Ok()
         {
+            // arrange - act
             var deviceJobStatistics = new DeviceJobStatistics
             {
                 DeviceCount = 100,
@@ -232,6 +255,8 @@ namespace Microsoft.Azure.Devices.Tests
             string deviceJobStatisticsSerialized = JsonConvert.SerializeObject(deviceJobStatistics);
 
             DeviceJobStatistics statistics = JsonConvert.DeserializeObject<DeviceJobStatistics>(deviceJobStatisticsSerialized);
+
+            // assert
             statistics.Should().BeEquivalentTo(deviceJobStatistics);
         }
     }
