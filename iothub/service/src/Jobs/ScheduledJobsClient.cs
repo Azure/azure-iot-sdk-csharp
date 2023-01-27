@@ -97,10 +97,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting job {jobId} threw an exception: {ex}", nameof(GetAsync));
+                Logging.Error(this, $"Getting job {jobId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -182,10 +181,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Canceling job {jobId} threw an exception: {ex}", nameof(CancelAsync));
+                Logging.Error(this, $"Canceling job {jobId} threw an exception: {ex}", nameof(CancelAsync));
                 throw;
             }
             finally
@@ -264,10 +262,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Scheduling direct method job {scheduledJobsOptions.JobId} threw an exception: {ex}", nameof(ScheduleDirectMethodAsync));
+                Logging.Error(this, $"Scheduling direct method job {scheduledJobsOptions.JobId} threw an exception: {ex}", nameof(ScheduleDirectMethodAsync));
                 throw;
             }
             finally
@@ -354,10 +351,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Scheduling twin update {scheduledJobsOptions.JobId} threw an exception: {ex}", nameof(ScheduleTwinUpdateAsync));
+                Logging.Error(this, $"Scheduling twin update {scheduledJobsOptions.JobId} threw an exception: {ex}", nameof(ScheduleTwinUpdateAsync));
                 throw;
             }
             finally

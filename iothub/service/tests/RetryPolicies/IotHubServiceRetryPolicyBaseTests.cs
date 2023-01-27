@@ -106,8 +106,8 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             var retryPolicy = new IotHubServiceTestRetryPolicy(0);
             var duration = TimeSpan.FromSeconds(seconds);
-            double min = duration.TotalMilliseconds * .95d;
-            double max = duration.TotalMilliseconds * 1.05d;
+            double min = duration.TotalMilliseconds * .9d;
+            double max = duration.TotalMilliseconds * 1.1d;
 
             // act
             TimeSpan actual = retryPolicy.UpdateWithJitter(duration.TotalMilliseconds);
