@@ -11,7 +11,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Newtonsoft.Json;
 using FluentAssertions;
+using System.Collections;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -36,6 +39,8 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             string query = "SELECT * FROM devices";
+            var querySerialization = new RawQuerySerializationClass();
+
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -45,7 +50,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var mockHttpResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = HttpMessageHelper.SerializePayload(query),
+                Content = HttpMessageHelper.SerializePayload(querySerialization),
             };
             mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
 
@@ -62,7 +67,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>(query);
+            Func<Task> act = async () => await queryClient.CreateAsync<RawQuerySerializationClass>(query);
 
             // assert
             await act.Should().NotThrowAsync();
@@ -132,6 +137,29 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             await act.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
+        public async Task QueryClient_CreateJobsQuery_HttpException()
+        {
+            // arrange
+            using var serviceClient = new IotHubServiceClient(s_connectionString);
+            QueryClient queryClient = serviceClient.Query;
+
+            // act
+            // query from Hub that doesn't exist
+            Func<Task> act = async () => await queryClient.CreateJobsQueryAsync();
+
+            // assert
+            await act.Should().ThrowAsync<IotHubServiceException>();
+        }
+
+        [JsonObjectAttribute]
+        [JsonArray]
+        public class RawQuerySerializationClass
+        {
+            [JsonProperty("TotalNumberOfDevices")]
+            public JArray TotalNumberOfDevices { get; set; }
         }
     }
 }
