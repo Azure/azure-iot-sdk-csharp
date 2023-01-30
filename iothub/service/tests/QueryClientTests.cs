@@ -38,8 +38,9 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task QueryClient_CreateAsync()
         {
             // arrange
-            string query = "SELECT * FROM devices";
-            var querySerialization = new RawQuerySerializationClass();
+            string query = "select * from devices where deviceId = 'foo'";
+            var twin = new ClientTwin("foo");
+
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var mockHttpResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = HttpMessageHelper.SerializePayload(querySerialization),
+                Content = HttpMessageHelper.SerializePayload(new List<ClientTwin> { twin }),
             };
             mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
 
@@ -67,7 +68,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await queryClient.CreateAsync<RawQuerySerializationClass>(query);
+            Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>(query);
 
             // assert
             await act.Should().NotThrowAsync();
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task QueryClient_CreateJobsQueryAsync()
         {
             // arrange
-            string query = "SELECT * FROM devices";
+            var job = new ScheduledJob();
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -116,7 +117,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var mockHttpResponse = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = HttpMessageHelper.SerializePayload(query),
+                Content = HttpMessageHelper.SerializePayload(new List<ScheduledJob> { job }),
             };
             mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
 
@@ -152,14 +153,6 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             await act.Should().ThrowAsync<IotHubServiceException>();
-        }
-
-        [JsonObjectAttribute]
-        [JsonArray]
-        public class RawQuerySerializationClass
-        {
-            [JsonProperty("TotalNumberOfDevices")]
-            public JArray TotalNumberOfDevices { get; set; }
         }
     }
 }
