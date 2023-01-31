@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestMessage">The request to add the If-Match header to.</param>
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
         /// <param name="onlyIfUnchanged">
-        /// If true, the inserted IfMatch header value will be "*". If false, the IfMatch header value will be equal to the provided eTag.
+        /// If true, the IfMatch header value will be equal to the provided eTag. If false, the inserted IfMatch header value will be "*".
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
@@ -88,20 +88,21 @@ namespace Microsoft.Azure.Devices
         {
             Debug.Assert(requestMessage != null, "Request message should not have been null");
 
-            if (onlyIfUnchanged && !string.IsNullOrWhiteSpace(eTag.ToString()))
+            if (!onlyIfUnchanged)
             {
-                // "Perform this operation only if the entity is unchanged"
-                // Sends the If-Match header with a value of the ETag.
+                eTag = ETag.All;
+            }
+
+            if (!string.IsNullOrWhiteSpace(eTag.ToString()))
+            {
                 // Azure.Core.ETag expects the format "H" for serializing ETags that go into the header.
                 // https://github.com/Azure/azure-sdk-for-net/blob/9c6238e0f0dd403d6583b56ec7902c77c64a2e37/sdk/core/Azure.Core/src/ETag.cs#L87-L114
-                string escapedETag = eTag.ToString("H");
-                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag, true));
-            }
-            else
-            {
-                // "Perform this operation even if the entity has changed"
-                // Sends the If-Match header with a value of "*"
-                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(s_eTagForce, true));
+                // Also, System.Net.Http.Headers does not allow ETag.All (*) as a valid value even though RFC allows it.
+                // For this reason, we'll add the ETag value without additional validation.
+                // System.Net.Http.Headers validation: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/tests/UnitTests/Headers/EntityTagHeaderValueTest.cs#L214,
+                // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/src/System/Net/Http/Headers/GenericHeaderParser.cs#L98
+                // RFC specification: https://www.rfc-editor.org/rfc/rfc7232#section-3.1
+                requestMessage.Headers.TryAddWithoutValidation(HttpRequestHeader.IfMatch.ToString(), eTag.ToString("H"));
             }
         }
     }
