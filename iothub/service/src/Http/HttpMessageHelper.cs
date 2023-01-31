@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices
                 // System.Net.Http.Headers validation: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/tests/UnitTests/Headers/EntityTagHeaderValueTest.cs#L214,
                 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/src/System/Net/Http/Headers/GenericHeaderParser.cs#L98
                 // RFC specification: https://www.rfc-editor.org/rfc/rfc7232#section-3.1
-                requestMessage.Headers.TryAddWithoutValidation("If-Match", eTag.ToString("H"));
+                _ = requestMessage.Headers.TryAddWithoutValidation("If-Match", eTag.ToString("H"));
             }
         }
     }
