@@ -21,11 +21,6 @@ namespace Microsoft.Azure.Devices
         private const string ApplicationJson = "application/json";
 
         /// <summary>
-        /// The If-Match header value for forcing the operation regardless of ETag.
-        /// </summary>
-        private static readonly string s_eTagForce = $"\"{ETag.All}\"";
-
-        /// <summary>
         /// Helper method for serializing payload objects.
         /// </summary>
         /// <param name="payload">The payload object to serialize.</param>
@@ -102,7 +97,7 @@ namespace Microsoft.Azure.Devices
                 // System.Net.Http.Headers validation: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/tests/UnitTests/Headers/EntityTagHeaderValueTest.cs#L214,
                 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/src/System/Net/Http/Headers/GenericHeaderParser.cs#L98
                 // RFC specification: https://www.rfc-editor.org/rfc/rfc7232#section-3.1
-                requestMessage.Headers.TryAddWithoutValidation(HttpRequestHeader.IfMatch.ToString(), eTag.ToString("H"));
+                requestMessage.Headers.TryAddWithoutValidation("If-Match", eTag.ToString("H"));
             }
         }
     }
