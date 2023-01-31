@@ -23,6 +23,12 @@ namespace Microsoft.Azure.Devices.Amqp
         private AmqpSession _session;
 
         /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected internal AmqpSessionHandler()
+        { }
+
+        /// <summary>
         /// Construct an AMQP session for handling sending cloud to device messaging, receiving file
         /// upload notifications or receiving feedback messages.
         /// </summary>
@@ -146,11 +152,12 @@ namespace Microsoft.Azure.Devices.Amqp
 
         /// <summary>
         /// Sends the cloud to device message via the worker link.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="deliveryTag">The message delivery tag. Used for correlating messages and acknowledgements.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        internal async Task<Outcome> SendAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, CancellationToken cancellationToken)
+        internal virtual async Task<Outcome> SendAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, CancellationToken cancellationToken)
         {
             if (_sendingLinkHandler == null)
             {
