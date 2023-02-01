@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var qureyClient = new QueryClient(
+            var queryClient = new Mock<QueryClient>(
                 HostName,
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                qureyClient,
+                queryClient.Object,
                 s_retryHandler);
 
             // act
@@ -81,7 +81,24 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_GetAsync_NullArgumentThrows()
         {
             // arrange
-            var scheduledJob = new ScheduledJob();
+            using var serviceClient = new IotHubServiceClient(s_connectionString);
+
+            // act
+            Func<Task> act = async () => await serviceClient.ScheduledJobs.GetAsync(null);
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public async Task ScheduledJobsClient_GetAsync_HttpException()
+        {
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
+
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -90,17 +107,16 @@ namespace Microsoft.Azure.Devices.Tests
 
             using var mockHttpResponse = new HttpResponseMessage
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = HttpMessageHelper.SerializePayload(scheduledJob),
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
             };
-            mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
 
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var qureyClient = new QueryClient(
+            var queryClient = new Mock<QueryClient>(
                 HostName,
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
@@ -112,25 +128,10 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                qureyClient,
+                queryClient.Object,
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await scheduledJobsClient.GetAsync(null);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public async Task ScheduledJobsClient_GetAsync_HttpException()
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            ScheduledJobsClient scheduledJobsClient = serviceClient.ScheduledJobs;
-
-            // act
-            // query from a Hub that does not exist
             Func<Task> act = async() => await scheduledJobsClient.GetAsync("foo");
 
             // assert
@@ -160,7 +161,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var qureyClient = new QueryClient(
+            var queryClient = new Mock<QueryClient>(
                 HostName,
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
@@ -172,7 +173,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                qureyClient,
+                queryClient.Object,
                 s_retryHandler);
 
             // act
@@ -186,7 +187,25 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_CancelAsync_NullParameterThrows()
         {
             // arrange
-            var scheduledJob = new ScheduledJob();
+            using var serviceClient = new IotHubServiceClient(s_connectionString);
+
+            // act
+            Func<Task> act = async () => await serviceClient.ScheduledJobs.CancelAsync(null);
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public async Task ScheduledJobsClient_CancelAsync_HttpException()
+        {
+            // arrange
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
+
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -195,17 +214,16 @@ namespace Microsoft.Azure.Devices.Tests
 
             using var mockHttpResponse = new HttpResponseMessage
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = HttpMessageHelper.SerializePayload(scheduledJob),
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
             };
-            mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
 
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var qureyClient = new QueryClient(
+            var queryClient = new Mock<QueryClient>(
                 HostName,
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
@@ -217,25 +235,10 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                qureyClient,
+                queryClient.Object,
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await scheduledJobsClient.CancelAsync(null);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public async Task ScheduledJobsClient_CancelAsync_HttpException()
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            ScheduledJobsClient scheduledJobsClient = serviceClient.ScheduledJobs;
-
-            // act
-            // query from Hub that does not exist
             Func<Task> act = async() => await scheduledJobsClient.CancelAsync("foo");
 
             // assert
@@ -269,7 +272,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var qureyClient = new QueryClient(
+            var queryClient = new Mock<QueryClient>(
                 HostName,
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
@@ -281,7 +284,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                qureyClient,
+                queryClient.Object,
                 s_retryHandler);
 
             // act
@@ -299,8 +302,28 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_ScheduleDirectMethodAsync_NullParamterThrows()
         {
             // arrange
-            var scheduledJob = new ScheduledJob();
-            var scheduledJobsOptions = new ScheduledJobsOptions();
+            using var serviceClient = new IotHubServiceClient(s_connectionString);
+
+            // act
+            Func<Task> act = async () => await serviceClient.ScheduledJobs.ScheduleDirectMethodAsync(
+               null,
+               null,
+               new DateTimeOffset(DateTime.UtcNow),
+               new ScheduledJobsOptions());
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public async Task ScheduledJobsClient_ScheduleDirectMethodAsync_HttpException()
+        {
+            // arrange
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
@@ -310,17 +333,16 @@ namespace Microsoft.Azure.Devices.Tests
 
             using var mockHttpResponse = new HttpResponseMessage
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = HttpMessageHelper.SerializePayload(scheduledJob),
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
             };
-            mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
 
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var qureyClient = new QueryClient(
+            var queryClient = new Mock<QueryClient>(
                 HostName,
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
@@ -332,29 +354,10 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                qureyClient,
+                queryClient.Object,
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await scheduledJobsClient.ScheduleDirectMethodAsync(
-               null,
-               null,
-               new DateTimeOffset(DateTime.UtcNow),
-               scheduledJobsOptions);
-
-            // assert
-            await act.Should().ThrowAsync<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public async Task ScheduledJobsClient_ScheduleDirectMethodAsync_HttpException()
-        {
-            // arrange
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            ScheduledJobsClient scheduledJobsClient = serviceClient.ScheduledJobs;
-
-            // act
-            // schedule method to Hub that does not exist
             Func<Task> act = async () => await scheduledJobsClient.ScheduleDirectMethodAsync(
                 "foo",
                 new DirectMethodServiceRequest("bar"),
@@ -389,7 +392,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var qureyClient = new QueryClient(
+            var queryClient = new Mock<QueryClient>(
                 HostName,
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
@@ -401,7 +404,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
-                qureyClient,
+                queryClient.Object,
                 s_retryHandler);
 
             // act
@@ -418,43 +421,10 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_ScheduleTwinUpdateAysnc_NullParamterThrows()
         {
             // arrange
-            var scheduledJob = new ScheduledJob();
-
-            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            mockCredentialProvider
-                .Setup(getCredential => getCredential.GetAuthorizationHeader())
-                .Returns(s_validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
-
-            using var mockHttpResponse = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = HttpMessageHelper.SerializePayload(scheduledJob),
-            };
-            mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
-
-            var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient
-                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockHttpResponse);
-
-            var qureyClient = new QueryClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
-
-            var scheduledJobsClient = new ScheduledJobsClient(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                qureyClient,
-                s_retryHandler);
+            using var serviceClient = new IotHubServiceClient(s_connectionString);
 
             // act
-            Func<Task> act = async () => await scheduledJobsClient.ScheduleTwinUpdateAsync(
+            Func<Task> act = async () => await serviceClient.ScheduledJobs.ScheduleTwinUpdateAsync(
                 "foo",
                 null,
                 new DateTimeOffset(DateTime.UtcNow));
@@ -467,11 +437,45 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_ScheduleTwinUpdateAysnc_HttpException()
         {
             // arrange
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            ScheduledJobsClient scheduledJobsClient = serviceClient.ScheduledJobs;
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var queryClient = new Mock<QueryClient>(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            var scheduledJobsClient = new ScheduledJobsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                queryClient.Object,
+                s_retryHandler);
 
             // act
-            // schedule twin update from Hub that doesn't exist
             Func<Task> act = async () => await scheduledJobsClient.ScheduleTwinUpdateAsync(
                 "foo",
                 new ClientTwin(),
