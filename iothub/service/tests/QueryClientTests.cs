@@ -41,7 +41,6 @@ namespace Microsoft.Azure.Devices.Tests
             string query = "select * from devices where deviceId = 'foo'";
             var twin = new ClientTwin("foo");
 
-
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())

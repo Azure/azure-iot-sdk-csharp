@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
+using Microsoft.Azure.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
@@ -71,17 +72,17 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await digitalTwinsClient.GetAsync<BasicDigitalTwin>(digitalTwinId).ConfigureAwait(false);
+            DigitalTwinGetResponse<BasicDigitalTwin> result =  await digitalTwinsClient.GetAsync<BasicDigitalTwin>(digitalTwinId).ConfigureAwait(false);
 
             // assert
-            await act.Should().NotThrowAsync();
+            result.DigitalTwin.Id.Should().Be(digitalTwinId);
         }
 
         [TestMethod]
-        public async Task DigitalTwinsClient_GetAsync_NullTwinIdThrows()
+        public async Task DigitalTwinsClient_GetAsync_EmptyTwinIdThrows()
         {
             // arrange
-            string digitalTwinId = "";
+            string digitalTwinId = null;
             using var serviceClient = new IotHubServiceClient(s_connectionString);
             DigitalTwinsClient digitalTwinsClient = serviceClient.DigitalTwins;
 
@@ -96,12 +97,42 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DigitalTwinsClient_GetAsync_HttpException()
         {
             // arrange
-            string digitalTwinId = Guid.NewGuid().ToString();
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            DigitalTwinsClient digitalTwinsClient = serviceClient.DigitalTwins;
+            string digitalTwinId = "foo";
+            var digitalTwin = new BasicDigitalTwin
+            {
+                Id = digitalTwinId,
+            };
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var digitalTwinsClient = new DigitalTwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
 
             // act
-            // deliberately throw http exception by searching for twin that does not exist
             Func<Task> act = async () => await digitalTwinsClient.GetAsync<string>(digitalTwinId);
 
             // assert
@@ -151,10 +182,10 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await digitalTwinsClient.UpdateAsync(digitalTwinId, jsonPatch.ToString());
+            DigitalTwinUpdateResponse response = await digitalTwinsClient.UpdateAsync(digitalTwinId, jsonPatch.ToString());
 
             // assert
-            await act.Should().NotThrowAsync();
+            response.Should().BeOfType<DigitalTwinUpdateResponse>();
         }
 
         [TestMethod]
@@ -165,11 +196,9 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(s_connectionString);
-            DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
 
             // act
-            // deliberately throw http exception by searching for twin that does not exist
-            Func<Task> act = async () => await digialTwinsClient.UpdateAsync(digitalTwinId, jsonPatch);
+            Func<Task> act = async () => await serviceClient.DigitalTwins.UpdateAsync(digitalTwinId, jsonPatch);
 
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
@@ -178,14 +207,44 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DigitalTwinsClient_UpdateAsync_HttpException()
         {
             // arrange
-            string digitalTwinId = Guid.NewGuid().ToString();
             string jsonPatch = "test";
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
+            string digitalTwinId = "foo";
+            var digitalTwin = new BasicDigitalTwin
+            {
+                Id = digitalTwinId,
+            };
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var digitalTwinsClient = new DigitalTwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
 
             // act
-            // deliberately throw http exception by searching for twin that does not exist
-            Func<Task> act = async () => await digialTwinsClient.UpdateAsync(digitalTwinId, jsonPatch);
+            Func<Task> act = async () => await digitalTwinsClient.UpdateAsync(digitalTwinId, jsonPatch);
 
             // assert
             await act.Should().ThrowAsync<IotHubServiceException>();
@@ -229,10 +288,10 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await digitalTwinsClient.InvokeCommandAsync(digitalTwinId, commandName).ConfigureAwait(false);
+            InvokeDigitalTwinCommandResponse response = await digitalTwinsClient.InvokeCommandAsync(digitalTwinId, commandName).ConfigureAwait(false);
 
             // assert
-            await act.Should().NotThrowAsync();
+            response.Status.Should().Be(200);
         }
 
         [TestMethod]
@@ -256,14 +315,44 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DigitalTwinsClient_InvokeCommandAysnc_HttpException()
         {
             // arrange
-            string digitalTwinId = Guid.NewGuid().ToString();
             string commandName = "test";
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
+            string digitalTwinId = "foo";
+            var digitalTwin = new BasicDigitalTwin
+            {
+                Id = digitalTwinId,
+            };
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var digitalTwinsClient = new DigitalTwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
 
             // act
-            // deliberately throw http exception by searching for twin that does not exist
-            Func<Task> act = async () => await digialTwinsClient.InvokeCommandAsync(digitalTwinId, commandName);
+            Func<Task> act = async () => await digitalTwinsClient.InvokeCommandAsync(digitalTwinId, commandName);
 
             // assert
             await act.Should().ThrowAsync<IotHubServiceException>();
@@ -308,10 +397,10 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await digitalTwinsClient.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
+            InvokeDigitalTwinCommandResponse response = await digitalTwinsClient.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
 
             // assert
-            await act.Should().NotThrowAsync();
+            response.Status.Should().Be(200);
         }
 
         [TestMethod]
@@ -326,7 +415,6 @@ namespace Microsoft.Azure.Devices.Tests
             DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
 
             // act
-            // deliberately throw http exception by searching for twin that does not exist
             Func<Task> act = async () => await digialTwinsClient.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
 
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -336,16 +424,45 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task DigitalTwinsClient_InvokeComponentCommandAsync_HttpException()
         {
             // arrange
-            string cs = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
-            string digitalTwinId = Guid.NewGuid().ToString();
             string commandName = "test";
             string componentName = "test";
-            using var serviceClient = new IotHubServiceClient(cs);
-            DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
+            string digitalTwinId = "foo";
+            var digitalTwin = new BasicDigitalTwin
+            {
+                Id = digitalTwinId,
+            };
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var digitalTwinsClient = new DigitalTwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
 
             // act
-            // deliberately throw http exception by searching for twin that does not exist
-            Func<Task> act = async () => await digialTwinsClient.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
+            Func<Task> act = async () => await digitalTwinsClient.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
 
             // assert
             await act.Should().ThrowAsync<IotHubServiceException>();
