@@ -12,13 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Specialized;
-using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static Microsoft.Azure.Devices.E2ETests.Provisioning.ProvisioningServiceClientE2ETests;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
@@ -43,6 +41,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private static DirectoryInfo s_x509CertificatesFolder;
         private static string s_intermediateCertificateSubject;
+
+        public enum EnrollmentType
+        {
+            Individual,
+            Group,
+        }
 
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
@@ -1102,7 +1106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AuthenticationProvider authProvider,
             string groupId)
         {
-            using ProvisioningServiceClient dpsClient = CreateProvisioningService();
+            using ProvisioningServiceClient dpsClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
 
             try
             {
@@ -1152,6 +1156,124 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static bool ImplementsWebProxy(IotHubClientTransportSettings transportSettings)
         {
             return transportSettings is IotHubClientMqttSettings or IotHubClientAmqpSettings;
+        }
+
+        /// <summary>
+        /// Returns the registrationId compliant name for the provided attestation type
+        /// </summary>
+        private static string AttestationTypeToString(AttestationMechanismType attestationType)
+        {
+            return attestationType switch
+            {
+                AttestationMechanismType.SymmetricKey => "symmetrickey",
+                AttestationMechanismType.X509 => "x509",
+                _ => throw new NotSupportedException("Test code has not been written for testing this attestation type yet"),
+            };
+        }
+
+        private static async Task<IndividualEnrollment> CreateIndividualEnrollmentAsync(
+            ProvisioningServiceClient provisioningServiceClient,
+            string registrationId,
+            AttestationMechanismType attestationType,
+            X509Certificate2 authenticationCertificate,
+            ReprovisionPolicy reprovisionPolicy,
+            AllocationPolicy allocationPolicy,
+            CustomAllocationDefinition customAllocationDefinition,
+            IList<string> iotHubsToProvisionTo,
+            InitialTwinCapabilities capabilities)
+        {
+            Attestation attestation;
+            IndividualEnrollment individualEnrollment;
+            IndividualEnrollment createdEnrollment = null;
+
+            switch (attestationType)
+            {
+                case AttestationMechanismType.SymmetricKey:
+                    string primaryKey = CryptoKeyGenerator.GenerateKey(32);
+                    string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
+                    attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
+                    break;
+
+                case AttestationMechanismType.X509:
+                    attestation = X509Attestation.CreateFromClientCertificates(authenticationCertificate);
+                    break;
+
+                default:
+                    throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
+            }
+
+            individualEnrollment = new IndividualEnrollment(registrationId, attestation)
+            {
+                Capabilities = capabilities,
+                AllocationPolicy = allocationPolicy,
+                ReprovisionPolicy = reprovisionPolicy,
+                CustomAllocationDefinition = customAllocationDefinition,
+                IotHubs = iotHubsToProvisionTo,
+            };
+
+            await RetryOperationHelper
+                .RunWithProvisioningServiceRetryAsync(
+                    async () =>
+                    {
+                        createdEnrollment = await provisioningServiceClient.IndividualEnrollments
+                            .CreateOrUpdateAsync(individualEnrollment)
+                            .ConfigureAwait(false);
+                    },
+                    s_provisioningServiceRetryPolicy,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+
+            createdEnrollment.Should().NotBeNull($"The enrollment entry with registration Id {registrationId} could not be created; exiting test.");
+            return createdEnrollment;
+        }
+
+        private static async Task<EnrollmentGroup> CreateEnrollmentGroupAsync(
+            ProvisioningServiceClient provisioningServiceClient,
+            AttestationMechanismType attestationType,
+            string groupId,
+            ReprovisionPolicy reprovisionPolicy,
+            AllocationPolicy allocationPolicy,
+            CustomAllocationDefinition customAllocationDefinition,
+            IList<string> iothubs,
+            InitialTwinCapabilities capabilities)
+        {
+            Attestation attestation;
+
+            switch (attestationType)
+            {
+                case AttestationMechanismType.SymmetricKey:
+                    string primaryKey = CryptoKeyGenerator.GenerateKey(32);
+                    string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
+                    attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
+                    break;
+
+                case AttestationMechanismType.X509:
+                default:
+                    throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
+            }
+
+            var enrollmentGroup = new EnrollmentGroup(groupId, attestation)
+            {
+                Capabilities = capabilities,
+                ReprovisionPolicy = reprovisionPolicy,
+                AllocationPolicy = allocationPolicy,
+                CustomAllocationDefinition = customAllocationDefinition,
+                IotHubs = iothubs,
+            };
+
+            EnrollmentGroup createdEnrollmentGroup = null;
+            await RetryOperationHelper
+               .RunWithProvisioningServiceRetryAsync(
+                   async () =>
+                   {
+                       createdEnrollmentGroup = await provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup).ConfigureAwait(false);
+                   },
+                   s_provisioningServiceRetryPolicy,
+                    CancellationToken.None)
+               .ConfigureAwait(false);
+
+            return createdEnrollmentGroup
+                ?? throw new ArgumentException($"The enrollment entry with group Id {groupId} could not be created, exiting test.");
         }
     }
 }

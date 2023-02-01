@@ -355,6 +355,21 @@ try
         $env:AZURE_IOT_LOCALPACKAGES = $packageTempPath
     }
 
+    if ($localPackagesAvailableForTesting)
+    {
+        Write-Host
+        Write-Host -ForegroundColor Cyan "Preparing local package source"
+        Write-Host
+
+        if (-not (Test-Path $env:AZURE_IOT_LOCALPACKAGES))
+        {
+            throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
+        }
+
+        Write-Host Following local packages found:
+        Get-ChildItem -Path $env:AZURE_IOT_LOCALPACKAGES
+    }
+
     if ($runSamples)
     {
         RunSamples . "Azure IoT C# SDK Samples"
@@ -417,29 +432,6 @@ try
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
     }
 
-    if ($package)
-    {
-        BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
-        BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
-        BuildPackage provisioning\device\src "Provisioning Device Client SDK"
-        BuildPackage provisioning\service\src "Provisioning Service Client SDK"
-    }
-
-    if ($localPackagesAvailableForTesting)
-    {
-        Write-Host
-        Write-Host -ForegroundColor Cyan "Preparing local package source"
-        Write-Host
-
-        if (-not (Test-Path $env:AZURE_IOT_LOCALPACKAGES))
-        {
-            throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
-        }
-
-        Write-Host Following local packages found:
-        Get-ChildItem -Path $env:AZURE_IOT_LOCALPACKAGES
-    }
-
     if ($e2etests)
     {
         Write-Host
@@ -482,6 +474,14 @@ try
         Write-Host
 
         RunApp e2e\stress\MemoryLeakTest "MemoryLeakTest test"
+    }
+
+    if ($package)
+    {
+        BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
+        BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
+        BuildPackage provisioning\device\src "Provisioning Device Client SDK"
+        BuildPackage provisioning\service\src "Provisioning Service Client SDK"
     }
 
     if ($publish)

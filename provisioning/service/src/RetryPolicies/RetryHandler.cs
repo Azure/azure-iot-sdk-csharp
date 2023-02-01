@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             async Task<bool> TaskWrapper()
             {
-                // There are two typews of tasks: return nothing and return a specific type.
+                // There are two types of tasks: return nothing and return a specific type.
                 // We use this to proxy to the generics implementation.
                 await taskFunc();
                 return true;
