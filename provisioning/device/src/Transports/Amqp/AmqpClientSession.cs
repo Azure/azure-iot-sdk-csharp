@@ -19,7 +19,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             AmqpSessionSettings = new AmqpSessionSettings();
         }
 
-        internal AmqpSession AmqpSession { get; private set; }
+        // For unit testing purpose only.
+        internal AmqpClientSession()
+        { }
+
+        internal AmqpSession AmqpSession { get; set; }
 
         public AmqpSessionSettings AmqpSessionSettings { get; private set; }
 
@@ -71,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return new AmqpClientLink(this);
         }
 
-        private void OnSessionClosed(object o, EventArgs args)
+        internal void OnSessionClosed(object o, EventArgs args)
         {
             IsSessionClosed = true;
         }

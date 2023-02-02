@@ -32,6 +32,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected internal AuthenticationProviderSymmetricKey()
+        { }
+
+        /// <summary>
         /// The primary key for this device.
         /// </summary>
         public string PrimaryKey { get; }

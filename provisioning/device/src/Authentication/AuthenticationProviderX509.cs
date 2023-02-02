@@ -35,6 +35,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected internal AuthenticationProviderX509()
+        { }
+
+        /// <summary>
         /// The client certificate used for TLS device authentication.
         /// </summary>
         public X509Certificate2 ClientCertificate { get; }

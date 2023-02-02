@@ -30,6 +30,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
+        // For unit testing purpose only.
+        internal ProvisioningTransportRegisterRequest()
+        { }
+
         /// <summary>
         /// The global device endpoint for this message.
         /// </summary>

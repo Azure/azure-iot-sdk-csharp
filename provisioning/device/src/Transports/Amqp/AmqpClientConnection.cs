@@ -65,9 +65,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         internal AmqpConnectionSettings AmqpConnectionSettings { get; private set; }
 
-        internal TlsTransportSettings TransportSettings { get; private set; }
+        internal TlsTransportSettings TransportSettings { get; set; }
 
         internal AmqpClientSession AmqpSession { get; private set; }
+
+        // For unit testing purpose only.
+        internal AmqpSettings AmqpSettings => _amqpSettings;
 
         public void Dispose()
         {
@@ -79,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        internal async Task OpenAsync(
+        internal virtual async Task OpenAsync(
             bool useWebSocket,
             X509Certificate2 clientCert,
             IWebProxy proxy,
@@ -236,7 +239,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return false;
         }
 
-        private ClientWebSocket CreateClientWebSocket(IWebProxy webProxy)
+        internal ClientWebSocket CreateClientWebSocket(IWebProxy webProxy)
         {
             // Just return the user-supplied client websocket if they provided one.
             if (_clientSettings?.ClientWebSocket != null)

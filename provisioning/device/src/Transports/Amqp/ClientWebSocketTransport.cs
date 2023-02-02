@@ -12,7 +12,7 @@ using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal sealed class ClientWebSocketTransport : TransportBase, IDisposable
+    internal class ClientWebSocketTransport : TransportBase, IDisposable
     {
         private static readonly AsyncCallback s_onReadComplete = OnReadComplete;
         private static readonly AsyncCallback s_onWriteComplete = OnWriteComplete;
@@ -32,6 +32,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             _remoteEndPoint = remoteEndpoint;
             _writeCancellationTokenSource = new CancellationTokenSource();
         }
+
+        // For unit testing purpose only.
+        internal ClientWebSocketTransport() : base("clientwebsocket")
+        { }
 
         public override string LocalEndPoint => _localEndPoint.ToString();
 
@@ -170,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return true;
         }
 
-        private async Task CloseInternalAsync(TimeSpan timeout)
+        internal async Task CloseInternalAsync(TimeSpan timeout)
         {
             try
             {
@@ -188,7 +192,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             Abort();
         }
 
-        private void CancelPendingWrite()
+        internal virtual void CancelPendingWrite()
         {
             try
             {
