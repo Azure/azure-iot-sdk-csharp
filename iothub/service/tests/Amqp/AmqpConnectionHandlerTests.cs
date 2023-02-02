@@ -13,6 +13,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Amqp;
+using Moq.Protected;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
