@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices
             lock (_rngLock)
             {
                 // A random double from 95% to 105% of the baseTimeMs
-                jitterMs = _rng.Next(95, 106);
+                jitterMs = _rng.Next(95, 105);
             }
 
             jitterMs *= baseTimeMs / 100.0;
