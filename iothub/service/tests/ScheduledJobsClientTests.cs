@@ -36,7 +36,11 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_GetAsync()
         {
             // arrange
-            var scheduledJob = new ScheduledJob();
+            var scheduledJob = new ScheduledJob
+            {
+                JobId = "foo"
+            };
+
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -132,7 +136,11 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_CancelAsync()
         {
             // arrange
-            var scheduledJob = new ScheduledJob();
+            var scheduledJob = new ScheduledJob
+            {
+                JobId = "foo"
+            };
+
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -229,7 +237,10 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_ScheduleDirectMethodAsync()
         {
             // arrange
-            var scheduledJob = new ScheduledJob();
+            var scheduledJob = new ScheduledJob
+            {
+                JobId = "foo" 
+            };
             var directMethodRequest = new DirectMethodServiceRequest("foo");
             var startTime = new DateTimeOffset();
             var scheduledJobsOptions = new ScheduledJobsOptions();
@@ -266,8 +277,8 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await scheduledJobsClient.ScheduleDirectMethodAsync(
                 "foo",
                 directMethodRequest, 
-               startTime,
-               scheduledJobsOptions);
+                startTime,
+                scheduledJobsOptions);
 
             // assert
             await act.Should().NotThrowAsync();
@@ -342,7 +353,10 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_ScheduleTwinUpdateAsync()
         {
             // arrange
-            var scheduledJob = new ScheduledJob();
+            var scheduledJob = new ScheduledJob
+            {
+                JobId = "foo"
+            };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider

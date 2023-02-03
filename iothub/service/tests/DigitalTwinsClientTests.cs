@@ -82,10 +82,9 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             string digitalTwinId = null;
             using var serviceClient = new IotHubServiceClient(s_connectionString);
-            DigitalTwinsClient digitalTwinsClient = serviceClient.DigitalTwins;
 
             // act
-            Func<Task> act = async () => await digitalTwinsClient.GetAsync<BasicDigitalTwin>(digitalTwinId);
+            Func<Task> act = async () => await serviceClient.DigitalTwins.GetAsync<BasicDigitalTwin>(digitalTwinId);
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>();
@@ -198,11 +197,12 @@ namespace Microsoft.Azure.Devices.Tests
             // act
             Func<Task> act = async () => await serviceClient.DigitalTwins.UpdateAsync(digitalTwinId, jsonPatch);
 
+            // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
         [TestMethod]
-        public async Task DigitalTwinsClient_UpdateAsync_OnHttpRequestException_ThrowsIotHubServiceException()
+        public async Task DigitalTwinsClient_UpdateAsync_DigitalTwinNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             string jsonPatch = "test";
@@ -302,9 +302,9 @@ namespace Microsoft.Azure.Devices.Tests
             using var serviceClient = new IotHubServiceClient(s_connectionString);
 
             // act
-            // deliberately throw http exception by searching for twin that does not exist
             Func<Task> act = async () => await serviceClient.DigitalTwins.InvokeCommandAsync(digitalTwinId, commandName);
 
+            // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
@@ -409,11 +409,11 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(s_connectionString);
-            DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
 
             // act
-            Func<Task> act = async () => await digialTwinsClient.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
+            Func<Task> act = async () => await serviceClient.DigitalTwins.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
 
+            // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
 

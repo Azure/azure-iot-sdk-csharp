@@ -90,11 +90,6 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task QueryClient_CreateAsync_HttpException()
         {
             // arrange
-            string digitalTwinId = "foo";
-            var digitalTwin = new BasicDigitalTwin
-            {
-                Id = digitalTwinId,
-            };
             var responseMessage = new ResponseMessage2
             {
                 Message = "test",
@@ -125,7 +120,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockHttpRequestFactory,
                 s_retryHandler);
             // act
-            // query from a Hub that does not exist
+            // query returns HttpStatusCode.NotFound
             Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>("SELECT * FROM devices");
 
             // assert
@@ -173,11 +168,6 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task QueryClient_CreateJobsQuery_HttpException()
         {
             // arrange
-            string digitalTwinId = "foo";
-            var digitalTwin = new BasicDigitalTwin
-            {
-                Id = digitalTwinId,
-            };
             var responseMessage = new ResponseMessage2
             {
                 Message = "test",
