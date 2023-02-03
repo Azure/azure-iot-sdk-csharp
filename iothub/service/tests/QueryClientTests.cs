@@ -78,10 +78,9 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(s_connectionString);
-            QueryClient queryClient = serviceClient.Query;
 
             // act
-            Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>(null);
+            Func<Task> act = async () => await serviceClient.Query.CreateAsync<ClientTwin>(null);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -91,9 +90,40 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task QueryClient_CreateAsync_HttpException()
         {
             // arrange
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            QueryClient queryClient = serviceClient.Query;
+            string digitalTwinId = "foo";
+            var digitalTwin = new BasicDigitalTwin
+            {
+                Id = digitalTwinId,
+            };
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
 
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var queryClient = new QueryClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
             // act
             // query from a Hub that does not exist
             Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>("SELECT * FROM devices");
@@ -143,11 +173,41 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task QueryClient_CreateJobsQuery_HttpException()
         {
             // arrange
-            using var serviceClient = new IotHubServiceClient(s_connectionString);
-            QueryClient queryClient = serviceClient.Query;
+            string digitalTwinId = "foo";
+            var digitalTwin = new BasicDigitalTwin
+            {
+                Id = digitalTwinId,
+            };
+            var responseMessage = new ResponseMessage2
+            {
+                Message = "test",
+                ExceptionMessage = "test"
+            };
 
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = HttpMessageHelper.SerializePayload(responseMessage),
+            };
+
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var queryClient = new QueryClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
             // act
-            // query from Hub that doesn't exist
             Func<Task> act = async () => await queryClient.CreateJobsQueryAsync();
 
             // assert

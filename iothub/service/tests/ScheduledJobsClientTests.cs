@@ -55,12 +55,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var queryClient = new Mock<QueryClient>(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            var queryClient = new Mock<QueryClient>();
 
             var scheduledJobsClient = new ScheduledJobsClient(
                 HostName,
@@ -116,12 +111,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var queryClient = new Mock<QueryClient>(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            var queryClient = new Mock<QueryClient>();
 
             var scheduledJobsClient = new ScheduledJobsClient(
                 HostName,
@@ -161,12 +151,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var queryClient = new Mock<QueryClient>(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            var queryClient = new Mock<QueryClient>();
 
             var scheduledJobsClient = new ScheduledJobsClient(
                 HostName,
@@ -223,12 +208,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var queryClient = new Mock<QueryClient>(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            var queryClient = new Mock<QueryClient>();
 
             var scheduledJobsClient = new ScheduledJobsClient(
                 HostName,
@@ -272,12 +252,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var queryClient = new Mock<QueryClient>(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            var queryClient = new Mock<QueryClient>();
 
             var scheduledJobsClient = new ScheduledJobsClient(
                 HostName,
@@ -342,12 +317,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var queryClient = new Mock<QueryClient>(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            var queryClient = new Mock<QueryClient>();
 
             var scheduledJobsClient = new ScheduledJobsClient(
                 HostName,
@@ -392,12 +362,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var queryClient = new Mock<QueryClient>(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            var queryClient = new Mock<QueryClient>();
 
             var scheduledJobsClient = new ScheduledJobsClient(
                 HostName,
@@ -460,12 +425,7 @@ namespace Microsoft.Azure.Devices.Tests
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockHttpResponse);
 
-            var queryClient = new Mock<QueryClient>(
-                HostName,
-                mockCredentialProvider.Object,
-                mockHttpClient.Object,
-                mockHttpRequestFactory,
-                s_retryHandler);
+            var queryClient = new Mock<QueryClient>();
 
             var scheduledJobsClient = new ScheduledJobsClient(
                 HostName,

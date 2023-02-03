@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
@@ -204,7 +202,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DigitalTwinsClient_UpdateAsync_HttpException()
+        public async Task DigitalTwinsClient_UpdateAsync_OnHttpRequestException_ThrowsIotHubServiceException()
         {
             // arrange
             string jsonPatch = "test";
@@ -302,11 +300,10 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(s_connectionString);
-            DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
 
             // act
             // deliberately throw http exception by searching for twin that does not exist
-            Func<Task> act = async () => await digialTwinsClient.InvokeCommandAsync(digitalTwinId, commandName);
+            Func<Task> act = async () => await serviceClient.DigitalTwins.InvokeCommandAsync(digitalTwinId, commandName);
 
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
