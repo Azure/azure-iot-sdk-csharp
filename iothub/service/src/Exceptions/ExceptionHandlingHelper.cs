@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices
         internal static async Task<Tuple<string, IotHubServiceErrorCode>> GetErrorCodeAndTrackingIdAsync(HttpResponseMessage response)
         {
             string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            ResponseMessage responseMessage = null;
+            ErrorPayload1 responseMessage = null;
 
             try
             {
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices
                 {
                     // sometimes the message is escaped JSON :(
                     ResponseMessageWrapper wrapped = JsonConvert.DeserializeObject<ResponseMessageWrapper>(responseBody);
-                    responseMessage = JsonConvert.DeserializeObject<ResponseMessage>(wrapped.Message);
+                    responseMessage = JsonConvert.DeserializeObject<ErrorPayload1>(wrapped.Message);
                 }
                 catch (JsonException ex)
                 {
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                ResponseMessage2 rs2 = JsonConvert.DeserializeObject<ResponseMessage2>(responseBody);
+                ErrorPayload2 rs2 = JsonConvert.DeserializeObject<ErrorPayload2>(responseBody);
                 if (rs2.TryParse())
                 {
                     return Tuple.Create(rs2.TrackingId, rs2.ErrorCode);
