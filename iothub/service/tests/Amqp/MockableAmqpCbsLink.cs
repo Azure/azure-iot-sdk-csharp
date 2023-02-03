@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Tests.Amqp
 {

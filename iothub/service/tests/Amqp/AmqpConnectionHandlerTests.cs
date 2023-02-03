@@ -50,10 +50,10 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
             var ct = new CancellationToken();
 
-            var mockAmqpTransportInitiator = new Mock<AmqpTransportInitiator>();
+            var mockAmqpTransportInitiator = new Mock<TransportInitiator>();
 
 
-            //mockAmqpTransportInitiator.Setup(i => i.ConnectAsync(It.IsAny<CancellationToken>())).Returns();
+            mockAmqpTransportInitiator.Setup(i => i.ConnectAsync(It.IsAny<CancellationToken>())).Returns();
         }
 
         [TestMethod]
@@ -92,6 +92,37 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
             // assert
             act.Should().NotThrowAsync().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public void AmqpConnectionHandler_SendAsync_Cancelled_ThrowsOperationCanceledException()
+        {
+            // arrange
+            string payloadString = "Hello, World!";
+            byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
+            var message = new Message(payloadBytes);
+
+            using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
+
+            var mockCredential = new Mock<TokenCredential>();
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
+            var mockWorkerSession = new Mock<AmqpSessionHandler>();
+
+            using var connectionHandler = new AmqpConnectionHandler(
+                tokenCredentialProperties,
+                IotHubTransportProtocol.Tcp,
+                LinkAddress,
+                s_options,
+                ConnectionLossHandler,
+                mockWorkerSession.Object);
+
+            var ct = new CancellationToken(true);
+
+            // act
+            Func<Task> act = async () => await connectionHandler.SendAsync(amqpMessage, ct);
+
+            // assert
+            act.Should().ThrowAsync<OperationCanceledException>();
         }
 
         [TestMethod]

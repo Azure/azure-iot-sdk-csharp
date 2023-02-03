@@ -17,11 +17,14 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
     {
         private readonly IotHubConnectionProperties _credential;
         private MockableAmqpCbsLink _cbsLink;
+        private readonly EventHandler _connectionLossHandler;
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
-        private readonly IOThreadTimerSlim _refreshTokenTimer;
 
         public MockableAmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler) : base(credential, connectionLossHandler)
-        { }
+        {
+            _credential = credential;
+            _connectionLossHandler = connectionLossHandler;
+        }
 
         public async Task OpenAsync(MockableAmqpCbsLink cbsLink, CancellationToken cancellationToken)
         {
@@ -36,7 +39,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             string audience = amqpEndpoint.AbsoluteUri;
             string resource = amqpEndpoint.AbsoluteUri;
 
-            DateTime expiresAtUtc = await _cbsLink.SendTokenAsync(
+            await _cbsLink.SendTokenAsync(
                     _credential,
                     amqpEndpoint,
                     audience,
@@ -44,22 +47,12 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
                     _credential.AmqpAudience.ToArray(),
                     cancellationToken)
                 .ConfigureAwait(false);
-
-            ScheduleTokenRefresh(expiresAtUtc);
         }
 
-        public void ScheduleTokenRefresh(DateTime expiresAtUtc)
+        public new bool IsOpen()
         {
-            if (expiresAtUtc == DateTime.MaxValue)
-            {
-                return;
-            }
-
-            TimeSpan timeFromNow = expiresAtUtc.Subtract(s_refreshTokenBuffer).Subtract(DateTime.UtcNow);
-            if (timeFromNow > TimeSpan.Zero)
-            {
-                _refreshTokenTimer.Set(timeFromNow);
-            }
+            return _cbsLink != null;
         }
     }
+
 }

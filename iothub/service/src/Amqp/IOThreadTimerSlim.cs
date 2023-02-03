@@ -21,6 +21,10 @@ namespace Microsoft.Azure.Devices
             CreateTimer();
         }
 
+        internal IOThreadTimerSlim()
+        {
+        }
+
         public void Set(TimeSpan timeFromNow)
         {
             if (_timer == null)

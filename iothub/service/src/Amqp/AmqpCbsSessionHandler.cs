@@ -59,25 +59,6 @@ namespace Microsoft.Azure.Devices.Amqp
         }
 
         /// <summary>
-        /// Provided for unit testing purposes only.
-        /// </summary>
-        /// <param name="cbsLink">The connection to attach this session to.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        protected internal async Task OpenAsync(AmqpCbsLink cbsLink, CancellationToken cancellationToken)
-        {
-            try
-            {
-                _cbsLink = cbsLink;
-                await SendCbsTokenAsync(cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening CBS session.");
-            }
-        }
-
-        /// <summary>
         /// Closes the CBS links and then closes this session.
         /// </summary>
         public void Close()
@@ -101,7 +82,6 @@ namespace Microsoft.Azure.Devices.Amqp
         /// Returns true if this session and its CBS link are open. Returns false otherwise.
         /// </summary>
         /// <returns>True if this session and its CBS link are open. False otherwise.</returns>
-
         public bool IsOpen()
         {
             return _cbsLink != null;
