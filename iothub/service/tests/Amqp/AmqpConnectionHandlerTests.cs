@@ -53,7 +53,6 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             var mockAmqpTransportInitiator = new Mock<TransportInitiator>();
 
 
-            mockAmqpTransportInitiator.Setup(i => i.ConnectAsync(It.IsAny<CancellationToken>())).Returns();
         }
 
         [TestMethod]
