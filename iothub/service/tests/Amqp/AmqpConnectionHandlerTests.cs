@@ -51,8 +51,6 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             var ct = new CancellationToken();
 
             var mockAmqpTransportInitiator = new Mock<TransportInitiator>();
-
-
         }
 
         [TestMethod]

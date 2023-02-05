@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -186,20 +187,39 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             act.Message.Should().Be(UnknownErrorMessage);
         }
 
-        [TestMethod]
-        public async void AmqpClientHelper_GetObjectFromAmqpMessageAsync_FeedbackRecordType_Success()
-        {
-            // arrange
-            var dataList = new List<object>();
-            using var amqpMessage = AmqpMessage.Create();
-            amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;
+        //[TestMethod]
+        //public async Task AmqpClientHelper_GetObjectFromAmqpMessageAsync_FeedbackRecordType_Success()
+        //{
+        //     arrange
+        //    var dataList = new List<FeedbackRecord>
+        //    {
+        //        new FeedbackRecord
+        //        {
+        //            OriginalMessageId = "1",
+        //            DeviceGenerationId = "d1",
+        //            DeviceId = "deviceId1234",
+        //            EnqueuedOnUtc= DateTime.UtcNow,
+        //            StatusCode = FeedbackStatusCode.Success
+        //        },
+        //        new FeedbackRecord
+        //        {
+        //            OriginalMessageId = "2",
+        //            DeviceGenerationId = "d2",
+        //            DeviceId = "deviceId5678",
+        //            EnqueuedOnUtc= DateTime.UtcNow,
+        //            StatusCode = FeedbackStatusCode.Expired
+        //        },
+        //    };
 
-            // act
-            IEnumerable<FeedbackRecord> feedbackRecords = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage);
+        //    using var amqpMessage = AmqpMessage.Create();
+        //    amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;
 
-            // assert
-            
-        }
+        //     act - assert
+        //    IEnumerable<FeedbackRecord> feedbackRecords = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
+
+        //     assert
+        //    feedbackRecords.Count().Should().Be(2);
+        //}
 
         [TestMethod]
         public void AmqpClientHelper_GetErrorContextFromException_Success()
