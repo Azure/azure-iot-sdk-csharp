@@ -62,5 +62,30 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             // assert
             act.Should().ThrowAsync<OperationCanceledException>();
         }
+
+        [TestMethod]
+        public void AmqpCbsSessionHandler_Close()
+        {
+            // arrange
+            var mockCredential = new Mock<TokenCredential>();
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
+
+            using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties, ConnectionLossHandler);
+            var mockAmqpCbsLink = new Mock<MockableAmqpCbsLink>();
+
+            mockAmqpCbsLink
+                .Setup(l => l.SendTokenAsync(It.IsAny<IotHubConnectionProperties>(), It.IsAny<Uri>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(DateTime.UtcNow.AddMinutes(11));
+
+            var ct = new CancellationToken();
+
+            // act
+            Func<Task> act = async () => await cbsSessionHandler.OpenAsync(mockAmqpCbsLink.Object, ct).ConfigureAwait(false);
+
+            // assert
+            act.Should().NotThrowAsync();
+            cbsSessionHandler.IsOpen().Should().BeTrue();
+        }
+
     }
 }

@@ -57,6 +57,7 @@ namespace Microsoft.Azure.Devices.Amqp
             string linkAddress,
             IotHubServiceClientOptions options,
             EventHandler connectionLossHandler,
+            AmqpCbsSessionHandler cbsSession,
             AmqpSessionHandler workerSession)
         {
             _credential = credential;
@@ -64,7 +65,7 @@ namespace Microsoft.Azure.Devices.Amqp
             _linkAddress = linkAddress;
             _options = options;
             _connectionLossHandler = connectionLossHandler;
-            _cbsSession = new AmqpCbsSessionHandler(_credential, connectionLossHandler);
+            _cbsSession = cbsSession;
             _workerSession = workerSession;
 
             _sendingDeliveryTag = 0;

@@ -80,10 +80,11 @@ namespace Microsoft.Azure.Devices.Amqp
 
         /// <summary>
         /// Opens the session and then opens the worker link.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="connection">The connection to open this session on.</param>
         /// <param name="cancellationToken">The timeout for the open operation.</param>
-        internal async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
+        internal virtual async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Opening worker session.", nameof(OpenAsync));

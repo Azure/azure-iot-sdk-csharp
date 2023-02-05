@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Amqp;
@@ -190,9 +192,14 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         //[TestMethod]
         //public async Task AmqpClientHelper_GetObjectFromAmqpMessageAsync_FeedbackRecordType_Success()
         //{
-        //     arrange
+        //    // arrange
+        //    string payloadString = "Hello, World!";
+
+        //    var message = new Message(payloadBytes);
+
+        //    using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
         //    var dataList = new List<FeedbackRecord>
-        //    {
+        //   {
         //        new FeedbackRecord
         //        {
         //            OriginalMessageId = "1",
@@ -211,13 +218,20 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         //        },
         //    };
 
-        //    using var amqpMessage = AmqpMessage.Create();
+        //    byte[] payloadBytes = Encoding.UTF8.GetBytes(dataList);
+
+        //    using var amqpMessage = AmqpMessage.Create(new MemoryStream(dataList), true);
+        //    var data = new Data
+        //    {
+        //        Value = (amqpMessage.ToStream()),
+        //    };
+
         //    amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;
 
-        //     act - assert
+        //    // act - assert
         //    IEnumerable<FeedbackRecord> feedbackRecords = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
 
-        //     assert
+        //    // assert
         //    feedbackRecords.Count().Should().Be(2);
         //}
 

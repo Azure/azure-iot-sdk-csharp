@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Amqp
 {
@@ -26,6 +25,7 @@ namespace Microsoft.Azure.Devices.Amqp
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromMinutes(1);
         private readonly IOThreadTimerSlim _refreshTokenTimer;
 
+        protected AmqpCbsSessionHandler() { }
         public AmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler)
         {
             _credential = credential;
@@ -35,10 +35,11 @@ namespace Microsoft.Azure.Devices.Amqp
 
         /// <summary>
         /// Opens the session, then opens the CBS links, then sends the initial authentication message.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="connection">The connection to attach this session to.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
+        public virtual async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening CBS session.");
