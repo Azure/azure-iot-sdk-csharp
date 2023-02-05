@@ -61,7 +61,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             string payload = Guid.NewGuid().ToString();
             string messageId = Guid.NewGuid().ToString();
-            string p1Value = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
             string to = Guid.NewGuid().ToString();
             string correlationId = Guid.NewGuid().ToString();
