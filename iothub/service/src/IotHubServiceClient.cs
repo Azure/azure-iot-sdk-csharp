@@ -6,6 +6,7 @@ using System.Net.Http;
 using Azure;
 using Azure.Core;
 using Microsoft.Azure.Amqp;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -232,6 +233,9 @@ namespace Microsoft.Azure.Devices
 
             MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, options, _retryHandler);
             FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, options, _retryHandler);
+
+            // Specify the JsonSerializerSettings for subclients
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
 
             // Adds additional logging to the AMQP connections created by this client
             AmqpTrace.Provider = new AmqpTransportLog();
