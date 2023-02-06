@@ -307,12 +307,6 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-            /*#if NET451
-                        T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
-            #else
-                        string str = await message.Content.ReadHttpContentAsStringAsync(token).ConfigureAwait(false);
-                        T entity = JsonConvert.DeserializeObject<T>(str);
-            #endif*/
             string str = await message.Content.ReadHttpContentAsStringAsync(token).ConfigureAwait(false);
             T entity = JsonConvert.DeserializeObject<T>(str, new JsonSerializerSettings { DateParseHandling = DateParseHandling.None });
 
