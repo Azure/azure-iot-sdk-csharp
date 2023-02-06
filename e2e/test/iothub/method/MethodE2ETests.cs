@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -290,6 +292,65 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 // assert
 
                 deviceMethodCalledSuccessfully.Should().BeTrue();
+            }
+            finally
+            {
+                // clean up
+
+                await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
+            }
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_ServiceInvokeDeviceMethodWithDateTimePayload_DoesNotThrow()
+        {
+            // arrange
+
+            var date = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1));
+
+            string responseJson = JsonConvert.SerializeObject(new DateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) });
+            byte[] responseBytes = Encoding.UTF8.GetBytes(responseJson);
+
+            const string commandName = "GetDateTime";
+            bool deviceMethodCalledSuccessfully = false;
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync("DateTimeMethodPayloadTest").ConfigureAwait(false);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
+
+            try
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await deviceClient
+                    .SetMethodHandlerAsync(
+                        commandName,
+                        (methodRequest, userContext) =>
+                        {
+                            methodRequest.Name.Should().Be(commandName);
+                            deviceMethodCalledSuccessfully = true;
+                            return Task.FromResult(new MethodResponse(responseBytes, 200));
+                        },
+                        null)
+                    .ConfigureAwait(false);
+
+                using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
+                CloudToDeviceMethod c2dMethod = new CloudToDeviceMethod(commandName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).SetPayloadJson(null);
+
+                // act
+
+                CloudToDeviceMethodResult result = await serviceClient.InvokeDeviceMethodAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
+                string actualResultJson = result.GetPayloadAsJson();
+                DateTime myDtoValue = JsonConvert.DeserializeObject<DateTime>(actualResultJson);
+                string value = myDtoValue.Iso8601String;
+
+                Action act = () => DateTimeOffset.ParseExact(value, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+                // assert
+
+                deviceMethodCalledSuccessfully.Should().BeTrue();
+                responseJson.Should().Be(actualResultJson);
+                act.Should().NotThrow();
             }
             finally
             {
@@ -616,6 +677,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
 
             await moduleClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        private class DateTime
+        {
+            public string Iso8601String { get; set; }
         }
     }
 }
