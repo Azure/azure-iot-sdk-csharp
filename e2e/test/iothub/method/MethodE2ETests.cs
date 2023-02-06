@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             var date = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1));
 
-            string responseJson = JsonConvert.SerializeObject(new DateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) });
+            string responseJson = JsonConvert.SerializeObject(new TestDateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) });
             byte[] responseBytes = Encoding.UTF8.GetBytes(responseJson);
 
             const string commandName = "GetDateTime";
@@ -341,7 +341,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 CloudToDeviceMethodResult result = await serviceClient.InvokeDeviceMethodAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
                 string actualResultJson = result.GetPayloadAsJson();
-                DateTime myDtoValue = JsonConvert.DeserializeObject<DateTime>(actualResultJson);
+                TestDateTime myDtoValue = JsonConvert.DeserializeObject<TestDateTime>(actualResultJson);
                 string value = myDtoValue.Iso8601String;
 
                 Action act = () => DateTimeOffset.ParseExact(value, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
@@ -679,7 +679,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private class DateTime
+        private class TestDateTime
         {
             public string Iso8601String { get; set; }
         }
