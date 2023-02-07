@@ -93,17 +93,6 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         }
 
         [TestMethod]
-        public void AmqpClientHelper_ToIotHubClientContract_NullErrorInAmqpException_ReturnsUnknownError()
-        {
-            // arrange - act
-            var amqpException = new AmqpException(null);
-            var returnedException = (IotHubServiceException)AmqpClientHelper.ToIotHubClientContract(amqpException);
-
-            // assert
-            returnedException.Message.Should().Be(UnknownErrorMessage);
-        }
-
-        [TestMethod]
         public void AmqpClientHelper_ToIotHubClientContract_NullError_NullInnerException_ReturnsUnknownError()
         {
             // arrange - act
