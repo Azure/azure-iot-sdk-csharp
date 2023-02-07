@@ -1,12 +1,11 @@
-﻿using Microsoft.Azure.Devices.Provisioning.Client;
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Cryptography;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -30,6 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void AuthenticationProviderX509_Works()
         {
             // arrange
+
             using var ecdsa = ECDsa.Create();
             var request = new CertificateRequest("CN=testSubject", ecdsa, HashAlgorithmName.SHA256);
             X509Certificate2 cert = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddHours(1));
@@ -38,6 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var authProvider = new AuthenticationProviderX509(cert, s_certs);
 
             // assert
+
             authProvider.Should().NotBeNull();
             authProvider.ClientCertificate.Should().Be(cert);
             authProvider.CertificateChain.Should().BeEquivalentTo(s_certs);

@@ -35,7 +35,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 return;
             }
 
-
             // Certificate install on Windows is a multi-step process, and in the case that someone might have more than one
             // DPS client we'll want to ensure these actions (get certs, install certs) are atomic.
             lock (s_certOperationsLock)
