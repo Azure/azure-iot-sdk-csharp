@@ -20,11 +20,6 @@ namespace Microsoft.Azure.Devices
             _callbackState = callbackState;
             CreateTimer();
         }
-
-        internal IOThreadTimerSlim()
-        {
-        }
-
         public void Set(TimeSpan timeFromNow)
         {
             if (_timer == null)

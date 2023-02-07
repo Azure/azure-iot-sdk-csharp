@@ -13,6 +13,8 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Amqp
 {
@@ -189,51 +191,64 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             act.Message.Should().Be(UnknownErrorMessage);
         }
 
-        //[TestMethod]
-        //public async Task AmqpClientHelper_GetObjectFromAmqpMessageAsync_FeedbackRecordType_Success()
-        //{
-        //    // arrange
-        //    string payloadString = "Hello, World!";
+        [TestMethod]
+        public async Task AmqpClientHelper_GetObjectFromAmqpMessageAsync_FeedbackRecordType_Success()
+        {
+            // arrange
+            string originalMessageId1 = "1";
+            string originalMessageId2 = "2";
+            string deviceGenerationId1 = "d1";
+            string deviceGenerationId2 = "d2";
+            string deviceId1 = "deviceId1234";
+            string deviceId2 = "deviceId5678";
+            DateTime enqueuedOnUtc1 = DateTime.UtcNow;
+            DateTime enqueuedOnUtc2 = DateTime.UtcNow.AddMinutes(2);
+            FeedbackStatusCode statusCode1 = FeedbackStatusCode.Success;
+            FeedbackStatusCode statusCode2 = FeedbackStatusCode.Expired;
 
-        //    var message = new Message(payloadBytes);
+            var dataList = new List<FeedbackRecord>
+            {
+                new FeedbackRecord
+                {
+                    OriginalMessageId = originalMessageId1,
+                    DeviceGenerationId = deviceGenerationId1,
+                    DeviceId = deviceId1,
+                    EnqueuedOnUtc = enqueuedOnUtc1,
+                    StatusCode = statusCode1
+                },
+                new FeedbackRecord
+                {
+                    OriginalMessageId = originalMessageId2,
+                    DeviceGenerationId = deviceGenerationId2,
+                    DeviceId = deviceId2,
+                    EnqueuedOnUtc = enqueuedOnUtc2,
+                    StatusCode = statusCode2
+                },
+            };
 
-        //    using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
-        //    var dataList = new List<FeedbackRecord>
-        //   {
-        //        new FeedbackRecord
-        //        {
-        //            OriginalMessageId = "1",
-        //            DeviceGenerationId = "d1",
-        //            DeviceId = "deviceId1234",
-        //            EnqueuedOnUtc= DateTime.UtcNow,
-        //            StatusCode = FeedbackStatusCode.Success
-        //        },
-        //        new FeedbackRecord
-        //        {
-        //            OriginalMessageId = "2",
-        //            DeviceGenerationId = "d2",
-        //            DeviceId = "deviceId5678",
-        //            EnqueuedOnUtc= DateTime.UtcNow,
-        //            StatusCode = FeedbackStatusCode.Expired
-        //        },
-        //    };
+            string jsonString = JsonConvert.SerializeObject(dataList);
 
-        //    byte[] payloadBytes = Encoding.UTF8.GetBytes(dataList);
+            var message = new Message(Encoding.UTF8.GetBytes(jsonString));
 
-        //    using var amqpMessage = AmqpMessage.Create(new MemoryStream(dataList), true);
-        //    var data = new Data
-        //    {
-        //        Value = (amqpMessage.ToStream()),
-        //    };
+            using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
+            amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;
 
-        //    amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;
+            // act - assert
+            IEnumerable<FeedbackRecord> feedbackRecords = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
 
-        //    // act - assert
-        //    IEnumerable<FeedbackRecord> feedbackRecords = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
-
-        //    // assert
-        //    feedbackRecords.Count().Should().Be(2);
-        //}
+            // assert
+            feedbackRecords.Count().Should().Be(dataList.Count);
+            feedbackRecords.ElementAt(0).OriginalMessageId.Should().Be(originalMessageId1);
+            feedbackRecords.ElementAt(1).OriginalMessageId.Should().Be(originalMessageId2);
+            feedbackRecords.ElementAt(0).DeviceGenerationId.Should().Be(deviceGenerationId1);
+            feedbackRecords.ElementAt(1).DeviceGenerationId.Should().Be(deviceGenerationId2);
+            feedbackRecords.ElementAt(0).DeviceId.Should().Be(deviceId1);
+            feedbackRecords.ElementAt(1).DeviceId.Should().Be(deviceId2);
+            feedbackRecords.ElementAt(0).EnqueuedOnUtc.Should().Be(enqueuedOnUtc1);
+            feedbackRecords.ElementAt(1).EnqueuedOnUtc.Should().Be(enqueuedOnUtc2);
+            feedbackRecords.ElementAt(0).StatusCode.Should().Be(statusCode1);
+            feedbackRecords.ElementAt(1).StatusCode.Should().Be(statusCode2);
+        }
 
         [TestMethod]
         public void AmqpClientHelper_GetErrorContextFromException_Success()
