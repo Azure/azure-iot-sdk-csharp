@@ -11,16 +11,18 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The client for making service requests to IoT hub. This client contains subclients for the various feature sets
-    /// within IoT hub including managing device/module identities, getting/setting twin for device/modules, invoking
-    /// direct methods on devices/modules, and more.
+    /// The client for making service requests to IoT hub.
     /// </summary>
     /// <remarks>
-    /// This client is <see cref="IDisposable"/> but users are not responsible for disposing subclients within this client.
+    /// This client contains subclients for the various feature sets within IoT hub including managing device/module
+    /// identities, getting/setting twin for device/modules, invoking direct methods on devices/modules, and more.
     /// <para>
-    /// This client creates a lifetime long instance of <see cref="HttpClient"/> that is tied to the URI of the
+    /// This client is <see cref="IDisposable"/>, which will dispose the subclients.
+    /// </para>
+    /// <para>
+    /// This client creates a lifetime-long instance of <see cref="HttpClient"/> that is tied to the URI of the
     /// IoT hub specified and configured with any proxy settings provided.
-    /// For that reason, the instances are not static and an application using this client
+    /// For that reason, the HttpClient instances are not static and an application using this client
     /// should create and save it for all use. Repeated creation may cause
     /// <see href="https://docs.microsoft.com/azure/architecture/antipatterns/improper-instantiation/">socket exhaustion</see>.
     /// </para>
@@ -33,13 +35,20 @@ namespace Microsoft.Azure.Devices
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
         private readonly IIotHubServiceRetryPolicy _retryPolicy;
         private readonly RetryHandler _retryHandler;
-        private const string ApiVersion = "2021-04-12";
+        private readonly IotHubServiceClientOptions _clientOptions;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         protected IotHubServiceClient()
         {
+        }
+
+        private IotHubServiceClient(IotHubServiceClientOptions options)
+        {
+            _clientOptions = options?.Clone() ?? new();
+            _retryPolicy = _clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
+            _retryHandler = new RetryHandler(_retryPolicy);
         }
 
         /// <summary>
@@ -50,23 +59,19 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentNullException">Thrown when the provided connection string is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided connection string is empty or whitespace.</exception>
         public IotHubServiceClient(string connectionString, IotHubServiceClientOptions options = default)
+            : this(options)
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
-            IotHubServiceClientOptions clientOptions = options != null
-                ? options.Clone()
-                : new();
 
             IotHubConnectionString iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
             _credentialProvider = iotHubConnectionString;
             _hostName = iotHubConnectionString.HostName;
-            _httpClient = HttpClientFactory.Create(_hostName, clientOptions);
+            _httpClient = HttpClientFactory.Create(_hostName, _clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
-                ApiVersion);
-            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
-            _retryHandler = new RetryHandler(_retryPolicy);
+                ClientApiVersionHelper.ApiVersionDefault);
 
-            InitializeSubclients(clientOptions);
+            InitializeSubclients();
         }
 
         /// <summary>
@@ -85,24 +90,19 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="hostName"/> or <paramref name="credential"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided <paramref name="hostName"/> is empty or whitespace.</exception>
         public IotHubServiceClient(string hostName, TokenCredential credential, IotHubServiceClientOptions options = default)
+            : this(options)
         {
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(credential, nameof(credential));
 
-            IotHubServiceClientOptions clientOptions = options != null
-                ? options.Clone()
-                : new();
-
             _credentialProvider = new IotHubTokenCredentialProperties(hostName, credential);
             _hostName = hostName;
-            _httpClient = HttpClientFactory.Create(_hostName, clientOptions);
+            _httpClient = HttpClientFactory.Create(_hostName, _clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
-                ApiVersion);
-            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
-            _retryHandler = new RetryHandler(_retryPolicy);
+                ClientApiVersionHelper.ApiVersionDefault);
 
-            InitializeSubclients(clientOptions);
+            InitializeSubclients();
         }
 
         /// <summary>
@@ -120,24 +120,19 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="hostName"/> or <paramref name="credential"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided <paramref name="hostName"/> is empty or whitespace.</exception>
         public IotHubServiceClient(string hostName, AzureSasCredential credential, IotHubServiceClientOptions options = default)
+            : this(options)
         {
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(credential, nameof(credential));
 
-            IotHubServiceClientOptions clientOptions = options != null
-                ? options.Clone()
-                : new();
-
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
             _hostName = hostName;
-            _httpClient = HttpClientFactory.Create(_hostName, clientOptions);
+            _httpClient = HttpClientFactory.Create(_hostName, _clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
                 new UriBuilder(HttpClientFactory.HttpsEndpointPrefix, _hostName).Uri,
-                ApiVersion);
-            _retryPolicy = clientOptions.RetryPolicy ?? new IotHubServiceNoRetry();
-            _retryHandler = new RetryHandler(_retryPolicy);
+                ClientApiVersionHelper.ApiVersionDefault);
 
-            InitializeSubclients(clientOptions);
+            InitializeSubclients();
         }
 
         /// <summary>
@@ -219,7 +214,7 @@ namespace Microsoft.Azure.Devices
             GC.SuppressFinalize(this);
         }
 
-        private void InitializeSubclients(IotHubServiceClientOptions options)
+        private void InitializeSubclients()
         {
             Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
@@ -229,10 +224,10 @@ namespace Microsoft.Azure.Devices
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
-            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, options, _retryHandler);
+            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _clientOptions, _retryHandler);
 
-            MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, options, _retryHandler);
-            FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, options, _retryHandler);
+            MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _clientOptions, _retryHandler);
+            FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _clientOptions, _retryHandler);
 
             // Specify the JsonSerializerSettings for subclients
             JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
