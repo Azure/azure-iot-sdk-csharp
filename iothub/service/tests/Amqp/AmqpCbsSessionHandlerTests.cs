@@ -30,12 +30,10 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
             mockAmqpCbsLink
                 .Setup(l => l.SendTokenAsync(It.IsAny<IotHubConnectionProperties>(), It.IsAny<Uri>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTime.UtcNow.AddMinutes(11));
-
-            var ct = new CancellationToken();
+                .ReturnsAsync(DateTime.UtcNow.AddMinutes(11)); // the returned value does not matter in this context.
 
             // act
-            Func<Task> act = async () => await cbsSessionHandler.OpenAsync(mockAmqpCbsLink.Object, ct).ConfigureAwait(false);
+            Func<Task> act = async () => await cbsSessionHandler.OpenAsync(mockAmqpCbsLink.Object, CancellationToken.None).ConfigureAwait(false);
 
             // assert
             act.Should().NotThrowAsync();

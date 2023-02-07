@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.Amqp
         private readonly IOThreadTimerSlim _refreshTokenTimer;
 
         protected AmqpCbsSessionHandler() { }
+
         public AmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler)
         {
             _credential = credential;

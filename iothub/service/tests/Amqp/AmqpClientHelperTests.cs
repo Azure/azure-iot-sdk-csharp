@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         public void AmqpClientHelper_ToIotHubClientContract_TimeoutException_ReturnsIoTHubServiceException()
         {
             // arrange - act
-            string timeoutExceptionMessage = "TimeoutException occurred";
+            const string timeoutExceptionMessage = "TimeoutException occurred";
             var timeoutException = new TimeoutException(timeoutExceptionMessage);
 
             var returnedException = (IotHubServiceException)AmqpClientHelper.ToIotHubClientContract(timeoutException);
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         public void AmqpClientHelper_ToIotHubClientContract_UnauthorizedAccessException_ReturnsToIHubServiceException()
         {
             // arrange - act
-            string unauthorizedAccessExceptionMessage = "UnauthorizedAccessException occurred";
+            const string unauthorizedAccessExceptionMessage = "UnauthorizedAccessException occurred";
             var unauthorizedAccessException = new UnauthorizedAccessException(unauthorizedAccessExceptionMessage);
 
             var returnedException = (IotHubServiceException)AmqpClientHelper.ToIotHubClientContract(unauthorizedAccessException);
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         public void AmqpClientHelper_ToIotHubClientContract_Success(string amqpErrorCode, HttpStatusCode statusCode, IotHubServiceErrorCode errorCode)
         {
             // arrange - act
-            string expectedTrackingId = "TrackingId1234";
+            const string expectedTrackingId = "TrackingId1234";
 
             var error = new Error
             {
@@ -182,12 +182,12 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         public async Task AmqpClientHelper_GetObjectFromAmqpMessageAsync_FeedbackRecordType_Success()
         {
             // arrange
-            string originalMessageId1 = "1";
-            string originalMessageId2 = "2";
-            string deviceGenerationId1 = "d1";
-            string deviceGenerationId2 = "d2";
-            string deviceId1 = "deviceId1234";
-            string deviceId2 = "deviceId5678";
+            const string originalMessageId1 = "1";
+            const string originalMessageId2 = "2";
+            const string deviceGenerationId1 = "d1";
+            const string deviceGenerationId2 = "d2";
+            const string deviceId1 = "deviceId1234";
+            const string deviceId2 = "deviceId5678";
             DateTime enqueuedOnUtc1 = DateTime.UtcNow;
             DateTime enqueuedOnUtc2 = DateTime.UtcNow.AddMinutes(2);
             FeedbackStatusCode statusCode1 = FeedbackStatusCode.Success;
@@ -225,24 +225,27 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
             // assert
             feedbackRecords.Count().Should().Be(dataList.Count);
-            feedbackRecords.ElementAt(0).OriginalMessageId.Should().Be(originalMessageId1);
-            feedbackRecords.ElementAt(1).OriginalMessageId.Should().Be(originalMessageId2);
-            feedbackRecords.ElementAt(0).DeviceGenerationId.Should().Be(deviceGenerationId1);
-            feedbackRecords.ElementAt(1).DeviceGenerationId.Should().Be(deviceGenerationId2);
-            feedbackRecords.ElementAt(0).DeviceId.Should().Be(deviceId1);
-            feedbackRecords.ElementAt(1).DeviceId.Should().Be(deviceId2);
-            feedbackRecords.ElementAt(0).EnqueuedOnUtc.Should().Be(enqueuedOnUtc1);
-            feedbackRecords.ElementAt(1).EnqueuedOnUtc.Should().Be(enqueuedOnUtc2);
-            feedbackRecords.ElementAt(0).StatusCode.Should().Be(statusCode1);
-            feedbackRecords.ElementAt(1).StatusCode.Should().Be(statusCode2);
+            FeedbackRecord feedbackRecord1 = feedbackRecords.ElementAt(0);
+            FeedbackRecord feedbackRecord2 = feedbackRecords.ElementAt(1);
+
+            feedbackRecord1.OriginalMessageId.Should().Be(originalMessageId1);
+            feedbackRecord2.OriginalMessageId.Should().Be(originalMessageId2);
+            feedbackRecord1.DeviceGenerationId.Should().Be(deviceGenerationId1);
+            feedbackRecord2.DeviceGenerationId.Should().Be(deviceGenerationId2);
+            feedbackRecord1.DeviceId.Should().Be(deviceId1);
+            feedbackRecord2.DeviceId.Should().Be(deviceId2);
+            feedbackRecord1.EnqueuedOnUtc.Should().Be(enqueuedOnUtc1);
+            feedbackRecord2.EnqueuedOnUtc.Should().Be(enqueuedOnUtc2);
+            feedbackRecord1.StatusCode.Should().Be(statusCode1);
+            feedbackRecord2.StatusCode.Should().Be(statusCode2);
         }
 
         [TestMethod]
         public void AmqpClientHelper_GetErrorContextFromException_Success()
         {
             // arrange
-            string amqpErrorCode = "amqp:not-found";
-            string trackingId = "Trackingid1234";
+            const string amqpErrorCode = "amqp:not-found";
+            const string trackingId = "Trackingid1234";
 
             var error = new Error
             {

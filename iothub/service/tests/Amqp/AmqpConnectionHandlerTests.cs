@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             Protocol = IotHubTransportProtocol.Tcp,
             RetryPolicy = noRetryPolicy
         };
-        private static EventHandler ConnectionLossHandler = (object sender, EventArgs e) => { };
+        private static readonly EventHandler ConnectionLossHandler = (object sender, EventArgs e) => { };
 
         [TestMethod]
         public async Task AmqpConnectionHandler_SendAsync()
@@ -54,10 +54,8 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
                 .Setup(ws => ws.SendAsync(It.IsAny<AmqpMessage>(), It.IsAny<ArraySegment<byte>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(outcomeToReturn);
 
-            var ct = new CancellationToken();
-
             // act
-            Outcome act = await connectionHandler.SendAsync(amqpMessage, ct).ConfigureAwait(false);
+            Outcome act = await connectionHandler.SendAsync(amqpMessage, CancellationToken.None).ConfigureAwait(false);
 
             // assert
             act.Should().BeEquivalentTo(new Accepted());
