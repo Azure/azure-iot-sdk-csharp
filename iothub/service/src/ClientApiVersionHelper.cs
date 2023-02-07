@@ -9,11 +9,11 @@ namespace Microsoft.Azure.Devices
     internal static class ClientApiVersionHelper
     {
         private const string ApiVersionQueryPrefix = "api-version=";
-        private const string ApiVersionDefault = "2021-04-12";
+        internal const string ApiVersionDefault = "2021-04-12";
 
         /// <summary>
         /// The API version used in all service requests.
         /// </summary>
-        public const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionDefault;
+        internal const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionDefault;
     }
 }
