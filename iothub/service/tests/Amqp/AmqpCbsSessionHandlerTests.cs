@@ -6,8 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using FluentAssertions;
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -86,6 +84,5 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             act.Should().NotThrowAsync();
             cbsSessionHandler.IsOpen().Should().BeTrue();
         }
-
     }
 }

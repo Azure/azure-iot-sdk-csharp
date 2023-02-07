@@ -2,10 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
@@ -18,7 +14,6 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         private readonly IotHubConnectionProperties _credential;
         private MockableAmqpCbsLink _cbsLink;
         private readonly EventHandler _connectionLossHandler;
-        private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
 
         public MockableAmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler) : base(credential, connectionLossHandler)
         {
@@ -54,5 +49,4 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             return _cbsLink != null;
         }
     }
-
 }

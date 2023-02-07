@@ -2,21 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using FluentAssertions;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Amqp;
-using Moq.Protected;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Security.Authentication;
 
 namespace Microsoft.Azure.Devices.Tests.Amqp
 {
@@ -25,7 +19,6 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
     public class AmqpConnectionHandlerTests
     {
         private const string HostName = "contoso.azure-devices.net";
-        private const string LinkAddress = "contoso.azure-devices.net";
         private static readonly IIotHubServiceRetryPolicy noRetryPolicy = new IotHubServiceNoRetry();
         private static readonly IotHubServiceClientOptions s_options = new()
         {
@@ -49,7 +42,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using var connectionHandler = new AmqpConnectionHandler(
                 tokenCredentialProperties,
                 IotHubTransportProtocol.Tcp,
-                LinkAddress,
+                HostName,
                 s_options,
                 ConnectionLossHandler,
                 mockAmqpCbsSessionHelper.Object,
@@ -65,6 +58,8 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
             // act
             Outcome act = await connectionHandler.SendAsync(amqpMessage, ct).ConfigureAwait(false);
+
+            // assert
             act.Should().BeEquivalentTo(new Accepted());
         }
 
@@ -82,7 +77,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using var connectionHandler = new AmqpConnectionHandler(
                 tokenCredentialProperties,
                 IotHubTransportProtocol.Tcp,
-                LinkAddress,
+                HostName,
                 s_options,
                 ConnectionLossHandler,
                 mockAmqpCbsSessionHelper.Object,
@@ -111,7 +106,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using var connectionHandler = new AmqpConnectionHandler(
                 tokenCredentialProperties,
                 IotHubTransportProtocol.Tcp,
-                LinkAddress,
+                HostName,
                 s_options,
                 ConnectionLossHandler,
                 mockAmqpCbsSessionHelper.Object,
@@ -140,7 +135,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using var connectionHandler = new AmqpConnectionHandler(
                 tokenCredentialProperties,
                 IotHubTransportProtocol.Tcp,
-                LinkAddress,
+                HostName,
                 s_options,
                 ConnectionLossHandler,
                 mockAmqpCbsSessionHelper.Object,

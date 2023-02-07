@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -13,7 +12,6 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Amqp
@@ -96,7 +94,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         public void AmqpClientHelper_ToIotHubClientContract_NullError_NullInnerException_ReturnsUnknownError()
         {
             // arrange - act
-            var returnedException = AmqpClientHelper.ToIotHubClientContract(null, null); // null error and innerException
+            IotHubServiceException returnedException = AmqpClientHelper.ToIotHubClientContract(null, null); // null error and innerException
 
             // assert
             returnedException.Message.Should().Be(UnknownErrorMessage);
@@ -222,7 +220,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;
 
-            // act - assert
+            // act
             IEnumerable<FeedbackRecord> feedbackRecords = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
 
             // assert

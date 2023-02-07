@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices
             _callbackState = callbackState;
             CreateTimer();
         }
+
         public void Set(TimeSpan timeFromNow)
         {
             if (_timer == null)
