@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -232,6 +233,65 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 // assert
 
                 deviceMethodCalledSuccessfully.Should().BeTrue();
+            }
+            finally
+            {
+                // clean up
+
+                await deviceClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
+                await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
+            }
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Method_ServiceInvokeDeviceMethodWithDateTimePayload_DoesNotThrow()
+        {
+            // arrange
+
+            var date = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1));
+            var responsePayload = new TestDateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) };
+
+            const string methodName = "GetDateTime";
+            bool deviceMethodCalledSuccessfully = false;
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync("DateTimeMethodPayloadTest").ConfigureAwait(false);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+            try
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await deviceClient
+                    .SetDirectMethodCallbackAsync(
+                        (methodRequest) =>
+                        {
+                            methodRequest.MethodName.Should().Be(methodName);
+                            deviceMethodCalledSuccessfully = true;
+                            var response = new DirectMethodResponse(200) { Payload = responsePayload };
+
+                            return Task.FromResult(response);
+                        })
+                    .ConfigureAwait(false);
+
+                using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+                var directMethodRequest = new DirectMethodServiceRequest(methodName)
+                {
+                    ConnectionTimeout = TimeSpan.FromMinutes(1),
+                    ResponseTimeout = TimeSpan.FromMinutes(1),
+                };
+
+                // act
+
+                DirectMethodClientResponse response = await serviceClient.DirectMethods
+                    .InvokeAsync(testDevice.Id, directMethodRequest)
+                    .ConfigureAwait(false);
+                bool flag = response.TryGetPayload(out TestDateTime actualPayload);
+                Action act = () => DateTimeOffset.ParseExact(actualPayload.Iso8601String, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+                // assert
+
+                deviceMethodCalledSuccessfully.Should().BeTrue();
+                flag.Should().BeTrue();
+                responsePayload.Should().BeEquivalentTo(actualPayload);
+                act.Should().NotThrow();
             }
             finally
             {
@@ -573,6 +633,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             [JsonProperty("desiredState")]
             public string DesiredState { get; set; }
+        }
+
+        internal class TestDateTime
+        {
+            public string Iso8601String { get; set; }
         }
     }
 }
