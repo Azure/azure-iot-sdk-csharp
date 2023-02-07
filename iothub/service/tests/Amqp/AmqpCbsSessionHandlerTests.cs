@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         private static void ConnectionLossHandler(object sender, EventArgs e) { }
 
         [TestMethod]
-        public void AmqpCbsSessionHandler_OpenAsync()
+        public void AmqpCbsSessionHandler_OpenAsync_IsOpenIsTrue()
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();

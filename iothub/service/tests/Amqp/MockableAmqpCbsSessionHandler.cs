@@ -9,13 +9,17 @@ using Microsoft.Azure.Devices.Amqp;
 
 namespace Microsoft.Azure.Devices.Tests.Amqp
 {
+    /// <summary>
+    /// To use MockableAmqpCbsLink, this class was created.
+    /// </summary>
     internal class MockableAmqpCbsSessionHandler : AmqpCbsSessionHandler
     {
         private readonly IotHubConnectionProperties _credential;
         private MockableAmqpCbsLink _cbsLink;
         private readonly EventHandler _connectionLossHandler;
 
-        public MockableAmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler) : base(credential, connectionLossHandler)
+        public MockableAmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler)
+            : base(credential, connectionLossHandler)
         {
             _credential = credential;
             _connectionLossHandler = connectionLossHandler;

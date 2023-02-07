@@ -11,7 +11,11 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 {
     public class MockableAmqpCbsLink
     {
+        /// <summary>
+        /// Since AmqpCbsLink from Amqp library is not overridable, this mockable class was created.
+        /// </summary>
         public MockableAmqpCbsLink() { }
+
         internal virtual Task<DateTime> SendTokenAsync(IotHubConnectionProperties credential, Uri amqpEndpoint, string audience, string resource, string[] strings, CancellationToken cancellationToken)
         {
             return Task.FromResult(DateTime.UtcNow.AddMinutes(15));
