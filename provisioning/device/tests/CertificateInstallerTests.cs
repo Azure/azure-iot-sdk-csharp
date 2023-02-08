@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void CertificateInstaller_EnsureChainIsInstalled_Works()
         {
             // arrange
+
             using var ecdsa = ECDsa.Create();
             var request = new CertificateRequest("CN=testSubject", ecdsa, HashAlgorithmName.SHA256);
             X509Certificate2 cert = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddHours(1));
@@ -40,6 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void CertificateInstaller_EnsureChainIsInstalled_NullCert()
         {
             // arrange
+
             var mockCert = new Mock<X509Certificate>();
 
             var mockCertCollection = new Mock<X509Certificate2Collection>();
