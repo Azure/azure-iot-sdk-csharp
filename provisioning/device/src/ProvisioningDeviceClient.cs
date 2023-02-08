@@ -52,8 +52,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             _retryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
             _retryHandler = new RetryHandler(_retryPolicy);
 
-            Logging.Associate(this, _authentication);
-            Logging.Associate(this, _options);
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, _authentication);
+                Logging.Associate(this, _options);
+            }
         }
 
         /// <summary>
@@ -82,8 +85,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             _retryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
             _retryHandler = new RetryHandler(_retryPolicy);
 
-            Logging.Associate(this, _authentication);
-            Logging.Associate(this, _options);
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, _authentication);
+                Logging.Associate(this, _options);
+            }
         }
 
         internal IProvisioningClientRetryPolicy RetryPolicy => _retryPolicy;
