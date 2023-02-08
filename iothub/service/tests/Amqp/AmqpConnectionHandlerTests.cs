@@ -19,13 +19,13 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
     public class AmqpConnectionHandlerTests
     {
         private const string HostName = "contoso.azure-devices.net";
-        private static readonly IIotHubServiceRetryPolicy noRetryPolicy = new IotHubServiceNoRetry();
+        private static readonly IIotHubServiceRetryPolicy s_RetryPolicy = new IotHubServiceNoRetry();
         private static readonly IotHubServiceClientOptions s_options = new()
         {
             Protocol = IotHubTransportProtocol.Tcp,
-            RetryPolicy = noRetryPolicy
+            RetryPolicy = s_RetryPolicy
         };
-        private static readonly EventHandler ConnectionLossHandler = (object sender, EventArgs e) => { };
+        private readonly EventHandler ConnectionLossHandler = (object sender, EventArgs e) => { };
 
         [TestMethod]
         public async Task AmqpConnectionHandler_SendAsync()
