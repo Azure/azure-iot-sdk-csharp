@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// This class holds the ActivityId that would be set on the thread for ETW during the trace.
     /// </summary>
-    internal class EventTraceActivity
+    internal sealed class EventTraceActivity
     {
         private static EventTraceActivity s_empty;
 

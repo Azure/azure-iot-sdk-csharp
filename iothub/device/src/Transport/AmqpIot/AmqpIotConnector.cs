@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpIotConnector : IDisposable
+    internal sealed class AmqpIotConnector : IDisposable
     {
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new(1, 0, 0);
 

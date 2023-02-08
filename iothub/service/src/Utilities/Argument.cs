@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Argument validation helper class.
     /// </summary>
-    internal class Argument
+    internal sealed class Argument
     {
         /// <summary>
         /// Throws if <paramref name="value"/> is null.

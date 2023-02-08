@@ -8,7 +8,7 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotCbsLink
+    internal sealed class AmqpIotCbsLink
     {
         private readonly AmqpCbsLink _amqpCbsLink;
 

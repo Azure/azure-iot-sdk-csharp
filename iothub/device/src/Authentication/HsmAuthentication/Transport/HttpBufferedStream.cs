@@ -5,11 +5,10 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 {
-    internal class HttpBufferedStream : Stream
+    internal sealed class HttpBufferedStream : Stream
     {
         private const char CR = '\r';
         private const char LF = '\n';

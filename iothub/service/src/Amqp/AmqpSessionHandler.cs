@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Amqp
     /// Handles a single AMQP session that holds the sender or receiver link that does the "work"
     /// for the AMQP connection (receiving file upload notification, sending cloud to device messages, etc).
     /// </summary>
-    internal class AmqpSessionHandler
+    internal sealed class AmqpSessionHandler
     {
         private readonly AmqpSendingLinkHandler _sendingLinkHandler;
         private readonly AmqpReceivingLinkHandler _receivingLinkHandler;

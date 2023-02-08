@@ -13,7 +13,7 @@ using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotTransport : IDisposable
+    internal sealed class AmqpIotTransport : IDisposable
     {
         private const string Amqpwsb10 = "AMQPWSB10";
         private const string Scheme = "wss://";

@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
     /// }
     /// </code>
     /// </remarks>
-    internal class ErrorPayload2
+    internal sealed class ErrorPayload2
     {
         [JsonProperty("Message")]
         internal string Message { get; set; }

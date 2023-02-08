@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class Utils
+    internal static class Utils
     {
         public static string GetClientVersion()
         {

@@ -11,7 +11,7 @@ using Microsoft.Azure.Amqp.Sasl;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class AmqpAuthStrategySymmetricKey : AmqpAuthStrategy
+    internal sealed class AmqpAuthStrategySymmetricKey : AmqpAuthStrategy
     {
         private readonly AuthenticationProviderSymmetricKey _authentication;
 

@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Microsoft.Azure.Devices
 {
-    internal class IOThreadTimerSlim : IDisposable
+    internal sealed class IOThreadTimerSlim : IDisposable
     {
         private Timer _timer;
         private readonly Action<object> _callback;

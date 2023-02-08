@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// A <see cref="JsonConverter"/> implementation for <see cref="ETag"/>.
     /// </summary>
-    internal class NewtonsoftJsonETagConverter : JsonConverter
+    internal sealed class NewtonsoftJsonETagConverter : JsonConverter
     {
         /// <inheritdoc/>
         public override bool CanConvert(Type objectType) => objectType == typeof(ETag) || objectType == typeof(ETag?);

@@ -9,7 +9,7 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher
+    internal sealed class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher
     {
         private static readonly string[] s_accessRightsStringArray = new[] { "DeviceConnect" };
         private readonly Uri _amqpEndpoint;

@@ -6,21 +6,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpTransportHandler : TransportHandler
+    internal sealed class AmqpTransportHandler : TransportHandler
     {
-        protected AmqpUnit _amqpUnit;
+        private AmqpUnit _amqpUnit;
         private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new();

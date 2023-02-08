@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// URL encoded serializer for message properties.
     /// </summary>
-    internal class UrlEncodedDictionarySerializer
+    internal sealed class UrlEncodedDictionarySerializer
     {
         /// <summary>
         /// The character that separates the name and value of a property.
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Tokenizer state machine
         /// </summary>
-        private class Tokenizer
+        private sealed class Tokenizer
         {
             private enum TokenizerState
             {

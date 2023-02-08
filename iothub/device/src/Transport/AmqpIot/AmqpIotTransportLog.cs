@@ -6,7 +6,7 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotTransportLog : AmqpTrace
+    internal sealed class AmqpIotTransportLog : AmqpTrace
     {
         public override void AmqpAbortThrowingException(string exception)
         {

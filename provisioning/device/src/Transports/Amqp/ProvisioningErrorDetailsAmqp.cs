@@ -7,7 +7,7 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class ProvisioningErrorDetailsAmqp : ProvisioningErrorDetails
+    internal sealed class ProvisioningErrorDetailsAmqp : ProvisioningErrorDetails
     {
         internal const string RetryAfterKey = "Retry-After";
 

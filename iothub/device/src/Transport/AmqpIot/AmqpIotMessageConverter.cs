@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotMessageConverter
+    internal sealed class AmqpIotMessageConverter
     {
         private const string SequenceNumberName = "x-opt-sequence-number";
         private const string TimeSpanName = AmqpConstants.Vendor + ":timespan";

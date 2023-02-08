@@ -10,7 +10,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class ProductInfo
+    internal sealed class ProductInfo
     {
         public string Extra { get; set; } = "";
 

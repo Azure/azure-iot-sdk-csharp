@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Microsoft.Azure.Devices
 {
-    internal class Utils
+    internal sealed class Utils
     {
         internal static string GetClientVersion()
         {

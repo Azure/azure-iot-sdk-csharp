@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
-    internal class ExceptionHandlingHelper
+    internal sealed class ExceptionHandlingHelper
     {
         private const string MessageFieldErrorCode = "errorCode";
         private const string HttpErrorCodeName = "iothub-errorcode";

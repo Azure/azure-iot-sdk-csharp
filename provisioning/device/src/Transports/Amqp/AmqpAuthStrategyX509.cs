@@ -10,7 +10,7 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class AmqpAuthStrategyX509 : AmqpAuthStrategy
+    internal sealed class AmqpAuthStrategyX509 : AmqpAuthStrategy
     {
         private readonly AuthenticationProviderX509 _authentication;
 

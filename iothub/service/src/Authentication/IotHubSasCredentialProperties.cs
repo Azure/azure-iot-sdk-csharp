@@ -10,7 +10,7 @@ using Azure;
 
 namespace Microsoft.Azure.Devices
 {
-    internal class IotHubSasCredentialProperties : IotHubConnectionProperties
+    internal sealed class IotHubSasCredentialProperties : IotHubConnectionProperties
     {
         private readonly AzureSasCredential _credential;
 

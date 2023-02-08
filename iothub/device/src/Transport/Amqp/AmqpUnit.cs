@@ -13,7 +13,7 @@ using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpUnit : IDisposable
+    internal sealed class AmqpUnit : IDisposable
     {
         // AMQP supports a few different ways to acknowledge a message. Below is the mapping
         // from the IoT hub level concept of Complete/Abandon/Reject to the AMQP level concept
@@ -800,13 +800,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     correlationIdSuffix,
                     cancellationToken).ConfigureAwait(false);
 
-                if (_methodSenderLinkDisconnected == null)
-                {
-                    _methodSenderLinkDisconnected = (obj, arg) =>
+                _methodSenderLinkDisconnected ??= (obj, arg) =>
                     {
                         amqpIotSession.SafeClose();
                     };
-                }
 
                 _methodSendingLink.Closed += _methodSenderLinkDisconnected;
 
@@ -970,13 +967,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     correlationIdSuffix,
                     cancellationToken).ConfigureAwait(false);
 
-                if (_twinReceiverLinkDisconnected == null)
-                {
-                    _twinReceiverLinkDisconnected = (obj, arg) =>
+                _twinReceiverLinkDisconnected ??= (obj, arg) =>
                     {
                         amqpIotSession.SafeClose();
                     };
-                }
 
                 _twinReceivingLink.Closed += _twinReceiverLinkDisconnected;
 
@@ -1008,13 +1002,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     correlationIdSuffix,
                     cancellationToken).ConfigureAwait(false);
 
-                if (_twinSenderLinkDisconnected == null)
-                {
-                    _twinSenderLinkDisconnected = (obj, arg) =>
-                    {
-                        amqpIotSession.SafeClose();
-                    };
-                }
+                _twinSenderLinkDisconnected ??= (obj, arg) => amqpIotSession.SafeClose();
 
                 _twinSendingLink.Closed += _twinSenderLinkDisconnected;
 
