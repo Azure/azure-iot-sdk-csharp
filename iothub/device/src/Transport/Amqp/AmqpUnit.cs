@@ -13,7 +13,9 @@ using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal sealed class AmqpUnit : IDisposable
+#pragma warning disable CA1852 // used in debug for unit test mocking
+    internal class AmqpUnit : IDisposable
+#pragma warning restore CA1852
     {
         // AMQP supports a few different ways to acknowledge a message. Below is the mapping
         // from the IoT hub level concept of Complete/Abandon/Reject to the AMQP level concept

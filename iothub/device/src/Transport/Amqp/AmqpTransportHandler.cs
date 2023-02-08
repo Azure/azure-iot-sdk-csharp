@@ -14,9 +14,11 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal sealed class AmqpTransportHandler : TransportHandler
+#pragma warning disable CA1852 // used in debug for unit test mocking
+    internal class AmqpTransportHandler : TransportHandler
+#pragma warning restore CA1852
     {
-        private AmqpUnit _amqpUnit;
+        protected AmqpUnit _amqpUnit;
         private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new();

@@ -9,11 +9,14 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal sealed class AmqpConnectionPool : IAmqpUnitManager
+#pragma warning disable CA1852 // used in debug for unit test mocking
+    internal class AmqpConnectionPool : IAmqpUnitManager
+#pragma warning restore CA1852
     {
         private AmqpConnectionHolder[] _amqpSasIndividualPool;
-        private readonly Dictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new();
         private readonly object _lock = new();
+
+        protected Dictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new();
 
         public AmqpUnit CreateAmqpUnit(
             IConnectionCredentials connectionCredentials,

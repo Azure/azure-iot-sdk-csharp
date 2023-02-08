@@ -11,12 +11,21 @@ namespace Microsoft.Azure.Devices
     /// Factory for creating HTTP requests to be sent by a service client. The requests created by
     /// this client contain all the common headers and attributes.
     /// </summary>
-    internal sealed class HttpRequestMessageFactory
+#pragma warning disable CA1852 // used in debug for unit test mocking
+    internal class HttpRequestMessageFactory
+#pragma warning restore CA1852
     {
         private const string ApplicationJson = "application/json";
 
         private readonly Uri _baseUri;
         private readonly string _apiVersionQueryString;
+        
+        /// <summary>
+        /// Constructor for internal mocking purposes only.
+        /// </summary>
+        protected HttpRequestMessageFactory()
+        {
+        }
 
         public HttpRequestMessageFactory(Uri baseUri, string apiVersion)
         {
@@ -34,7 +43,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="payload">The payload for the request to be serialized. If null, no payload will be in the request.</param>
         /// <param name="queryStringParameters">Additional query string parameters to be added to request URI.</param>
         /// <returns>The created HTTP request.</returns>
-        internal HttpRequestMessage CreateRequest(HttpMethod method, Uri relativeUri, IotHubConnectionProperties authorizationProvider, object payload = null, string queryStringParameters = null)
+        internal HttpRequestMessage CreateRequest(
+            HttpMethod method,
+            Uri relativeUri,
+            IotHubConnectionProperties authorizationProvider,
+            object payload = null,
+            string queryStringParameters = null)
         {
             var message = new HttpRequestMessage
             {
