@@ -73,4 +73,9 @@ foreach ($project in $csv) {
     }
 }
 
+if (-not $update -and $requireUpdate)
+{
+    Write-Host "Run 'versionupdate.ps1 -update' to apply these version changes to projects."
+}
+
 exit $requireUpdate
