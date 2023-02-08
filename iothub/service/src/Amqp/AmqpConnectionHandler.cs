@@ -48,6 +48,29 @@ namespace Microsoft.Azure.Devices.Amqp
         protected internal AmqpConnectionHandler()
         { }
 
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        internal AmqpConnectionHandler(
+            IotHubConnectionProperties credential,
+            IotHubTransportProtocol protocol,
+            string linkAddress,
+            IotHubServiceClientOptions options,
+            EventHandler connectionLossHandler,
+            AmqpCbsSessionHandler cbsSession,
+            AmqpSessionHandler workerSession)
+        {
+            _credential = credential;
+            _useWebSocketOnly = protocol == IotHubTransportProtocol.WebSocket;
+            _linkAddress = linkAddress;
+            _options = options;
+            _connectionLossHandler = connectionLossHandler;
+            _cbsSession = cbsSession;
+            _workerSession = workerSession;
+
+            _sendingDeliveryTag = 0;
+        }
+
         internal AmqpConnectionHandler(
             IotHubConnectionProperties credential,
             IotHubTransportProtocol protocol,
