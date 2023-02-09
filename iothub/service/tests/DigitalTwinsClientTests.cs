@@ -34,6 +34,8 @@ namespace Microsoft.Azure.Devices.Tests
             RetryPolicy = new IotHubServiceNoRetry()
         };
 
+        private static readonly string s_expectedLocation = "https://contoso.azure-devices.net/digitaltwins/foo?api-version=2021-04-12";
+
         [TestMethod]
         public async Task DigitalTwinsClient_GetAsync()
         {
@@ -164,8 +166,8 @@ namespace Microsoft.Azure.Devices.Tests
                 Content = HttpMessageHelper.SerializePayload(digitalTwin),
             };
             mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
-            mockHttpResponse.Headers.Add("Location", "foo");
-            
+            mockHttpResponse.Headers.Add("Location", s_expectedLocation);
+
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
@@ -182,7 +184,7 @@ namespace Microsoft.Azure.Devices.Tests
             DigitalTwinUpdateResponse response = await digitalTwinsClient.UpdateAsync(digitalTwinId, jsonPatch.ToString());
 
             // assert
-            response.Location.Should().Be(digitalTwinId);
+            response.Location.Should().Be(s_expectedLocation);
         }
 
         [TestMethod]
