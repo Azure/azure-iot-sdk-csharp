@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -11,6 +12,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
@@ -34,6 +36,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 Name = "someName"
             }
         };
+
+        private static readonly TestDateTime s_dateTimeProperty = new()
+        {
+            Iso8601String = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1)).ToString("o", CultureInfo.InvariantCulture)
+        };
+
+        private static readonly string s_iso8601DateTimeString = "2023-01-31T10:37:08.4599400+01:00";
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -311,6 +320,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
+                    Client.TransportType.Amqp_WebSocket_Only)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Mqtt()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
+                    Client.TransportType.Mqtt_Tcp_Only)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_MqttWs()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
+                    Client.TransportType.Mqtt_WebSocket_Only)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Amqp()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
+                    Client.TransportType.Amqp_Tcp_Only)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_AmqpWs()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
                     Client.TransportType.Amqp_WebSocket_Only)
                 .ConfigureAwait(false);
         }
@@ -656,6 +701,35 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(Client.TransportType transport)
+        {
+            string jsonString = JsonConvert.SerializeObject(s_dateTimeProperty);
+
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+
+            var twinPatch = new Twin();
+
+            JObject jobjectProperty = JsonConvert.DeserializeObject<JObject>(
+                jsonString,
+                new JsonSerializerSettings
+                {
+                    // This ensures the date-formatted string will not drop trailing zeros
+                    // in the microseconds date portion while parsing the json properties.
+                    DateParseHandling = DateParseHandling.None
+                });
+
+            twinPatch.Properties.Desired = new TwinCollection(jobjectProperty, null);
+            await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
+
+            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            Assert.AreEqual<string>(deviceTwin.Properties.Desired["Iso8601String"].ToString(), s_iso8601DateTimeString);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await registryManager.CloseAsync().ConfigureAwait(false);
+        }
+
         private async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(Client.TransportType transport)
         {
             string propName = Guid.NewGuid().ToString();
@@ -767,5 +841,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public int Id { get; set; }
 
         public string Name { get; set; }
+    }
+
+    internal class TestDateTime
+    {
+        public string Iso8601String { get; set; }
     }
 }
