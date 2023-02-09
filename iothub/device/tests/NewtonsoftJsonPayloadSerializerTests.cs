@@ -8,6 +8,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
+    /// <summary>
+    /// Ensures DateTime de/serializes properly using Newtonsoft.Json, avoiding a known bug: https://github.com/JamesNK/Newtonsoft.Json/issues/1511
+    /// </summary>
     [TestClass]
     [TestCategory("UnitTest")]
     public class NewtonsoftJsonPayloadSerializerTests
@@ -16,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         private static readonly string s_serializedPayloadString = "{\"time\":\"2023-01-31T10:37:08.4599400\"}";
 
         [TestMethod]
-        public void NewtonsoftJsonPayloadSerializer_SerializeToString()
+        public void NewtonsoftJsonPayloadSerializer_DateTime_SerializesProperly()
         {
             // arrange
             var testDateTime = new TestDateTime { DateTimeString = s_dateTimeString };
@@ -29,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void NewtonsoftJsonPayloadSerializer_DeserializeToType()
+        public void NewtonsoftJsonPayloadSerializer_DateTime_DeserializesProperly()
         {
             // arrange
             string jsonStr = $@"{{""time"":""{s_dateTimeString}""}}";

@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         /// strings to a date type, which drops trailing zeros in the microseconds date portion. By
         /// specifying DateParseHandling with None, the original string will be read as-is.
         /// </remarks>
-        public static readonly JsonSerializerSettings Settings = new()
+        internal static readonly JsonSerializerSettings Settings = new()
         {
             DateParseHandling = DateParseHandling.None,
         };
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Returns JsonSerializerSettings Func delegate
         /// </summary>
-        internal static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
+        private static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
         {
             return () => Settings;
         }
