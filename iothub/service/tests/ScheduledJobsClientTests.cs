@@ -23,6 +23,8 @@ namespace Microsoft.Azure.Devices.Tests
         private const string HostName = "contoso.azure-devices.net";
         private static readonly string s_validMockAuthenticationHeaderValue = $"SharedAccessSignature sr={HostName}&sig=thisIsFake&se=000000&skn=registryRead";
         private static readonly string s_connectionString = $"HostName={HostName};SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private static readonly string s_toSelect = "Devices";
+        private static readonly string s_jobId = "foo";
 
         private static readonly Uri s_httpUri = new($"https://{HostName}");
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
@@ -38,7 +40,7 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             var scheduledJob = new ScheduledJob
             {
-                JobId = "foo"
+                JobId = s_jobId
             };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -70,10 +72,10 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await scheduledJobsClient.GetAsync("foo");
+            ScheduledJob jobResponse = await scheduledJobsClient.GetAsync(s_jobId);
 
             // assert
-            await act.Should().NotThrowAsync();
+            jobResponse.JobId.Should().Be(s_jobId);
         }
 
         [TestMethod]
@@ -138,7 +140,7 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             var scheduledJob = new ScheduledJob
             {
-                JobId = "foo"
+                JobId = s_jobId
             };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -170,10 +172,10 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await scheduledJobsClient.CancelAsync("foo");
+            ScheduledJob jobResponse = await scheduledJobsClient.CancelAsync("foo");
 
             // assert
-            await act.Should().NotThrowAsync();
+            jobResponse.JobId.Should().Be(s_jobId);
         }
 
         [TestMethod]
@@ -239,7 +241,7 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             var scheduledJob = new ScheduledJob
             {
-                JobId = "foo" 
+                JobId = s_jobId 
             };
             var directMethodRequest = new DirectMethodServiceRequest("foo");
             var startTime = new DateTimeOffset();
@@ -274,14 +276,14 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await scheduledJobsClient.ScheduleDirectMethodAsync(
-                "foo",
-                directMethodRequest, 
+            ScheduledJob returnedJob = await scheduledJobsClient.ScheduleDirectMethodAsync(
+                $"SELECT * FROM {s_toSelect}",
+                directMethodRequest,
                 startTime,
                 scheduledJobsOptions);
 
             // assert
-            await act.Should().NotThrowAsync();
+            returnedJob.JobId.Should().Be(s_jobId);
         }
 
         [TestMethod]
@@ -340,7 +342,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await scheduledJobsClient.ScheduleDirectMethodAsync(
-                "foo",
+                $"SELECT * FROM {s_toSelect}",
                 new DirectMethodServiceRequest("bar"),
                 new DateTimeOffset(DateTime.UtcNow),
                 new ScheduledJobsOptions());
@@ -355,7 +357,7 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             var scheduledJob = new ScheduledJob
             {
-                JobId = "foo"
+                JobId = s_jobId
             };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -387,13 +389,13 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await scheduledJobsClient.ScheduleTwinUpdateAsync(
-                "foo",
+            ScheduledJob jobResponse = await scheduledJobsClient.ScheduleTwinUpdateAsync(
+                $"SELECT * FROM {s_toSelect}",
                 new ClientTwin(),
                 new DateTimeOffset(DateTime.UtcNow));
 
             // assert
-            await act.Should().NotThrowAsync();
+            jobResponse.JobId.Should().Be(s_jobId);
         }
 
         [TestMethod]
@@ -404,7 +406,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await serviceClient.ScheduledJobs.ScheduleTwinUpdateAsync(
-                "foo",
+                $"SELECT * FROM {s_toSelect}",
                 null,
                 new DateTimeOffset(DateTime.UtcNow));
 
@@ -451,7 +453,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await scheduledJobsClient.ScheduleTwinUpdateAsync(
-                "foo",
+                $"SELECT * FROM {s_toSelect}",
                 new ClientTwin(),
                 new DateTimeOffset(DateTime.UtcNow));
 

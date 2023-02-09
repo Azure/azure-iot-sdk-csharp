@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Tests
             DigitalTwinUpdateResponse response = await digitalTwinsClient.UpdateAsync(digitalTwinId, jsonPatch.ToString());
 
             // assert
-            response.Should().BeOfType<DigitalTwinUpdateResponse>();
+            response.Location.Should().Be(digitalTwinId);
         }
 
         [TestMethod]
