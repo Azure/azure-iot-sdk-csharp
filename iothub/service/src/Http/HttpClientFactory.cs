@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     /// HTTP requests to the service. Each service client should only need to create one HTTP client
     /// for its lifetime.
     /// </summary>
-    internal class HttpClientFactory
+    internal sealed class HttpClientFactory
     {
         internal const string HttpsEndpointPrefix = "https";
 

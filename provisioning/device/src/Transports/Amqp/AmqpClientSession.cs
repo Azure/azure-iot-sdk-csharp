@@ -9,7 +9,7 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class AmqpClientSession
+    internal sealed class AmqpClientSession
     {
         private readonly AmqpClientConnection _amqpConnection;
 

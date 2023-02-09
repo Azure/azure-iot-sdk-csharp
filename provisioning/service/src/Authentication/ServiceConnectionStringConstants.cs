@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class ServiceConnectionStringConstants
+    internal static class ServiceConnectionStringConstants
     {
         internal const char ValuePairDelimiter = ';';
         internal const char ValuePairSeparator = '=';

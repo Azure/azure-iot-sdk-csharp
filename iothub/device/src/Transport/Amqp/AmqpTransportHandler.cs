@@ -6,19 +6,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class AmqpTransportHandler : TransportHandler
+#pragma warning restore CA1852
     {
         protected AmqpUnit _amqpUnit;
         private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
@@ -97,6 +95,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         public override bool IsUsable => !_isDisposed;
+
+        public override DateTime GetSasTokenRefreshesOn()
+        {
+            return _amqpUnit.GetSasTokenRefreshesOn();
+        }
+
+        public override async Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(RefreshSasTokenAsync));
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return await _amqpUnit.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(RefreshSasTokenAsync));
+            }
+        }
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {

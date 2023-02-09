@@ -37,6 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private static readonly IIotHubServiceRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
 
         private X509Certificate2 _authCertificate;
+        private static readonly IotHubServiceClient _client = new(TestConfiguration.IotHub.ConnectionString);
 
         private TestDevice(Device device, IAuthenticationMethod authenticationMethod)
         {
@@ -72,7 +73,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
             // Delete existing devices named this way and create a new one.
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             IAuthenticationMethod auth = null;
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RunWithHubServiceRetryAsync(
                     async () =>
                     {
-                        device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
+                        device = await _client.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_createRetryPolicy,
                     CancellationToken.None)
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RunWithHubServiceRetryAsync(
                     async () =>
                     {
-                        await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
+                        await _client.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                     },
                     s_getRetryPolicy,
                     CancellationToken.None)
@@ -184,13 +184,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task RemoveDeviceAsync()
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-
             await RetryOperationHelper
                 .RunWithHubServiceRetryAsync(
                     async () =>
                     {
-                        await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
+                        await _client.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
                     s_getRetryPolicy,
                     CancellationToken.None)

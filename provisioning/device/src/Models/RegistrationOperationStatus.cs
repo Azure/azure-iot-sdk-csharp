@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Registration operation status.
     /// </summary>
-    internal class RegistrationOperationStatus
+    internal sealed class RegistrationOperationStatus
     {
         /// <summary>
         /// Gets or sets operation Id.

@@ -5,7 +5,7 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotOutcome
+    internal sealed class AmqpIotOutcome
     {
         private readonly Outcome _outcome;
 

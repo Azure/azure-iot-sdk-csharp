@@ -36,9 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ProvisioningServiceException">Thrown if an error occurs when communicating with device provisioning service.</exception>
         public ProvisioningServiceClient(string connectionString, ProvisioningServiceClientOptions options = default)
         {
-            ProvisioningServiceClientOptions clientOptions = options != null
-                ? options.Clone()
-                : new();
+            ProvisioningServiceClientOptions clientOptions = options?.Clone() ?? new();
 
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
@@ -80,10 +78,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <inheritdoc/>
         public void Dispose()
         {
-            if (_contractApiHttp != null)
-            {
-                _contractApiHttp.Dispose();
-            }
+            _contractApiHttp?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

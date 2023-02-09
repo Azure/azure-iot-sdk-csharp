@@ -7,7 +7,7 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotLinkFactory : ILinkFactory
+    internal sealed class AmqpIotLinkFactory : ILinkFactory
     {
         private static readonly Lazy<AmqpIotLinkFactory> s_instance = new(() => new AmqpIotLinkFactory());
 

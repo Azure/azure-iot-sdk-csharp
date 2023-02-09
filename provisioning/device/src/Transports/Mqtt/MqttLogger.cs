@@ -8,7 +8,7 @@ using MQTTnet.Diagnostics;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt
 {
-    internal class MqttLogger : IMqttNetLogger
+    internal sealed class MqttLogger : IMqttNetLogger
     {
         public bool IsEnabled => Logging.IsEnabled;
 

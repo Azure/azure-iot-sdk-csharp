@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Amqp
     /// Handles a single CBS session (for SAS token renewal) including the inital authentication and scheduling all subsequent
     /// authentication attempts.
     /// </summary>
-    internal class AmqpCbsSessionHandler : IDisposable
+    internal sealed class AmqpCbsSessionHandler : IDisposable
     {
         // There is no AmqpSession object to track here because it is encapsulated by the AmqpCbsLink class.
         private readonly IotHubConnectionProperties _credential;

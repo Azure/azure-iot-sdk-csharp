@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     /// <remarks>
     /// May not contain a twin object if the service did not respond with a twin.
     /// </remarks>
-    internal class GetTwinResponse
+    internal sealed class GetTwinResponse
     {
         /// <summary>
         /// The status code that the service responded to the get twin request with.

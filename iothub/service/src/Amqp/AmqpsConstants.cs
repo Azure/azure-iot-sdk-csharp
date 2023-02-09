@@ -6,7 +6,7 @@ using Microsoft.Azure.Amqp.Encoding;
 
 namespace Microsoft.Azure.Devices.Amqp
 {
-    internal class AmqpsConstants
+    internal sealed class AmqpsConstants
     {
         public const string FileUploadNotificationsAddress = "/messages/serviceBound/filenotifications";
         public const string FeedbackMessageAddress = "/messages/servicebound/feedback";

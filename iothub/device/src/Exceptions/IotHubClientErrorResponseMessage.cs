@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// A class used as a model to deserialize error response message object received from IoT hub.
     /// </summary>
-    internal class IotHubClientErrorResponseMessage
+    internal sealed class IotHubClientErrorResponseMessage
     {
         [JsonProperty("errorCode")]
         internal int ErrorCode { get; set; }

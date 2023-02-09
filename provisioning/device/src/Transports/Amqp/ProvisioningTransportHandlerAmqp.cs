@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents the AMQP protocol implementation for the provisioning transport handler.
     /// </summary>
-    internal class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
+    internal sealed class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
         private const string Register = "iotdps-register";
         private const string GetRegistration = "iotdps-get-registration";

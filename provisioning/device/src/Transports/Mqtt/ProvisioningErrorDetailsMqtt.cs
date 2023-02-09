@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class ProvisioningErrorDetailsMqtt : ProvisioningErrorDetails
+    internal sealed class ProvisioningErrorDetailsMqtt : ProvisioningErrorDetails
     {
         private const string RetryAfterHeader = "Retry-After";
 

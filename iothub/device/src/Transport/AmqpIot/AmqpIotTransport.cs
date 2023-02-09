@@ -13,14 +13,13 @@ using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotTransport : IDisposable
+    internal sealed class AmqpIotTransport : IDisposable
     {
         private const string Amqpwsb10 = "AMQPWSB10";
         private const string Scheme = "wss://";
         private const string UriSuffix = "/$iothub/websocket";
         private const string SecurePort = "443";
 
-        private readonly bool _disableServerCertificateValidation;
         private readonly string _hostName;
         private readonly IConnectionCredentials _connectionCredentials;
         private readonly AmqpSettings _amqpSettings;
@@ -34,14 +33,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             IConnectionCredentials connectionCredentials,
             AmqpSettings amqpSettings,
             IotHubClientAmqpSettings amqpTransportSettings,
-            string hostName,
-            bool disableServerCertificateValidation)
+            string hostName)
         {
             _connectionCredentials = connectionCredentials;
             _amqpSettings = amqpSettings;
             _amqpTransportSettings = amqpTransportSettings;
             _hostName = hostName;
-            _disableServerCertificateValidation = disableServerCertificateValidation;
 
             var tcpTransportSettings = new TcpTransportSettings
             {
@@ -179,13 +176,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             // If there are no policy errors then return the remote certificate validation is a pass.
             if (sslPolicyErrors == SslPolicyErrors.None)
-            {
-                return true;
-            }
-
-            // If there is a certificate name mismatch and server certificate validation is turned off, then it is a pass.
-            if (_disableServerCertificateValidation
-                && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
             {
                 return true;
             }

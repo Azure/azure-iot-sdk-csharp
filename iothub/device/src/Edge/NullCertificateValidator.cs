@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class NullCertificateValidator : ICertificateValidator
+    internal sealed class NullCertificateValidator : ICertificateValidator
     {
         public static NullCertificateValidator Instance { get; } = new NullCertificateValidator();
 

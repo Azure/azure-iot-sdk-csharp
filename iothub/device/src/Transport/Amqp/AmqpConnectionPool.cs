@@ -9,16 +9,14 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class AmqpConnectionPool : IAmqpUnitManager
+#pragma warning restore CA1852
     {
         private AmqpConnectionHolder[] _amqpSasIndividualPool;
-        private readonly Dictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new();
         private readonly object _lock = new();
 
-        protected virtual IDictionary<string, AmqpConnectionHolder[]> GetAmqpSasGroupedPoolDictionary()
-        {
-            return _amqpSasGroupedPool;
-        }
+        protected Dictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new();
 
         public AmqpUnit CreateAmqpUnit(
             IConnectionCredentials connectionCredentials,
@@ -106,10 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private AmqpConnectionHolder[] ResolveConnectionGroup(IConnectionCredentials connectionCredentials, IotHubClientAmqpSettings amqpSettings)
         {
-            if (amqpSettings.ConnectionPoolSettings == null)
-            {
-                amqpSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings();
-            }
+            amqpSettings.ConnectionPoolSettings ??= new AmqpConnectionPoolSettings();
 
             if (connectionCredentials.AuthenticationModel == AuthenticationModel.SasIndividual)
             {
@@ -119,11 +114,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             string scope = connectionCredentials.SharedAccessKeyName;
-            GetAmqpSasGroupedPoolDictionary().TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
+            _amqpSasGroupedPool.TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
             if (amqpConnectionHolders == null)
             {
                 amqpConnectionHolders = new AmqpConnectionHolder[amqpSettings.ConnectionPoolSettings.MaxPoolSize];
-                GetAmqpSasGroupedPoolDictionary().Add(scope, amqpConnectionHolders);
+                _amqpSasGroupedPool.Add(scope, amqpConnectionHolders);
             }
 
             return amqpConnectionHolders;

@@ -13,7 +13,7 @@ using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
 
 namespace Microsoft.Azure.Devices.Client.Edge
 {
-    internal class TrustBundleProvider : ITrustBundleProvider
+    internal sealed class TrustBundleProvider : ITrustBundleProvider
     {
         private static readonly IIotHubClientRetryPolicy s_retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 

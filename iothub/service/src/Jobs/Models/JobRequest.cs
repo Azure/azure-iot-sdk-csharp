@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Job input.
     /// </summary>
-    internal class JobRequest
+    internal sealed class JobRequest
     {
         /// <summary>
         /// Job identifier.

@@ -165,6 +165,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             };
         }
 
-        private class NoneAttestation : Attestation { }
+        private sealed class NoneAttestation : Attestation { }
     }
 }

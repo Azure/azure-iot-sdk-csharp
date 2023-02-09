@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Amqp
     /// <summary>
     /// Handles a single AMQP receiving link.
     /// </summary>
-    internal class AmqpReceivingLinkHandler
+    internal sealed class AmqpReceivingLinkHandler
     {
         private readonly Action<AmqpMessage> _messageHandler;
         private readonly EventHandler _connectionLossHandler;

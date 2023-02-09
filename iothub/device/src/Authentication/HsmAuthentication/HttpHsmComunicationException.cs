@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     /// The exception that is thrown when communication fails with HSM HTTP server.
     /// </summary>
     [Serializable]
-    internal class HttpHsmComunicationException : Exception
+    internal sealed class HttpHsmComunicationException : Exception
     {
         /// <summary>
         /// Creates an instance of this class with the supplied error message and status code.
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        protected HttpHsmComunicationException(SerializationInfo info, StreamingContext context)
+        internal HttpHsmComunicationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }

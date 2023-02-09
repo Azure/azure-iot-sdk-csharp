@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     /// <summary>
     /// The service's response to a patch twin request.
     /// </summary>
-    internal class PatchTwinResponse
+    internal sealed class PatchTwinResponse
     {
         /// <summary>
         /// The status the service responded with.

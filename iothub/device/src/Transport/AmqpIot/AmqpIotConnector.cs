@@ -11,10 +11,9 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpIotConnector : IDisposable
+    internal sealed class AmqpIotConnector : IDisposable
     {
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new(1, 0, 0);
-        private static readonly bool s_disableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
         private readonly IotHubClientAmqpSettings _amqpTransportSettings;
         private readonly string _hostName;
@@ -52,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 IdleTimeOut = Convert.ToUInt32(_amqpTransportSettings.IdleTimeout.TotalMilliseconds),
             };
 
-            _amqpIotTransport = new AmqpIotTransport(connectionCredentials, amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
+            _amqpIotTransport = new AmqpIotTransport(connectionCredentials, amqpSettings, _amqpTransportSettings, _hostName);
 
             TransportBase transportBase = await _amqpIotTransport.InitializeAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -78,11 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled)
                     Logging.Exit(this, nameof(OpenConnectionAsync));
             }
-        }
-
-        private static bool InitializeDisableServerCertificateValidation()
-        {
-            return AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out bool flag) && flag;
         }
     }
 }

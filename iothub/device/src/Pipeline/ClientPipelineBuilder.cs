@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class ClientPipelineBuilder
+    internal sealed class ClientPipelineBuilder
     {
         private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new();
 
@@ -17,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
             return this;
         }
 
-        public IDelegatingHandler Build(PipelineContext context, IIotHubClientRetryPolicy retryPolicy)
+        public IDelegatingHandler Build(PipelineContext context)
         {
             if (_pipeline.Count == 0)
             {
@@ -34,10 +33,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 ContinuationFactory<IDelegatingHandler> currentFactory = _pipeline[i];
                 currentHandler = currentFactory(context, nextHandler);
-                if (currentHandler is RetryDelegatingHandler retryHandler)
-                {
-                    retryHandler.SetRetryPolicy(retryPolicy ?? new IotHubClientNoRetry());
-                }
                 currentHandler.ContinuationFactory = nextFactory;
 
                 nextHandler = currentHandler;

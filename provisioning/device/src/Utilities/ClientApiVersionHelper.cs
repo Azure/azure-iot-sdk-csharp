@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class ClientApiVersionHelper
+    internal sealed class ClientApiVersionHelper
     {
         // TODO: Split ApiVersionName as it is only used by AMQP.
         public const string ApiVersionName = "api-version";

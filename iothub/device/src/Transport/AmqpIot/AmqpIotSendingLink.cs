@@ -12,7 +12,7 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotSendingLink
+    internal sealed class AmqpIotSendingLink
     {
         public event EventHandler Closed;
 

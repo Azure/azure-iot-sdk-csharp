@@ -16,6 +16,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken);
 
-        Task ShutdownAsync();
+        void Shutdown();
     }
 }

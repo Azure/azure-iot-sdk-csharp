@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class ContractApiHttp : IContractApiHttp
+    internal sealed class ContractApiHttp : IContractApiHttp
     {
         private const string MediaTypeForDeviceManagementApis = "application/json";
 
@@ -133,8 +133,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (!string.IsNullOrWhiteSpace(eTag.ToString()))
             {
-                string escapedETag = EscapeETag(eTag.ToString());
-                msg.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag));
+                // Azure.Core.ETag expects the format "H" for serializing ETags that go into the header.
+                // https://github.com/Azure/azure-sdk-for-net/blob/9c6238e0f0dd403d6583b56ec7902c77c64a2e37/sdk/core/Azure.Core/src/ETag.cs#L87-L114
+                // Also, System.Net.Http.Headers does not allow ETag.All (*) as a valid value even though RFC allows it.
+                // For this reason, we'll add the ETag value without additional validation.
+                // // System.Net.Http.Headers validation: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/tests/UnitTests/Headers/EntityTagHeaderValueTest.cs#L214,
+                // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/src/System/Net/Http/Headers/GenericHeaderParser.cs#L98
+                // RFC specification: https://www.rfc-editor.org/rfc/rfc7232#section-3.1
+                _ = msg.Headers.TryAddWithoutValidation("If-Match", eTag.ToString("H"));
             }
 
             try
@@ -218,7 +224,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     if (response.StatusCode >= HttpStatusCode.Ambiguous)
                     {
                         throw new ProvisioningServiceException(
-                            $"{response.ErrorMessage}:{response.Body}",
+                            $"{response.ErrorMessage}:{responseBody.Message}",
                             response.StatusCode,
                             responseBody.ErrorCode,
                             responseBody.TrackingId,
@@ -235,52 +241,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        // ETag values other than "*" need to be wrapped in escaped quotes if they are not
-        // already.
-        private static string EscapeETag(string eTag)
-        {
-            var escapedETagBuilder = new StringBuilder();
-
-            if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
-            {
-                escapedETagBuilder.Append('"');
-            }
-
-            escapedETagBuilder.Append(eTag);
-
-            if (!eTag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-            {
-                escapedETagBuilder.Append('"');
-            }
-
-            return escapedETagBuilder.ToString();
-        }
-
         /// <summary>
         /// Release all HTTP resources.
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            if (_httpClientObj != null)
             {
-                if (_httpClientObj != null)
-                {
-                    _httpClientObj.Dispose();
-                    _httpClientObj = null;
-                }
-
-                if (_httpClientHandler != null)
-                {
-                    _httpClientHandler.Dispose();
-                    _httpClientHandler = null;
-                }
+                _httpClientObj.Dispose();
+                _httpClientObj = null;
             }
+
+            if (_httpClientHandler != null)
+            {
+                _httpClientHandler.Dispose();
+                _httpClientHandler = null;
+            }
+            GC.SuppressFinalize(this);
         }
     }
 }

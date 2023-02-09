@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Tests
             var exceptionResult = new IotHubExceptionResult
             {
                 // A read-world message in the response content which includes the numeric error code returned by the hub service.
-                Message = new ResponseMessage
+                Message = new ErrorPayload1
                 {
                     ErrorCode = "404103",
                     TrackingId = "b575211ff5194d56b18721941e82c3d5",
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new ResponseMessageWrapper
             {
-                Message = JsonConvert.SerializeObject(new ResponseMessage
+                Message = JsonConvert.SerializeObject(new ErrorPayload1
                 {
                     ErrorCode = ((int)expectedErrorCode).ToString(),
                     TrackingId = expectedTrackingId,

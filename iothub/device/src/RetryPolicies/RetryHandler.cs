@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Provides the base implementation of the retry mechanism for unreliable actions and transient conditions.
     /// </summary>
-    internal class RetryHandler
+    internal sealed class RetryHandler
     {
         private IIotHubClientRetryPolicy _retryPolicy;
 

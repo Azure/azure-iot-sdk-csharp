@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents a provisioning registration request.
     /// </summary>
-    internal class ProvisioningTransportRegisterRequest
+    internal sealed class ProvisioningTransportRegisterRequest
     {
         /// <summary>
         /// Creates a new instance of this class.

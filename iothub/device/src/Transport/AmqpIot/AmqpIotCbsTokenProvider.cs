@@ -8,7 +8,7 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotCbsTokenProvider : ICbsTokenProvider
+    internal sealed class AmqpIotCbsTokenProvider : ICbsTokenProvider
     {
         private readonly IConnectionCredentials _connectionCredentials;
 

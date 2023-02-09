@@ -6,9 +6,9 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// A class used as a model to deserialize error response message object received from IoT hub.
+    /// A class used as a model to deserialize one schema type of errors received from IoT hub.
     /// </summary>
-    internal class ResponseMessage
+    internal sealed class ErrorPayload1
     {
         [JsonProperty("errorCode")]
         internal string ErrorCode { get; set; }
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
         internal string OccurredOnUtc { get; set; }
     }
 
-    internal class ResponseMessageWrapper
+    internal sealed class ResponseMessageWrapper
     {
         [JsonProperty("Message")]
         internal string Message { get; set; }

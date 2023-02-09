@@ -8,16 +8,16 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// A class used as a model to deserialize error response object received from IoT hub.
     /// </summary>
-    internal class IotHubExceptionResult
+    internal sealed class IotHubExceptionResult
     {
         [JsonProperty("Message")]
-        internal ResponseMessage Message { get; set; }
+        internal ErrorPayload1 Message { get; set; }
     }
 
     /// <summary>
     /// A class used as a model to deserialize a different style of error response received from IoT hub.
     /// </summary>
-    internal class IotHubExceptionResult2
+    internal sealed class IotHubExceptionResult2
     {
         [JsonProperty("Message")]
         internal string Message { get; set; }

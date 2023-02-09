@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// A <see cref="JsonConverter"/> implementation for <see cref="ETag"/>.
     /// </summary>
-    internal class NewtonsoftJsonETagConverter : JsonConverter
+    internal sealed class NewtonsoftJsonETagConverter : JsonConverter
     {
         /// <inheritdoc/>
         public override bool CanConvert(Type objectType) => objectType == typeof(ETag) || objectType == typeof(ETag?);
@@ -44,7 +44,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             else
             {
-                writer.WriteValue(eTag.ToString("H"));
+                // Azure.Core.ETag expects the format "G" for serializing ETags that don't go into the header.
+                // https://github.com/Azure/azure-sdk-for-net/blob/9c6238e0f0dd403d6583b56ec7902c77c64a2e37/sdk/core/Azure.Core/src/ETag.cs#L87-L114
+                writer.WriteValue(eTag.ToString("G"));
             }
         }
     }

@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotConnection
+    internal sealed class AmqpIotConnection
     {
         public event EventHandler Closed;
 
@@ -86,7 +86,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(connectionCredentials, _amqpIotCbsLink);
-                await amqpAuthenticator.InitLoopAsync(cancellationToken).ConfigureAwait(false);
+                await amqpAuthenticator.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
+
                 return amqpAuthenticator;
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 {
-    internal class HttpUdsMessageHandler : HttpMessageHandler
+    internal sealed class HttpUdsMessageHandler : HttpMessageHandler
     {
         private readonly Uri _providerUri;
 

@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     await asyncOperation().ConfigureAwait(false);
                     return;
                 }
-                catch (Exception ex) when (!retryPolicy.ShouldRetry(counter, ex, out retryInterval))
+                catch (Exception ex) when (retryPolicy.ShouldRetry(counter, ex, out retryInterval))
                 {
                     VerboseTestLogger.WriteLine($"Attempt {counter}: operation did not succeed due to: {ex}");
                 }
