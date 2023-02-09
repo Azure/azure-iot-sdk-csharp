@@ -17,7 +17,6 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Common.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
-
 using static Microsoft.Azure.Devices.Shared.HttpMessageHelper;
 
 namespace Microsoft.Azure.Devices

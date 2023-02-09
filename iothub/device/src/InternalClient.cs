@@ -13,6 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 #if NET451
 
@@ -160,6 +161,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
 
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
