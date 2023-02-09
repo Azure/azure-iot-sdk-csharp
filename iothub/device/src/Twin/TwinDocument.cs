@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// This class uses NewtonSoft.Json for the top-level property deserialization
     /// since the property names are known and defined by service contract.
     /// </summary>
-    internal class TwinDocument
+    internal sealed class TwinDocument
     {
         [JsonProperty("desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
         internal Dictionary<string, object> Desired { get; set; }

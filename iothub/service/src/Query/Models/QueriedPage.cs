@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains the result of a twin, scheduled job or raw query.
     /// </summary>
-    internal class QueriedPage<T>
+    internal sealed class QueriedPage<T>
     {
         private const string ContinuationTokenHeader = "x-ms-continuation";
 

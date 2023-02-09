@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Representation of a single Device Provisioning Service query specification with a JSON serializer.
     /// </summary>
-    internal class QuerySpecification
+    internal sealed class QuerySpecification
     {
         /// <summary>
         /// Constructor

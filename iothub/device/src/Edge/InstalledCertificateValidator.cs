@@ -9,7 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class InstalledCertificateValidator : ICertificateValidator
+    internal sealed class InstalledCertificateValidator : ICertificateValidator
     {
         private readonly IList<X509Certificate2> _certs;
 

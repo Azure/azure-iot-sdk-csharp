@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class ContractApiHttp : IContractApiHttp
+    internal sealed class ContractApiHttp : IContractApiHttp
     {
         private const string MediaTypeForDeviceManagementApis = "application/json";
 
@@ -246,26 +246,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            if (_httpClientObj != null)
             {
-                if (_httpClientObj != null)
-                {
-                    _httpClientObj.Dispose();
-                    _httpClientObj = null;
-                }
-
-                if (_httpClientHandler != null)
-                {
-                    _httpClientHandler.Dispose();
-                    _httpClientHandler = null;
-                }
+                _httpClientObj.Dispose();
+                _httpClientObj = null;
             }
+
+            if (_httpClientHandler != null)
+            {
+                _httpClientHandler.Dispose();
+                _httpClientHandler = null;
+            }
+            GC.SuppressFinalize(this);
         }
     }
 }

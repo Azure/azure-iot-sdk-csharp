@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal class RetryDelegatingHandler : DefaultDelegatingHandler
+    internal sealed class RetryDelegatingHandler : DefaultDelegatingHandler
     {
         // RetryCount is used for testing purpose and is equal to MaxValue in prod.
         private const uint RetryMaxCount = uint.MaxValue;
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Associate(this, _internalRetryHandler, nameof(RetryDelegatingHandler));
         }
 
-        internal virtual void SetRetryPolicy(IIotHubClientRetryPolicy retryPolicy)
+        internal void SetRetryPolicy(IIotHubClientRetryPolicy retryPolicy)
         {
             _retryPolicy = retryPolicy;
             _internalRetryHandler.SetRetryPolicy(_retryPolicy);

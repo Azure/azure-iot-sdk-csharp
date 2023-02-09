@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
-    internal class HttpHsmSignatureProvider : ISignatureProvider
+    internal sealed class HttpHsmSignatureProvider : ISignatureProvider
     {
         private const SignRequestAlgo DefaultSignRequestAlgo = SignRequestAlgo.HMACSHA256;
         private const string DefaultKeyId = "primary";

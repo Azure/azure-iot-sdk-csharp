@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class ExceptionHandlingHelper
+    internal sealed class ExceptionHandlingHelper
     {
         internal static IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping()
         {

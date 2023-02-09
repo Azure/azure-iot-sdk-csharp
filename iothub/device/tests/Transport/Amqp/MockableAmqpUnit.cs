@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
     internal class MockableAmqpUnit : AmqpUnit
     {
-        private static IotHubClientAmqpSettings s_transportSettings = new();
+        private readonly static IotHubClientAmqpSettings s_transportSettings = new();
 
         public MockableAmqpUnit()
             : this(
@@ -46,9 +46,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
         }
 
-        public new static async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        public new static Task EnableReceiveMessageAsync(CancellationToken _)
         {
-            await Task.Yield();
+            return Task.CompletedTask;
         }
     }
 }

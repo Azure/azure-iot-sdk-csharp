@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client.Utilities
 {
-    internal class StringValidationHelper
+    internal sealed class StringValidationHelper
     {
         private const char Base64Padding = '=';
         private const string StringIsNotBase64 = "Value '{0}' for parameter '{1}' is not Base64.";

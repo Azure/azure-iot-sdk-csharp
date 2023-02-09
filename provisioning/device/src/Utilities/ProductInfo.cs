@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class ProductInfo
+    internal sealed class ProductInfo
     {
         public string Extra { get; set; } = "";
 

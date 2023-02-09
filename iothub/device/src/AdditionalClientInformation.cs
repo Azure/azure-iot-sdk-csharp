@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     // Holder for additional client properties such as product information, PnP model Id.
     // This class does not hold any client credential information.
-    internal class AdditionalClientInformation
+    internal sealed class AdditionalClientInformation
     {
         internal ProductInfo ProductInfo { get; set; }
 

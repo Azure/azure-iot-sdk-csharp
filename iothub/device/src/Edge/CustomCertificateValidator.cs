@@ -10,7 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class CustomCertificateValidator : ICertificateValidator
+    internal sealed class CustomCertificateValidator : ICertificateValidator
     {
         private readonly IEnumerable<X509Certificate2> _certs;
         private readonly IotHubClientTransportSettings _transportSettings;

@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotConnection
+    internal sealed class AmqpIotConnection
     {
         public event EventHandler Closed;
 

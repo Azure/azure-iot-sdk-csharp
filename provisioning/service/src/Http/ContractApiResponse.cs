@@ -6,7 +6,7 @@ using System.Net;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class ContractApiResponse
+    internal sealed class ContractApiResponse
     {
         internal ContractApiResponse(
             string body,

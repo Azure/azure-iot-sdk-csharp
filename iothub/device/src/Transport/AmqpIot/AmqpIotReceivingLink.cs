@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotReceivingLink
+    internal sealed class AmqpIotReceivingLink
     {
         public event EventHandler Closed;
 

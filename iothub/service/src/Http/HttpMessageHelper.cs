@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// A helper class for constructing HTTP requests and parsing HTTP responses.
     /// </summary>
-    internal class HttpMessageHelper
+    internal sealed class HttpMessageHelper
     {
         private const string ApplicationJson = "application/json";
 

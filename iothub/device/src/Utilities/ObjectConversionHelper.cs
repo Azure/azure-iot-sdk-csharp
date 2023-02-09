@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class ObjectConversionHelper
+    internal sealed class ObjectConversionHelper
     {
         internal static bool TryCastOrConvert<T>(object objectToCastOrConvert, PayloadConvention payloadConvention, out T value)
         {

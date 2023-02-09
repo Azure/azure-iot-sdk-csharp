@@ -6,7 +6,7 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotExceptionAdapter
+    internal sealed class AmqpIotExceptionAdapter
     {
         internal static Exception ConvertToIotHubException(Exception exception, AmqpObject source)
         {

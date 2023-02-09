@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class PipelineContext
+    internal sealed class PipelineContext
     {
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; set; }
 

@@ -11,7 +11,7 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class AmqpClientLink
+    internal sealed class AmqpClientLink
     {
         public const string ClientVersionName = "client-version";
         private readonly AmqpClientSession _amqpSession;

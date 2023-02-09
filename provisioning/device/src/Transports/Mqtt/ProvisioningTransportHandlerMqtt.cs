@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Represents the MQTT protocol implementation for the provisioning transport handler.
     /// </summary>
-    internal class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
+    internal sealed class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
     {
         private const int MqttTcpPort = 8883;
         private const string UsernameFormat = "{0}/registrations/{1}/api-version={2}&ClientVersion={3}";

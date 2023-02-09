@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Builds Shared Access Signature (SAS) tokens.
     /// </summary>
-    internal class SharedAccessSignatureBuilder
+    internal sealed class SharedAccessSignatureBuilder
     {
         private string _key;
 
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="requestString">The request string input to sign.</param>
         /// <param name="key">The secret key used for encryption.</param>
         /// <returns>The signed request string.</returns>
-        protected static string Sign(string requestString, string key)
+        internal static string Sign(string requestString, string key)
         {
             using var algorithm = new HMACSHA256(Convert.FromBase64String(key));
             return Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(requestString)));

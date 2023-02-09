@@ -9,7 +9,7 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpUnitManager : IAmqpUnitManager
+    internal sealed class AmqpUnitManager : IAmqpUnitManager
     {
         private static readonly AmqpUnitManager s_instance = new();
 

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// Transport delegating handler.
     /// This handler is responsible for initializing the transport handler on initial connection and subsequent reconnects.
     /// </summary>
-    internal class TransportDelegatingHandler : DefaultDelegatingHandler
+    internal sealed class TransportDelegatingHandler : DefaultDelegatingHandler
     {
         private SemaphoreSlim _handlerLock = new(1, 1);
 

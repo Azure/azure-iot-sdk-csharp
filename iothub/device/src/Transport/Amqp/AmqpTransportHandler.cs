@@ -6,19 +6,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class AmqpTransportHandler : TransportHandler
+#pragma warning restore CA1852
     {
         protected AmqpUnit _amqpUnit;
         private readonly Action<DesiredProperties> _onDesiredStatePatchListener;

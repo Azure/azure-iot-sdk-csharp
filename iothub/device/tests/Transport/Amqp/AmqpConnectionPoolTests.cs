@@ -1,13 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,16 +15,9 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
     {
         internal class AmqpConnectionPoolTest : AmqpConnectionPool
         {
-            private readonly IDictionary<string, AmqpConnectionHolder[]> _dictionaryToUse;
-
-            public AmqpConnectionPoolTest(IDictionary<string, AmqpConnectionHolder[]> dictionaryToUse)
+            public AmqpConnectionPoolTest(Dictionary<string, AmqpConnectionHolder[]> dictionaryToUse)
             {
-                _dictionaryToUse = dictionaryToUse;
-            }
-
-            protected override IDictionary<string, AmqpConnectionHolder[]> GetAmqpSasGroupedPoolDictionary()
-            {
-                return _dictionaryToUse;
+                _amqpSasGroupedPool = dictionaryToUse;
             }
         }
 
@@ -39,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             const string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
             IConnectionCredentials testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName);
-            IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
+            var injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
             var amqpSettings = new IotHubClientAmqpSettings
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings

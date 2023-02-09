@@ -11,7 +11,7 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotSession
+    internal sealed class AmqpIotSession
     {
         public event EventHandler Closed;
 

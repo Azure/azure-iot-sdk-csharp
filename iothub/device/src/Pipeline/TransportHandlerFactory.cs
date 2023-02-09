@@ -7,7 +7,7 @@ using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal class TransportHandlerFactory : ITransportHandlerFactory
+    internal sealed class TransportHandlerFactory : ITransportHandlerFactory
     {
         public IDelegatingHandler Create(PipelineContext context)
         {

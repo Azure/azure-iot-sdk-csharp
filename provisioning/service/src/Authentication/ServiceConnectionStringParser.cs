@@ -9,7 +9,7 @@ using SharedAccessSignatureParser = Microsoft.Azure.Devices.Provisioning.Service
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class ServiceConnectionStringParser
+    internal sealed class ServiceConnectionStringParser
     {
         internal static ServiceConnectionString Parse(string serviceConnectionString)
         {

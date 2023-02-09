@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 {
-    internal class HttpRequestResponseSerializer
+    internal sealed class HttpRequestResponseSerializer
     {
         private const char Space = ' ';
         private const char CarriageReturn = '\r';

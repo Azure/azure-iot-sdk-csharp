@@ -7,7 +7,7 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal class AmqpLinkFactory : ILinkFactory
+    internal sealed class AmqpLinkFactory : ILinkFactory
     {
         public IAsyncResult BeginOpenLink(AmqpLink link, TimeSpan timeout, AsyncCallback callback, object state)
         {

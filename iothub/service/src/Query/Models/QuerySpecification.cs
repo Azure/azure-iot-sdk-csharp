@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
-    internal class QuerySpecification
+    internal sealed class QuerySpecification
     {
         [JsonProperty("query")]
         internal string Sql { get; set; }

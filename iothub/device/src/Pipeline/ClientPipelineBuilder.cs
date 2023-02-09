@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class ClientPipelineBuilder
+    internal sealed class ClientPipelineBuilder
     {
         private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new();
 
