@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,13 +19,26 @@ namespace Microsoft.Azure.Devices.Client
 
         private NewtonsoftJsonPayloadSerializer()
         {
-
+            JsonConvert.DefaultSettings = GetJsonSerializerSettingsDelegate();
         }
 
         /// <summary>
         /// The default instance of this class.
         /// </summary>
         public static NewtonsoftJsonPayloadSerializer Instance { get; } = new NewtonsoftJsonPayloadSerializer();
+
+        /// <summary>
+        /// A static instance of JsonSerializerSettings which sets DateParseHandling to None.
+        /// </summary>
+        /// <remarks>
+        /// By default, serializing/deserializing with Newtonsoft.Json will try to parse date-formatted
+        /// strings to a date type, which drops trailing zeros in the microseconds date portion. By
+        /// specifying DateParseHandling with None, the original string will be read as-is.
+        /// </remarks>
+        internal static readonly JsonSerializerSettings Settings = new()
+        {
+            DateParseHandling = DateParseHandling.None,
+        };
 
         /// <inheritdoc/>
         public override string ContentType => ApplicationJson;
@@ -87,6 +101,14 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Returns JsonSerializerSettings Func delegate
+        /// </summary>
+        private static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
+        {
+            return () => Settings;
         }
     }
 }
