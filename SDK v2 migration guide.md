@@ -118,6 +118,7 @@ Find a client you currently use below, read the table of API name changes and us
 
 - Many models have changed to be nullable to prevent default values (e.g., DateTimeOffset defaults to Jan 01 0001) instead of null.
   - This may mean having to change referencing code to use the `Value` property or the null conditional operator (e.g., given a model named `model` with a nullable property named `NullableProperty`: `model.NullableProperty.Value.SubProperty` or `model.NullableProperty?.SubProperty`) to avoid a NullReferenceException.
+- Most properties that were `DateTime` have changed to the [preferred](https://learn.microsoft.com/dotnet/standard/datetime/choosing-between-datetime#the-datetimeoffset-structure) `DateTimeOffset`.
 
 ### IoT hub device clients
 
@@ -155,7 +156,7 @@ Find a client you currently use below, read the table of API name changes and us
 
 - The device and module clients now have a property (e.g., `IotHubDeviceClient.ConnectionStatusInfo`) with the latest connection status information on it, eliminating the need for a connection status callback method to cache the latest values.
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
-- The library now includes 2 new `IIotHubClientRetryPolicy` implementations: `IotHubClientIncrementalDelayRetryStrategy` and `IotHubClientFixedDelayRetryStrategy`.
+- The library now includes 2 new `IIotHubClientRetryPolicy` implementations: `IotHubClientIncrementalDelayRetryPolicy` and `IotHubClientFixedDelayRetryPolicy`.
 - The client can now be re-opened after it has been closed, removing the need to close/dispose/initialize/open; simply initialize/open, then if necessary close/open, and finally when done dispose.
   > Be advised, subscriptions do not carry over when the client is re-opened.
   >
@@ -185,6 +186,9 @@ Find a client you currently use below, read the table of API name changes and us
 | `MethodRequest` | `DirectMethodRequest` | Use full name of the operation type.⁴ |
 | `MethodResponse` | `DirectMethodResponse` | See⁴ |
 | `IotHubException` | `IotHubClientException` | Specify the exception is for Hub device and module client only. |
+| `AuthenticationWithTokenRefresh` | `ClientAuthenticationWithSharedAccessKeyRefresh` | More descriptive naming.⁵ |
+| `ClientAuthenticationWithToken` | `ClientAuthenticationWithSharedAccessSignature` | See⁵ |
+| `RetryPolicyBase` | `IIotHubClientRetryPolicy` | Introducing an interface for client retry policy. |
 
 #### ModuleClient
 
@@ -224,7 +228,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 #### Notable additions
 
 - `JobProperties` now has a helper property `IsFinished` which returns true if the job status is in a terminal state.
-- `TryGetValue<T>(...)` is available off of the desired and reported properties on `ClientTwin`.
+- `TryGetValue<T>(...)` is available off of the desired and reported properties on `TwinProperties`.
 
 #### API mapping
 
@@ -242,10 +246,10 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `Module.LastActivityTime` | `Module.LastActiveOnUtc` | See¹ |
 | `RegistryManager.GetTwinAsync(...)` | `IotHubServiceClient.Twins.GetAsync(...)` | |
 | `RegistryManager.UpdateTwinAsync(...)` | `IotHubServiceClient.Twins.UpdateAsync(...)` | |
-| `Twin` | `ClientTwin` | "Client" is a word we often use to indicate the device- or module-side of the data-plane.² |
+| `Twin` | `TwinProperties` | The device only gets properties, not the full twin. |
 | `Twin.StatusUpdatedOn` | `ClientTwin.StatusUpdatedOnUtc` | See¹ |
 | `Twin.LastActivityOn` | `ClientTwin.LastActiveOnUtc` | See¹ |
-| `TwinCollection` | `ClientTwinProperties` | See² |
+| `TwinCollection` | `ClientTwinProperties` | "Client" is a word we often use to indicate the device- or module-side of the data-plane.² |
 | `TwinCollection.GetLastUpdatedOn()` | `ClientTwinProperties.GetLastUpdatedOnUtc()` | See¹ |
 | `TwinCollectionValue` | `ClientTwinPropertyValue` | See² |
 | `TwinCollectionValue.GetLastUpdatedOn()` | `ClientTwinPropertyValue.GetLastUpdatedOnUtc()` | See¹ |
@@ -346,12 +350,15 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - HTTP has been removed as a transport option to keep the provisioning device SDK consistent with IoT hub device SDK transport options.
 
 #### Notable additions
+
 - Added support for setting a client web socket instance in the client options so that users can have better control over AMQP web socket connections.
 - Added support for setting the web socket level keep alive interval for AMQP web socket connections.
 - Added support for setting the remote certificate validation callback for AMQP TCP connections.
 - The library now includes `IProvisioningClientRetryPolicy` implementations: `ProvisioningClientExponentialBackoffRetryPolicy`, `ProvisioningClientFixedDelayRetryPolicy`, `ProvisioningClientIncrementalDelayRetryPolicy` and `ProvisioningClientNoRetry`,
  which can be set via `ProvisioningClientOptions.RetryPolicy`.
  - ProvisioningRegistrationSubstatus.ReprovisionedToInitalAssignment value added meaning the device has been reprovisioned to a previously assigned IoT hub.
+ - `DeviceRegistrationResult` now has a method `TryGetPayload<T>(...)`.
+ - `ProvisioningClientTransportSettings` and derived classes now have settable property `CertificateRevocationCheck`.
 
 #### API mapping
 
@@ -360,11 +367,13 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `ProvisioningDeviceClient.Create(...)` | `new ProvisioningDeviceClient(...)` | |
 | `ProvisioningDeviceClient` initializer parameter `transportHandler` replaced | `ProvisioningClientOptions` parameter added | |
 | `ProvisioningRegistrationAdditionalData` | `RegistrationRequestPayload`| |
+| `ProvisioningRegistrationAdditionalData.JsonData` | `RegistrationRequestPayload.Payload` | |
 | `DeviceRegistrationResult.CreatedDateTimeUtc` | `DeviceRegistrationResult.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
 | `DeviceRegistrationResult.LastUpdatedDateTimeUtc` | `DeviceRegistrationResult.LastUpdatedOnUtc` | See¹ |
 | `ProvisioningTransportException` | `ProvisioningClientException` | |
 | `PnpConvention` | `ModelIdPayload` | Added model class to replace a JSON helper. |
-| `ProvisioningRegistrationSubstatusType` | `ProvisioningRegistrationSubstatus` | Renamed, because not a type. `
+| `ProvisioningRegistrationStatusType` | `ProvisioningRegistrationStatus` | Renamed, because not a type.² |
+| `ProvisioningRegistrationSubstatusType` | `ProvisioningRegistrationSubstatus` | See² |
 
 ### DPS service client
 
@@ -410,7 +419,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `Twin` | `InitialTwin` | Disambiguate between similar types in the IoT hub service and device clients, and make it clearer that this is only represents the initial state of the device's twin.² |
 | `Twin.StatusUpdatedOn` | `InitalTwin.StatusUpdatedOnUtc` | See¹ |
 | `Twin.LastActivityOn` | `InitialTwin.LastActiveOnUtc` | See¹ |
-| `TwinCollection` | `InitialTwinProperties` | See² |
+| `TwinCollection` | `InitialTwinPropertyCollection` | See² |
 | `TwinCollection.GetLastUpdatedOn()` | `InitialTwinProperties.GetLastUpdatedOnUtc()` | See¹ |
 | `TwinCollectionValue` | `InitialTwinPropertyValue` | See² |
 | `TwinCollectionValue.GetLastUpdatedOn()` | `InitialTwinPropertyValue.GetLastUpdatedOnUtc()` | See¹ |
@@ -418,7 +427,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `TwinCollectionArray.GetLastUpdatedOn()` | `InitialTwinPropertyArray.GetLastUpdatedOnUtc()` | See¹ |
 | `Metadata` | `InitialTwinMetadata` | See² |
 | `Metadata.LastUpdatedOn` | `InitialTwinMetadata.LastUpdatedOnUtc` | See¹ |
-| `DeviceCapabilities` | `InitialClientCapabilities` | See² |
+| `DeviceCapabilities` | `InitialTwinCapabilities` | See² |
 | `X509Attestation.CreateFromCAReferences(...)` | `X509Attestation.CreateFromCaReferences(...)` | Pascal casing.³ |
 | `X509Attestation.CAReferences` | `X509Attestation.CaReferences` | See³ |
 | `X509CAReferences` | `X509CaReferences` | See³ |
