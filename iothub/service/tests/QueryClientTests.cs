@@ -87,7 +87,8 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task QueryClient_CreateAsync_HttpException()
+        // NOT FOUND returns exception
+        public async Task QueryClient_CreateAsync_IotHubNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             var responseMessage = new ResponseMessage2
@@ -119,6 +120,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
                 s_retryHandler);
+
             // act
             // query returns HttpStatusCode.NotFound
             Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>("SELECT * FROM devices");
@@ -165,7 +167,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task QueryClient_CreateJobsQuery_HttpException()
+        public async Task QueryClient_CreateJobsQuery_IotHubNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             var responseMessage = new ResponseMessage2
@@ -197,6 +199,7 @@ namespace Microsoft.Azure.Devices.Tests
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
                 s_retryHandler);
+
             // act
             Func<Task> act = async () => await queryClient.CreateJobsQueryAsync();
 

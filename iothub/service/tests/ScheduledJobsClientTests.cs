@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task ScheduledJobsClient_GetAsync_HttpException()
+        public async Task ScheduledJobsClient_GetAsync_IotHubNotFound_ThrowsIotHubServiceException()
         {
             var responseMessage = new ResponseMessage2
             {
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task ScheduledJobsClient_CancelAsync_HttpException()
+        public async Task ScheduledJobsClient_CancelAsync_IotHubNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             var responseMessage = new ResponseMessage2
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task ScheduledJobsClient_ScheduleDirectMethodAsync_HttpException()
+        public async Task ScheduledJobsClient_ScheduleDirectMethodAsync_IotHubNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             var responseMessage = new ResponseMessage2
@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task ScheduledJobsClient_ScheduleTwinUpdateAysnc_HttpException()
+        public async Task ScheduledJobsClient_ScheduleTwinUpdateAysnc_IotHubNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             var responseMessage = new ResponseMessage2

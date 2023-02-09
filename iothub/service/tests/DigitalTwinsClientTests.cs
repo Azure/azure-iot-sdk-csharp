@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DigitalTwinsClient_GetAsync_HttpException()
+        public async Task DigitalTwinsClient_GetAsync_DigitalTwinNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             string digitalTwinId = "foo";
@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DigitalTwinsClient_InvokeCommandAysnc_HttpException()
+        public async Task DigitalTwinsClient_InvokeCommandAysnc_DigitalTwinNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             string commandName = "test";
@@ -420,7 +420,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        public async Task DigitalTwinsClient_InvokeComponentCommandAsync_HttpException()
+        public async Task DigitalTwinsClient_InvokeComponentCommandAsync_DigitalTwinNotFound_ThrowsIotHubServiceException()
         {
             // arrange
             string commandName = "test";
