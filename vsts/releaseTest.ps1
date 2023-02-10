@@ -15,9 +15,6 @@ if (isWindows)
 Write-Host List active docker containers
 docker ps -a
 
-Write-Host Add DevOps artifacts location as local NuGet source
-dotnet nuget add source $env:AZURE_IOT_LOCALPACKAGES -n "LocalPackages"
-
 Write-Host List all NuGet sources
 dotnet nuget list source
 

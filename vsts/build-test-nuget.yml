@@ -150,7 +150,6 @@ jobs:
           PROXY_SERVER_ADDRESS: 127.0.0.1:3128
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
-          AZURE_IOT_LOCALPACKAGES: $(Build.SourcesDirectory)/bin/nuget
           # Environment variables for invalid certificate tests
           IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
           IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
@@ -413,7 +412,6 @@ jobs:
           PROXY_SERVER_ADDRESS: 127.0.0.1:8888
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
-          AZURE_IOT_LOCALPACKAGES: $(Build.SourcesDirectory)/bin/nuget
           # Environment variables for invalid certificate tests
           IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
           IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
