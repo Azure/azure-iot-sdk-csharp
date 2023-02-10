@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private static readonly RegistryManager _registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
-        private static readonly List<object> s_listOfPropertyValues = new List<object>
+        private static readonly List<object> s_listOfPropertyValues = new()
         {
             1,
             "someString",
@@ -42,6 +42,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Iso8601String = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1)).ToString("o", CultureInfo.InvariantCulture)
         };
 
+        // ISO 8601 date time string with trailing zeros in the microseconds portion. This is to verify the Newtonsoft.Json known issue is worked around in the SDK.
+        // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
         private static readonly string s_iso8601DateTimeString = "2023-01-31T10:37:08.4599400+01:00";
 
         [TestMethod]
@@ -711,12 +713,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var twinPatch = new Twin();
 
+            // Here is an example to create a TwinCollection with json object if the users use date-formatted
+            // string and don't want to drop the trailing zeros in the microseconds portion while parsing the
+            // json properties. The Newtonsoft.Json serializer settings added in SDK apply to serial-/deserialization
+            // during the client operations. Therefore, to ensure the datetime has the trailing zeros and this
+            // test can verify the returned peoperties not dropping them, manually set up "DateParseHandling.None"
+            // while creating a new TwinCollection object as the twin property.
             JObject jobjectProperty = JsonConvert.DeserializeObject<JObject>(
                 jsonString,
                 new JsonSerializerSettings
                 {
-                    // This ensures the date-formatted string will not drop trailing zeros
-                    // in the microseconds date portion while parsing the json properties.
                     DateParseHandling = DateParseHandling.None
                 });
 
