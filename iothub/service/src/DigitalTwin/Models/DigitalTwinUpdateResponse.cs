@@ -34,6 +34,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets the URI of the digital twin.
         /// </summary>
-        public string Location { get; }
+        internal string Location { get; }
     }
 }
