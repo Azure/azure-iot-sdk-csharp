@@ -4,12 +4,12 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// A class to initialize JsonSerializerSettings which can be applied to the project.
     /// </summary>
-    public static class JsonSerializerSettingsInitializer
+    internal static class JsonSerializerSettingsInitializer
     {
         /// <summary>
         /// A static instance of JsonSerializerSettings which sets DateParseHandling to None.
@@ -17,9 +17,10 @@ namespace Microsoft.Azure.Devices.Shared
         /// <remarks>
         /// By default, serializing/deserializing with Newtonsoft.Json will try to parse date-formatted
         /// strings to a date type, which drops trailing zeros in the microseconds date portion. By
-        /// specifying DateParseHandling with None, the original string will be read as-is.
+        /// specifying DateParseHandling with None, the original string will be read as-is. For more details
+        /// about the known issue, see https://github.com/JamesNK/Newtonsoft.Json/issues/1511.
         /// </remarks>
-        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        private static readonly JsonSerializerSettings s_settings = new JsonSerializerSettings
         {
             DateParseHandling = DateParseHandling.None
         };
@@ -27,9 +28,9 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Returns JsonSerializerSettings Func delegate
         /// </summary>
-        public static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
+        internal static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
         {
-            return () => Settings;
+            return () => s_settings;
         }
     }
 }
