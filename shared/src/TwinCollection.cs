@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         public TwinCollection(string twinJson)
-            : this(JObject.Parse(twinJson))
+            : this(JsonConvert.DeserializeObject<JObject>(twinJson))
         {
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
         public TwinCollection(string twinJson, string metadataJson)
-            : this(JObject.Parse(twinJson), JObject.Parse(metadataJson))
+            : this(JsonConvert.DeserializeObject<JObject>(twinJson), JsonConvert.DeserializeObject<JObject>(metadataJson))
         {
         }
 

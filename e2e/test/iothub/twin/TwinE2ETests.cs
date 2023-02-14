@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -12,7 +11,6 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
@@ -37,14 +35,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             }
         };
 
+        // ISO 8601 date-formatted string with trailing zeros in the microseconds portion.
+        // This is to verify the Newtonsoft.Json known issue is worked around in the SDK.
+        // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
+        private static readonly string s_dateTimeValue = "2023-01-31T10:37:08.4599400";
+
         private static readonly TestDateTime s_dateTimeProperty = new()
         {
-            Iso8601String = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1)).ToString("o", CultureInfo.InvariantCulture)
+            Iso8601String = s_dateTimeValue,
         };
-
-        // ISO 8601 date time string with trailing zeros in the microseconds portion. This is to verify the Newtonsoft.Json known issue is worked around in the SDK.
-        // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
-        private static readonly string s_iso8601DateTimeString = "2023-01-31T10:37:08.4599400+01:00";
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -713,24 +712,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var twinPatch = new Twin();
 
-            // Here is an example to create a TwinCollection with json object if the users use date-formatted
-            // string and don't want to drop the trailing zeros in the microseconds portion while parsing the
-            // json properties. The Newtonsoft.Json serializer settings added in SDK apply to serial-/deserialization
-            // during the client operations. Therefore, to ensure the datetime has the trailing zeros and this
-            // test can verify the returned peoperties not dropping them, manually set up "DateParseHandling.None"
-            // while creating a new TwinCollection object as the twin property.
-            JObject jobjectProperty = JsonConvert.DeserializeObject<JObject>(
-                jsonString,
-                new JsonSerializerSettings
-                {
-                    DateParseHandling = DateParseHandling.None
-                });
-
-            twinPatch.Properties.Desired = new TwinCollection(jobjectProperty, null);
+            twinPatch.Properties.Desired = new TwinCollection(jsonString);
             await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
             Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            Assert.AreEqual<string>(deviceTwin.Properties.Desired["Iso8601String"].ToString(), s_iso8601DateTimeString);
+            Assert.AreEqual<string>(deviceTwin.Properties.Desired["Iso8601String"].ToString(), s_dateTimeValue);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);
