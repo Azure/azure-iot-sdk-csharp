@@ -36,10 +36,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var authProvider = new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, s_fakePrimaryKey, s_fakeSecondaryKey);
 
             // act
-            var provisioningDeviceClient = new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, authProvider);
+            Func<ProvisioningDeviceClient> act = () => new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, authProvider);
 
             // assert
-            provisioningDeviceClient.Should().NotBeNull();
+            act.Should().NotThrow();
         }
 
         [TestMethod]
@@ -49,10 +49,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var authProvider = new AuthenticationProviderX509(s_cert, s_certs);
 
             // act
-            var provisioningDeviceClient = new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, authProvider);
+            Func<ProvisioningDeviceClient> act = () => new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, authProvider);
 
             // assert
-            provisioningDeviceClient.Should().NotBeNull();
+            act.Should().NotThrow();
         }
 
         [TestMethod]

@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Provisioning.Client.Utilities;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {

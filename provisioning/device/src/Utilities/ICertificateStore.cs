@@ -3,8 +3,11 @@
 
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Utilities
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
+    /// <summary>
+    /// Added for unit testing of certificate install operations.
+    /// </summary>
     internal interface ICertificateStore
     {
         internal bool Contains(X509Certificate2 certificate);

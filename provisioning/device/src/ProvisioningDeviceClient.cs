@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly AuthenticationProvider _authentication;
         private readonly ProvisioningClientOptions _options;
         private readonly ProvisioningTransportHandler _provisioningTransportHandler;
-        private readonly IProvisioningClientRetryPolicy _retryPolicy;
         private readonly RetryHandler _retryHandler;
 
         /// <summary>
@@ -49,8 +48,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _authentication = authenticationProvider;
-            _retryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
-            _retryHandler = new RetryHandler(_retryPolicy);
+            RetryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
+            _retryHandler = new RetryHandler(RetryPolicy);
 
             if (Logging.IsEnabled)
             {
@@ -74,16 +73,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
             }
 
-            _options = options != default
-                ? options.Clone()
-                : new();
+            _options = options?.Clone() ?? new();
 
             _provisioningTransportHandler = provisioningTransportHandler;
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _authentication = authenticationProvider;
-            _retryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
-            _retryHandler = new RetryHandler(_retryPolicy);
+            RetryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
+            _retryHandler = new RetryHandler(RetryPolicy);
 
             if (Logging.IsEnabled)
             {
@@ -92,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        internal IProvisioningClientRetryPolicy RetryPolicy => _retryPolicy;
+        internal IProvisioningClientRetryPolicy RetryPolicy { get; }
 
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.

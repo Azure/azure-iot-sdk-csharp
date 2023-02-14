@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Utilities
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal class X509CertificateStore : ICertificateStore, IDisposable
     {
