@@ -36,6 +36,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             },
         };
 
+        // ISO 8601 date-formatted string with trailing zeros in the microseconds portion.
+        // This is to verify the Newtonsoft.Json known issue is worked around in the SDK.
+        // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
+        private static readonly string s_dateTimeValue = "2023-01-31T10:37:08.4599400";
+
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Mqtt()
@@ -290,6 +295,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Mqtt()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
+                    new IotHubClientMqttSettings())
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_MqttWs()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Amqp()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
+                    new IotHubClientAmqpSettings())
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_AmqpWs()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
@@ -694,10 +735,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await _serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            Client.TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(propValue);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(IotHubClientTransportSettings transportSettings)
+        {
+            string propName = "Iso8601String";
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            var twinPatch = new ClientTwin();
+            twinPatch.Properties.Desired[propName] = s_dateTimeValue;
+            await _serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
+            propertyFound.Should().BeTrue();
+            actual.Should().Be(s_dateTimeValue);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
