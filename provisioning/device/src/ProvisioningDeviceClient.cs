@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -47,6 +48,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             SecurityProvider securityProvider,
             ProvisioningTransportHandler transport)
         {
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
+
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _transport = transport;
