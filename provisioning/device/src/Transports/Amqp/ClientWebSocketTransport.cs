@@ -12,7 +12,9 @@ using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class ClientWebSocketTransport : TransportBase, IDisposable
+#pragma warning restore CA1852
     {
         private static readonly AsyncCallback s_onReadComplete = OnReadComplete;
         private static readonly AsyncCallback s_onWriteComplete = OnWriteComplete;

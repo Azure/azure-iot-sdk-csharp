@@ -6,7 +6,9 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class X509CertificateStore : ICertificateStore, IDisposable
+#pragma warning restore CA1852
     {
         private readonly X509Store _store;
 

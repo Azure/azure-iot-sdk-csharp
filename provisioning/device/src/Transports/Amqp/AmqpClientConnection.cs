@@ -16,7 +16,9 @@ using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class AmqpClientConnection : IDisposable
+#pragma warning restore CA1852
     {
         private const string Amqpwsb10 = "AMQPWSB10";
         private const string UriSuffix = "/$iothub/websocket";
