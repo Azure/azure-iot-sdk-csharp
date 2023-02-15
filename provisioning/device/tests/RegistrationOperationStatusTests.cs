@@ -44,10 +44,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             registrationOperationStatus.OperationId.Should().Be(s_operationId);
             registrationOperationStatus.Status.Should().Be(s_status);
-            registrationOperationStatus.RegistrationState.RegistrationId.Should().Be("testing-registration-id");
+            registrationOperationStatus.RegistrationState.RegistrationId.Should().Be(source.RegistrationState.RegistrationId);
             registrationOperationStatus.RegistrationState.CreatedOnUtc.Should().Be(DateTimeOffset.MinValue);
-            registrationOperationStatus.RegistrationState.AssignedHub.Should().Be("testing-iot-hub");
-            registrationOperationStatus.RegistrationState.DeviceId.Should().Be("testing-device-id");
+            registrationOperationStatus.RegistrationState.AssignedHub.Should().Be(source.RegistrationState.AssignedHub);
+            registrationOperationStatus.RegistrationState.DeviceId.Should().Be(source.RegistrationState.DeviceId);
         }
     }
 }

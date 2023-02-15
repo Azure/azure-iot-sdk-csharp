@@ -11,12 +11,15 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
     [TestClass]
-    [TestCategory("UnitTest")]
+    [TestCategory("Unit")]
     public class ProvisioningTransportHandlerAmqpTests
     {
         private static readonly string s_notTransientErrorDescription = "{\"errorCode\":403101, \"trackingId\":\"fake-tracking-id-A\", \"message\":\"fake-error-message-A\", \"info\":null}";
         private static readonly string s_transientErrorDescription = "{\"errorCode\":429101, \"trackingId\":\"fake-tracking-id-B\", \"message\":\"fake-error-message-B\", \"info\":null}";
         private static readonly string s_invalidErrorDescription = "fake-invalid-error-description";
+
+        private const int NonTransientErrorCode = 403101;
+        private const int TransientErrorCode = 429101;
 
         [TestMethod]
         public void ProvisioningTransportHandlerAmqp_ValidateOutcome_NotTransientError()
@@ -34,7 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // assert
 
             var error = act.Should().Throw<ProvisioningClientException>();
-            error.And.ErrorCode.Should().Be(403101);
+            error.And.ErrorCode.Should().Be(NonTransientErrorCode);
             error.And.TrackingId.Should().Be("fake-tracking-id-A");
             error.And.Message.Should().Be("fake-error-message-A");
             error.And.IsTransient.Should().BeFalse();
@@ -56,7 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // assert
 
             var error = act.Should().Throw<ProvisioningClientException>();
-            error.And.ErrorCode.Should().Be(429101);
+            error.And.ErrorCode.Should().Be(TransientErrorCode);
             error.And.TrackingId.Should().Be("fake-tracking-id-B");
             error.And.Message.Should().Be("fake-error-message-B");
             error.And.IsTransient.Should().BeTrue();

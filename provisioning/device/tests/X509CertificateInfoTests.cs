@@ -12,14 +12,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class X509CertificateInfoTests
     {
-        private static readonly string s_subjectName = "testing-subject-name";
-        private static readonly string s_sha1Thumbprint = "testing-sha1-thumbprint";
-        private static readonly string s_sha256Thumbprint = "testing-sha256-thumbprint";
-        private static readonly string s_issuerName = "testing-issuer-name";
+        private const string SubjectName = "testing-subject-name";
+        private const string Sha1Thumbprint = "testing-sha1-thumbprint";
+        private const string Sha256Thumbprint = "testing-sha256-thumbprint";
+        private const string IssuerName = "testing-issuer-name";
+        private const string SerialNumber = "testing-serial-number";
+        private const int Version = 1;
+
         private static readonly DateTimeOffset s_notBeforeUtc = DateTimeOffset.MinValue;
         private static readonly DateTimeOffset s_notAfterUtc = DateTimeOffset.MaxValue;
-        private static readonly string s_serialNumber = "testing-serial-number";
-        private static readonly int s_version = 1;
 
         [TestMethod]
         public void X509CertificateInfo_Properties()
@@ -27,14 +28,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // arrange
             var source = new X509CertificateInfo
             {
-                SubjectName= s_subjectName,
-                Sha1Thumbprint= s_sha1Thumbprint,
-                Sha256Thumbprint = s_sha256Thumbprint,
-                IssuerName= s_issuerName,
+                SubjectName= SubjectName,
+                Sha1Thumbprint= Sha1Thumbprint,
+                Sha256Thumbprint = Sha256Thumbprint,
+                IssuerName= IssuerName,
                 NotBeforeUtc= s_notBeforeUtc,
                 NotAfterUtc= s_notAfterUtc,
-                SerialNumber= s_serialNumber,
-                Version= s_version,
+                SerialNumber= SerialNumber,
+                Version= Version,
             };
             string body = JsonConvert.SerializeObject(source);
 
@@ -43,14 +44,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            certificateInfo.SubjectName.Should().Be(s_subjectName);
-            certificateInfo.Sha1Thumbprint.Should().Be(s_sha1Thumbprint);
-            certificateInfo.Sha256Thumbprint.Should().Be(s_sha256Thumbprint);
-            certificateInfo.IssuerName.Should().Be(s_issuerName);
+            certificateInfo.SubjectName.Should().Be(SubjectName);
+            certificateInfo.Sha1Thumbprint.Should().Be(Sha1Thumbprint);
+            certificateInfo.Sha256Thumbprint.Should().Be(Sha256Thumbprint);
+            certificateInfo.IssuerName.Should().Be(IssuerName);
             certificateInfo.NotBeforeUtc.Should().Be(s_notBeforeUtc);
             certificateInfo.NotAfterUtc.Should().Be(s_notAfterUtc);
-            certificateInfo.SerialNumber.Should().Be(s_serialNumber);
-            certificateInfo.Version.Should().Be(s_version);
+            certificateInfo.SerialNumber.Should().Be(SerialNumber);
+            certificateInfo.Version.Should().Be(Version);
         }
     }
 }

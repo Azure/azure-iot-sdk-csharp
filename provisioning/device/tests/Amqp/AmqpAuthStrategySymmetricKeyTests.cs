@@ -56,7 +56,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var mockAuthProvider = new Mock<AuthenticationProviderSymmetricKey>();
             var mockAmqpAuthStrategy = new AmqpAuthStrategySymmetricKey(mockAuthProvider.Object);
             var mockTransportSettings = new Mock<ProvisioningClientTransportSettings>();
-            var ct = new CancellationToken(false);
 
             // act
             Func<Task> act = async () => await mockAmqpAuthStrategy
@@ -65,7 +64,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                     false,
                     mockTransportSettings.Object.Proxy,
                     mockTransportSettings.Object.RemoteCertificateValidationCallback,
-                    ct)
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             // assert

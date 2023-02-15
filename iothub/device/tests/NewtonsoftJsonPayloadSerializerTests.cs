@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
     /// Ensures DateTime de/serializes properly using Newtonsoft.Json, avoiding a known bug: https://github.com/JamesNK/Newtonsoft.Json/issues/1511
     /// </summary>
     [TestClass]
-    [TestCategory("UnitTest")]
+    [TestCategory("Unit")]
     public class NewtonsoftJsonPayloadSerializerTests
     {
         private static readonly string s_dateTimeString = "2023-01-31T10:37:08.4599400";

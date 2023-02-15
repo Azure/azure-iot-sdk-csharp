@@ -25,8 +25,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private const int WebSocketPort = 443;
         private const int TcpPort = 5671;
         private const int BufferSize = 8 * 1024;
-
-        private readonly AmqpSettings _amqpSettings;
         private readonly string _host;
         private readonly Action _onConnectionClosed;
         private readonly SemaphoreSlim _connectionSemaphore = new(1, 1);
@@ -49,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ProvisioningClientAmqpSettings clientSettings)
         {
             _host = host;
-            _amqpSettings = amqpSettings;
+            AmqpSettings = amqpSettings;
             _onConnectionClosed = onConnectionClosed;
             _clientSettings = clientSettings;
 
@@ -69,8 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         internal AmqpClientSession AmqpSession { get; private set; }
 
-        // For unit testing purpose only.
-        internal AmqpSettings AmqpSettings => _amqpSettings;
+        internal AmqpSettings AmqpSettings { get; }
 
         public void Dispose()
         {
@@ -114,13 +111,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (!useWebSocket)
                 {
-                    var tcpInitiator = new AmqpTransportInitiator(_amqpSettings, TransportSettings);
+                    var tcpInitiator = new AmqpTransportInitiator(AmqpSettings, TransportSettings);
                     _transport = await tcpInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     _transport = await CreateClientWebSocketTransportAsync(proxy, cancellationToken).ConfigureAwait(false);
-                    SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                    SaslTransportProvider provider = AmqpSettings.GetTransportProvider<SaslTransportProvider>();
                     if (provider != null)
                     {
                         if (Logging.IsEnabled)
@@ -154,7 +151,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     }
                 }
 
-                AmqpConnection = new AmqpConnection(_transport, _amqpSettings, AmqpConnectionSettings);
+                AmqpConnection = new AmqpConnection(_transport, AmqpSettings, AmqpConnectionSettings);
                 AmqpConnection.Closed += OnConnectionClosed;
                 await AmqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -333,7 +330,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new AmqpException(AmqpErrorCode.NotImplemented, $"The requested protocol version {_sentHeader} is not supported. The supported version is {receivedHeader}");
                 }
 
-                SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                SaslTransportProvider provider = AmqpSettings.GetTransportProvider<SaslTransportProvider>();
                 TransportBase transport = provider.CreateTransport(args.Transport, true);
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Created SaslTransportHandler ");

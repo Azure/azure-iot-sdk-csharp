@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="registrationId">The Provisioning service Registration Id for this device.</param>
         /// <param name="primaryKey">The primary key for this device.</param>
         /// <param name="secondaryKey">The secondary key for this device.</param>
-        /// <exception cref="ArgumentException">When the required parameter is an empty string or consists only of white-space characters.</exception>
-        /// <exception cref="ArgumentNullException">When the required parameter is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the required parameter is an empty string or consists only of white-space characters.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the required parameter is null.</exception>
         public AuthenticationProviderSymmetricKey(string registrationId, string primaryKey, string secondaryKey)
         {
             Argument.AssertNotNullOrWhiteSpace(registrationId, nameof(registrationId));

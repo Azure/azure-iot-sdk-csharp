@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             ModelIdPayload payload = JsonConvert.DeserializeObject<ModelIdPayload>(body);
 
             // assert
-            payload.ModelId.Should().Be("test-model-id");
+            payload.ModelId.Should().Be(source.ModelId);
         }
     }
 }
