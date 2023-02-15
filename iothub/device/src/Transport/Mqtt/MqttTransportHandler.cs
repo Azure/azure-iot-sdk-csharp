@@ -578,9 +578,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // We are intentionally not awaiting _deviceMessageReceivedListener callback.
             // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
             _ = _deviceMessageReceivedListener?.Invoke(message);
-            // Messages with QoS = 1 need to be Acknowledged otherwise it results in mismatched Ack to IoT Hub
-            // causing next message being replayed and all subsequent messages being queued.
-            await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
+            await TaskHelpers.CompletedTask.ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, "Process C2D message via callback", nameof(HandleIncomingMessagesAsync));
