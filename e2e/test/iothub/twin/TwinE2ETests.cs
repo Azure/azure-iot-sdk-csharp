@@ -38,11 +38,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         // ISO 8601 date-formatted string with trailing zeros in the microseconds portion.
         // This is to verify the Newtonsoft.Json known issue is worked around in the SDK.
         // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
-        private static readonly string s_dateTimeValue = "2023-01-31T10:37:08.4599400";
+        private const string DateTimeValue = "2023-01-31T10:37:08.4599400";
 
         private static readonly TestDateTime s_dateTimeProperty = new()
         {
-            Iso8601String = s_dateTimeValue,
+            Iso8601String = DateTimeValue,
         };
 
         [TestMethod]
@@ -716,7 +716,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
             Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            Assert.AreEqual<string>(deviceTwin.Properties.Desired["Iso8601String"].ToString(), s_dateTimeValue);
+            Assert.AreEqual<string>(deviceTwin.Properties.Desired["Iso8601String"].ToString(), DateTimeValue);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);

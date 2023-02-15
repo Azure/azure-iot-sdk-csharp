@@ -38,6 +38,11 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Creates a <see cref="TwinCollection"/> using a JSON fragment as the body.
         /// </summary>
+        /// <remarks>
+        /// Use "JsonConvert.DeserializeObject()" instead of "JObject.Parse()" so that
+        /// we can take advantage of the internal serializer settings added in SDK and
+        /// avoid of the unexpected behavior of dropping trailing zeros caused by Newtonsoft.Json.
+        /// </remarks>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         public TwinCollection(string twinJson)
             : this(JsonConvert.DeserializeObject<JObject>(twinJson))
@@ -47,6 +52,11 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
         /// </summary>
+        /// <remarks>
+        /// Use "JsonConvert.DeserializeObject()" instead of "JObject.Parse()" so that
+        /// we can take advantage of the internal serializer settings added in SDK and
+        /// avoid of the unexpected behavior of dropping trailing zeros caused by Newtonsoft.Json.
+        /// </remarks>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
         public TwinCollection(string twinJson, string metadataJson)
