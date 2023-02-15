@@ -67,10 +67,10 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>(query);
+            QueryResponse<ClientTwin> response = await queryClient.CreateAsync<ClientTwin>(query);
 
             // assert
-            await act.Should().NotThrowAsync();
+            response.CurrentPage.First().DeviceId.Should().Be("foo");
         }
 
         [TestMethod]
@@ -87,7 +87,6 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        // NOT FOUND returns exception
         public async Task QueryClient_CreateAsync_IotHubNotFound_ThrowsIotHubServiceException()
         {
             // arrange
@@ -126,7 +125,9 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>("SELECT * FROM devices");
 
             // assert
-            await act.Should().ThrowAsync<IotHubServiceException>();
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.IsTransient.Should().BeFalse();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [TestMethod]
@@ -204,7 +205,9 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await queryClient.CreateJobsQueryAsync();
 
             // assert
-            await act.Should().ThrowAsync<IotHubServiceException>();
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.IsTransient.Should().BeFalse();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
     }
 }
