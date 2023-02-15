@@ -13,9 +13,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class ProvisioningErrorDetailsTests
     {
-        private static readonly int s_errorCode = 404;
-        private static readonly string s_trackingId = "test-tracking-id";
-        private static readonly string s_message = "This is a testing provisioning error details message.";
+        private const int ErrorCode = 404;
+        private const string TrackingId = "test-tracking-id";
+        private const string Message = "This is a testing provisioning error details message.";
+
         private static readonly Dictionary<string, string> s_info = new() { { "info-key", "info-value" } };
 
         [TestMethod]
@@ -25,9 +26,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var source = new ProvisioningErrorDetails
             {
-                ErrorCode = s_errorCode,
-                TrackingId = s_trackingId,
-                Message = s_message,
+                ErrorCode = ErrorCode,
+                TrackingId = TrackingId,
+                Message = Message,
                 Info = s_info,
             };
             string body = JsonConvert.SerializeObject(source);
@@ -37,11 +38,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            provisioningErrorDetails.ErrorCode.Should().Be(s_errorCode);
-            provisioningErrorDetails.TrackingId.Should().Be(s_trackingId);
-            provisioningErrorDetails.Message.Should().Be(s_message);
-            provisioningErrorDetails.Info.First().Key.Should().Be("info-key");
-            provisioningErrorDetails.Info.First().Value.Should().Be("info-value");
+            provisioningErrorDetails.ErrorCode.Should().Be(ErrorCode);
+            provisioningErrorDetails.TrackingId.Should().Be(TrackingId);
+            provisioningErrorDetails.Message.Should().Be(Message);
+            provisioningErrorDetails.Info.First().Key.Should().Be(s_info.First().Key);
+            provisioningErrorDetails.Info.First().Value.Should().Be(s_info.First().Value);
         }
     }
 }

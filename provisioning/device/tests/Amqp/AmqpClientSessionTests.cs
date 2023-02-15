@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class AmqpClientSessionTests
     {
-        private static readonly string s_address = "fake-id-scope/registrations/registration-id";
+        private const string FakeAddress = "fake-id-scope/registrations/registration-id";
 
         [TestMethod]
         public void AmqpClientSession_CreateSendingLink()
@@ -25,11 +25,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var expectedTarget = new Target
             {
-                Address = s_address,
+                Address = FakeAddress,
             };
 
             // act
-            AmqpClientLink sendingLink = mockClientSession.Object.CreateSendingLink(s_address);
+            AmqpClientLink sendingLink = mockClientSession.Object.CreateSendingLink(FakeAddress);
 
             // assert
             sendingLink.AmqpLinkSettings.SettleType.Should().Be(SettleMode.SettleOnDispose);
@@ -46,11 +46,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var expectedSource = new Source
             {
-                Address = s_address,
+                Address = FakeAddress,
             };
 
             // act
-            AmqpClientLink receivingLink = mockClientSession.Object.CreateReceivingLink(s_address);
+            AmqpClientLink receivingLink = mockClientSession.Object.CreateReceivingLink(FakeAddress);
 
             // assert
             receivingLink.AmqpLinkSettings.SettleType.Should().Be(SettleMode.SettleOnReceive);

@@ -17,12 +17,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class ProvisioningDeviceClientTests
     {
-        private static readonly string s_globalDeviceEndpoint = "global.azure-devices-provisioning.net";
-        private static readonly string s_idScope = "fakeidscope";
-
-        private static readonly string s_fakeRegistrationId = "registrationId";
-        private static readonly string s_fakePrimaryKey = "dGVzdFN0cmluZbB=";
-        private static readonly string s_fakeSecondaryKey = "wGVzdFN9CmluZaA=";
+        private const string GlobalDeviceEndpoint = "global.azure-devices-provisioning.net";
+        private const string IdScope = "fakeidscope";
+        private const string FakeRegistrationId = "registrationId";
+        private const string FakePrimaryKey = "dGVzdFN0cmluZbB=";
+        private const string FakeSecondaryKey = "wGVzdFN9CmluZaA=";
 
 #pragma warning disable SYSLIB0026 // Type or member is obsolete
         private static readonly X509Certificate2 s_cert = new();
@@ -33,10 +32,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void ProvisioningDeviceClient_AuthProviderSymmetricKey_Works()
         {
             // arrange
-            var authProvider = new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, s_fakePrimaryKey, s_fakeSecondaryKey);
+            var authProvider = new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, FakeSecondaryKey);
 
             // act
-            Func<ProvisioningDeviceClient> act = () => new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, authProvider);
+            Func<ProvisioningDeviceClient> act = () => new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, authProvider);
 
             // assert
             act.Should().NotThrow();
@@ -49,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var authProvider = new AuthenticationProviderX509(s_cert, s_certs);
 
             // act
-            Func<ProvisioningDeviceClient> act = () => new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, authProvider);
+            Func<ProvisioningDeviceClient> act = () => new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, authProvider);
 
             // assert
             act.Should().NotThrow();
@@ -64,7 +63,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var options = new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket));
 
             // act
-            var provisioningDeviceClient = new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, mockAuthProvider.Object, options);
+            var provisioningDeviceClient = new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, mockAuthProvider.Object, options);
 
             // assert
             provisioningDeviceClient.Should().NotBeNull();
@@ -79,7 +78,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var options = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings());
 
             // act
-            var provisioningDeviceClient = new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, mockAuthProvider.Object, options);
+            var provisioningDeviceClient = new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, mockAuthProvider.Object, options);
 
             // assert
             provisioningDeviceClient.Should().NotBeNull();
@@ -94,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var options = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket));
 
             // act
-            var provisioningDeviceClient = new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, mockAuthProvider.Object, options);
+            var provisioningDeviceClient = new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, mockAuthProvider.Object, options);
 
             // assert
             provisioningDeviceClient.Should().NotBeNull();
@@ -112,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var mockAuthProvider = new Mock<AuthenticationProvider>();
 
             // act
-            var provisioningDeviceClient = new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, mockAuthProvider.Object, options);
+            var provisioningDeviceClient = new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, mockAuthProvider.Object, options);
 
             // assert
 
@@ -127,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var mockAuthProvider = new Mock<AuthenticationProvider>();
 
             // act
-            var provisioningDeviceClient = new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, mockAuthProvider.Object);
+            var provisioningDeviceClient = new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, mockAuthProvider.Object);
 
             // assert
 
@@ -147,7 +146,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var mockAuthProvider = new Mock<AuthenticationProvider>();
 
             // act
-            var provisioningDeviceClient = new ProvisioningDeviceClient(s_globalDeviceEndpoint, s_idScope, mockAuthProvider.Object, options);
+            var provisioningDeviceClient = new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, mockAuthProvider.Object, options);
 
             // assert
 
@@ -174,8 +173,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 .ReturnsAsync(mockRegistrationResult);
 
             var provisioningDeviceClient = new ProvisioningDeviceClient(
-                s_globalDeviceEndpoint,
-                s_idScope,
+                GlobalDeviceEndpoint,
+                IdScope,
                 mockAuthProvider.Object,
                 mockTransportHandler.Object);
 
@@ -205,8 +204,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 .ReturnsAsync(mockRegistrationResult);
 
             var provisioningDeviceClient = new ProvisioningDeviceClient(
-                s_globalDeviceEndpoint,
-                s_idScope,
+                GlobalDeviceEndpoint,
+                IdScope,
                 mockAuthProvider.Object,
                 mockTransportHandler.Object);
 

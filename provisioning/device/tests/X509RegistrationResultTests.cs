@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class X509RegistrationResultTests
     {
-        private static readonly string s_enrollmentGroupId = "testing-enrollment-group-id";
+        private const string FakeEnrollmentGroupId = "testing-enrollment-group-id";
         private static readonly X509CertificateInfo s_certificateInfo = new();
 
         [TestMethod]
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             X509RegistrationResult result = JsonConvert.DeserializeObject<X509RegistrationResult>(body);
 
             // assert
-            result.CertificateInfo.Should().BeEquivalentTo(s_certificateInfo);
+            result.CertificateInfo.Should().BeEquivalentTo(source.CertificateInfo);
         }
 
         [TestMethod]
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var source = new X509RegistrationResult
             {
-                EnrollmentGroupId = s_enrollmentGroupId,
+                EnrollmentGroupId = FakeEnrollmentGroupId,
             };
             string body = JsonConvert.SerializeObject(source);
 
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             X509RegistrationResult result = JsonConvert.DeserializeObject<X509RegistrationResult>(body);
 
             // assert
-            result.EnrollmentGroupId.Should().Be(s_enrollmentGroupId);
+            result.EnrollmentGroupId.Should().Be(source.EnrollmentGroupId);
         }
 
         [TestMethod]
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             X509RegistrationResult result = JsonConvert.DeserializeObject<X509RegistrationResult>(body);
 
             // assert
-            result.SigningCertificateInfo.Should().BeEquivalentTo(s_certificateInfo);
+            result.SigningCertificateInfo.Should().BeEquivalentTo(source.SigningCertificateInfo);
         }
     }
 }

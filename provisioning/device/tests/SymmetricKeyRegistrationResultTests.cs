@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class SymmetricKeyRegistrationResultTests
     {
-        private static readonly string s_enrollmentGroupId = "testing-enrollment-group-id";
+        private const string FakeEnrollmentGroupId = "testing-enrollment-group-id";
 
         [TestMethod]
         public void SymmetricKeyRegistrationResult_EnrollmentGroupId()
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var source = new SymmetricKeyRegistrationResult
             {
-                EnrollmentGroupId = s_enrollmentGroupId,
+                EnrollmentGroupId = FakeEnrollmentGroupId,
             };
             string body = JsonConvert.SerializeObject(source);
 
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             SymmetricKeyRegistrationResult result = JsonConvert.DeserializeObject<SymmetricKeyRegistrationResult>(body);
 
             // assert
-            result.EnrollmentGroupId.Should().Be(s_enrollmentGroupId);
+            result.EnrollmentGroupId.Should().Be(source.EnrollmentGroupId);
         }
     }
 }

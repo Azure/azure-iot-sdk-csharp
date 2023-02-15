@@ -11,15 +11,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class AuthenticationProviderSymmetricKeyTests
     {
-        private static readonly string s_fakeRegistrationId = "registrationId";
-        private static readonly string s_fakePrimaryKey = "dGVzdFN0cmluZbB=";
-        private static readonly string s_fakeSecondaryKey = "wGVzdFN9CmluZaA=";
+        private const string FakeRegistrationId = "registrationId";
+        private const string FakePrimaryKey = "dGVzdFN0cmluZbB=";
+        private const string FakeSecondaryKey = "wGVzdFN9CmluZaA=";
 
         [TestMethod]
         public void AuthenticationProviderSymmetricKey_Works()
         {
             // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, s_fakePrimaryKey, s_fakeSecondaryKey);
+            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, FakeSecondaryKey);
 
             // assert
             act.Should().NotThrow();
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void AuthenticationProviderSymmetricKey_RegistrationId_EmptyString_Throws()
         {
             // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey("", s_fakePrimaryKey, s_fakeSecondaryKey);
+            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey("", FakePrimaryKey, FakeSecondaryKey);
 
             // assert
             act.Should().Throw<ArgumentException>();
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void AuthenticationProviderSymmetricKey_RegistrationId_Null_Throws()
         {
             // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(null, s_fakePrimaryKey, s_fakeSecondaryKey);
+            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(null, FakePrimaryKey, FakeSecondaryKey);
 
             // assert
             act.Should().Throw<ArgumentNullException>();
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void AuthenticationProviderSymmetricKey_PrimaryKey_EmptyString_Throws()
         {
             // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, "", s_fakeSecondaryKey);
+            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(FakeRegistrationId, "", FakeSecondaryKey);
 
             // assert
             act.Should().Throw<ArgumentException>();
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void AuthenticationProviderSymmetricKey_PrimaryKey_Null_Throws()
         {
             // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, null, s_fakeSecondaryKey);
+            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(FakeRegistrationId, null, FakeSecondaryKey);
 
             // assert
             act.Should().Throw<ArgumentNullException>();
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void AuthenticationProviderSymmetricKey_SecondaryKey_EmptyString_Throws()
         {
             // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, s_fakePrimaryKey, "");
+            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, "");
 
             // assert
             act.Should().Throw<ArgumentException>();
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         public void AuthenticationProviderSymmetricKey_SecondaryKey_Null_Throws()
         {
             // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, s_fakePrimaryKey, null);
+            Func<AuthenticationProviderSymmetricKey> act = () => new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, null);
 
             // assert
             act.Should().Throw<ArgumentNullException>();

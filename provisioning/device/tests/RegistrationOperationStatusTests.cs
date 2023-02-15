@@ -12,7 +12,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class RegistrationOperationStatusTests
     {
-        private static readonly string s_operationId = "testing-operation-id";
+        private const string FakeOperationId = "testing-operation-id";
+
         private static readonly ProvisioningRegistrationStatus s_status = ProvisioningRegistrationStatus.Assigned;
         private static readonly DeviceRegistrationResult s_registrationState = new()
         {
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var source = new RegistrationOperationStatus
             {
-                OperationId = s_operationId,
+                OperationId = FakeOperationId,
                 Status = s_status,
                 RegistrationState = s_registrationState,
             };
@@ -42,10 +43,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            registrationOperationStatus.OperationId.Should().Be(s_operationId);
-            registrationOperationStatus.Status.Should().Be(s_status);
+            registrationOperationStatus.OperationId.Should().Be(source.OperationId);
+            registrationOperationStatus.Status.Should().Be(source.Status);
             registrationOperationStatus.RegistrationState.RegistrationId.Should().Be(source.RegistrationState.RegistrationId);
-            registrationOperationStatus.RegistrationState.CreatedOnUtc.Should().Be(DateTimeOffset.MinValue);
+            registrationOperationStatus.RegistrationState.CreatedOnUtc.Should().Be(source.RegistrationState.CreatedOnUtc);
             registrationOperationStatus.RegistrationState.AssignedHub.Should().Be(source.RegistrationState.AssignedHub);
             registrationOperationStatus.RegistrationState.DeviceId.Should().Be(source.RegistrationState.DeviceId);
         }

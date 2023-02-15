@@ -14,19 +14,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class ProvisioningTransportHandlerAmqpTests
     {
-        private static readonly string s_notTransientErrorDescription = "{\"errorCode\":403101, \"trackingId\":\"fake-tracking-id-A\", \"message\":\"fake-error-message-A\", \"info\":null}";
-        private static readonly string s_transientErrorDescription = "{\"errorCode\":429101, \"trackingId\":\"fake-tracking-id-B\", \"message\":\"fake-error-message-B\", \"info\":null}";
-        private static readonly string s_invalidErrorDescription = "fake-invalid-error-description";
+        private const string InvalidErrorDescription = "fake-invalid-error-description";
 
-        private const int NonTransientErrorCode = 403101;
-        private const int TransientErrorCode = 429101;
+        private static readonly TestErrorDescription s_notTransientErrorDescription = new()
+        {
+            ErrorCode= 403101,
+            TrackingId = "fake-tracking-id-A",
+            Message= "fake-error-message-A",
+        };
+
+        private static readonly TestErrorDescription s_transientErrorDescription = new()
+        {
+            ErrorCode = 429101,
+            TrackingId = "fake-tracking-id-B",
+            Message = "fake-error-message-B",
+        };
 
         [TestMethod]
         public void ProvisioningTransportHandlerAmqp_ValidateOutcome_NotTransientError()
         {
             // arrange
 
-            var rejected= new Rejected() { Error = new Error() { Description = s_notTransientErrorDescription } };
+            string errorDescriptionJsonString = JsonConvert.SerializeObject(s_notTransientErrorDescription);
+
+            var rejected= new Rejected() { Error = new Error() { Description = errorDescriptionJsonString } };
 
             var options = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings());
             var transportHandler = new ProvisioningTransportHandlerAmqp(options);
@@ -37,9 +48,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // assert
 
             var error = act.Should().Throw<ProvisioningClientException>();
-            error.And.ErrorCode.Should().Be(NonTransientErrorCode);
-            error.And.TrackingId.Should().Be("fake-tracking-id-A");
-            error.And.Message.Should().Be("fake-error-message-A");
+            error.And.ErrorCode.Should().Be(s_notTransientErrorDescription.ErrorCode);
+            error.And.TrackingId.Should().Be(s_notTransientErrorDescription.TrackingId);
+            error.And.Message.Should().Be(s_notTransientErrorDescription.Message);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -48,7 +59,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange
 
-            var rejected = new Rejected() { Error = new Error() { Description = s_transientErrorDescription } };
+            string errorDescriptionJsonString = JsonConvert.SerializeObject(s_transientErrorDescription);
+
+            var rejected = new Rejected() { Error = new Error() { Description = errorDescriptionJsonString } };
 
             var options = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings());
             var transportHandler = new ProvisioningTransportHandlerAmqp(options);
@@ -59,9 +72,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // assert
 
             var error = act.Should().Throw<ProvisioningClientException>();
-            error.And.ErrorCode.Should().Be(TransientErrorCode);
-            error.And.TrackingId.Should().Be("fake-tracking-id-B");
-            error.And.Message.Should().Be("fake-error-message-B");
+            error.And.ErrorCode.Should().Be(s_transientErrorDescription.ErrorCode);
+            error.And.TrackingId.Should().Be(s_transientErrorDescription.TrackingId);
+            error.And.Message.Should().Be(s_transientErrorDescription.Message);
             error.And.IsTransient.Should().BeTrue();
         }
 
@@ -70,7 +83,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange
 
-            var rejected = new Rejected() { Error = new Error() { Description = s_invalidErrorDescription } };
+            var rejected = new Rejected() { Error = new Error() { Description = InvalidErrorDescription } };
 
             var options = new ProvisioningClientOptions(new ProvisioningClientAmqpSettings());
             var transportHandler = new ProvisioningTransportHandlerAmqp(options);
@@ -120,6 +133,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
             flag.Should().BeTrue();
+        }
+
+        private class TestErrorDescription
+        {
+            public string Message { get; set; }
+
+            public string TrackingId { get; set; }
+
+            public int ErrorCode { get; set; }
         }
     }
 }

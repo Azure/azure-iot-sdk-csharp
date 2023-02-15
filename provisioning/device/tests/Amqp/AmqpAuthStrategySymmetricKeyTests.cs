@@ -19,16 +19,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class AmqpAuthStrategySymmetricKeyTests
     {
-        private static readonly string s_fakeRegistrationId = "registrationId";
-        private static readonly string s_fakePrimaryKey = "dGVzdFN0cmluZbB=";
-        private static readonly string s_fakeSecondaryKey = "wGVzdFN9CmluZaA=";
+        private const string FakeRegistrationId = "registrationId";
+        private const string FakePrimaryKey = "dGVzdFN0cmluZbB=";
+        private const string FakeSecondaryKey = "wGVzdFN9CmluZaA=";
 
         [TestMethod]
         public void AmqpAuthStrategySymmetricKey_CreateAmqpSettings()
         {
             // arrange
 
-            var authProvider = new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, s_fakePrimaryKey, s_fakeSecondaryKey);
+            var authProvider = new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, FakeSecondaryKey);
             var amqpAuthStrategy = new AmqpAuthStrategySymmetricKey(authProvider);
 
             // act
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange
 
-            var authProvider = new AuthenticationProviderSymmetricKey(s_fakeRegistrationId, s_fakePrimaryKey, s_fakeSecondaryKey);
+            var authProvider = new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, FakeSecondaryKey);
             var amqpAuthStrategy = new AmqpAuthStrategySymmetricKey(authProvider);
 
             var mockAction = new Mock<Action>();
