@@ -13,9 +13,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
     [TestCategory("Unit")]
     public class ProvisioningErrorDetailsTests
     {
-        private const int ErrorCode = 404;
-        private const string TrackingId = "test-tracking-id";
-        private const string Message = "This is a testing provisioning error details message.";
+        private const int FakeErrorCode = 404;
+        private const string FakeTrackingId = "test-tracking-id";
+        private const string FakeMessage = "This is a testing provisioning error details message.";
 
         private static readonly Dictionary<string, string> s_info = new() { { "info-key", "info-value" } };
 
@@ -26,9 +26,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var source = new ProvisioningErrorDetails
             {
-                ErrorCode = ErrorCode,
-                TrackingId = TrackingId,
-                Message = Message,
+                ErrorCode = FakeErrorCode,
+                TrackingId = FakeTrackingId,
+                Message = FakeMessage,
                 Info = s_info,
             };
             string body = JsonConvert.SerializeObject(source);
@@ -38,11 +38,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            provisioningErrorDetails.ErrorCode.Should().Be(ErrorCode);
-            provisioningErrorDetails.TrackingId.Should().Be(TrackingId);
-            provisioningErrorDetails.Message.Should().Be(Message);
-            provisioningErrorDetails.Info.First().Key.Should().Be(s_info.First().Key);
-            provisioningErrorDetails.Info.First().Value.Should().Be(s_info.First().Value);
+            provisioningErrorDetails.ErrorCode.Should().Be(source.ErrorCode);
+            provisioningErrorDetails.TrackingId.Should().Be(source.TrackingId);
+            provisioningErrorDetails.Message.Should().Be(source.Message);
+            provisioningErrorDetails.Info.First().Key.Should().Be(source.Info.First().Key);
+            provisioningErrorDetails.Info.First().Value.Should().Be(source.Info.First().Value);
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            result.Status.Should().Be(expectedStatus);
+            result.Status.Should().Be(source.Status);
             result.TryGetPayload(out DateTimeOffset actual).Should().BeTrue();
             actual.Should().Be(expectedPayload);
         }
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            result.Status.Should().Be(expectedStatus);
+            result.Status.Should().Be(source.Status);
             result.TryGetPayload(out int actual).Should().BeTrue();
             actual.Should().Be(expectedPayload);
         }
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            result.Status.Should().Be(expectedStatus);
+            result.Status.Should().Be(source.Status);
             result.TryGetPayload(out List<int> actual).Should().BeTrue();
             actual.Should().BeEquivalentTo(expectedPayload);
         }
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            result.Status.Should().Be(expectedStatus);
+            result.Status.Should().Be(source.Status);
             result.TryGetPayload(out bool actual).Should().BeTrue();
             actual.Should().Be(expectedPayload);
         }
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            result.Status.Should().Be(expectedStatus);
+            result.Status.Should().Be(source.Status);
             result.TryGetPayload(out string actual).Should().BeTrue();
             actual.Should().Be(expectedPayload);
         }
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            result.Status.Should().Be(expectedStatus);
+            result.Status.Should().Be(source.Status);
             result.TryGetPayload(out TimeSpan actual).Should().BeTrue();
             actual.Should().Be(expectedPayload);
         }
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             // assert
 
-            result.Status.Should().Be(expectedStatus);
+            result.Status.Should().Be(source.Status);
             result.TryGetPayload(out CustomType actual).Should().BeTrue();
             actual.CustomInt.Should().Be(expectedPayload.CustomInt);
             actual.CustomString.Should().Be(expectedPayload.CustomString);
