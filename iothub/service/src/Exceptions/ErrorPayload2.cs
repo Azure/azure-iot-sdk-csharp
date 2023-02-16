@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -20,10 +21,13 @@ namespace Microsoft.Azure.Devices
     /// </remarks>
     internal sealed class ErrorPayload2
     {
-#pragma warning disable CA1507 // Use nameof in place of string
+        [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
+            Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
         [JsonProperty("Message")]
         internal string Message { get; set; }
 
+        [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'ExceptionMessage'",
+            Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
         [JsonProperty("ExceptionMessage")]
 #pragma warning restore CA1507 // Use nameof in place of string
         internal string ExceptionMessage { get; set; }
