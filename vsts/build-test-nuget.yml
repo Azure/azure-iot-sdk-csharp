@@ -1,4 +1,12 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+- name: maxParallelJobs
+  displayName: Maximum jobs to run in parallel. Change maxParallel to 1 make OS builds run in serial rather than in parallel.
+  type: number
+  # Reasonable target to avoid throttling and contention with several PRs running.
+  default: 3
+
 resources:
   - repo: self
     clean: true
@@ -49,8 +57,7 @@ jobs:
     timeoutInMinutes: 180
 
     strategy:
-      # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 10
+      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
         .Net 7.0:
           FRAMEWORK: net7.0
@@ -192,8 +199,7 @@ jobs:
     timeoutInMinutes: 180
 
     strategy:
-      # Change maxParallel to 1 make builds run in serial rather than in parallel
-      maxParallel: 10
+      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
         .Net 7.0:
           FRAMEWORK: net7.0
@@ -250,7 +256,7 @@ jobs:
           version: 3.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
-  
+
       - task: Docker@2
         displayName: "Login to ACR"
         inputs:
@@ -289,7 +295,7 @@ jobs:
       # The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
       # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
       # Explicit installation of an older docker version through DockerInstaller@0 task doesn't help as the hosted agent keeps referencing the newer version that comes pre-installed.
-      
+
       # - task: Bash@3
       #   displayName: 'Cert Validation - Setup local hostname'
       #   name: CVTEST_NET

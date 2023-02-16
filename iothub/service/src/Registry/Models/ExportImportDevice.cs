@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
         /// The unique identifier of the device.
         /// </summary>
         [JsonProperty("id")]
-        public string Id { get; }
+        public string Id { get; set; }
 
         /// <summary>
         /// The unique identifier of the module, if applicable.
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices
         /// The type of registry operation and ETag preferences.
         /// </summary>
         [JsonProperty("importMode")]
-        public ImportMode ImportMode { get; set; }
+        public ImportMode? ImportMode { get; set; }
 
         /// <summary>
         /// The status of the device or module.
