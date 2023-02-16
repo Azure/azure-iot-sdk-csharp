@@ -47,6 +47,7 @@ namespace Microsoft.Azure.Devices
             _defaultErrorMapping = defaultErrorMapping;
             _defaultOperationTimeout = timeout;
 
+            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
             JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
 
             // We need two types of HttpClients, one with our default operation timeout, and one without. The one without will rely on
