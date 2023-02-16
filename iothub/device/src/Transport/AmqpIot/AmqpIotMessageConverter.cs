@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 ? AmqpMessage.Create(new MemoryStream(message.GetPayloadObjectBytes()), true)
                 : AmqpMessage.Create();
 
-            UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);
+            UpdateAmqpMessageHeadersAndProperties(message, amqpMessage);
 
             return amqpMessage;
         }
@@ -152,8 +152,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the Message instance's properties to the AmqpMessage instance.
         /// </summary>
-        internal static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, TelemetryMessage data, bool copyUserProperties = true)
+        internal static void UpdateAmqpMessageHeadersAndProperties(TelemetryMessage data, AmqpMessage amqpMessage, bool copyUserProperties = true)
         {
+            // First populate the required fields defined in AmqpMessage.Properties
+
             amqpMessage.Properties.MessageId = data.MessageId;
 
             if (!data.ExpiresOnUtc.Equals(default))
@@ -171,20 +173,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 amqpMessage.Properties.UserId = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data.UserId));
             }
 
-            amqpMessage.ApplicationProperties ??= new ApplicationProperties();
+            // Then populate the optional fields defined in AmqpMessage.Properties
 
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.MessageSchema, out object propertyValue))
-            {
-                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.MessageSchema] = (string)propertyValue;
-            }
-
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.CreationTimeUtc, out propertyValue))
-            {
-                // Convert to string that complies with ISO 8601
-                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o", CultureInfo.InvariantCulture);
-            }
-
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out propertyValue))
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out object propertyValue))
             {
                 amqpMessage.Properties.ContentType = (string)propertyValue;
             }
@@ -192,6 +183,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentEncoding, out propertyValue))
             {
                 amqpMessage.Properties.ContentEncoding = (string)propertyValue;
+            }
+
+            // Now populate the additional TelemetryMessage SystemProperties into the map AmqpMessage.ApplicationProperties
+
+            amqpMessage.ApplicationProperties ??= new ApplicationProperties();
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.MessageSchema, out propertyValue))
+            {
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.MessageSchema] = (string)propertyValue;
+            }
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.CreationTimeUtc, out propertyValue))
+            {
+                // Convert to string that complies with ISO 8601
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTimeOffset)propertyValue).ToString("o", CultureInfo.InvariantCulture);
             }
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.OutputName, out propertyValue))
