@@ -9,7 +9,9 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal sealed class AmqpClientSession
+#pragma warning disable CA1852 // used in debug for unit test mocking
+    internal class AmqpClientSession
+#pragma warning restore CA1852
     {
         private readonly AmqpClientConnection _amqpConnection;
 
