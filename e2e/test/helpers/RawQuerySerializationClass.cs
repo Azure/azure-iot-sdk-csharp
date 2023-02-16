@@ -10,7 +10,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     /// </summary>
     public class RawQuerySerializationClass
     {
+#pragma warning disable CA1507 // Use nameof in place of string
         [JsonProperty("TotalNumberOfDevices")]
+#pragma warning restore CA1507 // Use nameof in place of string
         public int TotalNumberOfDevices { get; set; }
     }
 }

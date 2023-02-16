@@ -32,10 +32,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// By default, serializing/deserializing with Newtonsoft.Json will try to parse date-formatted
-        /// strings to a date type, which drops trailing zeros in the microseconds date portion. By
-        /// specifying DateParseHandling with None, the original string will be read as-is.
+        /// strings to a date type, which drops trailing zeros in the microseconds portion. By
+        /// specifying DateParseHandling with None, the original string will be read as-is. For more details
+        /// about the known issue, see https://github.com/JamesNK/Newtonsoft.Json/issues/1511.
         /// </remarks>
-        internal static readonly JsonSerializerSettings Settings = new()
+        private static readonly JsonSerializerSettings s_settings = new()
         {
             DateParseHandling = DateParseHandling.None,
         };
@@ -108,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         private static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
         {
-            return () => Settings;
+            return () => s_settings;
         }
     }
 }

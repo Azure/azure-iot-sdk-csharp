@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2ETests)}_";
 
-        private static readonly IotHubServiceClient _serviceClient = new(TestConfiguration.IotHub.ConnectionString);
+        private static readonly IotHubServiceClient s_serviceClient = new(TestConfiguration.IotHub.ConnectionString);
 
         private static readonly List<object> s_listOfPropertyValues = new()
         {
@@ -35,6 +35,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 Name = "someName",
             },
         };
+
+        // ISO 8601 date-formatted string with trailing zeros in the microseconds portion.
+        // This is to verify the Newtonsoft.Json known issue is worked around in the SDK.
+        // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
+        private const string DateTimeValue = "2023-01-31T10:37:08.4599400";
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -294,6 +299,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
+        // This is mainly for testing serialization/deserialization behavior which is independent of the
+        // transport protocol used, so we are not covering cases for other protocols than Mqtt here.
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Mqtt()
+        {
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
+                    new IotHubClientMqttSettings())
+                .ConfigureAwait(false);
+        }
+
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Mqtt()
@@ -459,7 +475,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            ClientTwin completeTwin = await _serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
+            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Reported[propName];
             JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
             completeTwin.Properties.Reported.Version.Should().Be(newTwinVersion);
@@ -558,7 +574,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            ClientTwin completeTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Desired[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
 
@@ -605,7 +621,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[propName] = propValue;
 
-            await _serviceClient.Twins.UpdateAsync(deviceId, twinPatch).ConfigureAwait(false);
+            await s_serviceClient.Twins.UpdateAsync(deviceId, twinPatch).ConfigureAwait(false);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(IotHubClientTransportSettings transportSettings, object propValue)
@@ -672,7 +688,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            ClientTwin completeTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Desired[propName];
             JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
 
@@ -691,13 +707,33 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[propName] = propValue;
-            await _serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
+            await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            Client.TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(propValue);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(IotHubClientTransportSettings transportSettings)
+        {
+            const string propName = "Iso8601String";
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            var twinPatch = new ClientTwin();
+            twinPatch.Properties.Desired[propName] = DateTimeValue;
+            await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
+            propertyFound.Should().BeTrue();
+            actual.Should().Be(DateTimeValue);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
@@ -717,7 +753,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await deviceClient.UpdateReportedPropertiesAsync(patch).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
 
-            ClientTwin serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             VerboseTestLogger.WriteLine("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
@@ -743,7 +779,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                             [propName1] = null
                         })
                     .ConfigureAwait(false);
-                ClientTwin serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+                ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
                 Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
 
                 await deviceClient
@@ -756,7 +792,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                             }
                         })
                     .ConfigureAwait(false);
-                serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+                serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
                 serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
                 serviceTwin.Properties.Reported.TryGetValue(propName1, out Dictionary<string, object> value1).Should().BeTrue();
                 value1.Count.Should().Be(0);
@@ -782,17 +818,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();
 
-            ClientTwin twin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            ClientTwin twin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             ETag oldEtag = twin.ETag;
 
             twin.Properties.Desired[propName] = propValue;
 
-            twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false);
+            twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false);
 
             twin.ETag = oldEtag;
 
             // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-            Func<Task> act = async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); };
+            Func<Task> act = async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); };
             var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a twin with an out of date ETag");
             error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
             error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
@@ -800,7 +836,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
             await FluentActions
-                .Invoking(async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, false).ConfigureAwait(false); })
+                .Invoking(async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, false).ConfigureAwait(false); })
                 .Should()
                 .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
@@ -808,7 +844,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             twin.Properties.Desired[propName] = propValue + "1";
             twin.ETag = ETag.All;
             await FluentActions
-                .Invoking(async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); })
+                .Invoking(async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); })
                 .Should()
                 .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
         }

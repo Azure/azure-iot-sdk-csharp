@@ -10,7 +10,9 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     internal sealed class IotHubExceptionResult
     {
+#pragma warning disable CA1507 // Use nameof in place of string
         [JsonProperty("Message")]
+#pragma warning restore CA1507 // Use nameof in place of string
         internal ErrorPayload1 Message { get; set; }
     }
 
@@ -19,7 +21,9 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     internal sealed class IotHubExceptionResult2
     {
+#pragma warning disable CA1507 // Use nameof in place of string
         [JsonProperty("Message")]
+#pragma warning restore CA1507 // Use nameof in place of string
         internal string Message { get; set; }
 
     }
