@@ -25,7 +25,9 @@ namespace Microsoft.Azure.Devices
 
     internal sealed class ResponseMessageWrapper
     {
+#pragma warning disable CA1507 // Use nameof in place of string
         [JsonProperty("Message")]
+#pragma warning restore CA1507 // Use nameof in place of string
         internal string Message { get; set; }
     }
 }
