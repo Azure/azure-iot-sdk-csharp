@@ -938,6 +938,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 async (message, context) =>
                 {
                     VerboseTestLogger.WriteLine($"Received message over the first message handler: MessageId={message.MessageId}");
+                    var messageD2C = new Client.Message(Encoding.UTF8.GetBytes("DeviceToCloud"));
+                    // sending an event within message handler to make sure its flow is not affected by the event.
+                    await deviceClient.SendEventAsync(messageD2C);
                     await deviceClient.CompleteAsync(message).ConfigureAwait(false);
                     firstHandlerSemaphore.Release();
                 },
