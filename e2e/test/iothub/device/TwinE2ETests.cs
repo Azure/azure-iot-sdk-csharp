@@ -299,39 +299,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
+        // This is mainly for testing serialization/deserialization behavior which is independent of the
+        // transport protocol used, so we are not covering cases for other protocols than Mqtt here.
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
                     new IotHubClientMqttSettings())
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_MqttWs()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
-                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Amqp()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
-                    new IotHubClientAmqpSettings())
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_AmqpWs()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -745,7 +720,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(IotHubClientTransportSettings transportSettings)
         {
-            string propName = "Iso8601String";
+            const string propName = "Iso8601String";
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);

@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
             }
 
+            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
             JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
 
             _options = options != default

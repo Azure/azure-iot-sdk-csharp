@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
+            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
             JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
 
             _provisioningConnectionString = ServiceConnectionStringParser.Parse(connectionString);
