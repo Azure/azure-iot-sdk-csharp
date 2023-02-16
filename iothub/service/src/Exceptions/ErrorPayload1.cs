@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
         [JsonProperty("Message")]
-#pragma warning restore CA1507 // Use nameof in place of string
         internal string Message { get; set; }
     }
 }
