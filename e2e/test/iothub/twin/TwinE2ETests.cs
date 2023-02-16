@@ -325,39 +325,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
+        // This is mainly for testing serialization/deserialization behavior which is independent of the
+        // transport protocol used, so we are not covering cases for other protocols than Mqtt here.
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
                     Client.TransportType.Mqtt_Tcp_Only)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_MqttWs()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Amqp()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
-                    Client.TransportType.Amqp_Tcp_Only)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_AmqpWs()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(
-                    Client.TransportType.Amqp_WebSocket_Only)
                 .ConfigureAwait(false);
         }
 

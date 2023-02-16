@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             SecurityProvider securityProvider,
             ProvisioningTransportHandler transport)
         {
+            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
             JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
 
             _globalDeviceEndpoint = globalDeviceEndpoint;
