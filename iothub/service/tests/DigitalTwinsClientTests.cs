@@ -25,8 +25,11 @@ namespace Microsoft.Azure.Devices.Tests
         private const string HostName = "contoso.azure-devices.net";
         private static readonly string s_validMockAuthenticationHeaderValue = $"SharedAccessSignature sr={HostName}&sig=thisIsFake&se=000000&skn=registryRead";
         private static readonly string s_connectionString = $"HostName={HostName};SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
+<<<<<<< HEAD
         private static readonly string s_Etag = "\"AAAAAAAAAAE=\"";
 
+=======
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
 
         private static readonly Uri s_httpUri = new($"https://{HostName}");
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
@@ -36,8 +39,11 @@ namespace Microsoft.Azure.Devices.Tests
             RetryPolicy = new IotHubServiceNoRetry()
         };
 
+<<<<<<< HEAD
         private static readonly string s_expectedLocation = "https://contoso.azure-devices.net/digitaltwins/foo?api-version=2021-04-12";
 
+=======
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         [TestMethod]
         public async Task DigitalTwinsClient_GetAsync()
         {
@@ -59,7 +65,11 @@ namespace Microsoft.Azure.Devices.Tests
                 StatusCode = HttpStatusCode.OK,
                 Content = HttpMessageHelper.SerializePayload(digitalTwin),
             };
+<<<<<<< HEAD
             mockHttpResponse.Headers.Add("ETag", s_Etag);
+=======
+            mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
             
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
@@ -78,7 +88,10 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             result.DigitalTwin.Id.Should().Be(digitalTwinId);
+<<<<<<< HEAD
             result.ETag.ToString().Should().Be(s_Etag);
+=======
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -87,16 +100,27 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             string digitalTwinId = null;
             using var serviceClient = new IotHubServiceClient(s_connectionString);
+<<<<<<< HEAD
 
             // act
             Func<Task> act = async () => await serviceClient.DigitalTwins.GetAsync<BasicDigitalTwin>(digitalTwinId);
+=======
+            DigitalTwinsClient digitalTwinsClient = serviceClient.DigitalTwins;
+
+            // act
+            Func<Task> act = async () => await digitalTwinsClient.GetAsync<BasicDigitalTwin>(digitalTwinId);
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
 
             // assert
             await act.Should().ThrowAsync<ArgumentException>();
         }
 
         [TestMethod]
+<<<<<<< HEAD
         public async Task DigitalTwinsClient_GetAsync_DigitalTwinNotFound_ThrowsIotHubServiceException()
+=======
+        public async Task DigitalTwinsClient_GetAsync_HttpException()
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         {
             // arrange
             string digitalTwinId = "foo";
@@ -138,9 +162,13 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await digitalTwinsClient.GetAsync<string>(digitalTwinId);
 
             // assert
+<<<<<<< HEAD
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.IsTransient.Should().BeFalse();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+=======
+            await act.Should().ThrowAsync<IotHubServiceException>();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -170,9 +198,15 @@ namespace Microsoft.Azure.Devices.Tests
                 StatusCode = HttpStatusCode.Accepted,
                 Content = HttpMessageHelper.SerializePayload(digitalTwin),
             };
+<<<<<<< HEAD
             mockHttpResponse.Headers.Add("ETag", s_Etag);
             mockHttpResponse.Headers.Add("Location", s_expectedLocation);
 
+=======
+            mockHttpResponse.Headers.Add("ETag", "\"AAAAAAAAAAE=\"");
+            mockHttpResponse.Headers.Add("Location", "foo");
+            
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
                 .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
@@ -189,8 +223,12 @@ namespace Microsoft.Azure.Devices.Tests
             DigitalTwinUpdateResponse response = await digitalTwinsClient.UpdateAsync(digitalTwinId, jsonPatch.ToString());
 
             // assert
+<<<<<<< HEAD
             response.Location.Should().Be(s_expectedLocation);
             response.ETag.ToString().Should().Be(s_Etag);
+=======
+            response.Should().BeOfType<DigitalTwinUpdateResponse>();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -205,12 +243,19 @@ namespace Microsoft.Azure.Devices.Tests
             // act
             Func<Task> act = async () => await serviceClient.DigitalTwins.UpdateAsync(digitalTwinId, jsonPatch);
 
+<<<<<<< HEAD
             // assert
+=======
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
         [TestMethod]
+<<<<<<< HEAD
         public async Task DigitalTwinsClient_UpdateAsync_DigitalTwinNotFound_ThrowsIotHubServiceException()
+=======
+        public async Task DigitalTwinsClient_UpdateAsync_OnHttpRequestException_ThrowsIotHubServiceException()
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         {
             // arrange
             string jsonPatch = "test";
@@ -253,9 +298,13 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await digitalTwinsClient.UpdateAsync(digitalTwinId, jsonPatch);
 
             // assert
+<<<<<<< HEAD
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.IsTransient.Should().BeFalse();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+=======
+            await act.Should().ThrowAsync<IotHubServiceException>();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -281,7 +330,11 @@ namespace Microsoft.Azure.Devices.Tests
                 Content = HttpMessageHelper.SerializePayload(digitalTwin),
             };
             mockHttpResponse.Headers.Add("x-ms-command-statuscode", "200");
+<<<<<<< HEAD
             mockHttpResponse.Headers.Add("x-ms-request-id", "201");
+=======
+            mockHttpResponse.Headers.Add("x-ms-request-id", "200");
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
 
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
@@ -312,14 +365,24 @@ namespace Microsoft.Azure.Devices.Tests
             using var serviceClient = new IotHubServiceClient(s_connectionString);
 
             // act
+<<<<<<< HEAD
             Func<Task> act = async () => await serviceClient.DigitalTwins.InvokeCommandAsync(digitalTwinId, commandName);
 
             // assert
+=======
+            // deliberately throw http exception by searching for twin that does not exist
+            Func<Task> act = async () => await serviceClient.DigitalTwins.InvokeCommandAsync(digitalTwinId, commandName);
+
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
         [TestMethod]
+<<<<<<< HEAD
         public async Task DigitalTwinsClient_InvokeCommandAysnc_DigitalTwinNotFound_ThrowsIotHubServiceException()
+=======
+        public async Task DigitalTwinsClient_InvokeCommandAysnc_HttpException()
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         {
             // arrange
             string commandName = "test";
@@ -362,9 +425,13 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await digitalTwinsClient.InvokeCommandAsync(digitalTwinId, commandName);
 
             // assert
+<<<<<<< HEAD
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.IsTransient.Should().BeFalse();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+=======
+            await act.Should().ThrowAsync<IotHubServiceException>();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -391,7 +458,11 @@ namespace Microsoft.Azure.Devices.Tests
                 Content = HttpMessageHelper.SerializePayload(digitalTwin),
             };
             mockHttpResponse.Headers.Add("x-ms-command-statuscode", "200");
+<<<<<<< HEAD
             mockHttpResponse.Headers.Add("x-ms-request-id", "201");
+=======
+            mockHttpResponse.Headers.Add("x-ms-request-id", "200");
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
 
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient
@@ -421,16 +492,28 @@ namespace Microsoft.Azure.Devices.Tests
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(s_connectionString);
+<<<<<<< HEAD
 
             // act
             Func<Task> act = async () => await serviceClient.DigitalTwins.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
 
             // assert
+=======
+            DigitalTwinsClient digialTwinsClient = serviceClient.DigitalTwins;
+
+            // act
+            Func<Task> act = async () => await digialTwinsClient.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
+
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
         [TestMethod]
+<<<<<<< HEAD
         public async Task DigitalTwinsClient_InvokeComponentCommandAsync_DigitalTwinNotFound_ThrowsIotHubServiceException()
+=======
+        public async Task DigitalTwinsClient_InvokeComponentCommandAsync_HttpException()
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         {
             // arrange
             string commandName = "test";
@@ -474,9 +557,16 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async () => await digitalTwinsClient.InvokeComponentCommandAsync(digitalTwinId, componentName, commandName);
 
             // assert
+<<<<<<< HEAD
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.IsTransient.Should().BeFalse();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
     }
 }
+=======
+            await act.Should().ThrowAsync<IotHubServiceException>();
+        }
+    }
+}
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9

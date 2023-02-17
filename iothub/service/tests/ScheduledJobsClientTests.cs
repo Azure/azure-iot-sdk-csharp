@@ -23,10 +23,13 @@ namespace Microsoft.Azure.Devices.Tests
         private const string HostName = "contoso.azure-devices.net";
         private static readonly string s_validMockAuthenticationHeaderValue = $"SharedAccessSignature sr={HostName}&sig=thisIsFake&se=000000&skn=registryRead";
         private static readonly string s_connectionString = $"HostName={HostName};SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
+<<<<<<< HEAD
         private static readonly string s_toSelect = "Devices";
         private static readonly string s_jobId = "foo";
         private static readonly string s_deviceId = "bar";
         private static readonly TimeSpan s_jobTimeSpan = new(10);
+=======
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
 
         private static readonly Uri s_httpUri = new($"https://{HostName}");
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
@@ -40,6 +43,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_GetAsync()
         {
             // arrange
+<<<<<<< HEAD
             var scheduledJob = new ScheduledJob
             {
                 JobId = s_jobId,
@@ -47,6 +51,9 @@ namespace Microsoft.Azure.Devices.Tests
                 MaxExecutionTime = s_jobTimeSpan,
             };
 
+=======
+            var scheduledJob = new ScheduledJob();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -76,12 +83,19 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
+<<<<<<< HEAD
             ScheduledJob jobResponse = await scheduledJobsClient.GetAsync(s_jobId);
 
             // assert
             jobResponse.JobId.Should().Be(s_jobId);
             jobResponse.DeviceId.Should().Be(s_deviceId);
             jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan.Seconds);
+=======
+            Func<Task> act = async () => await scheduledJobsClient.GetAsync("foo");
+
+            // assert
+            await act.Should().NotThrowAsync();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -98,7 +112,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
+<<<<<<< HEAD
         public async Task ScheduledJobsClient_GetAsync_JobNotFound_ThrowsIotHubServiceException()
+=======
+        public async Task ScheduledJobsClient_GetAsync_HttpException()
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         {
             var responseMessage = new ResponseMessage2
             {
@@ -137,15 +155,20 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async() => await scheduledJobsClient.GetAsync("foo");
 
             // assert
+<<<<<<< HEAD
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.IsTransient.Should().BeFalse();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+=======
+            await act.Should().ThrowAsync<IotHubServiceException>();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
         public async Task ScheduledJobsClient_CancelAsync()
         {
             // arrange
+<<<<<<< HEAD
             var scheduledJob = new ScheduledJob
             {
                 JobId = s_jobId,
@@ -153,6 +176,9 @@ namespace Microsoft.Azure.Devices.Tests
                 MaxExecutionTime = s_jobTimeSpan,
             };
 
+=======
+            var scheduledJob = new ScheduledJob();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
                 .Setup(getCredential => getCredential.GetAuthorizationHeader())
@@ -182,12 +208,19 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
+<<<<<<< HEAD
             ScheduledJob jobResponse = await scheduledJobsClient.CancelAsync("foo");
 
             // assert
             jobResponse.JobId.Should().Be(s_jobId);
             jobResponse.DeviceId.Should().Be(s_deviceId);
             jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan.Seconds);
+=======
+            Func<Task> act = async () => await scheduledJobsClient.CancelAsync("foo");
+
+            // assert
+            await act.Should().NotThrowAsync();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -204,7 +237,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
+<<<<<<< HEAD
         public async Task ScheduledJobsClient_CancelAsync_JobNotFound_ThrowsIotHubServiceException()
+=======
+        public async Task ScheduledJobsClient_CancelAsync_HttpException()
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         {
             // arrange
             var responseMessage = new ResponseMessage2
@@ -244,15 +281,20 @@ namespace Microsoft.Azure.Devices.Tests
             Func<Task> act = async() => await scheduledJobsClient.CancelAsync("foo");
 
             // assert
+<<<<<<< HEAD
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.IsTransient.Should().BeFalse();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+=======
+            await act.Should().ThrowAsync<IotHubServiceException>();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
         public async Task ScheduledJobsClient_ScheduleDirectMethodAsync()
         {
             // arrange
+<<<<<<< HEAD
             var scheduledJob = new ScheduledJob
             {
                 JobId = s_jobId,
@@ -260,6 +302,9 @@ namespace Microsoft.Azure.Devices.Tests
                 MaxExecutionTime = s_jobTimeSpan,
             };
 
+=======
+            var scheduledJob = new ScheduledJob();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
             var directMethodRequest = new DirectMethodServiceRequest("foo");
             var startTime = new DateTimeOffset();
             var scheduledJobsOptions = new ScheduledJobsOptions();
@@ -293,6 +338,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
+<<<<<<< HEAD
             ScheduledJob returnedJob = await scheduledJobsClient.ScheduleDirectMethodAsync(
                 $"SELECT * FROM {s_toSelect}",
                 directMethodRequest,
@@ -303,6 +349,16 @@ namespace Microsoft.Azure.Devices.Tests
             returnedJob.JobId.Should().Be(s_jobId);
             returnedJob.DeviceId.Should().Be(s_deviceId);
             returnedJob.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan.Seconds);
+=======
+            Func<Task> act = async () => await scheduledJobsClient.ScheduleDirectMethodAsync(
+                "foo",
+                directMethodRequest, 
+               startTime,
+               scheduledJobsOptions);
+
+            // assert
+            await act.Should().NotThrowAsync();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -323,7 +379,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
+<<<<<<< HEAD
         public async Task ScheduledJobsClient_ScheduleDirectMethodAsync_JobNotFound_ThrowsIotHubServiceException()
+=======
+        public async Task ScheduledJobsClient_ScheduleDirectMethodAsync_HttpException()
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         {
             // arrange
             var responseMessage = new ResponseMessage2
@@ -361,27 +421,39 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await scheduledJobsClient.ScheduleDirectMethodAsync(
+<<<<<<< HEAD
                 $"SELECT * FROM {s_toSelect}",
+=======
+                "foo",
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
                 new DirectMethodServiceRequest("bar"),
                 new DateTimeOffset(DateTime.UtcNow),
                 new ScheduledJobsOptions());
 
             // assert
+<<<<<<< HEAD
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.IsTransient.Should().BeFalse();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+=======
+            await act.Should().ThrowAsync<IotHubServiceException>();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
         public async Task ScheduledJobsClient_ScheduleTwinUpdateAsync()
         {
             // arrange
+<<<<<<< HEAD
             var scheduledJob = new ScheduledJob
             {
                 JobId = s_jobId,
                 DeviceId = s_deviceId,
                 MaxExecutionTime = s_jobTimeSpan,
             };
+=======
+            var scheduledJob = new ScheduledJob();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
@@ -412,15 +484,24 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
+<<<<<<< HEAD
             ScheduledJob jobResponse = await scheduledJobsClient.ScheduleTwinUpdateAsync(
                 $"SELECT * FROM {s_toSelect}",
+=======
+            Func<Task> act = async () => await scheduledJobsClient.ScheduleTwinUpdateAsync(
+                "foo",
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
                 new ClientTwin(),
                 new DateTimeOffset(DateTime.UtcNow));
 
             // assert
+<<<<<<< HEAD
             jobResponse.JobId.Should().Be(s_jobId);
             jobResponse.DeviceId.Should().Be(s_deviceId);
             jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan.Seconds);
+=======
+            await act.Should().NotThrowAsync();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
 
         [TestMethod]
@@ -431,7 +512,11 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await serviceClient.ScheduledJobs.ScheduleTwinUpdateAsync(
+<<<<<<< HEAD
                 $"SELECT * FROM {s_toSelect}",
+=======
+                "foo",
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
                 null,
                 new DateTimeOffset(DateTime.UtcNow));
 
@@ -440,7 +525,11 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
+<<<<<<< HEAD
         public async Task ScheduledJobsClient_ScheduleTwinUpdateAysnc_JobNotFound_ThrowsIotHubServiceException()
+=======
+        public async Task ScheduledJobsClient_ScheduleTwinUpdateAysnc_HttpException()
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         {
             // arrange
             var responseMessage = new ResponseMessage2
@@ -478,14 +567,22 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await scheduledJobsClient.ScheduleTwinUpdateAsync(
+<<<<<<< HEAD
                 $"SELECT * FROM {s_toSelect}",
+=======
+                "foo",
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
                 new ClientTwin(),
                 new DateTimeOffset(DateTime.UtcNow));
 
             // assert
+<<<<<<< HEAD
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.IsTransient.Should().BeFalse();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+=======
+            await act.Should().ThrowAsync<IotHubServiceException>();
+>>>>>>> 6b0e5e81faa3ff3add3ded10b61c239eef5e4ae9
         }
     }
 }
