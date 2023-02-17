@@ -2,32 +2,40 @@
     "tool": "Credential Scanner",
     "suppressions": [
         {
-            "placeholder": "dGVzdFN0cmluZzE=",
-            "_justification": "Fake secret used in unit tests."
+          "placeholder": "dGVzdFN0cmluZzE=",
+          "_justification": "Fake secret used in unit tests."
         },
         {
-            "placeholder": "dGVzdFN0cmluZzI=",
-            "_justification": "Fake secret used in unit tests."
+          "placeholder": "dGVzdFN0cmluZzI=",
+          "_justification": "Fake secret used in unit tests."
         },
         {
-            "placeholder": "dGVzdFN0cmluZzM=",
-            "_justification": "Fake secret used in unit tests."
+          "placeholder": "dGVzdFN0cmluZzM=",
+          "_justification": "Fake secret used in unit tests."
         },
         {
-            "placeholder": "dGVzdFN0cmluZzQ=",
-            "_justification": "Fake secret used in unit tests."
+          "placeholder": "dGVzdFN0cmluZzQ=",
+          "_justification": "Fake secret used in unit tests."
         },
         {
-            "placeholder": "dGVzdFN0cmluZzU=",
-            "_justification": "Fake secret used in unit tests."
+          "placeholder": "dGVzdFN0cmluZzU=",
+          "_justification": "Fake secret used in unit tests."
         },
         {
-            "placeholder": "dGVzdFN0cmluZzY=",
-            "_justification": "Fake secret used in unit tests."
+          "placeholder": "dGVzdFN0cmluZzY=",
+          "_justification": "Fake secret used in unit tests."
         },
         {
-            "placeholder": "notsafe",
-            "_justification": "Fake secret used in unit tests."
+          "placeholder": "notsafe",
+          "_justification": "Fake secret used in unit tests."
+        },
+        {
+          "placeholder": "dGVzdFN0cmluZbB=",
+          "_justification": "Fake secret used in unit tests."
+        },
+        {
+          "placeholder": "wGVzdFN9CmluZaA=",
+          "_justification": "Fake secret used in unit tests."
         }
-    ]
+  ]
 }
