@@ -5,4 +5,5 @@ using System.Runtime.CompilerServices;
 
 #if DEBUG
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Provisioning.Client.UnitTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] // for Moq
 #endif

@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -318,7 +317,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return status;
         }
 
-        private void ValidateOutcome(Outcome outcome)
+        internal void ValidateOutcome(Outcome outcome)
         {
             if (outcome is Rejected rejected)
             {
@@ -335,7 +334,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     }
 
                     throw new ProvisioningClientException(
-                        rejected.Error.Description,
+                        errorDetails.Message,
                         null,
                         isTransient,
                         errorDetails.ErrorCode,
@@ -358,7 +357,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        private static bool ContainsAuthenticationException(Exception ex)
+        internal static bool ContainsAuthenticationException(Exception ex)
         {
             return ex != null
                 && (ex is AuthenticationException

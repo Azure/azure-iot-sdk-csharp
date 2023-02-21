@@ -20,7 +20,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// for more information.
         /// </remarks>
         /// <param name="certificates">The certificate chain to ensure is installed.</param>
-        public static void EnsureChainIsInstalled(X509Certificate2Collection certificates)
+        /// <param name="certStore">For unit testing to allow for mocking.</param>
+        internal static void EnsureChainIsInstalled(
+            X509Certificate2Collection certificates,
+            ICertificateStore certStore = default)
         {
             if (certificates == null
                 || certificates.Count == 0)
@@ -37,21 +40,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 try
                 {
-                    using var store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser);
-                    store.Open(OpenFlags.ReadWrite);
+#pragma warning disable CA2000 // Disposed in finally block
+                    certStore ??= new X509CertificateStore();
+#pragma warning restore CA2000
 
                     foreach (X509Certificate2 certificate in certificates)
                     {
-                        X509Certificate2Collection results = store.Certificates.Find(
-                            X509FindType.FindByThumbprint,
-                            certificate.Thumbprint,
-                            false);
-                        if (results.Count == 0)
+                        if (!certStore.Contains(certificate))
                         {
+                            certStore.Add(certificate);
+
                             if (Logging.IsEnabled)
                                 Logging.Info(null, $"{nameof(CertificateInstaller)} adding cert with thumbprint {certificate.Thumbprint} to X509 store.");
-
-                            store.Add(certificate);
                         }
                     }
                 }
@@ -59,6 +59,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+                }
+                finally
+                {
+                    if (certStore is IDisposable disposableCertStore)
+                    {
+                        disposableCertStore.Dispose();
+                    }
                 }
             }
         }

@@ -9,7 +9,9 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal sealed class AmqpClientSession
+#pragma warning disable CA1852 // used in debug for unit test mocking
+    internal class AmqpClientSession
+#pragma warning restore CA1852
     {
         private readonly AmqpClientConnection _amqpConnection;
 
@@ -19,7 +21,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             AmqpSessionSettings = new AmqpSessionSettings();
         }
 
-        internal AmqpSession AmqpSession { get; private set; }
+        // For unit testing purpose only.
+        internal AmqpClientSession()
+        { }
+
+        internal AmqpSession AmqpSession { get; set; }
 
         public AmqpSessionSettings AmqpSessionSettings { get; private set; }
 
@@ -71,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return new AmqpClientLink(this);
         }
 
-        private void OnSessionClosed(object o, EventArgs args)
+        internal void OnSessionClosed(object o, EventArgs args)
         {
             IsSessionClosed = true;
         }

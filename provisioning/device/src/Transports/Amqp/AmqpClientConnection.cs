@@ -16,7 +16,9 @@ using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal sealed class AmqpClientConnection : IDisposable
+#pragma warning disable CA1852 // used in debug for unit test mocking
+    internal class AmqpClientConnection : IDisposable
+#pragma warning restore CA1852
     {
         private const string Amqpwsb10 = "AMQPWSB10";
         private const string UriSuffix = "/$iothub/websocket";
@@ -25,8 +27,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private const int WebSocketPort = 443;
         private const int TcpPort = 5671;
         private const int BufferSize = 8 * 1024;
-
-        private readonly AmqpSettings _amqpSettings;
         private readonly string _host;
         private readonly Action _onConnectionClosed;
         private readonly SemaphoreSlim _connectionSemaphore = new(1, 1);
@@ -36,6 +36,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private TransportBase _transport;
         private ProtocolHeader _sentHeader;
 
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected internal AmqpClientConnection()
+        { }
+
         internal AmqpClientConnection(
             string host,
             AmqpSettings amqpSettings,
@@ -43,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ProvisioningClientAmqpSettings clientSettings)
         {
             _host = host;
-            _amqpSettings = amqpSettings;
+            AmqpSettings = amqpSettings;
             _onConnectionClosed = onConnectionClosed;
             _clientSettings = clientSettings;
 
@@ -59,9 +65,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         internal AmqpConnectionSettings AmqpConnectionSettings { get; private set; }
 
-        internal TlsTransportSettings TransportSettings { get; private set; }
+        internal TlsTransportSettings TransportSettings { get; set; }
 
         internal AmqpClientSession AmqpSession { get; private set; }
+
+        internal AmqpSettings AmqpSettings { get; }
 
         public void Dispose()
         {
@@ -73,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        internal async Task OpenAsync(
+        internal virtual async Task OpenAsync(
             bool useWebSocket,
             X509Certificate2 clientCert,
             IWebProxy proxy,
@@ -105,13 +113,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (!useWebSocket)
                 {
-                    var tcpInitiator = new AmqpTransportInitiator(_amqpSettings, TransportSettings);
+                    var tcpInitiator = new AmqpTransportInitiator(AmqpSettings, TransportSettings);
                     _transport = await tcpInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     _transport = await CreateClientWebSocketTransportAsync(proxy, cancellationToken).ConfigureAwait(false);
-                    SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                    SaslTransportProvider provider = AmqpSettings.GetTransportProvider<SaslTransportProvider>();
                     if (provider != null)
                     {
                         if (Logging.IsEnabled)
@@ -145,7 +153,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     }
                 }
 
-                AmqpConnection = new AmqpConnection(_transport, _amqpSettings, AmqpConnectionSettings);
+                AmqpConnection = new AmqpConnection(_transport, AmqpSettings, AmqpConnectionSettings);
                 AmqpConnection.Closed += OnConnectionClosed;
                 await AmqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -230,7 +238,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return false;
         }
 
-        private ClientWebSocket CreateClientWebSocket(IWebProxy webProxy)
+        internal ClientWebSocket CreateClientWebSocket(IWebProxy webProxy)
         {
             // Just return the user-supplied client websocket if they provided one.
             if (_clientSettings?.ClientWebSocket != null)
@@ -324,7 +332,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new AmqpException(AmqpErrorCode.NotImplemented, $"The requested protocol version {_sentHeader} is not supported. The supported version is {receivedHeader}");
                 }
 
-                SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                SaslTransportProvider provider = AmqpSettings.GetTransportProvider<SaslTransportProvider>();
                 TransportBase transport = provider.CreateTransport(args.Transport, true);
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Created SaslTransportHandler ");

@@ -28,6 +28,14 @@
         {
             "placeholder": "notsafe",
             "_justification": "Fake secret used in unit tests."
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZbB=",
+            "_justification": "Fake secret used in unit tests."
+        },
+        {
+            "placeholder": "wGVzdFN9CmluZaA=",
+            "_justification": "Fake secret used in unit tests."
         }
     ]
 }

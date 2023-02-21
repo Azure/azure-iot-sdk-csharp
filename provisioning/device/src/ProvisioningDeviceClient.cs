@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly AuthenticationProvider _authentication;
         private readonly ProvisioningClientOptions _options;
         private readonly ProvisioningTransportHandler _provisioningTransportHandler;
-        private readonly IProvisioningClientRetryPolicy _retryPolicy;
         private readonly RetryHandler _retryHandler;
 
         /// <summary>
@@ -53,12 +52,48 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _authentication = authenticationProvider;
-            _retryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
-            _retryHandler = new RetryHandler(_retryPolicy);
+            RetryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
+            _retryHandler = new RetryHandler(RetryPolicy);
 
-            Logging.Associate(this, _authentication);
-            Logging.Associate(this, _options);
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, _authentication);
+                Logging.Associate(this, _options);
+            }
         }
+
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        internal ProvisioningDeviceClient(
+            string globalDeviceEndpoint,
+            string idScope,
+            AuthenticationProvider authenticationProvider,
+            ProvisioningTransportHandler provisioningTransportHandler,
+            ProvisioningClientOptions options = default)
+        {
+            if (authenticationProvider is AuthenticationProviderX509 x509Auth)
+            {
+                CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
+            }
+
+            _options = options?.Clone() ?? new();
+
+            _provisioningTransportHandler = provisioningTransportHandler;
+            _globalDeviceEndpoint = globalDeviceEndpoint;
+            _idScope = idScope;
+            _authentication = authenticationProvider;
+            RetryPolicy = _options.RetryPolicy ?? new ProvisioningClientNoRetry();
+            _retryHandler = new RetryHandler(RetryPolicy);
+
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, _authentication);
+                Logging.Associate(this, _options);
+            }
+        }
+
+        internal IProvisioningClientRetryPolicy RetryPolicy { get; }
 
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.

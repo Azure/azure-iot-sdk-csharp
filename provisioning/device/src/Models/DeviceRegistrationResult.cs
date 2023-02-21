@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             try
             {
-                value = Payload.Value<T>();
+                value = JsonConvert.DeserializeObject<T>(Payload.Value<string>());
                 return true;
             }
             catch (JsonException)
