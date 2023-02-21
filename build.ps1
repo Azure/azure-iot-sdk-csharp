@@ -31,9 +31,6 @@ Build will automatically detect if the machine is Windows vs Unix. On Windows de
 
 The following environment variables can tune the build behavior:
     - AZURE_IOT_DONOTSIGN: disables delay-signing if set to 'TRUE'
-    - AZURE_IOT_LOCALPACKAGES: the path to the local nuget source. 
-        Add a new source using: `nuget sources add -name MySource -Source <path>`
-        Remove a source using: `nuget sources remove -name MySource`
 
 .EXAMPLE
 .\build
@@ -102,11 +99,6 @@ Function CheckTools($commands)
             throw "Toolset not found: '$command' is missing."
         }
     }
-}
-
-Function CheckLocalPackagesAvailableForTesting()
-{
-    return (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
 }
 
 Function DidBuildFail($buildOutputFileName)
@@ -288,7 +280,6 @@ Function RunApp($path, $message, $framework = "netcoreapp3.1")
 
 Function RunSample($path, $message, $params)
 {
-
     $label = "RUN: --- $message $configuration ($params)---"
 
     Write-Host
@@ -314,19 +305,11 @@ $localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
 $buildFailed = $true
 $errorMessage = ""
-$localPackagesAvailableForTesting = CheckLocalPackagesAvailableForTesting
-
-Write-Host -ForegroundColor Magenta "Local packages being used for testing: $localPackagesAvailableForTesting"
 
 try
 {
     if ($sign)
     {
-        if (-not $localPackagesAvailableForTesting)
-        {
-            throw "Local NuGet package source path is not set, required when signing packages."
-        }
-
         if ($configuration -ne "Release")
         {
             throw "Do not sign assemblies that aren't release."
@@ -342,32 +325,11 @@ try
 
     if ($build)
     {
-        # We must disable package testing here as the E2E csproj may reference new APIs that are not available in existing NuGet packages.
-        $packageTempPath = $env:AZURE_IOT_LOCALPACKAGES
-        $env:AZURE_IOT_LOCALPACKAGES = ""
-        
         # SDK binaries
         BuildProject . "Azure IoT .NET SDK Solution"
 
         # Samples
         # TODO: BuildProject <path> "<desc>"
-
-        $env:AZURE_IOT_LOCALPACKAGES = $packageTempPath
-    }
-
-    if ($localPackagesAvailableForTesting)
-    {
-        Write-Host
-        Write-Host -ForegroundColor Cyan "Preparing local package source"
-        Write-Host
-
-        if (-not (Test-Path $env:AZURE_IOT_LOCALPACKAGES))
-        {
-            throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
-        }
-
-        Write-Host Following local packages found:
-        Get-ChildItem -Path $env:AZURE_IOT_LOCALPACKAGES
     }
 
     if ($runSamples)
@@ -437,11 +399,6 @@ try
         Write-Host
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
-
-        if ($localPackagesAvailableForTesting)
-        {
-            Write-Host -ForegroundColor Magenta "IMPORTANT: Using local packages."
-        }
 
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
