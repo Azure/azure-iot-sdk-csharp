@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -22,8 +21,6 @@ namespace Microsoft.Azure.Devices.Samples
     /// </summary>
     public class CleanupDevicesSample
     {
-        private const string ImportErrorsLog = "importErrors.log";
-
         private static readonly string s_importExportDevicesFileName = $"delete-devices-{Guid.NewGuid()}.txt";
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan s_maxJobDuration = TimeSpan.FromHours(4);
@@ -139,7 +136,7 @@ namespace Microsoft.Azure.Devices.Samples
             Console.WriteLine("Looking for any errors reported from import...");
             try
             {
-                BlobClient importErrorsBlobClient = _blobContainerClient.GetBlobClient(ImportErrorsLog);
+                BlobClient importErrorsBlobClient = _blobContainerClient.GetBlobClient(ImportJobError.ImportErrorsBlobName);
 
                 var content = await importErrorsBlobClient.DownloadContentAsync();
                 string errorContent = content.Value.Content.ToString();
@@ -150,7 +147,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     try
                     {
-                        ImportError importError = JsonConvert.DeserializeObject<ImportError>(error);
+                        ImportJobError importError = JsonConvert.DeserializeObject<ImportJobError>(error);
                         Console.WriteLine($"\tImport error for {importError.DeviceId} of code {importError.ErrorCode} with status: '{importError.ErrorStatus}'.");
                     }
                     catch (Exception ex)

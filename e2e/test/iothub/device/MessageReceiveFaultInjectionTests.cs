@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpC2DLinkDropReceiveWithCallbackRecovery_Amqp()
+        public async Task Message_AmqpC2dLinkDropReceiveWithCallbackRecovery_Amqp()
         {
             await ReceiveMessageWithCallbackRecoveryAsync(
                     new IotHubClientAmqpSettings(),
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpC2DLinkDropReceiveWithCallbackRecovery_AmqpWs()
+        public async Task Message_AmqpC2dLinkDropReceiveWithCallbackRecovery_AmqpWs()
         {
             await ReceiveMessageWithCallbackRecoveryAsync(
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
