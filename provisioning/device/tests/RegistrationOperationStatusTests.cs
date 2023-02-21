@@ -36,8 +36,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             };
             string body = JsonConvert.SerializeObject(source);
 
-            Console.WriteLine(body);
-
             // act
             RegistrationOperationStatus registrationOperationStatus = JsonConvert.DeserializeObject<RegistrationOperationStatus>(body);
 

@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var authProvider = new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, FakeSecondaryKey);
 
             // act
-            Func<ProvisioningDeviceClient> act = () => new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, authProvider);
+            Func<ProvisioningDeviceClient> act = () => _ = new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, authProvider);
 
             // assert
             act.Should().NotThrow();
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var authProvider = new AuthenticationProviderX509(s_cert, s_certs);
 
             // act
-            Func<ProvisioningDeviceClient> act = () => new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, authProvider);
+            Func<ProvisioningDeviceClient> act = () => _ = new ProvisioningDeviceClient(GlobalDeviceEndpoint, IdScope, authProvider);
 
             // assert
             act.Should().NotThrow();
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 mockTransportHandler.Object);
 
             // act
-            Func<Task> act = async () => await provisioningDeviceClient.RegisterAsync().ConfigureAwait(false);
+            Func<Task> act = async () => _ = await provisioningDeviceClient.RegisterAsync().ConfigureAwait(false);
 
             // assert
             await act.Should().NotThrowAsync().ConfigureAwait(false);
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             };
 
             // act
-            Func<Task> act = async () => await provisioningDeviceClient.RegisterAsync(requestPayload).ConfigureAwait(false);
+            Func<Task> act = async () => _ = await provisioningDeviceClient.RegisterAsync(requestPayload).ConfigureAwait(false);
 
             // assert
             await act.Should().NotThrowAsync().ConfigureAwait(false);
