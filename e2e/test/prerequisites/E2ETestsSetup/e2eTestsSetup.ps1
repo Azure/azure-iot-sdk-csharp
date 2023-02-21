@@ -156,13 +156,8 @@ if (-not $isAdmin)
 $Region = $Region.Replace(' ', '')
 $logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $e2eTestAadAppRegName = "$ResourceGroup-E2eTestAadApp"
-$dpsUploadCertificateName = "group1-certificate"
-$hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 1
 $managedIdentityName = "$ResourceGroup-user-msi"
-
-# OpenSSL has dropped support for SHA1 signed certificates in Ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
-$certificateHashAlgorithm = "SHA256"
 
 #################################################################################################
 # Make any special modifications required to generate resources for the DevOps test pipeline.
@@ -196,6 +191,9 @@ if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 # Generate self-signed certs and to use in DPS and IoT hub.
 # New certs will be generated each time you run the script as the script cleans up in the end.
 ########################################################################################################
+
+# OpenSSL has dropped support for SHA1 signed certificates in Ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
+$certificateHashAlgorithm = "SHA256"
 
 $subjectPrefix = "IoT Test";
 $rootCommonName = "$subjectPrefix Root CA";
@@ -255,12 +253,15 @@ $intermediateCert2 = New-SelfSignedCertificate `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert1
 
+# Export the root certificate as a DER encoded certificate.
 Export-Certificate -cert $rootCACert -FilePath $rootCertPath -Type CERT | Out-Null
 $x509ChainRootCACertBase64 = [Convert]::ToBase64String((Get-Content $rootCertPath -AsByteStream))
 
+# Export the intermediate1 certificate as a DER encoded certificate.
 Export-Certificate -cert $intermediateCert1 -FilePath $intermediateCert1CertPath -Type CERT | Out-Null
 $x509ChainIntermediate1CertBase64 = [Convert]::ToBase64String((Get-Content $intermediateCert1CertPath -AsByteStream));
 
+# Export the intermediate2 certificate as a DER encoded certificate.
 Export-Certificate -cert $intermediateCert2 -FilePath $intermediateCert2CertPath -Type CERT | Out-Null
 $x509ChainIntermediate2CertBase64 = [Convert]::ToBase64String((Get-Content $intermediateCert2CertPath -AsByteStream));
 
@@ -461,6 +462,7 @@ az role assignment create --assignee $systemIdentityPrincipal --role "Storage Bl
 # Uploading root CA certificate to IoT hub and verifying.
 ##################################################################################################################################
 
+$hubUploadCertificateName = "rootCA"
 $certExists = az iot hub certificate list -g $ResourceGroup --hub-name $iotHubName --query "value[?name=='$hubUploadCertificateName']" --output tsv
 if ($certExists)
 {
@@ -514,6 +516,7 @@ if (-not $iotHubCertChainDevice)
 # Uploading certificate to DPS, verifying, and creating enrollment groups.
 ##################################################################################################################################
 
+$dpsUploadCertificateName = "group1-certificate"
 $dpsIdScope = az iot dps show -g $ResourceGroup --name $dpsName --query 'properties.idScope' --output tsv
 $certExists = az iot dps certificate list -g $ResourceGroup --dps-name $dpsName --query "value[?name=='$dpsUploadCertificateName']" --output tsv
 if ($certExists)
