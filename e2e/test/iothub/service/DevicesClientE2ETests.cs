@@ -306,7 +306,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             var device = new Device(deviceId);
-            await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
+            try
+            {
+                await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
+            }
+            finally
+            {
+                // clean up
+                // If this fails, we shall let it throw an exception and fail the test
+                await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+            }
         }
 
         [TestMethod]

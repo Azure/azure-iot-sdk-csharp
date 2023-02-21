@@ -232,6 +232,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     TargetCondition = "deviceId='fakeDevice'",
                 };
                 Configuration addResult = await sc.Configurations.CreateAsync(expected).ConfigureAwait(false);
+                configCreated = true;
 
                 // act
 
@@ -273,6 +274,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     TargetCondition = "deviceId='fakeDevice'",
                 };
                 Configuration addResult = await sc.Configurations.CreateAsync(expected).ConfigureAwait(false);
+                configCreated = true;
 
                 // act
 
