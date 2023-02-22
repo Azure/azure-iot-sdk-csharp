@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Components.DictionaryAdapter.Xml;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Jobs
 {
@@ -32,6 +34,42 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
 
             // assert
             request.MaxExecutionTimeInSeconds.Should().Be(5L);
+        }
+
+        [TestMethod]
+        public void JobRequest_SerializesCorrectly()
+        {
+            // arrange
+            var directMethodRequest = new DirectMethodServiceRequest("update");
+            var updateTwin = new ClientTwin("TestTwin");
+            var startOn = new DateTimeOffset(new DateTime());
+            var maxExecutionTime = new TimeSpan();
+
+            var request = new JobRequest()
+            {
+                JobId = "TestJob",
+                JobType = JobType.ScheduleDeviceMethod,
+                DirectMethodRequest = directMethodRequest,
+                UpdateTwin = updateTwin,
+                QueryCondition = "TestQuery",
+                StartOn = startOn,
+                MaxExecutionTime = maxExecutionTime
+            };
+
+            // act
+            var settings = new JsonSerializerSettings();
+            JobRequest deserializedRequest = JsonConvert.DeserializeObject<JobRequest>(JsonConvert.SerializeObject(request, settings));
+
+            // assert
+            deserializedRequest.Should().NotBeNull();
+            deserializedRequest.JobId.Should().Be("TestJob");
+            deserializedRequest.JobType.Should().Be(JobType.ScheduleDeviceMethod);
+            deserializedRequest.DirectMethodRequest.Should().BeEquivalentTo(directMethodRequest);
+            deserializedRequest.UpdateTwin.Should().BeEquivalentTo(updateTwin);
+            deserializedRequest.QueryCondition.Should().Be("TestQuery");
+            deserializedRequest.StartOn.Should().Be(startOn);
+            deserializedRequest.MaxExecutionTime.Should().Be(maxExecutionTime);
+            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(maxExecutionTime.Seconds);
         }
     }
 }
