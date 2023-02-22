@@ -29,7 +29,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         {
             Console.WriteLine($"Loading the certificate...");
             using X509Certificate2 certificate = LoadProvisioningCertificate();
-            using var security = new SecurityProviderX509Certificate(certificate);
+
+            string intermediate1Path = "C:\\code\\Azure\\azure-iot-sdk-csharp\\provisioning\\device\\samples\\getting started\\X509Sample\\DPS_X509\\intermediateCert1.cer";
+            string intermediate2Path = "C:\\code\\Azure\\azure-iot-sdk-csharp\\provisioning\\device\\samples\\getting started\\X509Sample\\DPS_X509\\intermediateCert2.cer";
+            string rootPath = "C:\\code\\Azure\\azure-iot-sdk-csharp\\provisioning\\device\\samples\\getting started\\X509Sample\\DPS_X509\\root.cer";
+            string devicePath = "C:\\code\\Azure\\azure-iot-sdk-csharp\\provisioning\\device\\samples\\getting started\\X509Sample\\DPS_X509\\leaf-device.cer";
+
+            using X509Certificate2 rootCert = new X509Certificate2(rootPath);
+            using X509Certificate2 intermediate1Cert = new X509Certificate2(intermediate1Path);
+            using X509Certificate2 intermediate2Cert = new X509Certificate2(intermediate2Path);
+            using X509Certificate2 deviceCert = new X509Certificate2(devicePath);
+
+            X509Certificate2Collection collection = new X509Certificate2Collection()
+            {
+                rootCert,
+                intermediate1Cert,
+                intermediate2Cert,
+                deviceCert
+            };
+
+            using var security = new SecurityProviderX509Certificate(certificate, collection);
 
             Console.WriteLine($"Initializing the device provisioning client...");
 
@@ -89,7 +108,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         {
             ReadCertificatePassword();
 
-            var certificateCollection = new X509Certificate2Collection();
+            /*var certificateCollection = new X509Certificate2Collection();
             certificateCollection.Import(
                 _parameters.GetCertificatePath(),
                 _parameters.CertificatePassword,
@@ -115,7 +134,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 throw new FileNotFoundException($"{_parameters.CertificateName} did not contain any certificate with a private key.");
             }
 
-            Console.WriteLine($"Using certificate {certificate.Thumbprint} {certificate.Subject}");
+            Console.WriteLine($"Using certificate {certificate.Thumbprint} {certificate.Subject}");*/
+
+            string devicePfxPath = "C:\\code\\Azure\\azure-iot-sdk-csharp\\provisioning\\device\\samples\\getting started\\X509Sample\\DPS_X509\\leaf-device.pfx";
+
+            X509Certificate2 certificate = new X509Certificate2(devicePfxPath, _parameters.CertificatePassword);
 
             return certificate;
         }
