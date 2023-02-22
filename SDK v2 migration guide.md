@@ -229,6 +229,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 
 - `JobProperties` now has a helper property `IsFinished` which returns true if the job status is in a terminal state.
 - `TryGetValue<T>(...)` is available off of the desired and reported properties on `TwinProperties`.
+- Added type `ImportJobError` to deserialize the error details of an import job.
 
 #### API mapping
 
