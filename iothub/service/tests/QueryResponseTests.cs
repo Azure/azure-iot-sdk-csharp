@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Tests
             // arrange
             string query = "select * from devices where deviceId = 'foo'";
             var twin1 = new ClientTwin("foo");
-            var twin2 = new ClientTwin("bar");
+            var twin2 = new ClientTwin("foo");
             var queryClient = new Mock<QueryClient>();
 
             // act

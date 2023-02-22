@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             long? maxExecutionTimeInSeconds = request.MaxExecutionTimeInSeconds;
 
             // assert
-            maxExecutionTimeInSeconds.Should().Be(null);
+            maxExecutionTimeInSeconds.Should().BeNull();
 
             // rearrange
             request.MaxExecutionTimeInSeconds = MaxExecutionTime;
