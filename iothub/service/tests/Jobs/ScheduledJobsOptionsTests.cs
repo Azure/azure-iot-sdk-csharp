@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Core;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Jobs
 {
@@ -26,6 +28,26 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
 
             // assert
             options.MaxExecutionTimeInSeconds.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void ScheduledJobOptions_SerializesCorrectly()
+        {
+            // arrange
+            var options = new ScheduledJobsOptions
+            {
+                JobId = "TestJob",
+                MaxExecutionTime = TimeSpan.FromSeconds(1),
+            };
+
+            // act
+            var settings = new JsonSerializerSettings();
+            ScheduledJobsOptions deserializedRequest = JsonConvert.DeserializeObject<ScheduledJobsOptions>(JsonConvert.SerializeObject(options, settings));
+
+            // assert
+            deserializedRequest.Should().NotBeNull();
+            deserializedRequest.JobId.Should().Be("TestJob");
+            deserializedRequest.MaxExecutionTime.Should().Be(TimeSpan.FromSeconds(1));
         }
     }
 }
