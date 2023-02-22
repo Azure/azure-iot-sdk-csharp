@@ -19,15 +19,15 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
         public void JobQueryOptions_FieldValueInitializations()
         {
             // arrange
-            var jobType = new JobType();
-            var jobStatus = new JobStatus();
             var options = new JobQueryOptions();
 
             // assert
-            options.JobType.Should().Be(null);
-            options.JobStatus.Should().Be(null);
+            options.JobType.Should().BeNull();
+            options.JobStatus.Should().BeNull();
 
             // rearrange
+            var jobType = new JobType();
+            var jobStatus = new JobStatus();
             options.JobType = jobType;
             options.JobStatus = jobStatus;
 

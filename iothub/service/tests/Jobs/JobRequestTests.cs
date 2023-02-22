@@ -17,6 +17,12 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
     [TestCategory("Unit")]
     public class JobRequestTests
     {
+        const long MaxExecutionTime = 5L;
+        private static DirectMethodServiceRequest s_directMethodRequest = new("update");
+        private static ClientTwin s_updateTwin = new ClientTwin("TestTwin");
+        private static DateTimeOffset s_startOn = new DateTimeOffset(new DateTime());
+        private static TimeSpan s_MaxExecutionTime;
+
         [TestMethod]
         public void JobRequest_FieldInitialization()
         {
@@ -30,30 +36,25 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             maxExecutionTimeInSeconds.Should().Be(null);
 
             // rearrange
-            request.MaxExecutionTimeInSeconds = 5L;
+            request.MaxExecutionTimeInSeconds = MaxExecutionTime;
 
             // assert
-            request.MaxExecutionTimeInSeconds.Should().Be(5L);
+            request.MaxExecutionTimeInSeconds.Should().Be(MaxExecutionTime);
         }
 
         [TestMethod]
         public void JobRequest_SerializesCorrectly()
         {
             // arrange
-            var directMethodRequest = new DirectMethodServiceRequest("update");
-            var updateTwin = new ClientTwin("TestTwin");
-            var startOn = new DateTimeOffset(new DateTime());
-            var maxExecutionTime = new TimeSpan();
-
             var request = new JobRequest()
             {
                 JobId = "TestJob",
                 JobType = JobType.ScheduleDeviceMethod,
-                DirectMethodRequest = directMethodRequest,
-                UpdateTwin = updateTwin,
+                DirectMethodRequest = s_directMethodRequest,
+                UpdateTwin = s_updateTwin,
                 QueryCondition = "TestQuery",
-                StartOn = startOn,
-                MaxExecutionTime = maxExecutionTime
+                StartOn = s_startOn,
+                MaxExecutionTime = s_MaxExecutionTime
             };
 
             // act
@@ -64,12 +65,12 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             deserializedRequest.Should().NotBeNull();
             deserializedRequest.JobId.Should().Be("TestJob");
             deserializedRequest.JobType.Should().Be(JobType.ScheduleDeviceMethod);
-            deserializedRequest.DirectMethodRequest.Should().BeEquivalentTo(directMethodRequest);
-            deserializedRequest.UpdateTwin.Should().BeEquivalentTo(updateTwin);
+            deserializedRequest.DirectMethodRequest.Should().BeEquivalentTo(s_directMethodRequest);
+            deserializedRequest.UpdateTwin.Should().BeEquivalentTo(s_updateTwin);
             deserializedRequest.QueryCondition.Should().Be("TestQuery");
-            deserializedRequest.StartOn.Should().Be(startOn);
-            deserializedRequest.MaxExecutionTime.Should().Be(maxExecutionTime);
-            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(maxExecutionTime.Seconds);
+            deserializedRequest.StartOn.Should().Be(s_startOn);
+            deserializedRequest.MaxExecutionTime.Should().Be(s_MaxExecutionTime);
+            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(s_MaxExecutionTime.Seconds);
         }
     }
 }
