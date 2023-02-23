@@ -35,12 +35,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _payloadConvention = payloadConvention;
         }
 
+        // This event handler is not invoked by the AMQP library in an async fashion.
+        // This also co-relates with the fact that ReceivingAmqpLink.SafeClose() is a sync method.
         private void ReceivingAmqpLinkClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(ReceivingAmqpLinkClosed));
 
             Closed?.Invoke(this, e);
+
+            // After the Closed event handler has been invoked, the ReceivingAmqpLink has now been effectively cleaned up.
+            // This is a good point for us to detach the Closed event handler from the ReceivingAmqpLink instance.
+            _receivingAmqpLink.Closed -= ReceivingAmqpLinkClosed;
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(ReceivingAmqpLinkClosed));
@@ -58,7 +64,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal void SafeClose()
         {
-            _receivingAmqpLink.Closed -= ReceivingAmqpLinkClosed;
             _receivingAmqpLink.SafeClose();
         }
 

@@ -23,12 +23,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _amqpSession.Closed += AmqpSessionClosed;
         }
 
+        // This event handler is not invoked by the AMQP library in an async fashion.
+        // This also co-relates with the fact that AmqpSession.SafeClose() is a sync method.
         private void AmqpSessionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(AmqpSessionClosed));
 
             Closed?.Invoke(this, e);
+
+            // After the Closed event handler has been invoked, the AmqpSession has now been effectively cleaned up.
+            // This is a good point for us to detach the Closed event handler from the AmqpSession instance.
+            _amqpSession.Closed -= AmqpSessionClosed;
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(AmqpSessionClosed));
@@ -41,7 +47,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal void SafeClose()
         {
-            _amqpSession.Closed -= AmqpSessionClosed;
             _amqpSession.SafeClose();
         }
 
