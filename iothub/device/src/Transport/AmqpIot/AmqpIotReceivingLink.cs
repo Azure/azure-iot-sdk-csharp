@@ -171,9 +171,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                DirectMethodRequest DirectMethodRequest = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, _payloadConvention);
+                DirectMethodRequest directMethodRequest = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, _payloadConvention);
                 DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
-                _onMethodReceived?.Invoke(DirectMethodRequest);
+                _onMethodReceived?.Invoke(directMethodRequest);
             }
             finally
             {

@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Amqp
             // By using a unique guid in the link's name, it becomes possible to correlate logs where a user
             // may have multiple instances of this type of link open. It also makes it easier to correlate
             // the state of this link with the service side logs if need be.
-            _linkName = "CloudToDevieMessageSenderLink-" + Guid.NewGuid();
+            _linkName = "CloudToDeviceMessageSenderLink-" + Guid.NewGuid();
 
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening sending link with address {_linkAddress} and link name {_linkName}", nameof(OpenAsync));
