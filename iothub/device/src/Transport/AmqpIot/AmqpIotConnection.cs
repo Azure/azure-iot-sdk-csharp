@@ -30,7 +30,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         // This event handler is not invoked by the AMQP library in an async fashion.
         // This also co-relates with the fact that AmqpConnection.SafeClose() is a sync method.
-
         internal void AmqpConnectionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)

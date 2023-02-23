@@ -687,7 +687,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             catch (OperationCanceledException)
             {
                 // Canceled when the transport is being closed by the application.
-                if (Logging.IsEnabled) 
+                if (Logging.IsEnabled)
                     Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
                 connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed);
