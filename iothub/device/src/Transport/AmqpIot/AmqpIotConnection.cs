@@ -28,12 +28,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return _amqpIotCbsLink;
         }
 
+        // This event handler is not invoked by the AMQP library in an async fashion.
+        // This also co-relates with the fact that AmqpConnection.SafeClose() is a sync method.
         internal void AmqpConnectionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(AmqpConnectionClosed));
 
             Closed?.Invoke(this, e);
+
+            // After the Closed event handler has been invoked, the AmqpConnection has now been effectively cleaned up.
+            // This is a good point for us to detach the Closed event handler from the AmqpConnection instance.
+            _amqpConnection.Closed -= AmqpConnectionClosed;
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(AmqpConnectionClosed));
@@ -104,7 +110,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal void SafeClose()
         {
-            _amqpConnection.Closed -= AmqpConnectionClosed;
             _amqpConnection.SafeClose();
         }
 

@@ -598,7 +598,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                         await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                     }
-                    
+
                     refreshesOn = await RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
 
                     waitTime = refreshesOn - DateTime.UtcNow;

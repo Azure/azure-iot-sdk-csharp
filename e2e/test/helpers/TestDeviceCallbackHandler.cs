@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             set => Volatile.Write(ref _expectedMessageSentByService, value);
         }
 
-        public async Task SetDeviceReceiveMethodAsync<T>(string methodName, object deviceResponseJson, T expectedServiceRequestJson)
+        public async Task SetDeviceReceiveMethodAsync<T>(string methodName, object deviceResponse, T expectedServiceRequestJson)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDirectMethodCallbackAsync(
@@ -58,9 +58,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         request.TryGetPayload(out T actualRequestPayload).Should().BeTrue();
                         actualRequestPayload.Should().BeEquivalentTo(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 
-                        var response = new Client.DirectMethodResponse(200)
+                        var response = new DirectMethodResponse(200)
                         {
-                            Payload = deviceResponseJson,
+                            Payload = deviceResponse,
                         };
                         return Task.FromResult(response);
                     }
