@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        private MqttClientOptionsBuilder CreateMqttClientOptions(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest)
+        internal MqttClientOptionsBuilder CreateMqttClientOptions(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest)
         {
             var mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
@@ -483,7 +483,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             throw new OperationCanceledException(timeoutErrorMessage);
         }
 
-        private static bool ContainsAuthenticationException(Exception ex)
+        internal static bool ContainsAuthenticationException(Exception ex)
         {
             return ex != null
                 && (ex is AuthenticationException
