@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             retryInterval = TimeSpan.Zero;
 
-            if (currentRetryCount < MaxRetries)
+            if (currentRetryCount > MaxRetries)
             {
                 VerboseTestLogger.WriteLine($"{nameof(HubServiceTestRetryPolicy)}: Exhausted {currentRetryCount}/{MaxRetries} retries and failing due to {lastException}");
                 return false;

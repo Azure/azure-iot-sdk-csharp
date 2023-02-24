@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,16 +24,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
     public sealed class TestDevice : IDisposable
     {
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1);
-
         private static readonly IIotHubServiceRetryPolicy s_createRetryPolicy = new IotHubServiceExponentialBackoffRetryPolicy(0, TimeSpan.FromMinutes(1), true);
-
-        private static readonly HashSet<IotHubServiceErrorCode> s_getRetryableStatusCodes = new()
-        {
-            IotHubServiceErrorCode.DeviceNotFound,
-            IotHubServiceErrorCode.ModuleNotFound,
-        };
-        private static readonly IIotHubServiceRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(s_getRetryableStatusCodes);
+        private static readonly IIotHubServiceRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(
+            new()
+            {
+                IotHubServiceErrorCode.DeviceNotFound,
+                IotHubServiceErrorCode.ModuleNotFound,
+            });
 
         private X509Certificate2 _authCertificate;
         private static readonly IotHubServiceClient _client = new(TestConfiguration.IotHub.ConnectionString);
@@ -52,25 +48,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <param name="type">The way the device will authenticate</param>
         public static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
         {
-            string prefix = namePrefix + type + "_";
-
-            try
-            {
-                await s_semaphore.WaitAsync().ConfigureAwait(false);
-                TestDevice ret = await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
-
-                VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
-                return ret;
-            }
-            finally
-            {
-                s_semaphore.Release();
-            }
+            TestDevice ret = await CreateDeviceAsync(type, $"{namePrefix}{type}_").ConfigureAwait(false);
+            VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
+            return ret;
         }
 
         private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
         {
-            string deviceName = "E2E_" + prefix + Guid.NewGuid();
+            string deviceName = $"E2E_{prefix}{Guid.NewGuid()}";
 
             // Delete existing devices named this way and create a new one.
             VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");

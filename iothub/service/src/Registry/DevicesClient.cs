@@ -103,10 +103,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device {deviceIdentity?.Id} threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating device {deviceIdentity?.Id} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -139,6 +138,7 @@ namespace Microsoft.Azure.Devices
 
             cancellationToken.ThrowIfCancellationRequested();
 
+
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetRequestUri(deviceId), _credentialProvider);
@@ -164,10 +164,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device {deviceId} threw an exception: {ex}", nameof(GetAsync));
+                Logging.Error(this, $"Getting device {deviceId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -232,10 +231,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device {deviceIdentity?.Id} threw an exception: {ex}", nameof(SetAsync));
+                Logging.Error(this, $"Updating device {deviceIdentity?.Id} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
@@ -324,10 +322,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting device {deviceIdentity?.Id} threw an exception: {ex}", nameof(DeleteAsync));
+                Logging.Error(this, $"Deleting device {deviceIdentity?.Id} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
@@ -390,10 +387,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating device with twin {deviceIdentity?.Id} threw an exception: {ex}", nameof(CreateWithTwinAsync));
+                Logging.Error(this, $"Creating device with twin {deviceIdentity?.Id} threw an exception: {ex}", nameof(CreateWithTwinAsync));
                 throw;
             }
             finally
@@ -451,10 +447,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting modules on device {deviceId} threw an exception: {ex}", nameof(GetModulesAsync));
+                Logging.Error(this, $"Getting modules on device {deviceId} threw an exception: {ex}", nameof(GetModulesAsync));
                 throw;
             }
             finally
@@ -504,10 +499,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating devices threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating devices threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -560,10 +554,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating multiple devices threw an exception: {ex}", nameof(SetAsync));
+                Logging.Error(this, $"Updating multiple devices threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
@@ -616,10 +609,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting devices threw an exception: {ex}", nameof(DeleteAsync));
+                Logging.Error(this, $"Deleting devices threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
@@ -663,10 +655,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Running import job threw an exception: {ex}", nameof(ImportAsync));
+                Logging.Error(this, $"Running import job threw an exception: {ex}", nameof(ImportAsync));
                 throw;
             }
             finally
@@ -711,10 +702,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Running export job threw an exception: {ex}", nameof(ExportAsync));
+                Logging.Error(this, $"Running export job threw an exception: {ex}", nameof(ExportAsync));
                 throw;
             }
             finally
@@ -772,10 +762,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting job {jobId} threw an exception: {ex}", nameof(GetJobAsync));
+                Logging.Error(this, $"Getting job {jobId} threw an exception: {ex}", nameof(GetJobAsync));
                 throw;
             }
             finally
@@ -828,10 +817,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting jobs threw an exception: {ex}", nameof(GetJobsAsync));
+                Logging.Error(this, $"Getting jobs threw an exception: {ex}", nameof(GetJobsAsync));
                 throw;
             }
             finally
@@ -888,10 +876,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Canceling job {jobId} threw an exception: {ex}", nameof(CancelJobAsync));
+                Logging.Error(this, $"Canceling job {jobId} threw an exception: {ex}", nameof(CancelJobAsync));
                 throw;
             }
             finally
@@ -944,10 +931,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting registry statistics threw an exception: {ex}", nameof(GetRegistryStatisticsAsync));
+                Logging.Error(this, $"Getting registry statistics threw an exception: {ex}", nameof(GetRegistryStatisticsAsync));
                 throw;
             }
             finally
@@ -1000,10 +986,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting service statistics threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
+                Logging.Error(this, $"Getting service statistics threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
                 throw;
             }
             finally
