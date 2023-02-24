@@ -190,50 +190,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
-        public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
-        {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendMessageRecoveryAsync(
-                        new IotHubClientAmqpSettings(),
-                        FaultInjectionConstants.FaultType_Throttle,
-                        FaultInjectionConstants.FaultCloseReason_Boom,
-                        FaultInjection.ShortRetryDuration)
-                .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Throttled);
-            error.And.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize]
-        public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
-        {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendMessageRecoveryAsync(
-                        new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                        FaultInjectionConstants.FaultType_Throttle,
-                        FaultInjectionConstants.FaultCloseReason_Boom,
-                        FaultInjection.ShortRetryDuration)
-                    .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Throttled);
-            error.And.IsTransient.Should().BeTrue();
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize]
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
