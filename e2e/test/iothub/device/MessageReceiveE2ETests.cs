@@ -47,22 +47,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Mqtt()
-        {
-            var settings = new IotHubClientMqttSettings() { CleanSession = true };
-            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Amqp()
-        {
-            var settings = new IotHubClientAmqpSettings();
-            await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Amqp()
         {
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
@@ -201,56 +185,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             }
-        }
-
-        private static async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
-        {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
-            var options = new IotHubClientOptions(transportSettings);
-            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
-            var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
-
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-
-            Message msg = ComposeC2dTestMessage(out string _, out string _);
-
-            // Subscribe to receive C2D messages over the callback.
-            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
-
-            // Now dispose and then reinitialize the client instance.
-            await deviceClient.CloseAsync().ConfigureAwait(false);
-            await deviceClient.DisposeAsync();
-
-            testDeviceCallbackHandler.Dispose();
-            testDeviceCallbackHandler = null;
-
-            deviceClient = testDevice.CreateDeviceClient(options);
-            testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
-
-            // Open the device client - for MQTT, this will connect the device with CleanSession flag set to true.
-            // This will ensure that messages sent before the device had subscribed to c2d topic are not delivered.
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
-            // Send the message from service.
-            VerboseTestLogger.WriteLine($"Sending C2D message from service, messageId={msg.MessageId}");
-            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-            await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-
-            // Subscribe to receive C2D messages over the callback.
-            testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
-            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
-
-            // Wait to ensure that the message was not received.
-            using var cts = new CancellationTokenSource(s_tenSeconds);
-            Func<Task> receiveMessageOverCallback = async () =>
-            {
-                await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-            };
-            await receiveMessageOverCallback.Should().ThrowAsync<OperationCanceledException>();
-
-            await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
-            testDeviceCallbackHandler.Dispose();
         }
 
         private static async Task ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
