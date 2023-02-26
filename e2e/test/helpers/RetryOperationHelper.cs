@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 }
 
                 VerboseTestLogger.WriteLine($"Will retry operation in {retryInterval}.");
-                await Task.Delay(retryInterval, cancellationToken);
+                await Task.Delay(retryInterval, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 }
 
                 VerboseTestLogger.WriteLine($"Will retry operation in {retryInterval}.");
-                await Task.Delay(retryInterval, cancellationToken);
+                await Task.Delay(retryInterval, cancellationToken).ConfigureAwait(false);
             }
         }
     }
