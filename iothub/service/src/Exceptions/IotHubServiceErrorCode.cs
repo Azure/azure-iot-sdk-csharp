@@ -87,6 +87,14 @@ namespace Microsoft.Azure.Devices
         // Forbidden - 403
 
         /// <summary>
+        /// Failed to create job since there is another job running.
+        /// </summary>
+        /// <remarks>
+        /// Wait and rerun the job after the current job terminates.
+        /// </remarks>
+        JobQuotaExceeded = 403001,
+
+        /// <summary>
         /// Total number of messages on the hub exceeded the allocated quota.
         /// <para>
         /// Increase units for this hub to increase the quota.
