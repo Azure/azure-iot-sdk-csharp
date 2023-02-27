@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
-        internal MqttClientOptionsBuilder CreateMqttClientOptions(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest)
+        private MqttClientOptionsBuilder CreateMqttClientOptions(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest)
         {
             var mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
