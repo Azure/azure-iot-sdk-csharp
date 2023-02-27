@@ -21,7 +21,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _clientOpenCloseSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _cloudToDeviceEventSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _directMethodSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _twinEventsSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private bool _openCalled;
         private bool _opened;
         private bool _methodsEnabled;
@@ -219,8 +223,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Ensure that the connection has been opened, before enabling the callback for receiving messages.
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            // Wait to acquire the _cloudToDeviceSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 // The telemetry downlink needs to be enabled only for the first time that the callback is set.
@@ -230,7 +234,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -259,8 +263,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Ensure that the connection has been opened before returning pending messages to the callback.
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            // Wait to acquire the _cloudToDeviceSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                             try
                             {
@@ -270,7 +274,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -297,8 +301,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Ensure that the connection has been opened, before disabling the callback for receiving messages.
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            // Wait to acquire the _cloudToDeviceSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 // Ensure that a callback for receiving messages has been previously set.
@@ -308,7 +312,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -333,8 +337,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _directMethodSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(!_methodsEnabled);
@@ -343,7 +346,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _directMethodSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -368,7 +371,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _directMethodSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_methodsEnabled);
@@ -377,7 +380,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _directMethodSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -403,7 +406,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _cloudToDeviceEventSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 await base.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
@@ -412,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _cloudToDeviceEventSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -438,7 +441,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _cloudToDeviceEventSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_eventsEnabled);
@@ -447,7 +450,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _cloudToDeviceEventSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -472,7 +475,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _twinEventsSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(!_twinEnabled);
@@ -481,7 +484,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _twinEventsSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -506,7 +509,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _twinEventsSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_twinEnabled);
@@ -515,7 +518,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                _twinEventsSubscriptionSemaphore?.Release();
                             }
                         },
                         cancellationToken)
@@ -655,7 +658,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
-            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _clientOpenCloseSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 if (!_openCalled)
@@ -674,7 +677,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
-                _handlerSemaphore?.Release();
+                _clientOpenCloseSemaphore?.Release();
                 Dispose(true);
             }
         }
@@ -697,7 +700,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return;
             }
 
-            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _clientOpenCloseSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 if (!_opened)
@@ -736,7 +739,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore?.Release();
+                _clientOpenCloseSemaphore?.Release();
             }
         }
 
@@ -747,7 +750,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return;
             }
 
-            bool gain = await _handlerSemaphore.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
+            bool gain = await _clientOpenCloseSemaphore.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
             if (!gain)
             {
                 throw new TimeoutException("Timed out to acquire handler lock.");
@@ -791,7 +794,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore?.Release();
+                _clientOpenCloseSemaphore?.Release();
             }
         }
 
@@ -904,8 +907,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
                 }
             }
-
-
         }
 
         // Triggered from connection loss event
@@ -937,7 +938,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
-            await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
+            await _clientOpenCloseSemaphore.WaitAsync().ConfigureAwait(false);
             _opened = false;
 
             try
@@ -1026,7 +1027,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore?.Release();
+                _clientOpenCloseSemaphore?.Release();
             }
         }
 
@@ -1090,12 +1091,41 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         _handleDisconnectCts?.Cancel();
                         _handleDisconnectCts?.Dispose();
-                        if (_handlerSemaphore != null && _handlerSemaphore.CurrentCount == 0)
+
+                        if (_clientOpenCloseSemaphore != null && _clientOpenCloseSemaphore.CurrentCount == 0)
                         {
-                            _handlerSemaphore.Release();
+                            _clientOpenCloseSemaphore.Release();
                         }
-                        _handlerSemaphore?.Dispose();
-                        _handlerSemaphore = null;
+                        _clientOpenCloseSemaphore?.Dispose();
+                        _clientOpenCloseSemaphore = null;
+
+                        if (_cloudToDeviceMessageSubscriptionSemaphore != null && _cloudToDeviceMessageSubscriptionSemaphore.CurrentCount == 0)
+                        {
+                            _cloudToDeviceMessageSubscriptionSemaphore.Release();
+                        }
+                        _cloudToDeviceMessageSubscriptionSemaphore?.Dispose();
+                        _cloudToDeviceMessageSubscriptionSemaphore = null;
+
+                        if (_cloudToDeviceEventSubscriptionSemaphore != null && _cloudToDeviceEventSubscriptionSemaphore.CurrentCount == 0)
+                        {
+                            _cloudToDeviceEventSubscriptionSemaphore.Release();
+                        }
+                        _cloudToDeviceEventSubscriptionSemaphore?.Dispose();
+                        _cloudToDeviceEventSubscriptionSemaphore = null;
+
+                        if (_directMethodSubscriptionSemaphore != null && _directMethodSubscriptionSemaphore.CurrentCount == 0)
+                        {
+                            _directMethodSubscriptionSemaphore.Release();
+                        }
+                        _directMethodSubscriptionSemaphore?.Dispose();
+                        _directMethodSubscriptionSemaphore = null;
+
+                        if (_twinEventsSubscriptionSemaphore != null && _twinEventsSubscriptionSemaphore.CurrentCount == 0)
+                        {
+                            _twinEventsSubscriptionSemaphore.Release();
+                        }
+                        _twinEventsSubscriptionSemaphore?.Dispose();
+                        _twinEventsSubscriptionSemaphore = null;
                     }
 
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
