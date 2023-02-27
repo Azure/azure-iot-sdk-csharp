@@ -30,6 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             {
                 IotHubServiceErrorCode.DeviceNotFound,
                 IotHubServiceErrorCode.ModuleNotFound,
+                IotHubServiceErrorCode.ThrottlingBacklogTimeout,
             });
 
         private X509Certificate2 _authCertificate;
