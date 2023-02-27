@@ -25,11 +25,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         [TestMethod]
         public void ProvisioningTransportHandlerMqtt_ContainsAuthenticationException_NoInnerException()
         {
-            // arrange
-            var ex = new Exception();
-
             // act
-            bool flag = ProvisioningTransportHandlerMqtt.ContainsAuthenticationException(ex);
+            bool flag = ProvisioningTransportHandlerMqtt.ContainsAuthenticationException(new Exception());
 
             // assert
             flag.Should().BeFalse();
