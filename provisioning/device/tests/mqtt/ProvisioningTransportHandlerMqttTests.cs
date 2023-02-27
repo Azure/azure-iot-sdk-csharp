@@ -47,5 +47,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // assert
             flag.Should().BeTrue();
         }
+
+        [TestMethod]
+        public void ProvisioningTransportHandlerMqtt_ContainsAuthenticationException_InnerNonAuthException()
+        {
+            // arrange
+            var ex = new Exception("", new Exception());
+
+            // act
+            bool flag = ProvisioningTransportHandlerMqtt.ContainsAuthenticationException(ex);
+
+            // assert
+            flag.Should().BeFalse();
+        }
     }
 }
