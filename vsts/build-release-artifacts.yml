@@ -40,34 +40,33 @@ jobs:
 
   - powershell: |
         function Import-Certificate($Cert, [System.Security.SecureString]$Passphrase, $Store) {
-            
             $found = Test-Path $Cert -PathType Leaf
             if ($found -eq $false) { throw "File not found '$Cert'" }
             Write-Host "Importing cert from '$Cert' into store '$Store'"
-        
+
             Import-PfxCertificate `
                 -FilePath $Cert `
                 -CertStoreLocation $Store `
                 -Password $Passphrase
         }
-        
+
         $certpwd = $env:certpwd
-        
+
         if ([System.String]::IsNullOrWhiteSpace($certpwd) -eq $true) {
             throw "Empty passphrase. Make sure it's hooked up."
         }
-        
+
         $passphrase = ConvertTo-SecureString -String $certpwd -AsPlainText -Force
         $store = 'Cert:\LocalMachine\My'
         $location = $env:agent_tempdirectory
         $authcert = Join-Path $location 'iothubsdksign-auth-base64.pfx'
         $reqcert = Join-Path $location 'iothubsdksign-req-base64.pfx'
-        
+
         Import-Certificate `
             -Cert $authcert `
             -Passphrase $passphrase `
             -Store $store
-        
+
         Import-Certificate `
             -Cert $reqcert `
             -Passphrase $passphrase `
