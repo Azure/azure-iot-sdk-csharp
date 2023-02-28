@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Amqp
     /// <remarks>
     /// This class intentionally abstracts away details about sessions and links for simplicity at the service client level.
     /// </remarks>
-    internal sealed class AmqpConnectionHandler : IDisposable
+    internal class AmqpConnectionHandler : IDisposable
     {
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new(1, 0, 0);
 
