@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Ensure that the connection has been opened before returning pending messages to the callback.
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
 
-                            // Wait to acquire the _cloudToDeviceSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            // Wait to acquire the _cloudToDeviceMessageSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
                             await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                             try
