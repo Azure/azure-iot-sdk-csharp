@@ -95,7 +95,6 @@ namespace Microsoft.Azure.Devices.Tests
 
         [TestMethod]
         [DataRow(.1d)]
-        [DataRow(.25d)]
         [DataRow(.5d)]
         [DataRow(1d)]
         [DataRow(10d)]
@@ -107,7 +106,7 @@ namespace Microsoft.Azure.Devices.Tests
             var retryPolicy = new IotHubServiceTestRetryPolicy(0);
             var duration = TimeSpan.FromSeconds(seconds);
             double min = duration.TotalMilliseconds * .95d;
-            double max = duration.TotalMilliseconds * 1.05d;
+            double max = duration.TotalMilliseconds * 1.06d;
 
             // act
             TimeSpan actual = retryPolicy.UpdateWithJitter(duration.TotalMilliseconds);

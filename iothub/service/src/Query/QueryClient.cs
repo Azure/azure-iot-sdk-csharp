@@ -144,10 +144,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -228,10 +227,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize} threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally

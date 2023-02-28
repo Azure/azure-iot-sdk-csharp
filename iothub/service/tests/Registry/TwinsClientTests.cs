@@ -25,6 +25,160 @@ namespace Microsoft.Azure.Devices.Tests
         private static RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
 
         [TestMethod]
+        public async Task TwinsClient_GetTwin_Device()
+        {
+            // arrange
+            string deviceId = "123";
+            var goodTwin = new ClientTwin(deviceId);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin)
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var twinsClient = new TwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await twinsClient.GetAsync(deviceId);
+
+            // assert
+            await act.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
+        public async Task TwinsClient_GetTwin_Module()
+        {
+            // arrange
+            string deviceId = "123";
+            string moduleId = "234";
+            var goodTwin = new ClientTwin(deviceId)
+            {
+                ModelId = moduleId
+            };
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin)
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var twinsClient = new TwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await twinsClient.GetAsync(deviceId, moduleId);
+
+            // assert
+            await act.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
+        public async Task TwinsClient_UpdateAsync()
+        {
+            // arrange
+            string deviceId = "123";
+            string moduleId = "234";
+            var goodTwin = new ClientTwin(deviceId);
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin)
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var twinsClient = new TwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            // act
+            Func<Task> getTwin = async () => await twinsClient.GetAsync(deviceId);
+            goodTwin.ModelId = moduleId;
+            Func<Task> updateTwin = async () => await twinsClient.UpdateAsync(deviceId, goodTwin);
+
+            // assert
+            await updateTwin.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
+        public async Task TwinsClient_UpdateAsync_ModuleId()
+        {
+            // arrange
+            string deviceId = "123";
+            string moduleId = "234";
+            var goodTwin = new ClientTwin(deviceId)
+            {
+                ModelId = moduleId
+            };
+
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin) 
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var twinsClient = new TwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+            // act
+            Func<Task> act = async () => await twinsClient.UpdateAsync(deviceId, moduleId, goodTwin);
+
+            // assert
+            await act.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
         public async Task TwinsClient_UpdateAsync_BadTwinIdThrows()
         {
             // arrange
@@ -185,6 +339,82 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             await act.Should().NotThrowAsync().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task TwinsClient_ReplaceAsync()
+        {
+            // arrange
+            var goodTwin1 = new ClientTwin("123");
+            var goodTwin2 = new ClientTwin("234");
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(goodTwin2)
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var twinsClient = new TwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+
+            // act
+            Func<Task> act = async () => await twinsClient.ReplaceAsync("123", goodTwin2);
+
+            // assert
+            await act.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
+        public async Task TwinsClient_ReplaceAsync_ModuleId()
+        {
+            // arrange
+            var goodTwin1 = new ClientTwin("123")
+            {
+                ModuleId = "321"
+            };
+
+            var goodTwin2 = new ClientTwin("234");
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider
+                .Setup(getCredential => getCredential.GetAuthorizationHeader())
+                .Returns(s_validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(s_httpUri, "");
+            using var mockHttpResponse = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult())
+            };
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient
+                .Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockHttpResponse);
+
+            var twinsClient = new TwinsClient(
+                HostName,
+                mockCredentialProvider.Object,
+                mockHttpClient.Object,
+                mockHttpRequestFactory,
+                s_retryHandler);
+
+
+            // act
+            Func<Task> act = async () => await twinsClient.ReplaceAsync("123", "321", goodTwin2);
+
+            // assert
+            await act.Should().NotThrowAsync();
         }
     }
 }
