@@ -32,6 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _twinEnabled;
         private bool _eventsEnabled;
         private bool _deviceReceiveMessageEnabled;
+        private bool _isDisposing;
         private bool _isAnEdgeModule = true;
 
         private Task _transportClosedTask;
@@ -246,7 +247,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -287,7 +297,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -326,7 +345,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -362,7 +390,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _directMethodSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _directMethodSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing direct method subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -398,7 +435,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _directMethodSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _directMethodSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing direct method subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -435,7 +481,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _cloudToDeviceEventSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceEventSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -472,7 +527,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _cloudToDeviceEventSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceEventSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -508,7 +572,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _twinEventsSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _twinEventsSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -544,7 +617,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                _twinEventsSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _twinEventsSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
                         operationCts.Token)
@@ -714,7 +796,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
-                _clientOpenCloseSemaphore?.Release();
+                try
+                {
+                    _clientOpenCloseSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
+                }
                 Dispose(true);
             }
         }
@@ -776,7 +867,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _clientOpenCloseSemaphore?.Release();
+                try
+                {
+                    _clientOpenCloseSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
+                }
             }
         }
 
@@ -831,7 +931,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _clientOpenCloseSemaphore?.Release();
+                try
+                {
+                    _clientOpenCloseSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
+                }
             }
         }
 
@@ -1064,7 +1173,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _clientOpenCloseSemaphore?.Release();
+                try
+                {
+                    _clientOpenCloseSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
+                }
             }
         }
 
@@ -1123,6 +1241,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 if (!_isDisposed)
                 {
+                    _isDisposing = true;
+
                     base.Dispose(disposing);
                     if (disposing)
                     {
@@ -1132,83 +1252,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         _cancelPendingOperations?.Cancel();
                         _cancelPendingOperations?.Dispose();
 
-                        if (_clientOpenCloseSemaphore != null && _clientOpenCloseSemaphore.CurrentCount == 0)
-                        {
-                            try
-                            {
-                                _clientOpenCloseSemaphore.Release();
-                            }
-                            catch (SemaphoreFullException)
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Tried releasing the close-open semaphore before disposing it but its count was already at maximum." +
-                                        $" Will ignore the exception and dispose the semaphore.");
-                            }
-                        }
                         _clientOpenCloseSemaphore?.Dispose();
-
-                        if (_cloudToDeviceMessageSubscriptionSemaphore != null && _cloudToDeviceMessageSubscriptionSemaphore.CurrentCount == 0)
-                        {
-                            try
-                            {
-                                _cloudToDeviceMessageSubscriptionSemaphore.Release();
-                            }
-                            catch (SemaphoreFullException)
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Tried releasing the cloud-to-device message subscription semaphore before disposing it but its count was already at maximum." +
-                                        $" Will ignore the exception and dispose the semaphore.");
-                            }
-                        }
                         _cloudToDeviceMessageSubscriptionSemaphore?.Dispose();
-
-                        if (_cloudToDeviceEventSubscriptionSemaphore != null && _cloudToDeviceEventSubscriptionSemaphore.CurrentCount == 0)
-                        {
-                            try
-                            {
-                                _cloudToDeviceEventSubscriptionSemaphore.Release();
-                            }
-                            catch (SemaphoreFullException)
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Tried releasing the cloud-to-device event subscription sepmaphore before disposing it but its count was already at maximum." +
-                                        $" Will ignore the exception and dispose the semaphore.");
-                            }
-                        }
                         _cloudToDeviceEventSubscriptionSemaphore?.Dispose();
-
-                        if (_directMethodSubscriptionSemaphore != null && _directMethodSubscriptionSemaphore.CurrentCount == 0)
-                        {
-                            try
-                            {
-                                _directMethodSubscriptionSemaphore.Release();
-                            }
-                            catch (SemaphoreFullException)
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Tried releasing the direct method subscription semaphore before disposing it but its count was already at maximum." +
-                                        $" Will ignore the exception and dispose the semaphore.");
-                            }
-                        }
                         _directMethodSubscriptionSemaphore?.Dispose();
-
-                        if (_twinEventsSubscriptionSemaphore != null && _twinEventsSubscriptionSemaphore.CurrentCount == 0)
-                        {
-                            try
-                            {
-                                _twinEventsSubscriptionSemaphore.Release();
-                            }
-                            catch (SemaphoreFullException)
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Tried releasing the twin events subscription semaphore before disposing it but its count was already at maximum." +
-                                        $" Will ignore the exception and dispose the semaphore.");
-                            }
-                        }
                         _twinEventsSubscriptionSemaphore?.Dispose();
                     }
 
-                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to true there.
                 }
             }
             finally
