@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 Id = digitalTwinId,
             };
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 Id = digitalTwinId,
             };
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"
@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 Id = digitalTwinId,
             };
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 Id = digitalTwinId,
             };
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"

@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void IotHubConnectionPropertiesPropertiesAreSet()
         {
-            // arrange and act
+            // arrange - act
             string hostName = "acme.azure-devices.net";
             var connectionProperties = new Mock<IotHubConnectionProperties>(hostName);
 

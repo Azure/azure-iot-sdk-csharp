@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
             // assert
             returnedException.Message.Should().Be(timeoutExceptionMessage);
+            returnedException.IsTransient.Should().BeTrue();
             returnedException.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
             returnedException.ErrorCode.Should().Be(IotHubServiceErrorCode.Unknown);
         }

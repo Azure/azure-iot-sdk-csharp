@@ -1076,6 +1076,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await devicesClient.ImportAsync(null).ConfigureAwait(false);
+
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
         }
@@ -1102,6 +1103,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
+
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
         }
@@ -1127,6 +1129,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
+
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
         }
@@ -1148,6 +1151,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await devicesClient.ExportAsync(null).ConfigureAwait(false);
+
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
         }
@@ -1174,6 +1178,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
+
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
         }
@@ -1200,6 +1205,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             Func<Task> act = async () => await devicesClient.ImportAsync(badImportJobProperties).ConfigureAwait(false);
+
             // assert
             await act.Should().ThrowAsync<ArgumentException>().ConfigureAwait(false);
         }

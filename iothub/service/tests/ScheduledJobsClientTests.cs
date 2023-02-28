@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task ScheduledJobsClient_GetAsync_JobNotFound_ThrowsIotHubServiceException()
         {
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_CancelAsync_JobNotFound_ThrowsIotHubServiceException()
         {
             // arrange
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"
@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_ScheduleDirectMethodAsync_JobNotFound_ThrowsIotHubServiceException()
         {
             // arrange
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"
@@ -443,7 +443,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task ScheduledJobsClient_ScheduleTwinUpdateAysnc_JobNotFound_ThrowsIotHubServiceException()
         {
             // arrange
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"

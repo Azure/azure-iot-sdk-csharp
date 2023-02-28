@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public void IotHubServiceClient_SubClients_NotNull()
         {
-            // arrange and act
+            // arrange - act
             string cs = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var serviceClient = new IotHubServiceClient(cs);
 

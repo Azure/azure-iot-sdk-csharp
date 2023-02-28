@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task QueryClient_CreateAsync_IotHubNotFound_ThrowsIotHubServiceException()
         {
             // arrange
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task QueryClient_CreateJobsQuery_IotHubNotFound_ThrowsIotHubServiceException()
         {
             // arrange
-            var responseMessage = new ResponseMessage2
+            var responseMessage = new ErrorPayload2
             {
                 Message = "test",
                 ExceptionMessage = "test"
