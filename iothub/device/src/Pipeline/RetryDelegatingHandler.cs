@@ -1097,35 +1097,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             _clientOpenCloseSemaphore.Release();
                         }
                         _clientOpenCloseSemaphore?.Dispose();
-                        _clientOpenCloseSemaphore = null;
 
                         if (_cloudToDeviceMessageSubscriptionSemaphore != null && _cloudToDeviceMessageSubscriptionSemaphore.CurrentCount == 0)
                         {
                             _cloudToDeviceMessageSubscriptionSemaphore.Release();
                         }
                         _cloudToDeviceMessageSubscriptionSemaphore?.Dispose();
-                        _cloudToDeviceMessageSubscriptionSemaphore = null;
 
                         if (_cloudToDeviceEventSubscriptionSemaphore != null && _cloudToDeviceEventSubscriptionSemaphore.CurrentCount == 0)
                         {
                             _cloudToDeviceEventSubscriptionSemaphore.Release();
                         }
                         _cloudToDeviceEventSubscriptionSemaphore?.Dispose();
-                        _cloudToDeviceEventSubscriptionSemaphore = null;
 
                         if (_directMethodSubscriptionSemaphore != null && _directMethodSubscriptionSemaphore.CurrentCount == 0)
                         {
                             _directMethodSubscriptionSemaphore.Release();
                         }
                         _directMethodSubscriptionSemaphore?.Dispose();
-                        _directMethodSubscriptionSemaphore = null;
 
                         if (_twinEventsSubscriptionSemaphore != null && _twinEventsSubscriptionSemaphore.CurrentCount == 0)
                         {
                             _twinEventsSubscriptionSemaphore.Release();
                         }
                         _twinEventsSubscriptionSemaphore?.Dispose();
-                        _twinEventsSubscriptionSemaphore = null;
                     }
 
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
