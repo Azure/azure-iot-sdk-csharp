@@ -70,10 +70,10 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// The operation failed because the IoT hub has been suspended. 
-        /// </summary>
-        /// <remarks>
+        /// <para>
         /// This is likely due to exceeding Azure spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
-        /// </remarks>
+        /// </para>
+        /// </summary>
         IotHubSuspended = 400020,
 
         // Unauthorized - 401
@@ -85,6 +85,14 @@ namespace Microsoft.Azure.Devices
         IotHubUnauthorizedAccess = 401002,
 
         // Forbidden - 403
+
+        /// <summary>
+        /// Failed to create job since there is another job running.
+        /// <para>
+        /// Wait and rerun the job after the current job terminates.
+        /// </para>
+        /// </summary>
+        JobQuotaExceeded = 403001,
 
         /// <summary>
         /// Total number of messages on the hub exceeded the allocated quota.
@@ -188,9 +196,19 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.
+        /// <para>
         /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
+        /// </para>
         /// </summary>
         ThrottlingException = 429001,
+
+        /// <summary>
+        /// IoT hub throttling limits have been exceeded for the requested operation.
+        /// <para>
+        /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
+        /// </para>
+        /// </summary>
+        ThrottlingBacklogTimeout = 429003,
 
         // InternalServerError - 500
 
