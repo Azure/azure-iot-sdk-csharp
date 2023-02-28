@@ -214,7 +214,7 @@ jobs:
         inputs:
           testRunner: VSTest
           testResultsFiles: '**/*.trx'
-          testRunTitle: 'Windows Tests $(FRAMEWORK)'
+          testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
           configuration: 'Debug UT + Release E2E ($(FRAMEWORK))'
         condition: always()
@@ -472,7 +472,7 @@ jobs:
         inputs:
           testRunner: VSTest
           testResultsFiles: '**/*.trx'
-          testRunTitle: 'Linux Tests $(FRAMEWORK)'
+          testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
         condition: always()
 
   ### Upload unisgned packages for partner signing and release pipeline ###
@@ -511,7 +511,6 @@ jobs:
             Write-Host "Download contents:"
             gci -Path $(Build.SourcesDirectory)/bin/nuget -Recurse -Force
 
-
       - task: PowerShell@2
         displayName: 'Rename Packages for Partner Release Pipeline'
         inputs:
@@ -533,7 +532,7 @@ jobs:
 #          inlineScript: |
 #            Write-Host "Copy release package to partner pipeline drops/azure-iot-sdk/net/pkgs_$(BUILD_PKG.NUGET_PKG_DATE)"
 #            $env:AZCOPY_SPA_CLIENT_SECRET=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-service-principal-key -AsPlainText
-#			      $env:AZCOPY_SPA_CLIENT_SECRET_APP=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-application-id -AsPlainText
+#            $env:AZCOPY_SPA_CLIENT_SECRET_APP=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-application-id -AsPlainText
 #            azcopy login --service-principal --application-id $env:AZCOPY_SPA_CLIENT_SECRET_APP
 #            azcopy copy "$(Build.SourcesDirectory)/bin" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/azure-iot-sdk/net" --recursive
 
@@ -545,7 +544,7 @@ jobs:
           Destination: AzureBlob
           storage: azuresdkpartnerdrops
           ContainerName: 'drops/azure-iot-sdk/net'
-      
+
 #      - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
 #        displayName: 'SBOM Generation Task'
 #        inputs:
