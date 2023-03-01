@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act and assert
-            await sut.OpenAsync(cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.OpenAsync(cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
 
             // act and assert
-            await sut.SendEventAsync(Arg.Any<Message>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.SendEventAsync(Arg.Any<Message>(), cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -320,7 +320,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
 
             // act
-            await sut.SendEventAsync(new List<Message>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.SendEventAsync(new List<Message>(), cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
 
             // assert
             await innerHandlerMock.Received(0).SendEventAsync(new List<Message>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act and assert
-            await sut.ReceiveAsync(cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.ReceiveAsync(cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act and assert
-            await sut.CompleteAsync("", cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.CompleteAsync("", cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -407,7 +407,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act and assert
             await sut
                 .AbandonAsync(Arg.Any<string>(), cts.Token)
-                .ExpectedAsync<TaskCanceledException>()
+                .ExpectedAsync<OperationCanceledException>()
                 .ConfigureAwait(false);
         }
 
@@ -424,7 +424,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
 
             // act and assert
-            await sut.RejectAsync(Arg.Any<string>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.RejectAsync(Arg.Any<string>(), cts.Token).ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
         }
 
         private class TestRetryPolicy : IRetryPolicy
