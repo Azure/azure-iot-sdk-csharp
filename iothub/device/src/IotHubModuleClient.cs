@@ -132,13 +132,13 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
             Argument.AssertNotNull(message, nameof(message));
 
-            ValidateModuleTransportHandler("SendTelemetryAsync for a named output");
+            ValidateModuleTransportHandler("SendMessageToRouteAsync for a named output");
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
+                message.OutputName = outputName;
 
                 await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
             }
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="outputName">The output target for sending the given message.</param>
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The task containing the event</returns>
+        /// <returns>The task containing the event.</returns>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SendMessagesToRouteAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
@@ -180,11 +180,11 @@ namespace Microsoft.Azure.Devices.Client
             var messagesList = messages?.ToList();
             Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
 
-            ValidateModuleTransportHandler("SendTelemetryBatchAsync for a named output");
+            ValidateModuleTransportHandler("SendMessagesToRouteAsync for a named output");
 
             try
             {
-                messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
+                messagesList.ForEach(m => m.OutputName = outputName);
 
                 await InnerHandler.SendTelemetryBatchAsync(messagesList, cancellationToken).ConfigureAwait(false);
             }
