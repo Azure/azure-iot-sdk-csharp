@@ -19,8 +19,8 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
     {
         const long MaxExecutionTime = 5L;
         private static DirectMethodServiceRequest s_directMethodRequest = new("update");
-        private static ClientTwin s_updateTwin = new ClientTwin("TestTwin");
-        private static DateTimeOffset s_startOn = new DateTimeOffset(new DateTime());
+        private static ClientTwin s_updateTwin = new("TestTwin");
+        private static DateTimeOffset s_startOn = new(new DateTime());
         private static TimeSpan s_MaxExecutionTime;
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
                 UpdateTwin = s_updateTwin,
                 QueryCondition = "TestQuery",
                 StartOn = s_startOn,
-                MaxExecutionTime = s_MaxExecutionTime
+                MaxExecutionTime = new TimeSpan()
             };
 
             // act
