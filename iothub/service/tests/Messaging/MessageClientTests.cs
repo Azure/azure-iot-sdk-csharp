@@ -110,8 +110,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         [TestMethod]
         [DataRow(null, "moduleId123")]
         [DataRow("deviceId123", null)]
-        [DataRow("", "moduleId123")]
-        [DataRow("deviceId123", "")]
         public async Task MessagesClient_SendAsync_NullParamsThrows(string deviceId, string moduleId)
         {
             // arrange
@@ -132,6 +130,8 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         [TestMethod]
         [DataRow(" ", "moduleId123")]
         [DataRow("deviceId123", " ")]
+        [DataRow("", "moduleId123")]
+        [DataRow("deviceId123", "")]
         public async Task MessagesClient_SendAsync_EmptyAndSpaceInParamsThrows(string deviceId, string moduleId)
         {
             // arrange
