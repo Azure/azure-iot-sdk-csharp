@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The properties required for authentication to IoT hub using a token credential.
     /// </summary>
-    internal sealed class IotHubTokenCredentialProperties : IotHubConnectionProperties
+    internal class IotHubTokenCredentialProperties : IotHubConnectionProperties
     {
         private const string TokenType = "Bearer";
         private static readonly string[] s_iotHubAadTokenScopes = new string[] { "https://iothubs.azure.net/.default" };
@@ -20,6 +20,13 @@ namespace Microsoft.Azure.Devices
         private readonly TokenCredential _credential;
         private readonly object _tokenLock = new();
         private AccessToken? _cachedAccessToken;
+
+        // Creates an instance of this class. Provided for unit testing purposes only.
+        protected internal IotHubTokenCredentialProperties(string hostName, TokenCredential credential, AccessToken? accessToken) : base(hostName)
+        {
+            _credential = credential;
+            _cachedAccessToken = accessToken;
+        }
 
         public IotHubTokenCredentialProperties(string hostName, TokenCredential credential) : base(hostName)
         {

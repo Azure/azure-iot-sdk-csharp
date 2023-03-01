@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
 
         [TestMethod]
-        public async Task DeviceAuthenticationGoodAuthConfigTest1()
+        public async Task DeviceAuthentication_GeneratedSymmetricKeysAuthConfigTest()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationGoodAuthConfigTest2()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_WithMatchingSecondaryThumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationGoodAuthConfigTest3()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_NullSecondaryThumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationGoodAuthConfigTest4()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_NullPrimaryThumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationGoodAuthConfigTest5()
+        public async Task DeviceAuthentication_GeneratedSymmetricKeysAuthConfigTest_NullThumbprint()
         {
             var deviceGoodAuthConfig = new Device("123")
             {
@@ -208,9 +208,9 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationGoodAuthConfigTest6()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_NullSymmetricKey()
         {
-            var deviceBadAuthConfig = new Device("123")
+            var deviceGoodAuthConfig = new Device("123")
             {
                 ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 },
             };
 
-            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceBadAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceGoodAuthConfig);
             using var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -241,13 +241,13 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockHttpRequestFactory,
                 s_retryHandler);
 
-            await devicesClient.CreateAsync(deviceBadAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationGoodAuthSHA256()
+        public async Task DeviceAuthentication_CertificateAuthConfigTest_Sha256Thumbprint()
         {
-            var deviceBadAuthConfig = new Device("123")
+            var deviceGoodAuthConfig = new Device("123")
             {
                 ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 },
             };
 
-            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceBadAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceGoodAuthConfig);
             using var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -278,13 +278,13 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockHttpRequestFactory,
                 s_retryHandler);
 
-            await devicesClient.CreateAsync(deviceBadAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationIsCertificateAuthority()
+        public async Task DeviceAuthentication_CertificateAuthConfig_NullSymmetricKeyAndThumbprint()
         {
-            var deviceBadThumbprint = new Device("123")
+            var deviceWithoutThumbprint = new Device("123")
             {
                 ConnectionState = ClientConnectionState.Connected,
                 Authentication = new AuthenticationMechanism
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 },
             };
 
-            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceBadThumbprint);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceWithoutThumbprint);
             using var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -312,7 +312,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 mockHttpRequestFactory,
                 s_retryHandler);
 
-            await devicesClient.CreateAsync(deviceBadThumbprint).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceWithoutThumbprint).ConfigureAwait(false);
         }
     }
 }

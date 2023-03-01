@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Amqp
     /// Handles a single AMQP session that holds the sender or receiver link that does the "work"
     /// for the AMQP connection (receiving file upload notification, sending cloud to device messages, etc).
     /// </summary>
-    internal sealed class AmqpSessionHandler
+    internal class AmqpSessionHandler
     {
         private readonly AmqpSendingLinkHandler _sendingLinkHandler;
         private readonly AmqpReceivingLinkHandler _receivingLinkHandler;
@@ -21,6 +21,12 @@ namespace Microsoft.Azure.Devices.Amqp
         private readonly string _linkAddress;
 
         private AmqpSession _session;
+
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected internal AmqpSessionHandler()
+        { }
 
         /// <summary>
         /// Construct an AMQP session for handling sending cloud to device messaging, receiving file
@@ -74,10 +80,11 @@ namespace Microsoft.Azure.Devices.Amqp
 
         /// <summary>
         /// Opens the session and then opens the worker link.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="connection">The connection to open this session on.</param>
         /// <param name="cancellationToken">The timeout for the open operation.</param>
-        internal async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
+        internal virtual async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Opening worker session.", nameof(OpenAsync));
@@ -146,11 +153,12 @@ namespace Microsoft.Azure.Devices.Amqp
 
         /// <summary>
         /// Sends the cloud to device message via the worker link.
+        /// Marked virtual for unit testing purposes only.
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="deliveryTag">The message delivery tag. Used for correlating messages and acknowledgements.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        internal async Task<Outcome> SendAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, CancellationToken cancellationToken)
+        internal virtual async Task<Outcome> SendAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, CancellationToken cancellationToken)
         {
             if (_sendingLinkHandler == null)
             {

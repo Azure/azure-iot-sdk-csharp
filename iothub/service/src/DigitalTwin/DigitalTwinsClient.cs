@@ -106,10 +106,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting digital twin with Id {digitalTwinId} threw an exception: {ex}", nameof(GetAsync));
+                Logging.Error(this, $"Getting digital twin with Id {digitalTwinId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -206,10 +205,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating digital twin with Id {digitalTwinId} threw an exception: {ex}", nameof(UpdateAsync));
+                Logging.Error(this, $"Updating digital twin with Id {digitalTwinId} threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally
@@ -292,10 +290,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Invoking command on digital twin with Id {digitalTwinId} threw an exception: {ex}", nameof(InvokeCommandAsync));
+                Logging.Error(this, $"Invoking command on digital twin with Id {digitalTwinId} threw an exception: {ex}", nameof(InvokeCommandAsync));
                 throw;
             }
             finally
@@ -381,10 +378,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Invoking component command on digital twin with Id {digitalTwinId} threw an exception: {ex}", nameof(InvokeComponentCommandAsync));
+                Logging.Error(this, $"Invoking component command on digital twin with Id {digitalTwinId} threw an exception: {ex}", nameof(InvokeComponentCommandAsync));
                 throw;
             }
             finally

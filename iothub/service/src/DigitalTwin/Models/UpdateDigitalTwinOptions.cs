@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     public class UpdateDigitalTwinOptions
     {
         /// <summary>
-        /// A string representing a weak ETag for the entity that this request performs an operation against, as per RFC7232.
+        /// A weak ETag for the entity that this request performs an operation against, as per RFC7232.
         /// </summary>
         /// <remarks>
         /// The request's operation is performed only if this ETag matches the value maintained by the server,

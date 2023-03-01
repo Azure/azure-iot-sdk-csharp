@@ -38,6 +38,21 @@ namespace Microsoft.Azure.Devices
         {
         }
 
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        internal MessagesClient(
+            string hostName,
+            IotHubConnectionProperties credentialProvider,
+            RetryHandler retryHandler,
+            AmqpConnectionHandler amqpConnection)
+        {
+            _hostName = hostName;
+            _credentialProvider = credentialProvider;
+            _internalRetryHandler = retryHandler;
+            _amqpConnection = amqpConnection;
+        }
+
         internal MessagesClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
