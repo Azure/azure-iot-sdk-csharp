@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 using HttpClient httpClient = HttpClientHelper.GetHttpClient(providerUri);
                 var hsmHttpClient = new HttpHsmClient(httpClient)
                 {
-                    BaseUrl = HttpClientHelper.GetBaseUrl(providerUri)
+                    BaseUrl = HttpClientHelper.GetBaseUri(providerUri)
                 };
                 TrustBundleResponse response = await GetTrustBundleWithRetryAsync(hsmHttpClient, apiVersion).ConfigureAwait(false);
 

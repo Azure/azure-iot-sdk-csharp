@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             throw new InvalidOperationException("ProviderUri scheme is not supported");
         }
 
-        internal static string GetBaseUrl(Uri providerUri)
+        internal static string GetBaseUri(Uri providerUri)
         {
             return providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase)
                 ? $"{HttpScheme}://{providerUri.Segments.Last()}"

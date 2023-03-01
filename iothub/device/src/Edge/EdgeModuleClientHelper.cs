@@ -18,33 +18,36 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal static class EdgeModuleClientHelper
     {
-        private const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
+        private const string EdgeHsmApiVersion = "2018-06-28";
+
+        private const string IotEdgeWorkloadUriVariableName = "IOTEDGE_WORKLOADURI";
         private const string IotHubHostNameVariableName = "IOTEDGE_IOTHUBHOSTNAME";
-        private const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
+        private const string GatewayHostNameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
         private const string DeviceIdVariableName = "IOTEDGE_DEVICEID";
         private const string ModuleIdVariableName = "IOTEDGE_MODULEID";
         private const string ModuleGenerationIdVariableName = "IOTEDGE_MODULEGENERATIONID";
         private const string AuthSchemeVariableName = "IOTEDGE_AUTHSCHEME";
         private const string SasTokenAuthScheme = "SasToken";
-        private const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
-        private const string IothubConnectionstringVariableName = "IotHubConnectionString";
+        private const string EdgeHubConnectionStringVariableName = "EdgeHubConnectionString";
+        private const string IotHubConnectionStringVariableName = "IotHubConnectionString";
         private const string EdgeCaCertificateFileVariableName = "EdgeModuleCACertificateFile";
 
         internal static IotHubConnectionCredentials CreateIotHubConnectionCredentialsFromEnvironment()
         {
             IDictionary envVariables = Environment.GetEnvironmentVariables();
 
-            string connectionString = GetValueFromEnvironment(envVariables, EdgehubConnectionstringVariableName)
-                ?? GetValueFromEnvironment(envVariables, IothubConnectionstringVariableName);
+            string connectionString = GetValueFromEnvironment(envVariables, EdgeHubConnectionStringVariableName)
+                ?? GetValueFromEnvironment(envVariables, IotHubConnectionStringVariableName);
 
-            // First try to create from connection string and if env variable for connection string is not found try to create from edgedUri
+            // First try to create from connection string and if env variable for connection string is not found try
+            // to create from IOTEDGE_WORKLOADURI.
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
                 return new IotHubConnectionCredentials(connectionString);
             }
 
-            string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName)
-                ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
+            string edgeWorkloadUri = GetValueFromEnvironment(envVariables, IotEdgeWorkloadUriVariableName)
+                ?? throw new InvalidOperationException($"Environment variable {IotEdgeWorkloadUriVariableName} is required.");
             string deviceId = GetValueFromEnvironment(envVariables, DeviceIdVariableName)
                 ?? throw new InvalidOperationException($"Environment variable {DeviceIdVariableName} is required.");
             string moduleId = GetValueFromEnvironment(envVariables, ModuleIdVariableName)
@@ -55,14 +58,14 @@ namespace Microsoft.Azure.Devices.Client
                 ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
             string generationId = GetValueFromEnvironment(envVariables, ModuleGenerationIdVariableName)
                 ?? throw new InvalidOperationException($"Environment variable {ModuleGenerationIdVariableName} is required.");
-            string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
+            string gateway = GetValueFromEnvironment(envVariables, GatewayHostNameVariableName);
 
             if (!StringComparer.OrdinalIgnoreCase.Equals(authScheme, SasTokenAuthScheme))
             {
                 throw new InvalidOperationException($"Unsupported authentication scheme. Supported scheme is {SasTokenAuthScheme}.");
             }
 
-            ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, ClientApiVersionHelper.ApiVersionLatest);
+            ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgeWorkloadUri, EdgeHsmApiVersion);
 
             // TODO: environment variables need to be added to accept SasTokenTimeToLive and SasTokenRenewalBuffer.
             // These values can then be passed on to EdgeModuleAuthenticationWithHsm (internal class).
@@ -79,7 +82,9 @@ namespace Microsoft.Azure.Devices.Client
             return new IotHubConnectionCredentials(authMethod, hostName, gateway);
         }
 
-        internal static async Task<ICertificateValidator> CreateCertificateValidatorFromEnvironmentAsync(ITrustBundleProvider trustBundleProvider, IotHubClientOptions options)
+        internal static async Task<ICertificateValidator> CreateCertificateValidatorFromEnvironmentAsync(
+            ITrustBundleProvider trustBundleProvider, 
+            IotHubClientOptions options)
         {
             Debug.Assert(options != null);
 
@@ -87,8 +92,8 @@ namespace Microsoft.Azure.Devices.Client
 
             IDictionary envVariables = Environment.GetEnvironmentVariables();
 
-            string connectionString = GetValueFromEnvironment(envVariables, EdgehubConnectionstringVariableName)
-                ?? GetValueFromEnvironment(envVariables, IothubConnectionstringVariableName);
+            string connectionString = GetValueFromEnvironment(envVariables, EdgeHubConnectionStringVariableName)
+                ?? GetValueFromEnvironment(envVariables, IotHubConnectionStringVariableName);
 
             // First try to create from connection string and if env variable for connection string is not found try to create from edgedUri
             if (!string.IsNullOrWhiteSpace(connectionString))
@@ -107,15 +112,18 @@ namespace Microsoft.Azure.Devices.Client
                 return certificateValidator;
             }
 
-            string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
-            string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
+            string edgeWorkloadUri = GetValueFromEnvironment(envVariables, IotEdgeWorkloadUriVariableName)
+                ?? throw new InvalidOperationException($"Environment variable {IotEdgeWorkloadUriVariableName} is required.");
+            string gateway = GetValueFromEnvironment(envVariables, GatewayHostNameVariableName);
 
             if (Logging.IsEnabled)
                 Logging.Info("EdgeModuleClientFactory setupTrustBundle from service");
 
             if (!string.IsNullOrEmpty(gateway))
             {
-                IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), ClientApiVersionHelper.ApiVersionLatest).ConfigureAwait(false);
+                IList<X509Certificate2> certs = await trustBundleProvider
+                    .GetTrustBundleAsync(new Uri(edgeWorkloadUri), EdgeHsmApiVersion)
+                    .ConfigureAwait(false);
                 certificateValidator = CreateCertificateValidator(certs, options);
             }
 
