@@ -21,7 +21,6 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
         private static DirectMethodServiceRequest s_directMethodRequest = new("update");
         private static ClientTwin s_updateTwin = new("TestTwin");
         private static DateTimeOffset s_startOn = new(new DateTime());
-        private static TimeSpan s_MaxExecutionTime;
 
         [TestMethod]
         public void JobRequest_FieldInitialization()
@@ -69,8 +68,8 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             deserializedRequest.UpdateTwin.Should().BeEquivalentTo(s_updateTwin);
             deserializedRequest.QueryCondition.Should().Be("TestQuery");
             deserializedRequest.StartOn.Should().Be(s_startOn);
-            deserializedRequest.MaxExecutionTime.Should().Be(s_MaxExecutionTime);
-            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(s_MaxExecutionTime.Seconds);
+            deserializedRequest.MaxExecutionTime.Should().Be(new TimeSpan());
+            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(new TimeSpan().Seconds);
         }
     }
 }
