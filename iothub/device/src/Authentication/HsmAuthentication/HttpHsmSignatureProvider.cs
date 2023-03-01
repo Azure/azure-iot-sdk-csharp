@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             {
                 var hsmHttpClient = new HttpHsmClient(httpClient)
                 {
-                    BaseUrl = HttpClientHelper.GetBaseUrl(_providerUri)
+                    BaseUrl = HttpClientHelper.GetBaseUri(_providerUri)
                 };
 
                 SignResponse response = await SignWithRetryAsync(
