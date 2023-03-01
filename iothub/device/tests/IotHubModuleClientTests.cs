@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // assert
-            Func<Task> act = async () => await moduleClient.SendTelemetryAsync("output", messageWithId).ConfigureAwait(false);
+            Func<Task> act = async () => await moduleClient.SendMessageToRouteAsync("output", messageWithId).ConfigureAwait(false);
             await act.Should().ThrowAsync<IotHubClientException>();
         }
 
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 MessageId = messageId,
             };
-            Func<Task> act = async () => await moduleClient.SendTelemetryAsync("output", messageWithId).ConfigureAwait(false);
+            Func<Task> act = async () => await moduleClient.SendMessageToRouteAsync("output", messageWithId).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<IotHubClientException>();
@@ -378,8 +378,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 MessageId = messageId,
             };
-            await moduleClient.SendTelemetryAsync("output", messageWithoutId).ConfigureAwait(false);
-            await moduleClient.SendTelemetryAsync("output", messageWithId).ConfigureAwait(false);
+            await moduleClient.SendMessageToRouteAsync("output", messageWithoutId).ConfigureAwait(false);
+            await moduleClient.SendMessageToRouteAsync("output", messageWithId).ConfigureAwait(false);
             
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -406,7 +406,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 MessageId = messageId,
             };
 
-            await moduleClient.SendTelemetryBatchAsync("output", new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await moduleClient.SendMessagesToRouteAsync("output", new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();

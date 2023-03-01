@@ -196,7 +196,10 @@ The device client and module client share a lot of API surface and underlying im
 
 #### Notable breaking changes
 
-N/A
+| v1 API | Equivalent v2 API | Notes |
+|:---|:---|:---|
+| `ModuleClient.SendEventAsync(string outputName, ...)` | `IotHubModuleClient.SendMessageToRouteAsync(string outputName, ...)` | Change the name to be more descriptive about sending messages between Edge modules.¹ |
+| `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹. |
 
 #### Notable additions
 
