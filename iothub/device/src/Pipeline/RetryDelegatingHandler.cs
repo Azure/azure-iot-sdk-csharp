@@ -77,8 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -111,8 +109,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -148,8 +144,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal method, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -176,8 +170,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -231,8 +223,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -283,8 +273,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // then any message sent while the device was disconnected is delivered on the callback.
         public override async Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -333,8 +321,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -383,8 +369,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -430,8 +414,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -477,8 +459,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -525,8 +505,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -573,8 +551,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -620,8 +596,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -667,8 +641,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -695,8 +667,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -723,8 +693,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -751,8 +719,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -779,8 +745,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             try
             {
                 if (Logging.IsEnabled)
@@ -812,8 +776,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             await _clientOpenCloseSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -853,8 +815,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// </summary>
         private async Task EnsureOpenedAsync(bool withRetry, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             // If this object has already been disposed, we will throw an exception indicating that.
             // This is the entry point for interacting with the client and this safety check should be done here.
             // The current behavior does not support open->close->open
@@ -986,8 +946,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task OpenInternalAsync(bool withRetry, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             if (withRetry)
             {
                 await _internalRetryPolicy
