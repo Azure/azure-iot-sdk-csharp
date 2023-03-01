@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
-        private readonly CancellationTokenSource _cancelPendingOperations = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancelPendingOperationsCts = new CancellationTokenSource();
 
         private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
 
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 return await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
 
                 using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
 
                 return await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -374,7 +374,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -419,7 +419,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -465,7 +465,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
                 _isAnEdgeModule = isAnEdgeModule;
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -511,7 +511,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
 
                 _isAnEdgeModule = isAnEdgeModule;
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -556,7 +556,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -601,7 +601,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -646,7 +646,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 return await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -672,7 +672,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -698,7 +698,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -724,7 +724,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -750,7 +750,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
 
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperations.Token);
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -788,7 +788,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
                 _handleDisconnectCts.Cancel();
-                _cancelPendingOperations.Cancel();
+                _cancelPendingOperationsCts.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -1246,17 +1246,33 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     base.Dispose(disposing);
                     if (disposing)
                     {
+                        var disposables = new List<IDisposable>
+                        {
+                            _handleDisconnectCts,
+                            _cancelPendingOperationsCts,
+                            _clientOpenCloseSemaphore,
+                            _cloudToDeviceMessageSubscriptionSemaphore,
+                            _cloudToDeviceEventSubscriptionSemaphore,
+                            _directMethodSubscriptionSemaphore,
+                            _twinEventsSubscriptionSemaphore,
+                        };
+
                         _handleDisconnectCts?.Cancel();
-                        _handleDisconnectCts?.Dispose();
+                        _cancelPendingOperationsCts?.Cancel();
 
-                        _cancelPendingOperations?.Cancel();
-                        _cancelPendingOperations?.Dispose();
-
-                        _clientOpenCloseSemaphore?.Dispose();
-                        _cloudToDeviceMessageSubscriptionSemaphore?.Dispose();
-                        _cloudToDeviceEventSubscriptionSemaphore?.Dispose();
-                        _directMethodSubscriptionSemaphore?.Dispose();
-                        _twinEventsSubscriptionSemaphore?.Dispose();
+                        foreach (IDisposable disposable in disposables)
+                        {
+                            try
+                            {
+                                disposable?.Dispose();
+                            }
+                            catch (ObjectDisposedException)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Tried disposing the IDisposable {disposable} but it has already been disposed by client disposal on a separate thread." +
+                                        "Ignoring this exception and continuing with client cleanup.");
+                            }
+                        }
                     }
 
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to true there.
