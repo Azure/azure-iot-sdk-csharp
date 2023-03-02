@@ -21,8 +21,6 @@ namespace Microsoft.Azure.Devices.Client
 
         internal const string UserId = "user-id";
 
-        internal const string Operation = "iothub-operation";
-
         internal const string OutputName = "iothub-outputname";
 
         internal const string InputName = "iothub-inputname";
