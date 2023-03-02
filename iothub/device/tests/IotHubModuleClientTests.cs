@@ -433,7 +433,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
 
             // act
-            Func<Task> act = async () => await moduleClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { new TelemetryMessage(), new TelemetryMessage() });
+            Func<Task> act = async () => await moduleClient.SendTelemetryAsync(new List<TelemetryMessage> { new TelemetryMessage(), new TelemetryMessage() });
 
             // assert
             await act.Should().ThrowAsync<InvalidOperationException>();

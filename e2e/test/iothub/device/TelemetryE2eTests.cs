@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.SendTelemetryBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
         }
 
         private static async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)

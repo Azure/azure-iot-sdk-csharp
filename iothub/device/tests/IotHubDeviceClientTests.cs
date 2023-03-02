@@ -1270,7 +1270,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 MessageId = messageId,
             };
-            await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -1300,7 +1300,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 MessageId = messageId,
             };
-            await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -1330,7 +1330,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 MessageId = messageId,
             };
-            await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
+            await deviceClient.SendTelemetryAsync(new List<TelemetryMessage> { messageWithoutId, messageWithId }).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
@@ -1458,7 +1458,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             var ct = new CancellationToken(true);
-            Func<Task> act = async () => await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { new TelemetryMessage(), new TelemetryMessage() }, ct);
+            Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new List<TelemetryMessage> { new TelemetryMessage(), new TelemetryMessage() }, ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -1484,7 +1484,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var deviceClient = new IotHubDeviceClient(fakeConnectionString);
 
             // act
-            Func<Task> act = async () => await deviceClient.SendTelemetryBatchAsync(new List<TelemetryMessage> { new TelemetryMessage(), new TelemetryMessage() });
+            Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new List<TelemetryMessage> { new TelemetryMessage(), new TelemetryMessage() });
 
             // assert
             await act.Should().ThrowAsync<InvalidOperationException>();

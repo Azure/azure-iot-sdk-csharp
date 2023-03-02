@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends a telemetry message to IoT hub.
         /// </summary>
         /// <remarks>
-        /// The client instance must be opened already.
+        /// The client instance must be already open.
         /// <para>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect
         /// the error details and take steps accordingly.
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends a batch of telemetry message to IoT hub.
         /// </summary>
         /// <remarks>
-        /// The client instance must be opened already.
+        /// The client instance must be already open.
         /// <para>
         /// This operation is supported only over AMQP.
         /// </para>
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="InvalidOperationException">When this method is called when the client is configured to use MQTT.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
+        public async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
             cancellationToken.ThrowIfCancellationRequested();
@@ -210,13 +210,15 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sets a callback for receiving a message from the device or module queue using a cancellation token.
-        /// This instance must be opened already.
         /// </summary>
         /// <remarks>
+        /// The client instance must already be open.
+        /// <para>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
         /// A method callback can be unset by setting <paramref name="messageCallback"/> to null.
         /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
         /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
+        /// </para>
         /// </remarks>
         /// <param name="messageCallback">The callback to be invoked when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -263,13 +265,15 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sets the callback for all direct method calls from the service.
-        /// This instance must be opened already.
         /// </summary>
         /// <remarks>
+        /// The client instance must already be open.
+        /// <para>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
         /// A method callback can be unset by setting <paramref name="directMethodCallback"/> to null.
         /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
         /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
+        /// </para>
         /// </remarks>
         /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -311,7 +315,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Retrieve the twin properties for the current client.
         /// </summary>
         /// <remarks>
-        /// The client instance must be opened already.
+        /// The client instance must be already open.
         /// <para>
         /// This API gives you the client's view of the twin. For more information on twins in IoT hub, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins"/>.
         /// </para>
@@ -330,6 +334,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Push reported property changes up to the service.
         /// </summary>
+        /// <remarks>
+        /// The client instance must be already open.
+        /// </remarks>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The new version of the updated twin if the update was successful.</returns>
@@ -345,13 +352,16 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a desired state update
-        /// from the service. The client instance must be opened already.
+        /// from the service.
         /// </summary>
         /// <remarks>
+        /// The client instance must be already open.
+        /// <para>
         /// Calling this API more than once will result in the callback set last overwriting any previously set callback.
         /// This user-supplied callback is "fire-and-forget" and the SDK doesn't wait on it. All of requests will be processed as they arrive.
         /// The users are responsible to handle exceptions within their callback implementation.
         /// A method callback can be unset by setting <paramref name="callback"/> to null.
+        /// </para>
         ///  <para>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
         ///  </para>

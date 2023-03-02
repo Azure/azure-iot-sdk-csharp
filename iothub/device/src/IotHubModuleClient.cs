@@ -108,16 +108,19 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sends a message to IoT hub. IotHubModuleClient instance must be already open.
+        /// Sends a message to IoT hub.
         /// </summary>
         /// <remarks>
+        /// IotHubModuleClient instance must be already open.
         /// <para>
         /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
         /// </para>
+        /// <para>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
         /// Please note that the above list is not exhaustive.
+        /// </para>
         /// </remarks>
-        /// <param name="outputName">The output target for sending the given message.</param>
+        /// <param name="outputName">The named module route for sending the given message.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
@@ -132,23 +135,12 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
             Argument.AssertNotNull(message, nameof(message));
 
-            ValidateModuleTransportHandler("SendMessageToRouteAsync for a named output");
-
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
                 message.OutputName = outputName;
-
-                await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
-            }
-            catch (SocketException socketException)
-            {
-                throw new IotHubClientException(socketException.Message, IotHubClientErrorCode.NetworkErrors, socketException);
-            }
-            catch (WebSocketException webSocketException)
-            {
-                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
+                await base.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -159,12 +151,14 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// IotHubModuleClient instance must be already open.
         /// </summary>
         /// <remarks>
+        /// IotHubModuleClient instance must be already open.
+        /// <para>
         /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// </para>
         /// </remarks>
-        /// <param name="outputName">The output target for sending the given message.</param>
+        /// <param name="outputName">The named module route for sending the given message.</param>
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event.</returns>
@@ -180,13 +174,11 @@ namespace Microsoft.Azure.Devices.Client
             var messagesList = messages?.ToList();
             Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
 
-            ValidateModuleTransportHandler("SendMessagesToRouteAsync for a named output");
-
             try
             {
                 messagesList.ForEach(m => m.OutputName = outputName);
 
-                await InnerHandler.SendTelemetryBatchAsync(messagesList, cancellationToken).ConfigureAwait(false);
+                await base.SendTelemetryAsync(messagesList, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -198,10 +190,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Interactively invokes a method from an edge module to an edge device.
         /// Both the edge module and the edge device need to be connected to the same edge hub.
-        /// IotHubModuleClient instance must be already open.
         /// </summary>
         /// <remarks>
+        /// IotHubModuleClient instance must be already open.
+        /// <para>
         /// This API call is relevant only for IoT Edge modules.
+        /// </para>
         /// </remarks>
         /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
         /// <param name="methodRequest">The details of the method to invoke.</param>
@@ -218,10 +212,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Interactively invokes a method from an edge module to a different edge module.
         /// Both of the edge modules need to be connected to the same edge hub.
-        /// IotHubModuleClient instance must be already open.
         /// </summary>
         /// <remarks>
+        /// IotHubModuleClient instance must be already open.
+        /// <para>
         /// This API call is relevant only for IoT Edge modules.
+        /// </para>
         /// </remarks>
         /// <param name="deviceId">The unique identifier of the device.</param>
         /// <param name="moduleId">The unique identifier of the edge module to invoke the method on.</param>
@@ -246,14 +242,6 @@ namespace Microsoft.Azure.Devices.Client
 
             // Call the base class implementation.
             base.Dispose(disposing);
-        }
-
-        private void ValidateModuleTransportHandler(string apiName)
-        {
-            if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
-            {
-                throw new InvalidOperationException($"{apiName} is available for Modules only.");
-            }
         }
 
         private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
