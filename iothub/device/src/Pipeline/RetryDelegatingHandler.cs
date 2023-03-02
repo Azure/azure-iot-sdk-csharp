@@ -788,7 +788,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
                 _handleDisconnectCts.Cancel();
-                _cancelPendingOperationsCts.Cancel();
+                _cancelPendingOperationsCts.Cancel(); // Is it possible that this is already disposed by the time close was still waiting to acquire the semaphore?
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
