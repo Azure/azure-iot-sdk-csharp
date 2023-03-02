@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client
         public string OutputName
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.OutputName);
-            protected internal set => SystemProperties[MessageSystemPropertyNames.OutputName] = value;
+            set => SystemProperties[MessageSystemPropertyNames.OutputName] = value;
         }
 
         /// <summary>
