@@ -7,7 +7,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -36,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_Operation(IotHubTransportProtocol protocol)
         {
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };
@@ -64,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_Operation_OpenCloseOpen(IotHubTransportProtocol protocol)
         {
-            var options = new IotHubServiceClientOptions()
+            var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };
@@ -97,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection(IotHubTransportProtocol protocol)
         {
-            var options = new IotHubServiceClientOptions()
+            var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };

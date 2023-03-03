@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             X509Certificate2 authCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
             var auth = new ClientAuthenticationWithX509Certificate(authCertificate, testDevice.Id);
             await using var deviceClient = new IotHubDeviceClient(hostName, auth, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
 
             // Act
 
