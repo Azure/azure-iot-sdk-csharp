@@ -168,6 +168,18 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Specifies the output name on which the message will be sent, if applicable.
+        /// </summary>
+        /// <remarks>
+        /// Used for message routes with IoT Edge.
+        /// </remarks>
+        public string OutputName
+        {
+            get => GetSystemProperty<string>(MessageSystemPropertyNames.OutputName);
+            set => SystemProperties[MessageSystemPropertyNames.OutputName] = value;
+        }
+
+        /// <summary>
         /// True if the message is set as a security message
         /// </summary>
         public bool IsSecurityMessage => CommonConstants.SecurityMessageInterfaceId.Equals(

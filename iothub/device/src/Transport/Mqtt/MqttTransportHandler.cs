@@ -119,39 +119,38 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly Dictionary<string, string> s_toSystemPropertiesMap = new()
         {
             { IotHubWirePropertyNames.AbsoluteExpiryTime, MessageSystemPropertyNames.ExpiryTimeUtc },
-            { IotHubWirePropertyNames.CorrelationId, MessageSystemPropertyNames.CorrelationId },
-            { IotHubWirePropertyNames.MessageId, MessageSystemPropertyNames.MessageId },
-            { IotHubWirePropertyNames.To, MessageSystemPropertyNames.To },
-            { IotHubWirePropertyNames.UserId, MessageSystemPropertyNames.UserId },
-            { IotHubWirePropertyNames.MessageSchema, MessageSystemPropertyNames.MessageSchema },
-            { IotHubWirePropertyNames.CreationTimeUtc, MessageSystemPropertyNames.CreationTimeUtc },
-            { IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType },
-            { IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding },
-            { MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation },
             { IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId },
             { IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId },
+            { IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding },
+            { IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType },
+            { IotHubWirePropertyNames.CorrelationId, MessageSystemPropertyNames.CorrelationId },
+            { IotHubWirePropertyNames.CreationTimeUtc, MessageSystemPropertyNames.CreationTimeUtc },
+            { IotHubWirePropertyNames.InterfaceId, MessageSystemPropertyNames.InterfaceId },
+            { IotHubWirePropertyNames.MessageId, MessageSystemPropertyNames.MessageId },
+            { IotHubWirePropertyNames.MessageSchema, MessageSystemPropertyNames.MessageSchema },
             { IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId },
             { IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext },
-            { IotHubWirePropertyNames.InterfaceId, MessageSystemPropertyNames.InterfaceId },
+            { IotHubWirePropertyNames.OutputName, MessageSystemPropertyNames.OutputName },
+            { IotHubWirePropertyNames.To, MessageSystemPropertyNames.To },
+            { IotHubWirePropertyNames.UserId, MessageSystemPropertyNames.UserId },
         };
 
         private static readonly Dictionary<string, string> s_fromSystemPropertiesMap = new()
         {
-            { MessageSystemPropertyNames.ExpiryTimeUtc, IotHubWirePropertyNames.AbsoluteExpiryTime },
-            { MessageSystemPropertyNames.CorrelationId, IotHubWirePropertyNames.CorrelationId },
-            { MessageSystemPropertyNames.MessageId, IotHubWirePropertyNames.MessageId },
-            { MessageSystemPropertyNames.To, IotHubWirePropertyNames.To },
-            { MessageSystemPropertyNames.UserId, IotHubWirePropertyNames.UserId },
-            { MessageSystemPropertyNames.MessageSchema, IotHubWirePropertyNames.MessageSchema },
-            { MessageSystemPropertyNames.CreationTimeUtc, IotHubWirePropertyNames.CreationTimeUtc },
+            { MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName },
             { MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType },
             { MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding },
-            { MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation },
-            { MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
+            { MessageSystemPropertyNames.CorrelationId, IotHubWirePropertyNames.CorrelationId },
+            { MessageSystemPropertyNames.CreationTimeUtc, IotHubWirePropertyNames.CreationTimeUtc },
             { MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey },
             { MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey },
+            { MessageSystemPropertyNames.ExpiryTimeUtc, IotHubWirePropertyNames.AbsoluteExpiryTime },
             { MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId },
-            { MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName },
+            { MessageSystemPropertyNames.MessageId, IotHubWirePropertyNames.MessageId },
+            { MessageSystemPropertyNames.MessageSchema, IotHubWirePropertyNames.MessageSchema },
+            { MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
+            { MessageSystemPropertyNames.To, IotHubWirePropertyNames.To },
+            { MessageSystemPropertyNames.UserId, IotHubWirePropertyNames.UserId },
         };
 
         internal IMqttClient _mqttClient;
@@ -320,7 +319,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case MqttClientConnectResultCode.ClientIdentifierNotValid:
                         throw new IotHubClientException(
                             "Failed to open the MQTT connection due to incorrect or unauthorized credentials",
-                            IotHubClientErrorCode.Unauthorized, 
+                            IotHubClientErrorCode.Unauthorized,
                             ex);
                     case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                         // Should never happen since the protocol version (3.1.1) is hardcoded
@@ -798,14 +797,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
                 await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
                 // Deliberately not rethrowing the exception because this is a "best effort" close.
                 // The service may not have acknowledged that the client closed the connection, but
                 // all local resources have been closed. The service will eventually realize the
                 // connection is closed in cases like these.
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Failed to gracefully close the MQTT client {ex}");
+                Logging.Error(this, $"Failed to gracefully close the MQTT client {ex}");
             }
         }
 
@@ -883,8 +881,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string fullTopic = topic + WildCardTopicFilter;
 
             MqttClientUnsubscribeOptions unsubscribeOptions = new MqttClientUnsubscribeOptionsBuilder()
-                    .WithTopicFilter(fullTopic)
-                    .Build();
+                .WithTopicFilter(fullTopic)
+                .Build();
 
             try
             {
@@ -970,10 +968,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // the module is not an Edge module.
                 await HandleIncomingEventMessageAsync(receivedEventArgs).ConfigureAwait(false);
             }
-            else
+            else if (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Received an MQTT message on unexpected topic {topic}. Ignoring message.");
+                Logging.Error(this, $"Received an MQTT message on unexpected topic {topic}. Ignoring message.");
             }
         }
 
@@ -1003,12 +1000,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (Logging.IsEnabled)
                 {
                     // This likely happened because the connection was lost. The service will re-send this message so the user
                     // can acknowledge it on the new connection.
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
+                    Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
                 }
             }
             else
@@ -1183,10 +1179,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     patchTwinCompletion.TrySetResult(patchTwinResponse);
                 }
-                else
+                else if (Logging.IsEnabled)
                 {
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"Received response to an unknown twin request with request id {receivedRequestId}. Discarding it.");
+                    Logging.Info(this, $"Received response to an unknown twin request with request id {receivedRequestId}. Discarding it.");
                 }
             }
         }
@@ -1338,15 +1333,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             string properties = UrlEncodedDictionarySerializer.Serialize(mergedProperties);
 
-            string msg = $"{topicName}{properties}";
-
             // end the topic string with a '/' if it doesn't already end with one.
-            if (!topicName.EndsWith("/", StringComparison.Ordinal))
-            {
-                msg += "/";
-            }
-
-            return msg;
+            string suffix = topicName.EndsWith("/", StringComparison.Ordinal)
+                ? string.Empty
+                : "/";
+            return $"{topicName}{properties}{suffix}";
         }
 
         /// <summary>

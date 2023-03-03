@@ -108,100 +108,94 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sends an event to IoT hub. IotHubModuleClient instance must be opened already.
+        /// Sends a message to IoT hub.
         /// </summary>
         /// <remarks>
+        /// IotHubModuleClient instance must be already open.
         /// <para>
         /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
         /// </para>
+        /// <para>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
         /// Please note that the above list is not exhaustive.
+        /// </para>
         /// </remarks>
-        /// <param name="outputName">The output target for sending the given message.</param>
+        /// <param name="outputName">The named module route for sending the given message.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        public async Task SendTelemetryAsync(string outputName, TelemetryMessage message, CancellationToken cancellationToken = default)
+        public async Task SendMessageToRouteAsync(string outputName, TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, outputName, message, nameof(SendTelemetryAsync));
+                Logging.Enter(this, outputName, message, nameof(SendMessageToRouteAsync));
 
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
             Argument.AssertNotNull(message, nameof(message));
-
-            ValidateModuleTransportHandler("SendTelemetryAsync for a named output");
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
-
-                await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
-            }
-            catch (SocketException socketException)
-            {
-                throw new IotHubClientException(socketException.Message, IotHubClientErrorCode.NetworkErrors, socketException);
-            }
-            catch (WebSocketException webSocketException)
-            {
-                throw new IotHubClientException(webSocketException.Message, IotHubClientErrorCode.NetworkErrors, webSocketException);
+                message.OutputName = outputName;
+                await base.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, outputName, message, nameof(SendTelemetryAsync));
+                    Logging.Exit(this, outputName, message, nameof(SendMessageToRouteAsync));
             }
         }
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// IotHubModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
+        /// IotHubModuleClient instance must be already open.
+        /// <para>
         /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// </para>
         /// </remarks>
-        /// <param name="outputName">The output target for sending the given message.</param>
+        /// <param name="outputName">The named module route for sending the given message.</param>
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The task containing the event</returns>
+        /// <returns>The task containing the event.</returns>
         /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SendTelemetryBatchAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
+        public async Task SendMessagesToRouteAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, outputName, messages, nameof(SendTelemetryBatchAsync));
+                Logging.Enter(this, outputName, messages, nameof(SendMessagesToRouteAsync));
 
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
 
             var messagesList = messages?.ToList();
             Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
 
-            ValidateModuleTransportHandler("SendTelemetryBatchAsync for a named output");
-
             try
             {
-                messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
+                messagesList.ForEach(m => m.OutputName = outputName);
 
-                await InnerHandler.SendTelemetryBatchAsync(messagesList, cancellationToken).ConfigureAwait(false);
+                await base.SendTelemetryAsync(messagesList, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, outputName, messages, nameof(SendTelemetryBatchAsync));
+                    Logging.Exit(this, outputName, messages, nameof(SendMessagesToRouteAsync));
             }
         }
 
         /// <summary>
         /// Interactively invokes a method from an edge module to an edge device.
         /// Both the edge module and the edge device need to be connected to the same edge hub.
-        /// IotHubModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
+        /// IotHubModuleClient instance must be already open.
+        /// <para>
         /// This API call is relevant only for IoT Edge modules.
+        /// </para>
         /// </remarks>
         /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
         /// <param name="methodRequest">The details of the method to invoke.</param>
@@ -218,10 +212,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Interactively invokes a method from an edge module to a different edge module.
         /// Both of the edge modules need to be connected to the same edge hub.
-        /// IotHubModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
+        /// IotHubModuleClient instance must be already open.
+        /// <para>
         /// This API call is relevant only for IoT Edge modules.
+        /// </para>
         /// </remarks>
         /// <param name="deviceId">The unique identifier of the device.</param>
         /// <param name="moduleId">The unique identifier of the edge module to invoke the method on.</param>
@@ -246,14 +242,6 @@ namespace Microsoft.Azure.Devices.Client
 
             // Call the base class implementation.
             base.Dispose(disposing);
-        }
-
-        private void ValidateModuleTransportHandler(string apiName)
-        {
-            if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
-            {
-                throw new InvalidOperationException($"{apiName} is available for Modules only.");
-            }
         }
 
         private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)

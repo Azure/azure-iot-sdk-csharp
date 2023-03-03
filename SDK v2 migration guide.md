@@ -168,8 +168,8 @@ Find a client you currently use below, read the table of API name changes and us
 |:---|:---|:---|
 | `DeviceClient` | `IotHubDeviceClient` | Specify the service it is a device client for. |
 | `DeviceClient.Dispose()` | `IotHubDeviceClient.DisposeAsync()` | Ensures the client is closed before disposing. |
-| `DeviceClient.SendEventAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(...)` | Even our public documentation calls this telemetry, so we renamed the method to describe this better.¹ |
-| `DeviceClient.SendEventBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryBatchAsync(...)` | This is now only supported over AMQP. Support over MQTT has been removed. Also, see¹. |
+| `DeviceClient.SendEventAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(TelemetryMessage, ...)` | Even our public documentation calls this telemetry, so we renamed the method to describe this better.¹ |
+| `DeviceClient.SendEventBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(IEnumerable<TelemetryMessage>, ...)` | This is now only supported over AMQP. Support over MQTT has been removed. Also, see¹. |
 | `DeviceClient.SetConnectionStatusChangesHandler(...)` | `IotHubDeviceClient.ConnectionStatusChangeCallback` | Local operation doesn't require being a method. |
 | `DeviceClient.SetReceiveMessageHandlerAsync(...)` | `IotHubDeviceClient.SetIncomingMessageCallbackAsync(...)` | Disambiguate from telemetry messages. |
 | `DeviceClient.GetTwinAsync(...)` | `IotHubDeviceClient.GetTwinPropertiesAsync(...)` | The device client doesn't get the full twin, just the properties so this helps avoid that confusion.² |
@@ -196,7 +196,10 @@ The device client and module client share a lot of API surface and underlying im
 
 #### Notable breaking changes
 
-N/A
+| v1 API | Equivalent v2 API | Notes |
+|:---|:---|:---|
+| `ModuleClient.SendEventAsync(string outputName, ...)` | `IotHubModuleClient.SendMessageToRouteAsync(string outputName, ...)` | Change the name to be more descriptive about sending messages between Edge modules.¹ |
+| `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹. |
 
 #### Notable additions
 

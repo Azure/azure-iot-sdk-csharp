@@ -128,10 +128,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     {
                         switch (pair.Key.ToString())
                         {
-                            case MessageSystemPropertyNames.Operation:
-                                message.SystemProperties[pair.Key.ToString()] = stringObject;
-                                break;
-
                             case MessageSystemPropertyNames.MessageSchema:
                                 message.MessageSchema = stringObject;
                                 break;

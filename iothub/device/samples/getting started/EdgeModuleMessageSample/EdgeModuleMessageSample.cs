@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Now sending message to the module itself.
             var message = new TelemetryMessage(Encoding.ASCII.GetBytes("Sample message"));
             // Setting output name to '*' will send telemetry from all output channels of the module.
-            await _moduleClient.SendTelemetryAsync(OutputName, message, cts.Token);
+            await _moduleClient.SendMessageToRouteAsync(OutputName, message, cts.Token);
             Console.WriteLine($"\n{DateTime.Now}> Sent telemetry message to the module.");
 
             // Now continue to send messages to the module with every key press of 'M'.
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     message = new TelemetryMessage(Encoding.ASCII.GetBytes("Sample message"));
                     // Setting output name to '*' will send telemetry from all output channels of the module.
-                    await _moduleClient.SendTelemetryAsync(OutputName, message, cts.Token);
+                    await _moduleClient.SendMessageToRouteAsync(OutputName, message, cts.Token);
                     Console.WriteLine($"\n{DateTime.Now}> Sent telemetry message to the module.");
                 }
             }
