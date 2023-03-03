@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
 
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await using IotHubDeviceClient deviceClient = await testDevice.CreateDeviceClientAsync(new IotHubClientOptions(transportSettings));
 
             int connectionStatusChangeCount = 0;
 
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             try
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
                 await initOperation(deviceClient, testDevice).ConfigureAwait(false);
 

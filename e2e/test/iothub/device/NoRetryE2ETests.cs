@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 RetryPolicy = new IotHubClientNoRetry(),
             };
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await using IotHubDeviceClient deviceClient = await testDevice.CreateDeviceClientAsync(options).ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
 
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
             await FaultInjection

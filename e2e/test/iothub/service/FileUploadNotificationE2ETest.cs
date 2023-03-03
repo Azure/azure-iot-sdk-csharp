@@ -141,7 +141,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     if (timer.ElapsedMilliseconds > 200000)
                     {
-                        throw new AssertFailedException($"Timed out waiting for the expected number of file upload notifications. Received {counter.FileUploadNotificationsReceived}, expected {expectedFileUploadNotificationReceivedCount}");
+                        throw new AssertFailedException(
+                            $"Timed out waiting for the expected number of file upload notifications. Received {counter.FileUploadNotificationsReceived}, expected {expectedFileUploadNotificationReceivedCount}");
                     }
 
                     await Task.Delay(800);
@@ -156,7 +157,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private async Task UploadFile()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
+            await using IotHubDeviceClient deviceClient = await testDevice
+                .CreateDeviceClientAsync(new IotHubClientOptions(new IotHubClientAmqpSettings()), openClient: true)
+                .ConfigureAwait(false);
             const string filePath = "TestPayload.txt";
             using FileStream fileStreamSource = File.Create(filePath);
             using var sr = new StreamWriter(fileStreamSource);

@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             {
                 // Initialize the test device client instances
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
-                IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
+                IotHubDeviceClient deviceClient = await testDevice.CreateDeviceClientAsync(new IotHubClientOptions(transportSettings), authScope: authScope).ConfigureAwait(false);
 
                 // Set the device client connection status change handler
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange();

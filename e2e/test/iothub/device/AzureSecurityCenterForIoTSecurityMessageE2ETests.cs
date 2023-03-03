@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task TestSecurityMessageAsync(IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await using IotHubDeviceClient deviceClient = await testDevice.CreateDeviceClientAsync(new IotHubClientOptions(transportSettings), openClient: true).ConfigureAwait(false);
             await SendSingleSecurityMessageAsync(deviceClient).ConfigureAwait(false);
         }
 
@@ -132,24 +132,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
 
-            var options = new IotHubClientOptions(transportSettings);
-            await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
+            await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, new IotHubClientOptions(transportSettings));
+            await moduleClient.OpenAsync().ConfigureAwait(false);
             await SendSingleSecurityMessageModuleAsync(moduleClient).ConfigureAwait(false);
         }
 
-        private static async Task SendSingleSecurityMessageAsync(
-            IotHubDeviceClient deviceClient)
+        private static async Task SendSingleSecurityMessageAsync(IotHubDeviceClient deviceClient)
         {
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
             TelemetryMessage testMessage = ComposeD2CSecurityTestMessage();
             await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }
 
-        private static async Task SendSingleSecurityMessageModuleAsync(
-            IotHubModuleClient moduleClient)
+        private static async Task SendSingleSecurityMessageModuleAsync(IotHubModuleClient moduleClient)
         {
-            await moduleClient.OpenAsync().ConfigureAwait(false);
             TelemetryMessage testMessage = ComposeD2CSecurityTestMessage();
             await moduleClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
         }

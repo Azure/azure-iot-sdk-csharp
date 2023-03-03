@@ -54,6 +54,125 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             return ret;
         }
 
+        /// <summary>
+        /// Used in conjunction with DeviceClient.CreateFromConnectionString()
+        /// </summary>
+        public string ConnectionString
+        {
+            get
+            {
+                string iotHubHostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
+                return $"HostName={iotHubHostName};DeviceId={Device.Id};SharedAccessKey={Device.Authentication.SymmetricKey.PrimaryKey}";
+            }
+        }
+
+        /// <summary>
+        /// Used in conjunction with DeviceClient.Create()
+        /// </summary>
+        public string IotHubHostName { get; } = GetHostName(TestConfiguration.IotHub.ConnectionString);
+
+        /// <summary>
+        /// Device Id
+        /// </summary>
+        public string Id => Device.Id;
+
+        /// <summary>
+        /// Device identity object.
+        /// </summary>
+        public Device Device { get; private set; }
+
+        public IotHubDeviceClient DeviceClient { get; private set; }
+
+        public IAuthenticationMethod AuthenticationMethod { get; private set; }
+
+        public async Task<IotHubDeviceClient> CreateDeviceClientAsync(IotHubClientOptions options = default, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device, bool openClient = false)
+        {
+            if (AuthenticationMethod == null)
+            {
+                if (authScope == ConnectionStringAuthScope.Device)
+                {
+                    DeviceClient = new IotHubDeviceClient(ConnectionString, options);
+                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClientAsync)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from device connection string");
+                }
+                else
+                {
+                    DeviceClient = new IotHubDeviceClient($"{TestConfiguration.IotHub.ConnectionString};DeviceId={Device.Id}", options);
+                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClientAsync)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IoTHub connection string");
+                }
+            }
+            else
+            {
+                DeviceClient = new IotHubDeviceClient(IotHubHostName, AuthenticationMethod, options);
+                VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClientAsync)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod");
+            }
+
+            if (openClient)
+            {
+                await OpenWithRetryAsync().ConfigureAwait(false);
+            }
+
+            return DeviceClient;
+        }
+
+        /// Sometimes the just newly created device can fail to connect if there is lag in the hub for the identity existing.
+        /// Retry a few times to prevent test failures.
+        /// </summary>
+        public async Task OpenWithRetryAsync()
+        {
+            if (DeviceClient == null)
+            {
+                throw new InvalidOperationException("The device client has not been initialized. Call CreateDeviceClient() first.");
+            }
+            await OpenWithRetryAsync(DeviceClient).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        public static async Task OpenWithRetryAsync(IotHubDeviceClient client)
+        {
+            int attempt = 1;
+            while (true)
+            {
+                try
+                {
+                    VerboseTestLogger.WriteLine("Opening device client...");
+                    await client.OpenAsync().ConfigureAwait(false);
+                    break;
+                }
+                catch (IotHubClientException ex) when (ex.ErrorCode == IotHubClientErrorCode.Unauthorized
+                    && attempt++ < 4)
+                {
+                    VerboseTestLogger.WriteLine($"Attempt #{attempt} failed to open device connection due to {ex}");
+                    await Task.Delay(1000).ConfigureAwait(false);
+                }
+            }
+        }
+
+        public async Task RemoveDeviceAsync()
+        {
+            await RetryOperationHelper
+                .RunWithHubServiceRetryAsync(
+                    async () =>
+                    {
+                        await ServiceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
+                    },
+                    s_getRetryPolicy,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            // Normally we wouldn't be disposing the X509 Certificates here, but rather delegate that to whoever was creating the TestDevice.
+            // For the design that our test suite follows, it is ok to dispose the X509 certificate here since it won't be referenced by anyone else
+            // within the scope of the test using this TestDevice.
+            if (_authCertificate is IDisposable disposableCert)
+            {
+                disposableCert?.Dispose();
+            }
+            _authCertificate = null;
+            AuthenticationMethod = null;
+        }
+
         private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
         {
             string deviceName = $"E2E_{prefix}{Guid.NewGuid()}";
@@ -111,87 +230,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 {
                     _authCertificate = authCertificate,
                 };
-        }
-
-        /// <summary>
-        /// Used in conjunction with DeviceClient.CreateFromConnectionString()
-        /// </summary>
-        public string ConnectionString
-        {
-            get
-            {
-                string iotHubHostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
-                return $"HostName={iotHubHostName};DeviceId={Device.Id};SharedAccessKey={Device.Authentication.SymmetricKey.PrimaryKey}";
-            }
-        }
-
-        /// <summary>
-        /// Used in conjunction with DeviceClient.Create()
-        /// </summary>
-        public string IotHubHostName { get; } = GetHostName(TestConfiguration.IotHub.ConnectionString);
-
-        /// <summary>
-        /// Device Id
-        /// </summary>
-        public string Id => Device.Id;
-
-        /// <summary>
-        /// Device identity object.
-        /// </summary>
-        public Device Device { get; private set; }
-
-        public IAuthenticationMethod AuthenticationMethod { get; private set; }
-
-        public IotHubDeviceClient CreateDeviceClient(IotHubClientOptions options = default, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
-        {
-            IotHubDeviceClient deviceClient = null;
-
-            if (AuthenticationMethod == null)
-            {
-                if (authScope == ConnectionStringAuthScope.Device)
-                {
-                    deviceClient = new IotHubDeviceClient(ConnectionString, options);
-                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from device connection string");
-                }
-                else
-                {
-                    deviceClient = new IotHubDeviceClient($"{TestConfiguration.IotHub.ConnectionString};DeviceId={Device.Id}", options);
-                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IoTHub connection string");
-                }
-            }
-            else
-            {
-                deviceClient = new IotHubDeviceClient(IotHubHostName, AuthenticationMethod, options);
-                VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod");
-            }
-
-            return deviceClient;
-        }
-
-        public async Task RemoveDeviceAsync()
-        {
-            await RetryOperationHelper
-                .RunWithHubServiceRetryAsync(
-                    async () =>
-                    {
-                        await ServiceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
-                    },
-                    s_getRetryPolicy,
-                    CancellationToken.None)
-                .ConfigureAwait(false);
-        }
-
-        public void Dispose()
-        {
-            // Normally we wouldn't be disposing the X509 Certificates here, but rather delegate that to whoever was creating the TestDevice.
-            // For the design that our test suite follows, it is ok to dispose the X509 certificate here since it won't be referenced by anyone else
-            // within the scope of the test using this TestDevice.
-            if (_authCertificate is IDisposable disposableCert)
-            {
-                disposableCert?.Dispose();
-            }
-            _authCertificate = null;
-            AuthenticationMethod = null;
         }
     }
 }

@@ -201,10 +201,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             const string methodName = "Reboot";
             bool deviceMethodCalledSuccessfully = false;
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync("NullMethodPayloadTest").ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+            await using IotHubDeviceClient deviceClient = await testDevice
+                .CreateDeviceClientAsync(new IotHubClientOptions(new IotHubClientMqttSettings()), openClient: true)
+                .ConfigureAwait(false);
             try
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient
                     .SetDirectMethodCallbackAsync(
                         (methodRequest) =>
@@ -255,10 +256,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             const string methodName = "GetDateTime";
             bool deviceMethodCalledSuccessfully = false;
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync("DateTimeMethodPayloadTest").ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+            await using IotHubDeviceClient deviceClient = await testDevice
+                .CreateDeviceClientAsync(new IotHubClientOptions(new IotHubClientMqttSettings()), openClient: true)
+                .ConfigureAwait(false);
             try
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient
                     .SetDirectMethodCallbackAsync(
                         (methodRequest) =>

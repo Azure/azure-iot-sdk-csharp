@@ -898,22 +898,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             IAuthenticationMethod auth,
             IotHubClientTransportSettings transportSettings)
         {
-            await using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
-            VerboseTestLogger.WriteLine("DeviceClient OpenAsync.");
-            int attempt = 1;
-            while (true)
-            {
-                try
-                {
-                    await iotClient.OpenAsync().ConfigureAwait(false);
-                    break;
-                }
-                catch (Exception ex) when (attempt++ < 4)
-                {
-                    VerboseTestLogger.WriteLine($"Attempt #{attempt} failed to open device {result.DeviceId} connection due to {ex}");
-                    await Task.Delay(1000).ConfigureAwait(false);
-                }
-            }
+            await using var deviceClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
+            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
         }
 
         private static async Task ConfirmExpectedDeviceCapabilitiesAsync(
