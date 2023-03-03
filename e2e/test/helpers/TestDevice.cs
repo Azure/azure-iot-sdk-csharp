@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             });
 
         private X509Certificate2 _authCertificate;
-        private static readonly IotHubServiceClient _client = new(TestConfiguration.IotHub.ConnectionString);
+        internal static IotHubServiceClient ServiceClient { get; } = new(TestConfiguration.IotHub.ConnectionString);
 
         private TestDevice(Device device, IAuthenticationMethod authenticationMethod)
         {
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RunWithHubServiceRetryAsync(
                     async () =>
                     {
-                        device = await _client.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
+                        device = await ServiceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_createRetryPolicy,
                     CancellationToken.None)
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RunWithHubServiceRetryAsync(
                     async () =>
                     {
-                        await _client.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
+                        await ServiceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                     },
                     s_getRetryPolicy,
                     CancellationToken.None)
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RunWithHubServiceRetryAsync(
                     async () =>
                     {
-                        await _client.Devices.DeleteAsync(Id).ConfigureAwait(false);
+                        await ServiceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
                     s_getRetryPolicy,
                     CancellationToken.None)

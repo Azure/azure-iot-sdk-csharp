@@ -550,7 +550,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 // Await the completion of _refreshLoop.
                 // This will ensure that when StopLoopAsync has been exited then no more token refresh attempts are in-progress.
-                await _refreshLoop.ConfigureAwait(false);
+                if (_refreshLoop != null)
+                {
+                    await _refreshLoop.ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
