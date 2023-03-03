@@ -124,7 +124,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task TestSecurityMessageAsync(IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = await testDevice.CreateDeviceClientAsync(new IotHubClientOptions(transportSettings), openClient: true).ConfigureAwait(false);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             await SendSingleSecurityMessageAsync(deviceClient).ConfigureAwait(false);
         }
 

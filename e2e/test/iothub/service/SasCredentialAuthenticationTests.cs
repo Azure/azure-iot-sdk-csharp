@@ -129,9 +129,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 ModelId = thermostatModelId,
             };
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
-            await using IotHubDeviceClient deviceClient = await testDevice
-                .CreateDeviceClientAsync(options, openClient: true)
-                .ConfigureAwait(false);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             using var serviceClient = new IotHubServiceClient(
@@ -157,9 +156,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = await testDevice
-                .CreateDeviceClientAsync(new IotHubClientOptions(new IotHubClientMqttSettings()), openClient: true)
-                .ConfigureAwait(false);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             using var serviceClient = new IotHubServiceClient(
@@ -184,9 +182,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = await testDevice
-                .CreateDeviceClientAsync(new IotHubClientOptions(new IotHubClientMqttSettings()), openClient: true)
-                .ConfigureAwait(false);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));
             var sasCredential = new AzureSasCredential(signature);

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 RetryPolicy = new IotHubClientNoRetry(),
             };
-            await using IotHubDeviceClient deviceClient = await testDevice.CreateDeviceClientAsync(options).ConfigureAwait(false);
+            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
 
@@ -73,8 +73,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             sw.Reset();
 
-            var lastConnectionStatus = deviceClient.ConnectionStatusInfo.Status;
-            var lastConnectionStatusChangeReason = deviceClient.ConnectionStatusInfo.ChangeReason;
+            ConnectionStatus lastConnectionStatus = deviceClient.ConnectionStatusInfo.Status;
+            ConnectionStatusChangeReason lastConnectionStatusChangeReason = deviceClient.ConnectionStatusInfo.ChangeReason;
 
             lastConnectionStatus.Should().Be(ConnectionStatus.Disconnected, $"Expected device to be {ConnectionStatus.Disconnected} but was {lastConnectionStatus}.");
             lastConnectionStatusChangeReason.Should().Be(ConnectionStatusChangeReason.RetryExpired, $"Expected device to be {ConnectionStatusChangeReason.RetryExpired} but was {lastConnectionStatusChangeReason}.");

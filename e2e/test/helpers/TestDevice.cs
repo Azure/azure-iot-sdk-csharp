@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         Device,
     }
 
-    public sealed class TestDevice : IDisposable
+    internal sealed class TestDevice : IDisposable
     {
         private static readonly IIotHubServiceRetryPolicy s_createRetryPolicy = new IotHubServiceExponentialBackoffRetryPolicy(0, TimeSpan.FromMinutes(1), true);
         private static readonly IIotHubServiceRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         /// <param name="namePrefix">The prefix to apply to your device name</param>
         /// <param name="type">The way the device will authenticate</param>
-        public static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
+        internal static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
         {
             TestDevice ret = await CreateDeviceAsync(type, $"{namePrefix}{type}_").ConfigureAwait(false);
             VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Used in conjunction with DeviceClient.CreateFromConnectionString()
         /// </summary>
-        public string ConnectionString
+        internal string ConnectionString
         {
             get
             {
@@ -69,46 +69,41 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Used in conjunction with DeviceClient.Create()
         /// </summary>
-        public string IotHubHostName { get; } = GetHostName(TestConfiguration.IotHub.ConnectionString);
+        internal string IotHubHostName { get; } = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
         /// <summary>
         /// Device Id
         /// </summary>
-        public string Id => Device.Id;
+        internal string Id => Device.Id;
 
         /// <summary>
         /// Device identity object.
         /// </summary>
-        public Device Device { get; private set; }
+        internal Device Device { get; private set; }
 
-        public IotHubDeviceClient DeviceClient { get; private set; }
+        internal IotHubDeviceClient DeviceClient { get; private set; }
 
-        public IAuthenticationMethod AuthenticationMethod { get; private set; }
+        internal IAuthenticationMethod AuthenticationMethod { get; private set; }
 
-        public async Task<IotHubDeviceClient> CreateDeviceClientAsync(IotHubClientOptions options = default, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device, bool openClient = false)
+        internal IotHubDeviceClient CreateDeviceClient(IotHubClientOptions options = default, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             if (AuthenticationMethod == null)
             {
                 if (authScope == ConnectionStringAuthScope.Device)
                 {
                     DeviceClient = new IotHubDeviceClient(ConnectionString, options);
-                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClientAsync)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from device connection string");
+                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from device connection string");
                 }
                 else
                 {
                     DeviceClient = new IotHubDeviceClient($"{TestConfiguration.IotHub.ConnectionString};DeviceId={Device.Id}", options);
-                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClientAsync)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IoTHub connection string");
+                    VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IoTHub connection string");
                 }
             }
             else
             {
                 DeviceClient = new IotHubDeviceClient(IotHubHostName, AuthenticationMethod, options);
-                VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClientAsync)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod");
-            }
-
-            if (openClient)
-            {
-                await OpenWithRetryAsync().ConfigureAwait(false);
+                VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(IotHubDeviceClient)} {Device.Id} from IAuthenticationMethod");
             }
 
             return DeviceClient;
@@ -117,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// Sometimes the just newly created device can fail to connect if there is lag in the hub for the identity existing.
         /// Retry a few times to prevent test failures.
         /// </summary>
-        public async Task OpenWithRetryAsync()
+        internal async Task OpenWithRetryAsync()
         {
             if (DeviceClient == null)
             {
@@ -127,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         }
 
         /// <summary>
-        public static async Task OpenWithRetryAsync(IotHubDeviceClient client)
+        internal static async Task OpenWithRetryAsync(IotHubDeviceClient client)
         {
             int attempt = 1;
             while (true)
@@ -147,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             }
         }
 
-        public async Task RemoveDeviceAsync()
+        internal async Task RemoveDeviceAsync()
         {
             await RetryOperationHelper
                 .RunWithHubServiceRetryAsync(

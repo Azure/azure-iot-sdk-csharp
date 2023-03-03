@@ -41,9 +41,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     ModelId = ThermostatModelId,
                 };
                 // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
-                await using IotHubDeviceClient deviceClient = await testDevice
-                    .CreateDeviceClientAsync(options, openClient: true)
-                    .ConfigureAwait(false);
+                await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
                 // Perform operations on the digital twin.
                 using var serviceClient = new IotHubServiceClient(s_connectionString);
@@ -125,9 +124,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     ModelId = TemperatureControllerModelId,
                 };
                 // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
-                await using IotHubDeviceClient deviceClient = await testDevice
-                    .CreateDeviceClientAsync(options, openClient: true)
-                    .ConfigureAwait(false);
+                await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
                 // Perform operations on the digital twin.
                 var serviceClient = TestDevice.ServiceClient;
