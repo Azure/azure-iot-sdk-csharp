@@ -114,7 +114,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 };
                 await dc.SetIncomingMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
-                IncomingMessage receivedMessage = await TaskCompletionSourceHelper.GetTaskCompletionSourceResultAsync(c2dMessageReceived, cts.Token).ConfigureAwait(false);
+                IncomingMessage receivedMessage = await TaskCompletionSourceHelper
+                    .GetTaskCompletionSourceResultAsync(c2dMessageReceived, cts.Token)
+                    .ConfigureAwait(false);
 
                 receivedMessage.MessageId.Should().Be(message.MessageId, "Received message Id is not what was sent by service");
                 receivedMessage.UserId.Should().Be(message.UserId, "Received user Id is not what was sent by service");
@@ -143,6 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -191,10 +194,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
 
             // Close and re-open the client under test.
-            await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 

@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly ClientWebSocket _webSocket;
         private readonly EndPoint _localEndPoint;
         private readonly EndPoint _remoteEndPoint;
-        private CancellationTokenSource _writeCancellationTokenSource;
+        private readonly CancellationTokenSource _writeCancellationTokenSource;
         private bool _disposed;
 
         public ClientWebSocketTransport(ClientWebSocket clientwebSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
@@ -326,8 +326,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public void Dispose()
         {
-            _writeCancellationTokenSource?.Dispose();
-            _writeCancellationTokenSource = null;
+            _writeCancellationTokenSource.Dispose();
         }
     }
 }

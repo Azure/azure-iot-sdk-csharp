@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
             await FaultInjection
@@ -73,8 +73,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             sw.Reset();
 
-            var lastConnectionStatus = deviceClient.ConnectionStatusInfo.Status;
-            var lastConnectionStatusChangeReason = deviceClient.ConnectionStatusInfo.ChangeReason;
+            ConnectionStatus lastConnectionStatus = deviceClient.ConnectionStatusInfo.Status;
+            ConnectionStatusChangeReason lastConnectionStatusChangeReason = deviceClient.ConnectionStatusInfo.ChangeReason;
 
             lastConnectionStatus.Should().Be(ConnectionStatus.Disconnected, $"Expected device to be {ConnectionStatus.Disconnected} but was {lastConnectionStatus}.");
             lastConnectionStatusChangeReason.Should().Be(ConnectionStatusChangeReason.RetryExpired, $"Expected device to be {ConnectionStatusChangeReason.RetryExpired} but was {lastConnectionStatusChangeReason}.");

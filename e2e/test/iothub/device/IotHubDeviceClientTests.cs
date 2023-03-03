@@ -21,11 +21,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests));
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             // act
             Func<Task> act = async () =>
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient.SendTelemetryAsync(new TelemetryMessage()).ConfigureAwait(false);
             };
 

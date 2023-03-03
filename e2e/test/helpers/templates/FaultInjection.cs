@@ -14,7 +14,7 @@ using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
-    public static class FaultInjection
+    internal static class FaultInjection
     {
         public static readonly TimeSpan DefaultFaultDelay = TimeSpan.FromSeconds(1); // Time in seconds after service initiates the fault.
         public static readonly TimeSpan DefaultFaultDuration = TimeSpan.FromSeconds(5); // Duration in seconds
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             };
         }
 
-        public static bool FaultShouldDisconnect(string faultType)
+        internal static bool FaultShouldDisconnect(string faultType)
         {
             return faultType != FaultInjectionConstants.FaultType_Auth
                 && faultType != FaultInjectionConstants.FaultType_Throttle
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        public static async Task ActivateFaultInjectionAsync(
+        internal static async Task ActivateFaultInjectionAsync(
             IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         }
 
         // Error injection template method.
-        public static async Task TestErrorInjectionAsync(
+        internal static async Task TestErrorInjectionAsync(
             string devicePrefix,
             TestDeviceType type,
             IotHubClientTransportSettings transportSettings,
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             try
             {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
                 await initOperation(deviceClient, testDevice).ConfigureAwait(false);
 

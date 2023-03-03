@@ -33,7 +33,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        protected internal IotHubClientException() : base()
+        protected internal IotHubClientException()
+            : base()
         {
         }
 
@@ -92,6 +93,12 @@ namespace Microsoft.Azure.Devices.Client
             base.GetObjectData(info, context);
             info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
             info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"{Message}\nError code: {ErrorCode}\n{StackTrace}n";
         }
 
         private static bool DetermineIfTransient(IotHubClientErrorCode errorCode)

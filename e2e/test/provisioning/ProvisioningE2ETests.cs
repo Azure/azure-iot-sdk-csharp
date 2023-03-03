@@ -590,7 +590,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool setCustomProxy,
             string proxyServerAddress = null)
         {
-            //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
+            // Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
             await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(
                     transportSettings,
                     attestationType,
@@ -682,7 +682,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             DeviceRegistrationResult result = null;
             IAuthenticationMethod authMethod = null;
 
-            VerboseTestLogger.WriteLine($"ProvisioningDeviceClient RegisterAsync for group {groupId} . . . ");
+            VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync for group {groupId}...");
 
             try
             {
@@ -699,7 +699,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
                     catch (ProvisioningClientException ex) when (++tryCount < MaxTryCount)
                     {
-                        VerboseTestLogger.WriteLine($"ProvisioningDeviceClient RegisterAsync failed because: {ex.Message}");
+                        VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync failed because: {ex.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
                 }
@@ -711,8 +711,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 authMethod = CreateAuthenticationMethodFromAuthProvider(auth, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings, false).ConfigureAwait(false);
-                await ConfirmExpectedDeviceCapabilitiesAsync(result, authMethod, deviceCapabilities).ConfigureAwait(false);
+                await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportSettings).ConfigureAwait(false);
+                await ConfirmExpectedDeviceCapabilitiesAsync(result, deviceCapabilities).ConfigureAwait(false);
             }
             finally
             {
@@ -896,44 +896,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
             IAuthenticationMethod auth,
-            IotHubClientTransportSettings transportSettings,
-            bool sendReportedPropertiesUpdate)
+            IotHubClientTransportSettings transportSettings)
         {
-            await using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
-            VerboseTestLogger.WriteLine("DeviceClient OpenAsync.");
-            await iotClient.OpenAsync().ConfigureAwait(false);
-            VerboseTestLogger.WriteLine("DeviceClient SendTelemetryAsync.");
-
-            var testMessage = new TelemetryMessage("TestMessage");
-            await iotClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
-
-            if (sendReportedPropertiesUpdate)
-            {
-                VerboseTestLogger.WriteLine("DeviceClient updating desired properties.");
-                TwinProperties twin = await iotClient.GetTwinPropertiesAsync().ConfigureAwait(false);
-                var propertiesToReport = new ReportedProperties
-                {
-                    [new Guid().ToString()] = new Guid().ToString(),
-                };
-                await iotClient.UpdateReportedPropertiesAsync(propertiesToReport).ConfigureAwait(false);
-            }
-
-            VerboseTestLogger.WriteLine("DeviceClient CloseAsync.");
-            await iotClient.CloseAsync().ConfigureAwait(false);
+            await using var deviceClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
+            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
         }
 
         private static async Task ConfirmExpectedDeviceCapabilitiesAsync(
             DeviceRegistrationResult result,
-            IAuthenticationMethod auth,
             InitialTwinCapabilities capabilities)
         {
-            if (capabilities != null && capabilities.IsIotEdge)
+            if (capabilities != null)
             {
-                //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
-                var iotHubConnectionCredentials = new IotHubConnectionCredentials(auth, result.AssignedHub);
-                string edgehubConnectionString = iotHubConnectionCredentials.GetIotHubConnectionString() + ";ModuleId=$edgeHub";
-                await using var moduleClient = new IotHubModuleClient(edgehubConnectionString);
-                await moduleClient.OpenAsync().ConfigureAwait(false);
+                ClientTwin twin = await TestDevice.ServiceClient.Twins.GetAsync(result.DeviceId).ConfigureAwait(false);
+                twin.Capabilities.IsIotEdge.Should().Be(capabilities.IsIotEdge);
             }
         }
 

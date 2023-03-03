@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    public sealed class TestDeviceCallbackHandler : IDisposable
+    internal sealed class TestDeviceCallbackHandler : IDisposable
     {
         private readonly IotHubDeviceClient _deviceClient;
         private readonly TestDevice _testDevice;
@@ -27,25 +27,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
         private Message _expectedMessageSentByService;
 
-        public TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, TestDevice testDevice)
+        internal TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, TestDevice testDevice)
         {
             _deviceClient = deviceClient;
             _testDevice = testDevice;
         }
 
-        public string ExpectedTwinPropertyValue
+        internal string ExpectedTwinPropertyValue
         {
             get => Volatile.Read(ref _expectedTwinPropertyValue);
             set => Volatile.Write(ref _expectedTwinPropertyValue, value);
         }
 
-        public Message ExpectedMessageSentByService
+        internal Message ExpectedMessageSentByService
         {
             get => Volatile.Read(ref _expectedMessageSentByService);
             set => Volatile.Write(ref _expectedMessageSentByService, value);
         }
 
-        public async Task SetDeviceReceiveMethodAsync<T>(string methodName, object deviceResponse, T expectedServiceRequestJson)
+        public void Dispose()
+        {
+            _methodCallbackSemaphore?.Dispose();
+            _twinCallbackSemaphore?.Dispose();
+            _receivedMessageCallbackSemaphore?.Dispose();
+        }
+
+        internal async Task SetDeviceReceiveMethodAsync<T>(string methodName, object deviceResponse, T expectedServiceRequestJson)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDirectMethodCallbackAsync(
@@ -82,13 +89,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 }).ConfigureAwait(false);
         }
 
-        public async Task WaitForMethodCallbackAsync(CancellationToken ct)
+        internal async Task WaitForMethodCallbackAsync(CancellationToken ct)
         {
             await _methodCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
             _methodExceptionDispatch?.Throw();
         }
 
-        public async Task SetTwinPropertyUpdateCallbackHandlerAsync(string expectedPropName)
+        internal async Task SetTwinPropertyUpdateCallbackHandlerAsync(string expectedPropName)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
@@ -116,22 +123,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 }).ConfigureAwait(false);
         }
 
-        public async Task WaitForTwinCallbackAsync(CancellationToken ct)
+        internal async Task WaitForTwinCallbackAsync(CancellationToken ct)
         {
             await _twinCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
             _twinExceptionDispatch?.Throw();
         }
 
-        public async Task SetMessageReceiveCallbackHandlerAsync()
+        internal async Task SetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetIncomingMessageCallbackAsync(OnC2dMessageReceivedAsync).ConfigureAwait(false);
         }
 
-        public async Task UnsetMessageReceiveCallbackHandlerAsync()
+        internal async Task UnsetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetIncomingMessageCallbackAsync(null).ConfigureAwait(false);
+        }
+
+        internal async Task WaitForReceiveMessageCallbackAsync(CancellationToken ct)
+        {
+            await _receivedMessageCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
+            _receiveMessageExceptionDispatch?.Throw();
         }
 
         private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(IncomingMessage message)
@@ -162,19 +175,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 // Always notify that we got the callback.
                 _receivedMessageCallbackSemaphore.Release();
             }
-        }
-
-        public async Task WaitForReceiveMessageCallbackAsync(CancellationToken ct)
-        {
-            await _receivedMessageCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
-            _receiveMessageExceptionDispatch?.Throw();
-        }
-
-        public void Dispose()
-        {
-            _methodCallbackSemaphore?.Dispose();
-            _twinCallbackSemaphore?.Dispose();
-            _receivedMessageCallbackSemaphore?.Dispose();
         }
     }
 }
