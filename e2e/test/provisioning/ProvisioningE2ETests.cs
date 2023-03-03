@@ -908,7 +908,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     await iotClient.OpenAsync().ConfigureAwait(false);
                     break;
                 }
-                catch (Exception ex) when (attempt < 4)
+                catch (Exception ex) when (attempt++ < 4)
                 {
                     VerboseTestLogger.WriteLine($"Attempt #{attempt} failed to open device {result.DeviceId} connection due to {ex}");
                     await Task.Delay(1000).ConfigureAwait(false);
