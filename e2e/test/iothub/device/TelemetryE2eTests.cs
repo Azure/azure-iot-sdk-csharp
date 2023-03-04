@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task SendSingleMessageAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings, int messageSize = 0)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix, type).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task SendBatchMessages(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix, type).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task OpenCloseOpenThenSendSingleMessage(TestDeviceType type, IotHubClientTransportSettings transportSettings, int messageSize = 0)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix, type).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);

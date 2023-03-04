@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task DigitalTwinClient_Http_SasCredentialAuth_Success()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string thermostatModelId = "dtmi:com:example:TemperatureController;1";
 
             // Create a device client instance initializing it with the "Thermostat" model.
@@ -145,9 +145,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             ThermostatTwin twin = response.DigitalTwin;
             // assert
             twin.Metadata.ModelId.Should().Be(thermostatModelId);
-
-            // cleanup
-            await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -155,8 +152,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task Service_Amqp_SasCredentialAuth_Success()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
@@ -173,7 +170,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // cleanup
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
-            await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -181,8 +177,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task Service_Amqp_SasCredentialAuth_Renewed_Success()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IotHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));
@@ -209,9 +205,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
             await serviceClient.Messages.SendAsync(testDevice.Id, message);
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
-
-            // cleanup
-            await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
     }
 }

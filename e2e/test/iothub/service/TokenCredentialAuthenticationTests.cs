@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task DigitalTwinClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string thermostatModelId = "dtmi:com:example:TemperatureController;1";
 
             // Create a device client instance initializing it with the "Thermostat" model.
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 ModelId = thermostatModelId,
             };
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             using var serviceClient = new IotHubServiceClient(
@@ -108,9 +108,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             twin.Metadata.ModelId.Should().Be(thermostatModelId);
-
-            // cleanup
-            await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
         [TestMethod]

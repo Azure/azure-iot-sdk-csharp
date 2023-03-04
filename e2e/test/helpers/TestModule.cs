@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -21,16 +20,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         public static async Task<TestModule> GetTestModuleAsync(string deviceNamePrefix, string moduleNamePrefix)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false);
 
             string deviceName = testDevice.Id;
-            string moduleName = "E2E_" + moduleNamePrefix + Guid.NewGuid();
+            string moduleName = $"E2E_{moduleNamePrefix}_{Guid.NewGuid()}";
 
-            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient sc = TestDevice.ServiceClient;
             VerboseTestLogger.WriteLine($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
 
-            var requestModule = new Module(deviceName, moduleName);
-            Module module = await sc.Modules.CreateAsync(requestModule).ConfigureAwait(false);
+            Module module = await sc.Modules.CreateAsync(new Module(deviceName, moduleName)).ConfigureAwait(false);
 
             var ret = new TestModule(module);
 
@@ -45,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             get
             {
-                string iotHubHostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
+                string iotHubHostName = TestConfiguration.IotHub.GetIotHubHostName();
                 return $"HostName={iotHubHostName};DeviceId={_module.DeviceId};ModuleId={_module.Id};SharedAccessKey={_module.Authentication.SymmetricKey.PrimaryKey}";
             }
         }

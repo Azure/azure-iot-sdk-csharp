@@ -164,17 +164,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
                 }
-
-                // Close all the device clients.
-                await Task.WhenAll(deviceClients.Select(x => x.CloseAsync())).ConfigureAwait(false);
             }
             finally
             {
                 await cleanupOperation(deviceClients, testDeviceCallbackHandlers).ConfigureAwait(false);
 
                 testDeviceCallbackHandlers.ForEach(x => x.Dispose());
-                await Task.WhenAll(deviceClients.Select(x => x.DisposeAsync().AsTask())).ConfigureAwait(false);
-                await Task.WhenAll(testDevices.Select(x => x.RemoveDeviceAsync())).ConfigureAwait(false);
+                await Task.WhenAll(testDevices.Select(x => x.DisposeAsync().AsTask())).ConfigureAwait(false);
 
                 if (!FaultInjection.FaultShouldDisconnect(faultType))
                 {

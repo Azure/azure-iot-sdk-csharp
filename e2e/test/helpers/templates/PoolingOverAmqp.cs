@@ -83,13 +83,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     await cleanupOperation().ConfigureAwait(false);
                 }
 
-                await Task.WhenAll(deviceClients.Select(x => x.DisposeAsync().AsTask())).ConfigureAwait(false);
                 testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());
-
-                // Clean up the local lists
-                testDevices.Clear();
-                deviceClients.Clear();
-                amqpConnectionStatuses.Clear();
+                await Task.WhenAll(testDevices.Select(x => x.DisposeAsync().AsTask())).ConfigureAwait(false);
             }
         }
 
@@ -103,7 +98,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             public void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
             {
                 ConnectionStatusChangeHandlerCount++;
-                VerboseTestLogger.WriteLine($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangeHandler)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={ConnectionStatusChangeHandlerCount}");
+                VerboseTestLogger.WriteLine(
+                    $"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangeHandler)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={ConnectionStatusChangeHandlerCount}");
             }
 
             public int ConnectionStatusChangeHandlerCount { get; set; }

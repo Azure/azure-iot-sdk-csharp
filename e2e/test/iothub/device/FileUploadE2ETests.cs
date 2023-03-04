@@ -96,9 +96,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task UploadFileGranularAsync(Stream source, string filename, IotHubClientHttpSettings fileUploadTransportSettings, bool isCorrelationIdValid, bool useX509auth = false)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
-                _devicePrefix,
-                useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice
+                .GetTestDeviceAsync(
+                    _devicePrefix,
+                    useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl)
+                .ConfigureAwait(false);
 
             IotHubDeviceClient deviceClient;
             var clientOptions = new IotHubClientOptions
@@ -157,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string blobName,
             bool useX509auth = false)
         {
-            using TestDevice testDevice = await TestDevice
+            await using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(
                     _devicePrefix,
                     useX509auth
@@ -189,7 +191,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FileUploadSasUriResponse sasUriResponse = await deviceClient
                     .GetFileUploadSasUriAsync(new FileUploadSasUriRequest(blobName))
                     .ConfigureAwait(false);
-                await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
 

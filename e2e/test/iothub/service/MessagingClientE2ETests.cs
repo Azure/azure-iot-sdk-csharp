@@ -50,8 +50,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task TestTimeout(CancellationToken cancellationToken)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            IotHubServiceClient sender = TestDevice.ServiceClient;
 
             // don't pass in cancellation token here. This test is for seeing how SendAsync reacts with an valid or expired token.
             await sender.Messages.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
 
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             // Open, close, then re-open the client
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
 
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task MessageIdDefaultNotSet_SendEventDoesNotSetMessageId()
         {
             // arrange
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
             string messageId = Guid.NewGuid().ToString();
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task MessageIdDefaultSetToNull_SendEventDoesNotSetMessageId()
         {
             // arrange
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             var options = new IotHubServiceClientOptions
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task MessageIdDefaultSetToGuid_SendEventSetMessageIdIfNotSet()
         {
             // arrange
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             var options = new IotHubServiceClientOptions
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol
             };
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
 

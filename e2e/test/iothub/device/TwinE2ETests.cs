@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2ETests)}_";
 
-        private static readonly IotHubServiceClient s_serviceClient = new(TestConfiguration.IotHub.ConnectionString);
+        private static readonly IotHubServiceClient s_serviceClient = TestDevice.ServiceClient;
 
         private static readonly List<object> s_listOfPropertyValues = new()
         {
@@ -430,7 +430,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             // arrange
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(transportProtocol));
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -483,7 +483,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(IotHubClientTransportSettings transportSettings)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -492,7 +492,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(IotHubClientTransportSettings transportSettings)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -501,7 +501,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task Twin_DeviceSetsInvalidReportedPropertyThrowsExceptionAsync(IotHubClientTransportSettings transportSettings)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -528,7 +528,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(IotHubClientTransportSettings transportSettings)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -549,7 +549,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -561,9 +561,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
 
             // The client should still be able to receive desired properties even though it was re-opened.
-            await Task.WhenAll(
-                RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
-                updateReceivedTask).ConfigureAwait(false);
+            await Task
+                .WhenAll(
+                    RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                    updateReceivedTask)
+                .ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
             // Validate the updated twin from the device-client
@@ -577,9 +579,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Desired[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
-
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync<T>(IotHubDeviceClient deviceClient, string expectedPropName, T expectedPropValue)
@@ -630,10 +629,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
 
             // Set a callback
             await deviceClient.
@@ -656,8 +655,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue)
                 .ConfigureAwait(false);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync<T>(
@@ -669,7 +666,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -691,9 +688,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Desired[propName];
             JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
-
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(IotHubClientTransportSettings transportSettings)
@@ -701,7 +695,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -714,14 +708,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(propValue);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(IotHubClientTransportSettings transportSettings)
         {
             const string propName = "Iso8601String";
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -729,13 +721,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             twinPatch.Properties.Desired[propName] = DateTimeValue;
             await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
 
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
             TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(DateTimeValue);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(IotHubClientTransportSettings transportSettings)
@@ -743,20 +733,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            var patch = new ReportedProperties();
-            patch[propName] = propValue;
+            var patch = new ReportedProperties
+            {
+                [propName] = propValue
+            };
             await deviceClient.UpdateReportedPropertiesAsync(patch).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
 
             ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
-            VerboseTestLogger.WriteLine("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
+            VerboseTestLogger.WriteLine($"Verified {serviceTwin.Properties.Reported[propName]}={propValue}");
         }
 
         private async Task Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(IotHubClientTransportSettings transportSettings)
@@ -764,7 +756,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string propName1 = Guid.NewGuid().ToString();
             string propName2 = Guid.NewGuid().ToString();
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
 
             try
             {
@@ -811,7 +803,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             // arrange
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings(transportProtocol));
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 

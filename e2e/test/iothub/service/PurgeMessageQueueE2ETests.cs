@@ -24,12 +24,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task PurgeMessageQueueOperation()
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string expectedDeviceId = testDevice.Device.Id;
             using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false); // making sure the queue is empty
 
-            Message testMessage = ComposeD2CTestMessage();
+            var testMessage = new Message(Encoding.UTF8.GetBytes("some payload"));
 
             await sc.Messages.OpenAsync().ConfigureAwait(false);
             const int numberOfSends = 3;
@@ -41,11 +41,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false);
             result.DeviceId.Should().Be(expectedDeviceId);
             result.TotalMessagesPurged.Should().Be(numberOfSends);
-        }
-
-        private static Message ComposeD2CTestMessage()
-        {
-            return new Message(Encoding.UTF8.GetBytes("some payload"));
         }
     }
 }

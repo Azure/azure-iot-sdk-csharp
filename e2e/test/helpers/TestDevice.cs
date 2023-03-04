@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         Device,
     }
 
-    internal sealed class TestDevice : IDisposable
+    internal sealed class TestDevice : IAsyncDisposable
     {
         private static readonly IIotHubServiceRetryPolicy s_createRetryPolicy = new IotHubServiceExponentialBackoffRetryPolicy(0, TimeSpan.FromMinutes(1), true);
         private static readonly IIotHubServiceRetryPolicy s_getRetryPolicy = new HubServiceTestRetryPolicy(
@@ -155,8 +155,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .ConfigureAwait(false);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
+            if (DeviceClient != null)
+            {
+                await DeviceClient.DisposeAsync().ConfigureAwait(false);
+            }
+
             // Normally we wouldn't be disposing the X509 Certificates here, but rather delegate that to whoever was creating the TestDevice.
             // For the design that our test suite follows, it is ok to dispose the X509 certificate here since it won't be referenced by anyone else
             // within the scope of the test using this TestDevice.
@@ -166,6 +171,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             }
             _authCertificate = null;
             AuthenticationMethod = null;
+
+            await RemoveDeviceAsync().ConfigureAwait(false);
         }
 
         private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)

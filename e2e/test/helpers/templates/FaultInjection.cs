@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<IotHubDeviceClient, TestDevice, Task> testOperation,
             Func<Task> cleanupOperation)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
 
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
@@ -198,8 +198,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     }
                     sw.Reset();
                 }
-
-                await deviceClient.CloseAsync().ConfigureAwait(false);
             }
             finally
             {
@@ -207,7 +205,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     await cleanupOperation().ConfigureAwait(false);
                 }
-                await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
 
                 if (!FaultShouldDisconnect(faultType))
                 {

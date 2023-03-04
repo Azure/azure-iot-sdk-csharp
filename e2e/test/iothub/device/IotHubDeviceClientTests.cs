@@ -19,8 +19,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task IotHubDeviceClient_SendTelemetryAsync_AfterExplicitOpenAsync_DoesNotThrow()
         {
             // arrange
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests));
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests));
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             // act
