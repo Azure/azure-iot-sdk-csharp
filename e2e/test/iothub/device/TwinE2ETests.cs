@@ -758,41 +758,34 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
 
-            try
-            {
-                var options = new IotHubClientOptions(transportSettings);
-                await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                await deviceClient
-                    .UpdateReportedPropertiesAsync(
-                        new ReportedProperties
-                        {
-                            [propName1] = null
-                        })
-                    .ConfigureAwait(false);
-                ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
-                Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+            await deviceClient
+                .UpdateReportedPropertiesAsync(
+                    new ReportedProperties
+                    {
+                        [propName1] = null
+                    })
+                .ConfigureAwait(false);
+            ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
 
-                await deviceClient
-                    .UpdateReportedPropertiesAsync(
-                        new ReportedProperties
+            await deviceClient
+                .UpdateReportedPropertiesAsync(
+                    new ReportedProperties
+                    {
+                        [propName1] = new Dictionary<string, object>
                         {
-                            [propName1] = new Dictionary<string, object>
-                            {
-                                [propName2] = null
-                            }
-                        })
-                    .ConfigureAwait(false);
-                serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
-                serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
-                serviceTwin.Properties.Reported.TryGetValue(propName1, out Dictionary<string, object> value1).Should().BeTrue();
-                value1.Count.Should().Be(0);
-            }
-            finally
-            {
-                await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
-            }
+                            [propName2] = null
+                        }
+                    })
+                .ConfigureAwait(false);
+            serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
+            serviceTwin.Properties.Reported.TryGetValue(propName1, out Dictionary<string, object> value1).Should().BeTrue();
+            value1.Count.Should().Be(0);
         }
 
         [DataTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]

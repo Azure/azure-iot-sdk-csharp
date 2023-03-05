@@ -96,29 +96,23 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Create a module.
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
 
-            try
+            // Send model ID with MQTT connect packet to make the module plug and play.
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
-                // Send model ID with MQTT connect packet to make the module plug and play.
-                var options = new IotHubClientOptions(new IotHubClientMqttSettings())
-                {
-                    ModelId = TestModelId,
-                };
-                await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
-                await moduleClient.OpenAsync().ConfigureAwait(false);
+                ModelId = TestModelId,
+            };
+            await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
+            await moduleClient.OpenAsync().ConfigureAwait(false);
 
-                // Act
+            // Act
 
-                // Get module twin.
-                ClientTwin twin = await TestDevice.ServiceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            // Get module twin.
+            ClientTwin twin = await TestDevice.ServiceClient.Twins
+                .GetAsync(testModule.DeviceId, testModule.Id)
+                .ConfigureAwait(false);
 
-                // Assert
-                twin.ModelId.Should().Be(TestModelId, "because the module was created as plug and play");
-            }
-            finally
-            {
-                // Cleanup
-                await TestDevice.ServiceClient.Devices.DeleteAsync(testModule.DeviceId).ConfigureAwait(false);
-            }
+            // Assert
+            twin.ModelId.Should().Be(TestModelId, "because the module was created as plug and play");
         }
     }
 }

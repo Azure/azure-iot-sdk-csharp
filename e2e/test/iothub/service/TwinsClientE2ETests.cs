@@ -27,28 +27,19 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             TestModule module = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix).ConfigureAwait(false);
 
-            try
-            {
-                // Get the module twin
-                ClientTwin moduleTwin = await serviceClient.Twins.GetAsync(module.DeviceId, module.Id).ConfigureAwait(false);
+            // Get the module twin
+            ClientTwin moduleTwin = await serviceClient.Twins.GetAsync(module.DeviceId, module.Id).ConfigureAwait(false);
 
-                moduleTwin.ModuleId.Should().Be(module.Id, "ModuleId on the Twin should match that of the module identity.");
+            moduleTwin.ModuleId.Should().Be(module.Id, "ModuleId on the Twin should match that of the module identity.");
 
-                // Update device twin
-                string propName = "username";
-                string propValue = "userA";
-                moduleTwin.Properties.Desired[propName] = propValue;
+            // Update device twin
+            string propName = "username";
+            string propValue = "userA";
+            moduleTwin.Properties.Desired[propName] = propValue;
 
-                ClientTwin updatedModuleTwin = await serviceClient.Twins.UpdateAsync(module.DeviceId, module.Id, moduleTwin).ConfigureAwait(false);
+            ClientTwin updatedModuleTwin = await serviceClient.Twins.UpdateAsync(module.DeviceId, module.Id, moduleTwin).ConfigureAwait(false);
 
-                ((string)updatedModuleTwin.Properties.Desired[propName]).Should().Be(propValue);
-
-                // Deleting the module happens in the finally block as cleanup.
-            }
-            finally
-            {
-                await CleanupAsync(serviceClient, module.DeviceId).ConfigureAwait(false);
-            }
+            ((string)updatedModuleTwin.Properties.Desired[propName]).Should().Be(propValue);
         }
 
         [TestMethod]
