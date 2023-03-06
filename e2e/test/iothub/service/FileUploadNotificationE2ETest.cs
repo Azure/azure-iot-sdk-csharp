@@ -155,8 +155,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task UploadFile()
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             const string filePath = "TestPayload.txt";
             using FileStream fileStreamSource = File.Create(filePath);

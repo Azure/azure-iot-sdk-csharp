@@ -3,61 +3,54 @@
 
 using System;
 using System.Threading.Tasks;
-using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    public class TestModule
+    internal class TestModule : IAsyncDisposable
     {
-        private readonly Module _module;
+        private Module _module;
+        private TestDevice _testDevice;
 
-        private TestModule(Module module)
-        {
-            _module = module;
-        }
+        /// <summary>
+        /// Used in conjunction with ModuleClient.CreateFromConnectionString()
+        /// </summary>
+        public string ConnectionString =>
+            $"HostName={TestConfiguration.IotHub.GetIotHubHostName()};DeviceId={_module.DeviceId};ModuleId={_module.Id};SharedAccessKey={_module.Authentication.SymmetricKey.PrimaryKey}";
+
+        /// <summary>
+        /// Module Id
+        /// </summary>
+        public string Id => _module.Id;
+
+        /// <summary>
+        /// Device Id
+        /// </summary>
+        public string DeviceId => _testDevice.Id;
 
         /// <summary>
         /// Factory method.
         /// </summary>
         public static async Task<TestModule> GetTestModuleAsync(string deviceNamePrefix, string moduleNamePrefix)
         {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false);
-
-            string deviceName = testDevice.Id;
-            string moduleName = "E2E_" + moduleNamePrefix + Guid.NewGuid();
-
-            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            VerboseTestLogger.WriteLine($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
-
-            var requestModule = new Module(deviceName, moduleName);
-            Module module = await sc.Modules.CreateAsync(requestModule).ConfigureAwait(false);
-
-            var ret = new TestModule(module);
-
-            VerboseTestLogger.WriteLine($"{nameof(GetTestModuleAsync)}: Using device {ret.DeviceId} with module {ret.Id}.");
-            return ret;
-        }
-
-        /// <summary>
-        /// Used in conjunction with ModuleClient.CreateFromConnectionString()
-        /// </summary>
-        public string ConnectionString
-        {
-            get
+            var testModule = new TestModule
             {
-                string iotHubHostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
-                return $"HostName={iotHubHostName};DeviceId={_module.DeviceId};ModuleId={_module.Id};SharedAccessKey={_module.Authentication.SymmetricKey.PrimaryKey}";
-            }
+                _testDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false)
+            };
+
+            string deviceName = testModule._testDevice.Id;
+            string moduleName = $"E2E_{moduleNamePrefix}_{Guid.NewGuid()}";
+
+            IotHubServiceClient sc = TestDevice.ServiceClient;
+            testModule._module = await sc.Modules.CreateAsync(new Module(deviceName, moduleName)).ConfigureAwait(false);
+            VerboseTestLogger.WriteLine($"{nameof(GetTestModuleAsync)}: Using device {testModule.DeviceId} with module {testModule.Id}.");
+
+            return testModule;
         }
 
-        /// <summary>
-        /// Module ID
-        /// </summary>
-        public string Id => _module.Id;
-
-        /// <summary>
-        /// Device ID
-        /// </summary>
-        public string DeviceId => _module.DeviceId;
+        public async ValueTask DisposeAsync()
+        {
+            await _testDevice.DisposeAsync().ConfigureAwait(false);
+            GC.SuppressFinalize(this);
+        }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             }
 
             Device device = null;
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             try
             {
@@ -58,8 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 await Task.Delay(250).ConfigureAwait(false);
 
                 // List the modules on the test device
-                IEnumerable<Module> modulesOnDevice =
-                    await serviceClient.Devices.GetModulesAsync(testDeviceId).ConfigureAwait(false);
+                IEnumerable<Module> modulesOnDevice = await serviceClient.Devices.GetModulesAsync(testDeviceId).ConfigureAwait(false);
 
                 IList<string> moduleIdsOnDevice = modulesOnDevice
                     .Select(module => module.Id)
@@ -73,6 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             }
             finally
             {
+                await Task.WhenAll(testModuleIds.Select(moduleId => serviceClient.Modules.DeleteAsync(testDeviceId, moduleId))).ConfigureAwait(false);
                 await CleanupAsync(serviceClient, testDeviceId).ConfigureAwait(false);
             }
         }
@@ -88,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
             string testModuleId = $"IdentityLifecycleModule{Guid.NewGuid()}";
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             // Create a device to house the module
             Device device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId)).ConfigureAwait(false);
@@ -131,6 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             }
             finally
             {
+                await serviceClient.Modules.DeleteAsync(testDeviceId, testModuleId).ConfigureAwait(false);
                 await CleanupAsync(serviceClient, testDeviceId).ConfigureAwait(false);
             }
         }
@@ -139,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_SetModulesETag_Works()
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             string deviceId = _idPrefix + Guid.NewGuid();
             string moduleId = _idPrefix + Guid.NewGuid();
             var module = new Module(deviceId, moduleId);
@@ -207,7 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_DeleteModulesETag_Works()
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            var serviceClient = TestDevice.ServiceClient;
             string deviceId = _idPrefix + Guid.NewGuid();
             string moduleId = _idPrefix + Guid.NewGuid();
             var module = new Module(deviceId, moduleId);
