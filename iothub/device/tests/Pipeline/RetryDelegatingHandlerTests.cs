@@ -27,13 +27,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            var ct = CancellationToken.None;
             PipelineContext contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             IDelegatingHandler innerHandlerMock = Substitute.For<IDelegatingHandler>();
 
             innerHandlerMock
-                .OpenAsync(ct)
+                .OpenAsync(Arg.Any<CancellationToken>())
                 .Returns(t =>
                     {
                         return ++callCounter == 1
@@ -45,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act
-            await retryDelegatingHandler.OpenAsync(ct).ConfigureAwait(false);
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
             callCounter.Should().Be(2);
@@ -255,12 +254,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task RetryTransientErrorThrownAfterNumberOfRetriesThrows()
         {
             // arrange
-            using var cts = new CancellationTokenSource(100);
+            using var cts = new CancellationTokenSource(1000);
             var contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock
-                .OpenAsync(cts.Token)
+                .OpenAsync(Arg.Any<CancellationToken>())
                 .Returns(t => throw new IotHubException(TestExceptionMessage, isTransient: true));
 
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
@@ -352,12 +351,12 @@ namespace Microsoft.Azure.Devices.Client.Test
                 delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
-            var retryPolicy = new TestRetryPolicy();
+            var retryPolicy = new TestRetryPolicyRetryTwice();
             sut.SetRetryPolicy(retryPolicy);
 
             int innerHandlerCallCounter = 0;
 
-            innerHandlerMock.OpenAsync(CancellationToken.None).Returns(t =>
+            innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t =>
                {
                    innerHandlerCallCounter++;
                    throw new IotHubCommunicationException();
@@ -397,7 +396,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.AbandonAsync(null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            innerHandlerMock.AbandonAsync(null, Arg.Any<CancellationToken>()).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
@@ -416,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.RejectAsync(null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            innerHandlerMock.RejectAsync(null, Arg.Any<CancellationToken>()).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
@@ -427,7 +426,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await sut.RejectAsync(Arg.Any<string>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
         }
 
-        private class TestRetryPolicy : IRetryPolicy
+        private class TestRetryPolicyRetryTwice : IRetryPolicy
         {
             public int Counter { get; private set; }
 
