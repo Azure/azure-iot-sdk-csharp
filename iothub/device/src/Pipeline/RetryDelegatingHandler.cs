@@ -776,7 +776,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
-            await _clientOpenCloseSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 if (!_openCalled)
@@ -793,20 +792,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
+                Dispose(true);
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
-
-                try
-                {
-                    _clientOpenCloseSemaphore?.Release();
-                }
-                catch (ObjectDisposedException) when (_isDisposing)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
-                            "Ignoring this exception and continuing with client cleanup.");
-                }
-                Dispose(true);
             }
         }
 
