@@ -815,6 +815,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// </summary>
         private async Task EnsureOpenedAsync(bool withRetry, CancellationToken cancellationToken)
         {
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
             // If this object has already been disposed, we will throw an exception indicating that.
             // This is the entry point for interacting with the client and this safety check should be done here.
             // The current behavior does not support open->close->open
@@ -828,7 +830,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return;
             }
 
-            await _clientOpenCloseSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _clientOpenCloseSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
             try
             {
                 if (!_opened)
@@ -840,7 +842,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // we are returning the corresponding connection status change event => disconnected: retry_expired.
                     try
                     {
-                        await OpenInternalAsync(withRetry, cancellationToken).ConfigureAwait(false);
+                        await OpenInternalAsync(withRetry, operationCts.Token).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (!ex.IsFatal())
                     {
@@ -882,16 +884,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task EnsureOpenedAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
+            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
+
+            // If this object has already been disposed, we will throw an exception indicating that.
+            // This is the entry point for interacting with the client and this safety check should be done here.
+            // The current behavior does not support open->close->open
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
+            }
+
             if (Volatile.Read(ref _opened))
             {
                 return;
             }
 
-            bool gain = await _clientOpenCloseSemaphore.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException("Timed out to acquire handler lock.");
-            }
+            await _clientOpenCloseSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
             try
             {
@@ -946,6 +955,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task OpenInternalAsync(bool withRetry, CancellationToken cancellationToken)
         {
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
             if (withRetry)
             {
                 await _internalRetryPolicy
@@ -958,7 +969,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                     Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
                                 // Will throw on error.
-                                await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                                await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
                                 _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
                             }
                             catch (Exception ex) when (!ex.IsFatal())
@@ -972,7 +983,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                     Logging.Exit(this, cancellationToken, nameof(OpenAsync));
                             }
                         },
-                        cancellationToken).ConfigureAwait(false);
+                        operationCts.Token).ConfigureAwait(false);
             }
             else
             {
@@ -982,7 +993,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
                     // Will throw on error.
-                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -1001,6 +1012,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private async Task OpenInternalAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
             using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
 
             if (withRetry)
             {
@@ -1028,7 +1040,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
                         }
                     },
-                    cts.Token)
+                    operationCts.Token)
                 .ConfigureAwait(false);
             }
             else
