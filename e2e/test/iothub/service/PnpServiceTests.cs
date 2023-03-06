@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Setup
 
             // Create a module.
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            await using TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
 
             // Send model ID with MQTT connect packet to make the module plug and play.
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())

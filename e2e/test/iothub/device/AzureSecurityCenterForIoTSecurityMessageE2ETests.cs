@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task TestSecurityMessageModuleAsync(IotHubClientTransportSettings transportSettings)
         {
-            TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
+            await using TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
 
             await using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, new IotHubClientOptions(transportSettings));
             await moduleClient.OpenAsync().ConfigureAwait(false);

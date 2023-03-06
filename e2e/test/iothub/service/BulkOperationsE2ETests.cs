@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            await using TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             ClientTwin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
