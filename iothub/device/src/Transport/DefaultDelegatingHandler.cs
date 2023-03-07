@@ -11,8 +11,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
-        private volatile IDelegatingHandler _innerHandler;
+        protected const string ClientDisposedMessage = "The client has been disposed and is no longer usable.";
         protected volatile bool _disposed;
+        private volatile IDelegatingHandler _innerHandler;
 
         protected DefaultDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
         {
@@ -208,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException("IoT Client");
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
         }
 

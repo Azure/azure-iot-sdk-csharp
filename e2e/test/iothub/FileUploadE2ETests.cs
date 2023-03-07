@@ -97,6 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
+        [TestCategory("Proxy")]
         public async Task FileUpload_SmallFile_Http_GranularSteps_Proxy()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);

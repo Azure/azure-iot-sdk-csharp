@@ -20,16 +20,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _clientOpenSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _cloudToDeviceEventSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _twinEventsSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private bool _openCalled;
-        private bool _opened;
         private bool _methodsEnabled;
         private bool _twinEnabled;
         private bool _eventsEnabled;
         private bool _deviceReceiveMessageEnabled;
+        private bool _isDisposing;
+        private long _isOpened; // store the opened status in an int which can be accessed via Interlocked class. opened = 1, closed = 0.
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancelPendingOperationsCts = new CancellationTokenSource();
 
         private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
 
@@ -73,20 +79,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
 
                             if (message.IsBodyCalled)
                             {
                                 message.ResetBody();
                             }
 
-                            await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+                            await base.SendEventAsync(message, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -101,11 +109,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
 
                             foreach (Message m in messages)
                             {
@@ -115,9 +125,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 }
                             }
 
-                            await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
+                            await base.SendEventAsync(messages, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -132,14 +142,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await base.SendMethodResponseAsync(method, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.SendMethodResponseAsync(method, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -154,14 +166,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            return await base.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            return await base.ReceiveAsync(operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -177,6 +191,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
 
                 using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
+
                 return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
@@ -184,7 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await EnsureOpenedAsync(false, timeoutHelper).ConfigureAwait(false);
                             return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
                         },
-                        cts.Token)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -199,28 +215,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            // Ensure that the connection has been opened, before enabling the callback for receiving messages.
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            // Wait to acquire the _cloudToDeviceSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 // The telemetry downlink needs to be enabled only for the first time that the callback is set.
                                 Debug.Assert(!_deviceReceiveMessageEnabled);
-                                await base.EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnableReceiveMessageAsync(operationCts.Token).ConfigureAwait(false);
                                 _deviceReceiveMessageEnabled = true;
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -237,28 +263,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            // Ensure that the connection has been opened before returning pending messages to the callback.
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            // Wait to acquire the _cloudToDeviceMessageSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
                             try
                             {
                                 // Ensure that a callback for receiving messages has been previously set.
                                 Debug.Assert(_deviceReceiveMessageEnabled);
-                                await base.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnsurePendingMessagesAreDeliveredAsync(operationCts.Token).ConfigureAwait(false);
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -273,28 +309,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            // Ensure that the connection has been opened, before disabling the callback for receiving messages.
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
 
-                            // Wait to acquire the _handlerSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            // Wait to acquire the _cloudToDeviceMessageSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 // Ensure that a callback for receiving messages has been previously set.
                                 Debug.Assert(_deviceReceiveMessageEnabled);
-                                await base.DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableReceiveMessageAsync(operationCts.Token).ConfigureAwait(false);
                                 _deviceReceiveMessageEnabled = false;
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -309,25 +355,35 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _directMethodSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(!_methodsEnabled);
-                                await base.EnableMethodsAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnableMethodsAsync(operationCts.Token).ConfigureAwait(false);
                                 _methodsEnabled = true;
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _directMethodSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing direct method subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -342,24 +398,35 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _directMethodSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_methodsEnabled);
-                                await base.DisableMethodsAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableMethodsAsync(operationCts.Token).ConfigureAwait(false);
                                 _methodsEnabled = false;
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _directMethodSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing direct method subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -372,26 +439,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _cloudToDeviceEventSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
-                                await base.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
                                 Debug.Assert(!_eventsEnabled);
+                                await base.EnableEventReceiveAsync(operationCts.Token).ConfigureAwait(false);
                                 _eventsEnabled = true;
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceEventSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -404,26 +483,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _cloudToDeviceEventSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_eventsEnabled);
-                                await base.DisableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableEventReceiveAsync(operationCts.Token).ConfigureAwait(false);
                                 _eventsEnabled = false;
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceEventSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -438,24 +529,35 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _twinEventsSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(!_twinEnabled);
-                                await base.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnableTwinPatchAsync(operationCts.Token).ConfigureAwait(false);
                                 _twinEnabled = true;
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _twinEventsSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -470,24 +572,35 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _twinEventsSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_twinEnabled);
-                                await base.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableTwinPatchAsync(operationCts.Token).ConfigureAwait(false);
                                 _twinEnabled = false;
                             }
                             finally
                             {
-                                _handlerSemaphore?.Release();
+                                try
+                                {
+                                    _twinEventsSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -502,14 +615,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 return await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            return await base.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            return await base.SendTwinGetAsync(operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -524,14 +639,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await base.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.SendTwinPatchAsync(reportedProperties, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -546,14 +663,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await base.CompleteAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.CompleteAsync(lockToken, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -568,14 +687,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await base.AbandonAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.AbandonAsync(lockToken, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -590,14 +711,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
 
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 await _internalRetryPolicy
                     .ExecuteAsync(
                         async () =>
                         {
-                            await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await base.RejectAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.RejectAsync(lockToken, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -613,7 +736,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
-            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 if (!_openCalled)
@@ -624,14 +746,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
                 _handleDisconnectCts.Cancel();
+                _cancelPendingOperationsCts.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(CloseAsync));
-
-                _handlerSemaphore?.Release();
                 Dispose(true);
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(CloseAsync));
             }
         }
 
@@ -640,23 +763,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// </summary>
         private async Task EnsureOpenedAsync(bool withRetry, CancellationToken cancellationToken)
         {
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
             // If this object has already been disposed, we will throw an exception indicating that.
             // This is the entry point for interacting with the client and this safety check should be done here.
             // The current behavior does not support open->close->open
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
 
-            if (Volatile.Read(ref _opened))
+            if (Interlocked.Read(ref _isOpened) == 1)
             {
                 return;
             }
 
-            await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
             try
             {
-                if (!_opened)
+                if (Interlocked.Read(ref _isOpened) == 0)
                 {
                     Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
 
@@ -664,7 +789,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // we are returning the corresponding connection status change event => disconnected: retry_expired.
                     try
                     {
-                        await OpenInternalAsync(withRetry, cancellationToken).ConfigureAwait(false);
+                        await OpenInternalAsync(withRetry, operationCts.Token).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (!ex.IsFatal())
                     {
@@ -674,7 +799,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!_disposed)
                     {
-                        _opened = true;
+                        _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
                         _openCalled = true;
 
                         // Send the request for transport close notification.
@@ -690,26 +815,42 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore?.Release();
+                try
+                {
+                    _clientOpenSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
+                }
             }
         }
 
         private async Task EnsureOpenedAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
-            if (Volatile.Read(ref _opened))
+            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
+
+            // If this object has already been disposed, we will throw an exception indicating that.
+            // This is the entry point for interacting with the client and this safety check should be done here.
+            // The current behavior does not support open->close->open
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
+            }
+
+            if (Interlocked.Read(ref _isOpened) == 1)
             {
                 return;
             }
 
-            bool gain = await _handlerSemaphore.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException("Timed out to acquire handler lock.");
-            }
+            await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
             try
             {
-                if (!_opened)
+                if (Interlocked.Read(ref _isOpened) == 0)
                 {
                     Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
 
@@ -727,7 +868,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!_disposed)
                     {
-                        _opened = true;
+                        _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
                         _openCalled = true;
 
                         // Send the request for transport close notification.
@@ -743,12 +884,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore?.Release();
+                try
+                {
+                    _clientOpenSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
+                }
             }
         }
 
         private async Task OpenInternalAsync(bool withRetry, CancellationToken cancellationToken)
         {
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
             if (withRetry)
             {
                 await _internalRetryPolicy
@@ -760,7 +912,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
                                 // Will throw on error.
-                                await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                                await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
                                 _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
                             }
                             catch (Exception ex) when (!ex.IsFatal())
@@ -773,7 +925,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 Logging.Exit(this, cancellationToken, nameof(OpenAsync));
                             }
                         },
-                        cancellationToken).ConfigureAwait(false);
+                        operationCts.Token).ConfigureAwait(false);
             }
             else
             {
@@ -782,7 +934,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
                     // Will throw on error.
-                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -800,6 +952,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private async Task OpenInternalAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
             using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
 
             if (withRetry)
             {
@@ -825,7 +978,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
                         }
                     },
-                    cts.Token)
+                    operationCts.Token)
                 .ConfigureAwait(false);
             }
             else
@@ -848,8 +1001,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
                 }
             }
-
-                
         }
 
         // Triggered from connection loss event
@@ -878,8 +1029,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
-            await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
-            _opened = false;
+            await _clientOpenSemaphore.WaitAsync().ConfigureAwait(false);
+            _ = Interlocked.Exchange(ref _isOpened, 0); // set the state to "closed"
 
             try
             {
@@ -948,7 +1099,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Send the request for transport close notification.
                     _transportClosedTask = HandleDisconnectAsync();
 
-                    _opened = true;
+                    _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
                     Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
@@ -963,7 +1114,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _handlerSemaphore?.Release();
+                try
+                {
+                    _clientOpenSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
+                }
             }
         }
 
@@ -1005,22 +1165,58 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected override void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
-
-            base.Dispose(disposing);
-            if (disposing)
-            {
-                _handleDisconnectCts?.Cancel();
-                _handleDisconnectCts?.Dispose();
-                if (_handlerSemaphore != null && _handlerSemaphore.CurrentCount == 0)
+                if (Logging.IsEnabled)
                 {
-                    _handlerSemaphore.Release();
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
                 }
-                _handlerSemaphore?.Dispose();
-                _handlerSemaphore = null;
+
+                if (!_disposed)
+                {
+                    _isDisposing = true;
+
+                    base.Dispose(disposing);
+                    if (disposing)
+                    {
+                        var disposables = new List<IDisposable>
+                        {
+                            _handleDisconnectCts,
+                            _cancelPendingOperationsCts,
+                            _clientOpenSemaphore,
+                            _cloudToDeviceMessageSubscriptionSemaphore,
+                            _cloudToDeviceEventSubscriptionSemaphore,
+                            _directMethodSubscriptionSemaphore,
+                            _twinEventsSubscriptionSemaphore,
+                        };
+
+                        _handleDisconnectCts?.Cancel();
+                        _cancelPendingOperationsCts?.Cancel();
+
+                        foreach (IDisposable disposable in disposables)
+                        {
+                            try
+                            {
+                                disposable?.Dispose();
+                            }
+                            catch (ObjectDisposedException)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Tried disposing the IDisposable {disposable} but it has already been disposed by client disposal on a separate thread." +
+                                        "Ignoring this exception and continuing with client cleanup.");
+                            }
+                        }
+                    }
+
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to true there.
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+                }
             }
         }
     }
