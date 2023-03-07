@@ -21,19 +21,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private readonly SemaphoreSlim _clientOpenCloseSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _clientOpenSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _cloudToDeviceEventSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _twinEventsSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private bool _openCalled;
-        private bool _opened;
         private bool _methodsEnabled;
         private bool _twinEnabled;
         private bool _eventsEnabled;
         private bool _deviceReceiveMessageEnabled;
         private bool _isDisposing;
         private bool _isAnEdgeModule = true;
+        private long _isOpened; // store the opened status in an int which can be accessed via Interlocked class. opened = 1, closed = 0.
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
@@ -811,18 +811,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // The current behavior does not support open->close->open
             if (_isDisposed)
             {
-                throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
 
-            if (Volatile.Read(ref _opened))
+            if (Interlocked.Read(ref _isOpened) == 1)
             {
                 return;
             }
 
-            await _clientOpenCloseSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
+            await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
             try
             {
-                if (!_opened)
+                if (Interlocked.Read(ref _isOpened) == 0)
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
@@ -841,7 +841,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!_isDisposed)
                     {
-                        _opened = true;
+                        _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
                         _openCalled = true;
 
                         // Send the request for transport close notification.
@@ -860,7 +860,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 try
                 {
-                    _clientOpenCloseSemaphore?.Release();
+                    _clientOpenSemaphore?.Release();
                 }
                 catch (ObjectDisposedException) when (_isDisposing)
                 {
@@ -881,19 +881,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // The current behavior does not support open->close->open
             if (_isDisposed)
             {
-                throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
 
-            if (Volatile.Read(ref _opened))
+            if (Interlocked.Read(ref _isOpened) == 1)
             {
                 return;
             }
 
-            await _clientOpenCloseSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
+            await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
             try
             {
-                if (!_opened)
+                if (Interlocked.Read(ref _isOpened) == 0)
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
@@ -912,7 +912,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!_isDisposed)
                     {
-                        _opened = true;
+                        _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
                         _openCalled = true;
 
                         // Send the request for transport close notification.
@@ -931,7 +931,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 try
                 {
-                    _clientOpenCloseSemaphore?.Release();
+                    _clientOpenSemaphore?.Release();
                 }
                 catch (ObjectDisposedException) when (_isDisposing)
                 {
@@ -1085,8 +1085,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
-            await _clientOpenCloseSemaphore.WaitAsync().ConfigureAwait(false);
-            _opened = false;
+            await _clientOpenSemaphore.WaitAsync().ConfigureAwait(false);
+            _ = Interlocked.Exchange(ref _isOpened, 0); // set the state to "closed"
 
             try
             {
@@ -1157,7 +1157,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Send the request for transport close notification.
                     _transportClosedTask = HandleDisconnectAsync();
 
-                    _opened = true;
+                    _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
                     if (Logging.IsEnabled)
@@ -1176,7 +1176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 try
                 {
-                    _clientOpenCloseSemaphore?.Release();
+                    _clientOpenSemaphore?.Release();
                 }
                 catch (ObjectDisposedException) when (_isDisposing)
                 {
@@ -1251,7 +1251,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         {
                             _handleDisconnectCts,
                             _cancelPendingOperationsCts,
-                            _clientOpenCloseSemaphore,
+                            _clientOpenSemaphore,
                             _cloudToDeviceMessageSubscriptionSemaphore,
                             _cloudToDeviceEventSubscriptionSemaphore,
                             _directMethodSubscriptionSemaphore,
