@@ -328,6 +328,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("Proxy")]
         public async Task RegistryManager_AddDeviceWithProxy()
         {
             string deviceId = _idPrefix + Guid.NewGuid();

@@ -217,7 +217,7 @@ Function BuildPackage($path, $message)
         SignDotNetBinary $filesToSign
     }
 
-    & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --output $localPackages
+    & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --property:PackageOutputPath=$localPackages
 
     if ($LASTEXITCODE -ne 0)
     {

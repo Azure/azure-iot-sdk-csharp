@@ -548,11 +548,7 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-      - script: |
-          rem Run dotnet first experience.
-          dotnet new
-          rem Start build
-          build.cmd -clean -build -configuration Debug -package
+      - powershell: .\build.ps1 -clean -build -configutaion Debug -package
         displayName: Build Package
 
       - task: ComponentGovernanceComponentDetection@0
