@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Twin properties
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 IList<Task> initOperations = new List<Task>();
 
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Set method handler
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
-                Task<Task> methodReceivedTask = MethodE2ETests.SetDeviceReceiveMethodAsync(deviceClient, MethodName);
+                Task<Task> methodReceivedTask = MethodE2ETests.SetDeviceReceiveMethodAsync(testDevice.DeviceClient, MethodName);
                 initOperations.Add(methodReceivedTask);
 
                 // Set the twin desired properties callback
@@ -81,21 +81,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
                 twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
-                Task<Task> updateReceivedTask = TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync(deviceClient, propName, propValue);
+                Task<Task> updateReceivedTask = TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync(testDevice.DeviceClient, propName, propValue);
                 initOperations.Add(updateReceivedTask);
 
                 await Task.WhenAll(initOperations).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 IList<Task> clientOperations = new List<Task>();
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
                 // D2C Operation
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 1: Send D2C for device={testDevice.Id}");
                 TelemetryMessage message = TelemetryE2ETests.ComposeD2cTestMessage(out string _, out string _);
-                Task sendD2cMessage = deviceClient.SendTelemetryAsync(message);
+                Task sendD2cMessage = testDevice.DeviceClient.SendTelemetryAsync(message);
                 clientOperations.Add(sendD2cMessage);
 
                 // C2D Operation
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Message msg = msgSent.Item1;
                 string payload = msgSent.Item2;
 
-                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(deviceClient, testDevice.Id, msg, payload);
+                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(testDevice.DeviceClient, testDevice.Id, msg, payload);
                 clientOperations.Add(verifyDeviceClientReceivesMessage);
 
                 // Invoke direct methods
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Set reported twin properties
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 4: Set reported property for device={testDevice.Id}");
-                Task setReportedProperties = TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString());
+                Task setReportedProperties = TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(testDevice.DeviceClient, testDevice.Id, Guid.NewGuid().ToString());
                 clientOperations.Add(setReportedProperties);
 
                 // Receive set desired twin properties

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -274,12 +275,12 @@ namespace Microsoft.Azure.Devices
                 // after this function returns.
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault(), CultureInfo.InvariantCulture);
-                string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
+                response.Headers.TryGetValues(RequestIdHeaderKey, out IEnumerable<string> requestIds);
                 return new InvokeDigitalTwinCommandResponse
                 {
                     Payload = responsePayload,
                     Status = responseStatusCode,
-                    RequestId = requestId,
+                    RequestId = requestIds?.FirstOrDefault(),
                 };
             }
             catch (HttpRequestException ex)
@@ -362,12 +363,12 @@ namespace Microsoft.Azure.Devices
                 // after this function returns.
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault(), CultureInfo.InvariantCulture);
-                string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
+                response.Headers.TryGetValues(RequestIdHeaderKey, out IEnumerable<string> requestIds);
                 return new InvokeDigitalTwinCommandResponse
                 {
                     Payload = responsePayload,
                     Status = responseStatusCode,
-                    RequestId = requestId,
+                    RequestId = requestIds?.FirstOrDefault(),
                 };
             }
             catch (HttpRequestException ex)
