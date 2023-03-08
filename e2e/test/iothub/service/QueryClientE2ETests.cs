@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
 
-            var serviceClient = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice1 = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
             await using TestDevice testDevice2 = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
             await using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
@@ -199,10 +199,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobQuery_QueryWorks()
         {
-            var serviceClient = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
 
-            await QueryClientE2ETests.ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id).ConfigureAwait(false);
+            await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id).ConfigureAwait(false);
 
             string query = "SELECT * FROM devices.jobs";
 
@@ -219,17 +219,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             queriedJob.JobType.Should().NotBe(JobType.Unknown);
             queriedJob.CreatedOnUtc.Should().NotBeNull();
             queriedJob.Status.Should().NotBe(JobStatus.Unknown);
-            if (queriedJob.Status != JobStatus.Queued
-                && queriedJob.Status != JobStatus.Scheduled
-                && queriedJob.Status != JobStatus.Cancelled
-                && queriedJob.Status != JobStatus.Unknown)
+            if (queriedJob.IsFinished)
             {
                 queriedJob.StartedOnUtc.Should().NotBeNull();
-
-                if (queriedJob.Status == JobStatus.Completed)
-                {
-                    queriedJob.EndedOnUtc.Should().NotBeNull();
-                }
+                queriedJob.EndedOnUtc.Should().NotBeNull();
             }
         }
 
@@ -261,7 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RawQuery_QueryWorks()
         {
-            var serviceClient = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
 
             string query = "SELECT COUNT() as TotalNumberOfDevices FROM devices";
@@ -323,12 +316,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private static async Task ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
         {
-            var twinUpdate = new ClientTwin();
-            twinUpdate.Properties.Desired["key"] = "value";
-
             try
             {
-                await jobsClient.ScheduleTwinUpdateAsync("DeviceId IN ['" + deviceId + "']", twinUpdate, DateTimeOffset.UtcNow.AddMinutes(3)).ConfigureAwait(false);
+                var twinUpdate = new ClientTwin();
+                twinUpdate.Properties.Desired["key"] = "value";
+
+                TwinScheduledJob scheduledJob = await jobsClient
+                    .ScheduleTwinUpdateAsync("DeviceId IN ['" + deviceId + "']", twinUpdate, DateTimeOffset.UtcNow.AddMinutes(3))
+                    .ConfigureAwait(false);
             }
             catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
             {
