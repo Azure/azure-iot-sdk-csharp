@@ -140,10 +140,9 @@ namespace Microsoft.Azure.Devices
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Opening MessageFeedbackProcessorClient threw an exception: {ex}", nameof(OpenAsync));
+                Logging.Error(this, $"Opening MessageFeedbackProcessorClient threw an exception: {ex}", nameof(OpenAsync));
                 throw;
             }
             finally
@@ -179,10 +178,9 @@ namespace Microsoft.Azure.Devices
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Closing MessageFeedbackProcessorClient threw an exception: {ex}", nameof(CloseAsync));
+                Logging.Error(this, $"Closing MessageFeedbackProcessorClient threw an exception: {ex}", nameof(CloseAsync));
                 throw;
             }
             finally
@@ -255,10 +253,9 @@ namespace Microsoft.Azure.Devices
 
                     await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                 }
-                catch (Exception ex2)
+                catch (Exception ex2) when (Logging.IsEnabled)
                 {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"{nameof(OnFeedbackMessageReceivedAsync)} threw an exception during cleanup: {ex2}", nameof(OnFeedbackMessageReceivedAsync));
+                    Logging.Error(this, $"{nameof(OnFeedbackMessageReceivedAsync)} threw an exception during cleanup: {ex2}", nameof(OnFeedbackMessageReceivedAsync));
                 }
             }
             finally

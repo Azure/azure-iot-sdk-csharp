@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices
         internal QueriedPage(HttpResponseMessage response, string payload)
         {
             Items = JsonConvert.DeserializeObject<IEnumerable<T>>(payload);
-            ContinuationToken = response.Headers.GetFirstValueOrNull(ContinuationTokenHeader);
+            ContinuationToken = response.Headers.SafeGetValue(ContinuationTokenHeader);
         }
 
         [JsonProperty("items")]
