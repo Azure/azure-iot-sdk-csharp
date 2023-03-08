@@ -64,11 +64,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
                 var c2dMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Func<IncomingMessage, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message) =>
+                Task<MessageAcknowledgement> OnC2DMessageReceived(IncomingMessage message)
                 {
                     c2dMessageReceived.TrySetResult(true);
                     return Task.FromResult(MessageAcknowledgement.Complete);
-                };
+                }
                 await deviceClient.SetIncomingMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
                 await Task
@@ -89,9 +89,21 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 feedbackMessageReceived.Task.IsCompleted.Should().BeTrue("Service client never received c2d feedback message even though the device received the message");
             }
+            catch (Exception ex)
+            {
+                VerboseTestLogger.WriteLine($"Test {nameof(MessageFeedbackReceiver_Operation)} failed over {protocol} due to {ex}");
+                throw;
+            }
             finally
             {
-                await serviceClient.MessageFeedback.CloseAsync().ConfigureAwait(false);
+                try
+                {
+                    await serviceClient.MessageFeedback.CloseAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    VerboseTestLogger.WriteLine($"Cleanup in {nameof(MessageFeedbackReceiver_Operation)} failed over {protocol} due to {ex}");
+                }
             }
         }
     }

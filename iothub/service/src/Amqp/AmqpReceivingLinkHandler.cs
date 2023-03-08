@@ -103,6 +103,11 @@ namespace Microsoft.Azure.Devices.Amqp
             {
                 await _receivingLink.DisposeMessageAsync(deliveryTag, outcome, false, cancellationToken).ConfigureAwait(false);
             }
+            catch (AmqpException ex) when (Logging.IsEnabled)
+            {
+                Logging.Error(this, $"Failed to acknowledge message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName} with error {ex.Error} due to {ex}", nameof(AcknowledgeMessageAsync));
+                throw;
+            }
             finally
             {
                 if (Logging.IsEnabled)
