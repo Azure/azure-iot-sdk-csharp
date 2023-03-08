@@ -352,28 +352,34 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             var device = new Device(_idPrefix);
             device = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
-            ETag oldEtag = device.ETag;
 
-            // Update the device once so that the last ETag falls out of date.
-            device.Status = ClientStatus.Disabled;
-            device = await serviceClient.Devices.SetAsync(device).ConfigureAwait(false);
+            try
+            {
+                ETag oldEtag = device.ETag;
 
-            // Deliberately set the ETag to an older version to test that the SDK is setting the If-Match
-            // header appropriately when sending the request.
-            device.ETag = oldEtag;
+                // Update the device once so that the last ETag falls out of date.
+                device.Status = ClientStatus.Disabled;
+                device = await serviceClient.Devices.SetAsync(device).ConfigureAwait(false);
 
-            // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-            Func<Task> act = async () => await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false);
-            var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
-            error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
-            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
-            error.And.IsTransient.Should().BeFalse();
+                // Deliberately set the ETag to an older version to test that the SDK is setting the If-Match
+                // header appropriately when sending the request.
+                device.ETag = oldEtag;
 
-            // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
-            await FluentActions
-                .Invoking(async () => { await serviceClient.Devices.DeleteAsync(device, false).ConfigureAwait(false); })
-                .Should()
-                .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                Func<Task> act = async () => await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false);
+                var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
+                error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
+                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
+                error.And.IsTransient.Should().BeFalse();
+            }
+            finally
+            {
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                await FluentActions
+                    .Invoking(async () => { await serviceClient.Devices.DeleteAsync(device, false).ConfigureAwait(false); })
+                    .Should()
+                    .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+            }
         }
     }
 }
