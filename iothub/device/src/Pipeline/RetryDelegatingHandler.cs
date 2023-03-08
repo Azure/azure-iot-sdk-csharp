@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _deviceReceiveMessageEnabled;
         private bool _isDisposing;
         private bool _isAnEdgeModule = true;
-        private long _isOpened; // store the opened status in an int which can be accessed via Interlocked class. opened = 1, closed = 0.
+        private long _isOpen; // store the open/closed status in an int which can be accessed via Interlocked class. open = 1, closed = 0.
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
@@ -792,8 +792,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _ = Interlocked.Exchange(ref _isOpened, 0); // set the state to "closed"
-                
+                _ = Interlocked.Exchange(ref _isOpen, 0); // set the state to "closed"
+
                 Dispose(true);
 
                 if (Logging.IsEnabled)
@@ -816,7 +816,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
 
-            if (Interlocked.Read(ref _isOpened) == 1)
+            if (Interlocked.Read(ref _isOpen) == 1)
             {
                 return;
             }
@@ -824,7 +824,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
             try
             {
-                if (Interlocked.Read(ref _isOpened) == 0)
+                if (Interlocked.Read(ref _isOpen) == 0)
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
@@ -843,7 +843,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!_isDisposed)
                     {
-                        _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
+                        _ = Interlocked.Exchange(ref _isOpen, 1); // set the state to "opened"
                         _openCalled = true;
 
                         // Send the request for transport close notification.
@@ -886,7 +886,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
 
-            if (Interlocked.Read(ref _isOpened) == 1)
+            if (Interlocked.Read(ref _isOpen) == 1)
             {
                 return;
             }
@@ -895,7 +895,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                if (Interlocked.Read(ref _isOpened) == 0)
+                if (Interlocked.Read(ref _isOpen) == 0)
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
@@ -914,7 +914,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!_isDisposed)
                     {
-                        _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
+                        _ = Interlocked.Exchange(ref _isOpen, 1); // set the state to "opened"
                         _openCalled = true;
 
                         // Send the request for transport close notification.
@@ -1088,7 +1088,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
             await _clientOpenSemaphore.WaitAsync().ConfigureAwait(false);
-            _ = Interlocked.Exchange(ref _isOpened, 0); // set the state to "closed"
+            _ = Interlocked.Exchange(ref _isOpen, 0); // set the state to "closed"
 
             try
             {
@@ -1159,7 +1159,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Send the request for transport close notification.
                     _transportClosedTask = HandleDisconnectAsync();
 
-                    _ = Interlocked.Exchange(ref _isOpened, 1); // set the state to "opened"
+                    _ = Interlocked.Exchange(ref _isOpen, 1); // set the state to "opened"
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
                     if (Logging.IsEnabled)
