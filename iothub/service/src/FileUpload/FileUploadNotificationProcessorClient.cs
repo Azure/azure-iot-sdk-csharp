@@ -234,9 +234,10 @@ namespace Microsoft.Azure.Devices
 
                     await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                 }
-                catch (Exception ex2) when (Logging.IsEnabled)
+                catch (Exception ex2)
                 {
-                    Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during cleanup: {ex2}", nameof(OnNotificationMessageReceivedAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during cleanup: {ex2}", nameof(OnNotificationMessageReceivedAsync));
                 }
             }
             finally

@@ -31,59 +31,50 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_GetModulesOnDevice()
         {
+            // arrange
+
             const int moduleCount = 2;
-            string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
             string[] testModuleIds = new string[moduleCount];
             for (int i = 0; i < moduleCount; i++)
             {
-                testModuleIds[i] = $"IdentityLifecycleModule{i}-{Guid.NewGuid()}";
+                testModuleIds[i] = $"{nameof(ModulesClient_GetModulesOnDevice)}{i}-{Guid.NewGuid()}";
             }
 
-            Device device = null;
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
-            try
+            // Create a device to house the modules
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(ModulesClient_GetModulesOnDevice)).ConfigureAwait(false);
+
+
+            // Create the modules on the device
+            for (int i = 0; i < moduleCount; i++)
             {
-                // Create a device to house the modules
-                device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId)).ConfigureAwait(false);
-
-                // Create the modules on the device
-                for (int i = 0; i < moduleCount; i++)
-                {
-                    Module createdModule = await serviceClient.Modules.CreateAsync(
-                        new Module(testDeviceId, testModuleIds[i])).ConfigureAwait(false);
-                }
-
-                for (int i = 0; i < moduleCount; i++)
-                {
-                    await RetryOperationHelper
-                        .RunWithHubServiceRetryAsync(
-                        async () =>
-                        {
-                            _ = await serviceClient.Modules.GetAsync(testDeviceId, testModuleIds[i]).ConfigureAwait(false);
-                        },
-                        s_retryPolicy)
-                    .ConfigureAwait(false);
-                }
-
-                // List the modules on the test device
-                IEnumerable<Module> modulesOnDevice = await serviceClient.Devices.GetModulesAsync(testDeviceId).ConfigureAwait(false);
-
-                IList<string> moduleIdsOnDevice = modulesOnDevice
-                    .Select(module => module.Id)
-                    .ToList();
-
-                moduleIdsOnDevice.Count.Should().Be(moduleCount);
-                for (int i = 0; i < moduleCount; i++)
-                {
-                    moduleIdsOnDevice.Should().Contain(testModuleIds[i]);
-                }
-
-                await Task.WhenAll(testModuleIds.Select(moduleId => serviceClient.Modules.DeleteAsync(testDeviceId, moduleId))).ConfigureAwait(false);
+                Module createdModule = await serviceClient.Modules.CreateAsync(
+                    new Module(testDevice.Id, testModuleIds[i])).ConfigureAwait(false);
             }
-            finally
+
+            // Ensure devices are getable from the device registry before we act and assert
+            for (int i = 0; i < moduleCount; i++)
             {
-                await CleanupAsync(serviceClient, testDeviceId).ConfigureAwait(false);
+                await RetryOperationHelper
+                    .RunWithHubServiceRetryAsync(
+                        async () => _ = await serviceClient.Modules.GetAsync(testDevice.Id, testModuleIds[i]).ConfigureAwait(false),
+                        s_retryPolicy)
+                .ConfigureAwait(false);
+            }
+
+            // act
+            IEnumerable<Module> modulesOnDevice = await serviceClient.Devices.GetModulesAsync(testDevice.Id).ConfigureAwait(false);
+
+            IList<string> moduleIdsOnDevice = modulesOnDevice
+                .Select(module => module.Id)
+                .ToList();
+
+            // assert
+            moduleIdsOnDevice.Count.Should().Be(moduleCount);
+            for (int i = 0; i < moduleCount; i++)
+            {
+                moduleIdsOnDevice.Should().Contain(testModuleIds[i]);
             }
         }
 

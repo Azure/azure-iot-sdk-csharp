@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Certificate authority.
         /// </summary>
-        [EnumMember(Value = "certficateAuthority")]
+        [EnumMember(Value = "certificateAuthority")]
         CertificateAuthority,
     }
 }

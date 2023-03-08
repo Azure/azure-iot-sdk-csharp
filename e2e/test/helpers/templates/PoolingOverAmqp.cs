@@ -82,7 +82,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     {
                         await cleanupOperation().ConfigureAwait(false);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        VerboseTestLogger.WriteLine($"Failed to run clean up due to {ex}");
+                    }
                 }
 
                 testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => { try { testDeviceCallbackHandler.Dispose(); } catch { } });
