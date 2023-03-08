@@ -792,6 +792,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
+                _ = Interlocked.Exchange(ref _isOpened, 0); // set the state to "closed"
+                
                 Dispose(true);
 
                 if (Logging.IsEnabled)
