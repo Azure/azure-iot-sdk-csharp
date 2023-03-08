@@ -1245,8 +1245,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (!_isDisposed)
                 {
                     _isDisposing = true;
+                    _ = Interlocked.Exchange(ref _isOpen, 0); // set the state to "closed"
 
                     base.Dispose(disposing);
+
                     if (disposing)
                     {
                         var disposables = new List<IDisposable>
