@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            PipelineContext contextMock = Substitute.For<PipelineContext>();
+            IPipelineContext contextMock = Substitute.For<IPipelineContext>();
             IDelegatingHandler innerHandlerMock = Substitute.For<IDelegatingHandler>();
 
             innerHandlerMock
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            PipelineContext contextMock = Substitute.For<PipelineContext>();
+            IPipelineContext contextMock = Substitute.For<IPipelineContext>();
             IDelegatingHandler innerHandlerMock = Substitute.For<IDelegatingHandler>();
             using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
             innerHandlerMock
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            PipelineContext contextMock = Substitute.For<PipelineContext>();
+            IPipelineContext contextMock = Substitute.For<IPipelineContext>();
             IDelegatingHandler innerHandlerMock = Substitute.For<IDelegatingHandler>();
             var memoryStream = new NotSeekableStream(new byte[] { 1, 2, 3 });
             using var message = new Message(memoryStream);
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
             IEnumerable<Message> messages = new[] { message };
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
             innerHandlerMock
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             int callCounter = 0;
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock
                 .OpenAsync(Arg.Any<CancellationToken>())
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task DeviceNotFoundExceptionReturnsDeviceDisabledStatus()
         {
             // arrange
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new DeviceNotFoundException());
 
@@ -228,6 +228,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 status = s;
                 statusChangeReason = r;
             };
+
+            contextMock.Get<ConnectionStatusChangesHandler>().Returns(statusChangeHandler);
 
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
@@ -247,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var cts = new CancellationTokenSource(1000);
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock
                 .OpenAsync(Arg.Any<CancellationToken>())
@@ -274,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
             innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act and assert
@@ -288,7 +290,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.SendEventAsync((Message)null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
@@ -304,7 +306,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.SendEventAsync((IEnumerable<Message>)null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
@@ -325,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             cts.Cancel();
             innerHandlerMock.ReceiveAsync(cts.Token).Returns(new Task<Message>(() => new Message(new byte[0])));
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act and assert
@@ -337,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             var retryPolicy = new TestRetryPolicyRetryTwice();
@@ -373,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
             innerHandlerMock.CompleteAsync(Arg.Any<string>(), cts.Token).Returns(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act and assert
@@ -387,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.AbandonAsync(null, Arg.Any<CancellationToken>()).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
@@ -406,7 +408,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.RejectAsync(null, Arg.Any<CancellationToken>()).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
+            var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
             using var cts = new CancellationTokenSource();
             cts.Cancel();

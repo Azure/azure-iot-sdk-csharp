@@ -20,11 +20,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
+#pragma warning disable CA2213
+        // The semaphores are getting disposed in the Dispose() block below but it seems like
+        // Microsoft.CodeAnalysis.FxCopAnalyzers isn't able to analyze and interpret our code successfully.
+        // We've moved to Microsoft.CodeAnalysis.NetAnalyzers in main and it understands the below disposal block successfully.
         private readonly SemaphoreSlim _clientOpenSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _cloudToDeviceEventSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _twinEventsSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+#pragma warning restore CA2213
+
         private bool _openCalled;
         private bool _methodsEnabled;
         private bool _twinEnabled;
@@ -34,8 +40,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private long _isOpened; // store the opened status in an int which can be accessed via Interlocked class. opened = 1, closed = 0.
 
         private Task _transportClosedTask;
+
+#pragma warning disable CA2213
+        // The cancellation token sources are getting canceled and disposed in the Dispose() block below but it seems like
+        // Microsoft.CodeAnalysis.FxCopAnalyzers isn't able to analyze and interpret our code successfully.
+        // We've moved to Microsoft.CodeAnalysis.NetAnalyzers in main and it understands the below disposal block successfully.
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _cancelPendingOperationsCts = new CancellationTokenSource();
+#pragma warning restore CA2213
 
         private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
 
