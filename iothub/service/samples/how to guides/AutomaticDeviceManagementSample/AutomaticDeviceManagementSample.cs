@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Samples
             // Check configuration's metrics for expected conditions
             foreach (Configuration configuration in configurations)
             {
-                num += 1;
+                num++;
                 string configurationString = JsonConvert.SerializeObject(configuration, Formatting.Indented);
                 Console.WriteLine(configurationString);
                 Thread.Sleep(1000);
