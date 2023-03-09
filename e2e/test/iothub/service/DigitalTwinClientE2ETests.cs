@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
         {
             // Create a new test device instance.
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             // Create a device client instance over Mqtt, initializing it with the "Thermostat" model which has only a root component.
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             // Perform operations on the digital twin.
-            var serviceClient = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             // Retrieve the digital twin.
             DigitalTwinGetResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 (request) =>
                 {
                     VerboseTestLogger.WriteLine($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
-                    var response = new Client.DirectMethodResponse(404);
+                    var response = new DirectMethodResponse(404);
 
                     if (request.MethodName == commandName)
                     {
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
             var requestOptions = new InvokeDigitalTwinCommandOptions
             {
-                Payload = JsonConvert.SerializeObject(since)
+                Payload = JsonConvert.SerializeObject(since),
             };
             InvokeDigitalTwinCommandResponse commandResponse = await serviceClient.DigitalTwins
                 .InvokeCommandAsync(deviceId, commandName, requestOptions)
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task DigitalTwinWithComponentOperationsAsync()
         {
             // Create a new test device instance.
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             // Create a device client instance over Mqtt, initializing it with the "TemperatureController" model which has "Thermostat" components.

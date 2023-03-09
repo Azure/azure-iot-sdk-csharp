@@ -45,17 +45,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice t, TestDeviceCallbackHandler c)
+            async Task InitAsync(TestDevice testDevice, TestDeviceCallbackHandler c)
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+                await testDevice.OpenWithRetryAsync(cts.Token).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 TelemetryMessage testMessage = TelemetryE2ETests.ComposeD2cTestMessage(out string payload, out string p1Value);
                 VerboseTestLogger.WriteLine($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
-                await deviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
+                await testDevice.DeviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp

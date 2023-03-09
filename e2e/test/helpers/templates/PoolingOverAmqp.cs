@@ -21,8 +21,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
-            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
+            Func<TestDevice, TestDeviceCallbackHandler, Task> initOperation,
+            Func<TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             bool ignoreConnectionStatus)
@@ -34,43 +34,41 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             };
 
             var testDevices = new List<TestDevice>(devicesCount);
-            var deviceClients = new List<IotHubDeviceClient>(devicesCount);
             var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>(devicesCount);
             var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>(devicesCount);
             var operations = new List<Task>(devicesCount);
 
-            // Arrange
-            // Initialize the test device client instances
-            // Set the device client connection status change handler
-            VerboseTestLogger.WriteLine($"{nameof(PoolingOverAmqp)} Initializing device clients for multiplexing test");
-            for (int i = 0; i < devicesCount; i++)
-            {
-                // Initialize the test device client instances
-                TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
-                IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
-
-                // Set the device client connection status change handler
-                var amqpConnectionStatusChange = new AmqpConnectionStatusChange();
-                deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusChange.ConnectionStatusChangeHandler;
-
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
-
-                testDevices.Add(testDevice);
-                deviceClients.Add(deviceClient);
-                testDeviceCallbackHandlers.Add(testDeviceCallbackHandler);
-                amqpConnectionStatuses.Add(amqpConnectionStatusChange);
-
-                if (initOperation != null)
-                {
-                    await initOperation(deviceClient, testDevice, testDeviceCallbackHandler).ConfigureAwait(false);
-                }
-            }
-
             try
             {
-                for (int i = 0; i < devicesCount; i++)
+                // Arrange
+                // Initialize the test device client instances
+                // Set the device client connection status change handler
+                VerboseTestLogger.WriteLine($"{nameof(PoolingOverAmqp)} Initializing device clients for multiplexing test");
+                for (int deviceCreateIndex = 0; deviceCreateIndex < devicesCount; deviceCreateIndex++)
                 {
-                    operations.Add(testOperation(deviceClients[i], testDevices[i], testDeviceCallbackHandlers[i]));
+                    // Initialize the test device client instances
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{deviceCreateIndex}_").ConfigureAwait(false);
+                    IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
+
+                    // Set the device client connection status change handler
+                    var amqpConnectionStatusChange = new AmqpConnectionStatusChange();
+                    deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusChange.ConnectionStatusChangeHandler;
+
+                    var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
+
+                    testDevices.Add(testDevice);
+                    testDeviceCallbackHandlers.Add(testDeviceCallbackHandler);
+                    amqpConnectionStatuses.Add(amqpConnectionStatusChange);
+
+                    if (initOperation != null)
+                    {
+                        await initOperation(testDevice, testDeviceCallbackHandler).ConfigureAwait(false);
+                    }
+                }
+
+                for (int deviceInitIndex = 0; deviceInitIndex < devicesCount; deviceInitIndex++)
+                {
+                    operations.Add(testOperation(testDevices[deviceInitIndex], testDeviceCallbackHandlers[deviceInitIndex]));
                 }
                 await Task.WhenAll(operations).ConfigureAwait(false);
                 operations.Clear();
@@ -80,10 +78,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // Close the service-side components and dispose the device client instances.
                 if (cleanupOperation != null)
                 {
-                    await cleanupOperation().ConfigureAwait(false);
+                    try
+                    {
+                        await cleanupOperation().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        VerboseTestLogger.WriteLine($"Failed to run clean up due to {ex}");
+                    }
                 }
 
-                testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());
+                testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => { try { testDeviceCallbackHandler.Dispose(); } catch { } });
                 await Task.WhenAll(testDevices.Select(x => x.DisposeAsync().AsTask())).ConfigureAwait(false);
             }
         }

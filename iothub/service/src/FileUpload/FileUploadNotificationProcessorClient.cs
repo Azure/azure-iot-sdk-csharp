@@ -132,10 +132,9 @@ namespace Microsoft.Azure.Devices
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Opening FileUploadNotificationProcessorClient threw an exception: {ex}", nameof(OpenAsync));
+                Logging.Error(this, $"Opening FileUploadNotificationProcessorClient threw an exception: {ex}", nameof(OpenAsync));
                 throw;
             }
             finally
@@ -171,10 +170,9 @@ namespace Microsoft.Azure.Devices
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Closing FileUploadNotificationProcessorClient threw an exception: {ex}", nameof(CloseAsync));
+                Logging.Error(this, $"Closing FileUploadNotificationProcessorClient threw an exception: {ex}", nameof(CloseAsync));
                 throw;
             }
             finally

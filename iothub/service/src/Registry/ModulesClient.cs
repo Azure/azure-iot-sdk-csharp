@@ -94,10 +94,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Creating module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -157,10 +156,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting module {moduleId} on device {deviceId} threw an exception: {ex}", nameof(GetAsync));
+                Logging.Error(this, $"Getting module {moduleId} on device {deviceId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -224,10 +222,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
+                Logging.Error(this, $"Updating module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
@@ -317,10 +314,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Deleting module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
+                Logging.Error(this, $"Deleting module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally

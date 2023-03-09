@@ -18,22 +18,11 @@ namespace Microsoft.Azure.Devices
         /// <param name="headers">The collection of HTTP headers and their values.</param>
         /// <param name="name">The header name whose value to get.</param>
         /// <returns>The first value corresponding to the supplied header name, if the name is found in the collection; otherwise, an empty string.</returns>
-        internal static string GetFirstValueOrNull(this HttpHeaders headers, string name)
+        internal static string SafeGetValue(this HttpHeaders headers, string name)
         {
-            IEnumerable<string> values = headers.GetValuesOrNull(name) ?? Enumerable.Empty<string>();
-            return values.FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Gets the values associated with the supplied header name.
-        /// </summary>
-        /// <param name="headers">The collection of HTTP headers and their values.</param>
-        /// <param name="name">The header name whose value to get.</param>
-        /// <returns>The values corresponding to the supplied header name, if the name is found in the collection; otherwise, null.</returns>
-        internal static IEnumerable<string> GetValuesOrNull(this HttpHeaders headers, string name)
-        {
-            headers.TryGetValues(name, out IEnumerable<string> values);
-            return values;
+            return headers.TryGetValues(name, out IEnumerable<string> values)
+                ? values.FirstOrDefault()
+                : null;
         }
     }
 }

@@ -104,10 +104,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device twin: {deviceId} threw an exception: {ex}", nameof(GetAsync));
+                Logging.Error(this, $"Getting device twin: {deviceId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -170,10 +169,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting device module twin {deviceId}/{moduleId} threw an exception: {ex}", nameof(GetAsync));
+                Logging.Error(this, $"Getting device module twin {deviceId}/{moduleId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -317,10 +315,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating twins threw an exception: {ex}", nameof(UpdateAsync));
+                Logging.Error(this, $"Updating twins threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally
@@ -436,10 +433,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device twin {deviceId} - is replace {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
+                Logging.Error(this, $"Updating device twin {deviceId} - is replace {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally
@@ -496,10 +492,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device {deviceId}/{moduleId} - is replace {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
+                Logging.Error(this, $"Updating device {deviceId}/{moduleId} - is replace {isReplace} threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally

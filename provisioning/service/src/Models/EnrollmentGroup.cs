@@ -158,7 +158,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// The provisioning status.
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("provisioningStatus", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ProvisioningStatus? ProvisioningStatus { get; set; }
 

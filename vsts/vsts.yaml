@@ -348,10 +348,11 @@ jobs:
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
 
-      - task: PublishCodeCoverageResults@1  
-        displayName: 'Publish code coverage **/*.coverage'  
-        inputs:  
-          codeCoverageTool: Cobertura  
+      - task: PublishCodeCoverageResults@1
+        displayName: 'Publish code coverage **/*.coverage'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          codeCoverageTool: Cobertura
           summaryFileLocation: '**/*.coverage'
       
       - task: ComponentGovernanceComponentDetection@0
@@ -530,10 +531,11 @@ jobs:
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
       
-      - task: PublishCodeCoverageResults@1  
-        displayName: 'Publish code coverage **/*.coverage'  
-        inputs:  
-          codeCoverageTool: Cobertura  
+      - task: PublishCodeCoverageResults@1
+        displayName: 'Publish code coverage **/*.coverage'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          codeCoverageTool: Cobertura
           summaryFileLocation: '**/*.coverage'
 
       - task: ComponentGovernanceComponentDetection@0
@@ -635,7 +637,7 @@ jobs:
         displayName: "Create Security Analysis Report"
         inputs:
           AllTools: true
-          
+
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
         inputs:

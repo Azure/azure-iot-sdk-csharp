@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
@@ -118,10 +117,9 @@ namespace Microsoft.Azure.Devices
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Opening MessagingClient threw an exception: {ex}", nameof(OpenAsync));
+                Logging.Error(this, $"Opening MessagingClient threw an exception: {ex}", nameof(OpenAsync));
                 throw;
             }
             finally
@@ -158,10 +156,9 @@ namespace Microsoft.Azure.Devices
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Closing MessagingClient threw an exception: {ex}", nameof(CloseAsync));
+                Logging.Error(this, $"Closing MessagingClient threw an exception: {ex}", nameof(CloseAsync));
                 throw;
             }
             finally
@@ -361,10 +358,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Purging message queue for device {deviceId} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
+                Logging.Error(this, $"Purging message queue for device {deviceId} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
                 throw;
             }
             finally

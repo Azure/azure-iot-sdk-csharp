@@ -49,7 +49,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task JobClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.GetIotHubHostName(), TestConfiguration.IotHub.GetClientSecretCredential());
+            using var serviceClient = new IotHubServiceClient(
+                TestConfiguration.IotHub.GetIotHubHostName(),
+                TestConfiguration.IotHub.GetClientSecretCredential());
 
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string jobDeviceId = "JobsSample_Device";

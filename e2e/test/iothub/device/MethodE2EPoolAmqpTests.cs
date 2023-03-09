@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     [TestCategory("IoTHub")]
     public class MethodE2EPoolAmqpTests : E2EMsTestBase
     {
-        private const string MethodName = "MethodE2EPoolAmqpTests";
-        private readonly string _devicePrefix = $"{nameof(MethodE2EPoolAmqpTests)}_";
+        private const string MethodName = nameof(MethodE2EPoolAmqpTests);
+        private readonly string _devicePrefix = $"{MethodName}_";
 
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -75,13 +75,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Func<IotHubDeviceClient, string, Task<Task>> setDeviceReceiveMethod,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
-                Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
+                Task methodReceivedTask = await setDeviceReceiveMethod(testDevice.DeviceClient, MethodName).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 await MethodE2ETests

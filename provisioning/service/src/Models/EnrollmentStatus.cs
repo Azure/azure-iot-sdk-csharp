@@ -11,8 +11,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Enrollment status
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1717:OnlyFlagsEnumsShouldHavePluralNames",
-        Justification = "Public API cannot change name.")]
     [JsonConverter(typeof(StringEnumConverter))]
     public enum EnrollmentStatus
     {

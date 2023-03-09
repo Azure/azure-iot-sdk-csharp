@@ -95,10 +95,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Invoking device method for device id {deviceId} threw an exception: {ex}", nameof(InvokeAsync));
+                Logging.Error(this, $"Invoking device method for device id {deviceId} threw an exception: {ex}", nameof(InvokeAsync));
                 throw;
             }
             finally
@@ -160,10 +159,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Invoking device method for device id {deviceId} and module id {moduleId} threw an exception: {ex}", nameof(InvokeAsync));
+                Logging.Error(this, $"Invoking device method for device id {deviceId} and module id {moduleId} threw an exception: {ex}", nameof(InvokeAsync));
                 throw;
             }
             finally
