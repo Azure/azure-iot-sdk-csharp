@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Samples
                 Thread.Sleep(1000);
             }
 
-            Console.WriteLine("Configurations received: " + num);
+            Console.WriteLine($"Configurations received: {num}.");
         }
     }
 }
