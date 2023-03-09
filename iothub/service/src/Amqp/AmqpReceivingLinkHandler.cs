@@ -97,21 +97,30 @@ namespace Microsoft.Azure.Devices.Amqp
         internal async Task AcknowledgeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}", nameof(AcknowledgeMessageAsync));
+                Logging.Enter(
+                    this,
+                    $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}",
+                    nameof(AcknowledgeMessageAsync));
 
             try
             {
                 await _receivingLink.DisposeMessageAsync(deliveryTag, outcome, false, cancellationToken).ConfigureAwait(false);
             }
-            catch (AmqpException ex) when (Logging.IsEnabled)
+            catch (AmqpException ex)
             {
-                Logging.Error(this, $"Failed to acknowledge message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName} with error {ex.Error} due to {ex}", nameof(AcknowledgeMessageAsync));
-                throw;
+                if (Logging.IsEnabled)
+                    Logging.Error(
+                        this,
+                        $"Failed to acknowledge message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName} with error {ex.Error} due to {ex}",
+                        nameof(AcknowledgeMessageAsync));
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}", nameof(AcknowledgeMessageAsync));
+                    Logging.Exit(
+                        this,
+                        $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}",
+                        nameof(AcknowledgeMessageAsync));
             }
         }
     }

@@ -34,6 +34,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             });
 
         private X509Certificate2 _authCertificate;
+
+        /// <summary>
+        /// A single service client instance to be used by all the tests that simply need one initialized with a connection string.
+        /// </summary>
+        /// <remarks>
+        /// It is better for tests to use a single instance so we don't run out of sockets due to the HttpClient dispose anti-pattern.
+        /// <para>
+        /// We won't dispose this client either, but it'll be fine because the test process will exit and memory leaks aren't a concern then.
+        /// </para>
+        /// </remarks>
         internal static IotHubServiceClient ServiceClient { get; } = new(TestConfiguration.IotHub.ConnectionString);
 
         private TestDevice(Device device, IAuthenticationMethod authenticationMethod)
