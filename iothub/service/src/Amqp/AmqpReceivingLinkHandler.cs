@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 if (Logging.IsEnabled)
                     Logging.Error(
                         this,
-                        $"Failed to acknowledge message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName} with error {ex.Error} due to {ex}",
+                        $"Failed to acknowledge message (should be redelivered) with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName} with error {ex.Error} due to {ex}",
                         nameof(AcknowledgeMessageAsync));
             }
             finally

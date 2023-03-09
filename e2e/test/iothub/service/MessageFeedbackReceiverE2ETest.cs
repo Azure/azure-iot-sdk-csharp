@@ -38,28 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             try
             {
-                var message = new Message(Encoding.UTF8.GetBytes("some payload"))
-                {
-                    Ack = DeliveryAcknowledgement.Full,
-                    MessageId = Guid.NewGuid().ToString(),
-                };
-
-                var feedbackMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                serviceClient.MessageFeedback.MessageFeedbackProcessor = (FeedbackBatch feedback) =>
-                {
-                    if (feedback.Records.Any(x => x.OriginalMessageId == message.MessageId))
-                    {
-                        feedbackMessageReceived.TrySetResult(true);
-                        return AcknowledgementType.Complete;
-                    }
-
-                    return AcknowledgementType.Abandon;
-                };
-                await serviceClient.MessageFeedback.OpenAsync().ConfigureAwait(false);
-
-                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-                await serviceClient.Messages.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
-
+                // Configure the device to receive messages.
                 await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
@@ -71,14 +50,42 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 await deviceClient.SetIncomingMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
+                // Configure the service client to send the message.
+                var message = new Message(Encoding.UTF8.GetBytes("some payload"))
+                {
+                    Ack = DeliveryAcknowledgement.Full,
+                    MessageId = Guid.NewGuid().ToString(),
+                };
+                var feedbackMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                serviceClient.MessageFeedback.MessageFeedbackProcessor = (FeedbackBatch feedback) =>
+                {
+                    if (feedback.Records.Any(x => x.OriginalMessageId == message.MessageId))
+                    {
+                        if (!feedbackMessageReceived.Task.IsCompleted)
+                        {
+                            feedbackMessageReceived.TrySetResult(true);
+                        }
+                        return AcknowledgementType.Complete;
+                    }
+
+                    // Same hub as other tests, so we don't want to complete messages that aren't meant for us.
+                    return AcknowledgementType.Abandon;
+                };
+                await serviceClient.MessageFeedback.OpenAsync().ConfigureAwait(false);
+
+                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+                await serviceClient.Messages.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
+
+                // Wait for the device to receive the message.
                 await Task
                     .WhenAny(
                         Task.Delay(TimeSpan.FromSeconds(20)),
                         c2dMessageReceived.Task)
                     .ConfigureAwait(false);
 
-                c2dMessageReceived.Task.IsCompleted.Should().BeTrue("Timed out waiting for cloud to device message to be received by device");
+                c2dMessageReceived.Task.IsCompleted.Should().BeTrue("Timed out waiting for C2D message to be received by device");
 
+                // Wait for the service to receive the feedback message.
                 await Task
                     .WhenAny(
                         // Wait for up to 200 seconds for the feedback message as the service may not send messages
@@ -87,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         feedbackMessageReceived.Task)
                     .ConfigureAwait(false);
 
-                feedbackMessageReceived.Task.IsCompleted.Should().BeTrue("Service client never received c2d feedback message even though the device received the message");
+                feedbackMessageReceived.Task.IsCompleted.Should().BeTrue("service client never received c2d feedback message even though the device received the message");
             }
             catch (Exception ex)
             {

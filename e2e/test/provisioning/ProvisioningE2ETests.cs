@@ -650,6 +650,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
 
             bool shouldCleanupEnrollment = groupId == null || groupId != TestConfiguration.Provisioning.X509GroupEnrollmentName;
+            string deviceId = null;
 
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
@@ -693,6 +694,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     try
                     {
                         result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                     deviceId = result.DeviceId;
                         break;
                     }
                     // Catching all ProvisioningClientException as the status code is not the same for Mqtt, Amqp and Http.
@@ -720,6 +722,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     VerboseTestLogger.WriteLine($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
                     await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId).ConfigureAwait(false);
+                    if (deviceId != null)
+                    {
+                        VerboseTestLogger.WriteLine($"Deleting device {deviceId}...");
+                        await TestDevice.ServiceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                    }
                 }
                 else
                 {
@@ -1082,7 +1089,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AuthenticationProvider authProvider,
             string groupId)
         {
-            using ProvisioningServiceClient dpsClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+            using var dpsClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
 
             try
             {
