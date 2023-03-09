@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -38,24 +39,34 @@ namespace Microsoft.Azure.Devices.Samples
                     await AddDeviceConfigurationAsync(configs[i]);
                 }
 
+                Console.WriteLine("============================");
                 Console.WriteLine("List existing configurations");
+                Console.WriteLine("============================");
                 await GetConfigurationsAsync(5);
 
+                Console.WriteLine("==========================");
                 Console.WriteLine("Remove some configurations");
+                Console.WriteLine("==========================");
                 await DeleteConfigurationAsync(configs[3]);
                 await DeleteConfigurationAsync(configs[1]);
 
-                Console.WriteLine("List existing configurations");
+                Console.WriteLine("=============================");
+                Console.WriteLine("List remaining configurations");
+                Console.WriteLine("=============================");
                 await GetConfigurationsAsync(5);
             }
             finally
             {
-                Console.WriteLine("Remove remaining connfigurations");
+                Console.WriteLine("===============================");
+                Console.WriteLine("Remove remaining configurations");
+                Console.WriteLine("===============================");
                 await DeleteConfigurationAsync(configs[0]);
                 await DeleteConfigurationAsync(configs[2]);
                 await DeleteConfigurationAsync(configs[4]);
 
+                Console.WriteLine("==============================================");
                 Console.WriteLine("List existing configurations (should be empty)");
+                Console.WriteLine("==============================================");
                 await GetConfigurationsAsync(5);
             }
         }
@@ -90,23 +101,45 @@ namespace Microsoft.Azure.Devices.Samples
 
         private async Task DeleteConfigurationAsync(string configurationId)
         {
-            await _registryManager.RemoveConfigurationAsync(configurationId);
-            Console.WriteLine($"Configuration deleted, id: {configurationId}");
+            // Setup cancellation token for timeout handling
+            using var cancel = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var sw = Stopwatch.StartNew();
+
+            // Exception handling for timeout and connection issues
+            try
+            {
+                await _registryManager.RemoveConfigurationAsync(configurationId, cancel.Token);
+                Console.WriteLine($"Configuration deleted, id: {configurationId}");
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException is OperationCanceledException ocex)
+                {
+                    Console.WriteLine($"{nameof(OperationCanceledException)} thrown after {sw.Elapsed} with message: {ocex.Message}");
+                }
+                else
+                {
+                    Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!");
+                    Console.WriteLine($"{nameof(DeleteConfigurationAsync)} thrown after {sw.Elapsed} an exception [{ex.GetType().Name}:{ex.Message}] when removing Configuration id [{configurationId}]");
+                    Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!");
+                }
+            }
         }
 
         private async Task GetConfigurationsAsync(int count)
         {
             IEnumerable<Configuration> configurations = await _registryManager.GetConfigurationsAsync(count);
-
+            int num = 0;
             // Check configuration's metrics for expected conditions
             foreach (Configuration configuration in configurations)
             {
+                num += 1;
                 string configurationString = JsonConvert.SerializeObject(configuration, Formatting.Indented);
                 Console.WriteLine(configurationString);
                 Thread.Sleep(1000);
             }
 
-            Console.WriteLine("Configurations received");
+            Console.WriteLine("Configurations received: " + num);
         }
     }
 }
