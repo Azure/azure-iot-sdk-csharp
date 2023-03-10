@@ -583,7 +583,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         #endregion InvalidGlobalAddress
 
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+        private async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
@@ -605,7 +605,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+        private async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
@@ -694,7 +694,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     try
                     {
                         result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                     deviceId = result.DeviceId;
+                        deviceId = result.DeviceId;
                         break;
                     }
                     // Catching all ProvisioningClientException as the status code is not the same for Mqtt, Amqp and Http.
@@ -722,15 +722,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     VerboseTestLogger.WriteLine($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
                     await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId).ConfigureAwait(false);
-                    if (deviceId != null)
-                    {
-                        VerboseTestLogger.WriteLine($"Deleting device {deviceId}...");
-                        await TestDevice.ServiceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
-                    }
                 }
                 else
                 {
                     VerboseTestLogger.WriteLine($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
+                }
+
+                if (deviceId != null)
+                {
+                    await TestDevice.ServiceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
                 }
 
                 if (authMethod is AuthenticationProviderX509 x509Auth)

@@ -113,8 +113,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
-            var serviceClient = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
