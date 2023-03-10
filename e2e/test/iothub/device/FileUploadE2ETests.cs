@@ -142,24 +142,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     var notification = new FileUploadCompletionNotification("invalid-correlation-id", uploadTask.IsCompleted);
 
-                    // act and assert
+                    // act
+                    Func<Task> act = async () => await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
 
-                    try
-                    {
-                        // TODO: the HTTP layer handles errors differently and does not produce the right kind of exceptions.
-                        // It should be updated to throw the same kind of exceptions as MQTT and AMQP.
-                        await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
-                    }
-                    catch (IotHubClientException ex)
-                    {
-                        // Gateway V1 flow
-                        ex.ErrorCode.Should().Be(IotHubClientErrorCode.ServerError);
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        // Gateway V2 flow
-                        ex.Message.Should().Contain("400006");
-                    }
+                    // assert
+                    var error = await act.Should().ThrowAsync<IotHubClientException>();
+                    error.And.ErrorCode.Should().Be(IotHubClientErrorCode.ServerError);
+                    error.And.IsTransient.Should().BeTrue();
                 }
             }
         }
