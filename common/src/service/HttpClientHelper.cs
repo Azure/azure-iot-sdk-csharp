@@ -745,7 +745,8 @@ namespace Microsoft.Azure.Devices
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
-            Logging.Enter(this, httpMethod.Method, requestUri, nameof(ExecuteAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, httpMethod.Method, requestUri, nameof(ExecuteAsync));
 
             try
             {
@@ -780,7 +781,8 @@ namespace Microsoft.Azure.Devices
                 }
                 catch (AggregateException ex)
                 {
-                    Logging.Error(this, ex, nameof(ExecuteAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, ex, nameof(ExecuteAsync));
 
                     ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
                     if (innerExceptions.Any(Fx.IsFatal))
@@ -799,25 +801,29 @@ namespace Microsoft.Azure.Devices
                 }
                 catch (TimeoutException ex)
                 {
-                    Logging.Error(this, ex, nameof(ExecuteAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, ex, nameof(ExecuteAsync));
 
                     throw new IotHubCommunicationException(ex.Message, ex);
                 }
                 catch (IOException ex)
                 {
-                    Logging.Error(this, ex, nameof(ExecuteAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, ex, nameof(ExecuteAsync));
 
                     throw new IotHubCommunicationException(ex.Message, ex);
                 }
                 catch (HttpRequestException ex)
                 {
-                    Logging.Error(this, ex, nameof(ExecuteAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, ex, nameof(ExecuteAsync));
 
                     throw new IotHubCommunicationException(ex.Message, ex);
                 }
                 catch (TaskCanceledException ex)
                 {
-                    Logging.Error(this, ex, nameof(ExecuteAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, ex, nameof(ExecuteAsync));
 
                     // Unfortunately TaskCanceledException is thrown when HttpClient times out.
                     if (cancellationToken.IsCancellationRequested)
@@ -829,7 +835,8 @@ namespace Microsoft.Azure.Devices
                 }
                 catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
-                    Logging.Error(this, ex, nameof(ExecuteAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, ex, nameof(ExecuteAsync));
 
                     throw new IotHubException(ex.Message, ex);
                 }
@@ -842,7 +849,8 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, httpMethod.Method, requestUri, nameof(ExecuteAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, httpMethod.Method, requestUri, nameof(ExecuteAsync));
             }
         }
 
