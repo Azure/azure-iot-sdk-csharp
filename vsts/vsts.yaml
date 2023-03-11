@@ -629,8 +629,8 @@ jobs:
           tsaVersion: 'TsaV2'
           codebase: 'NewOrUpdate'
           tsaEnvironment: 'PROD'
-          codeBaseName: 'Azure-Iot-SDK-CSharp-Master'
-          notificationAlias: 'AzIoTDnDMgdSdk@microsoft.com'
+          codeBaseName: 'Azure-Iot-SDK-CSharp'
+          notificationAlias: 'AzIoTEdMgdSdk@microsoft.com'
           notifyAlwaysV2: false
           instanceUrlForTsaV2: 'MSAZURE'
           projectNameMSAZURE: 'One'
