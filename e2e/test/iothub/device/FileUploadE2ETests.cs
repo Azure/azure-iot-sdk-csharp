@@ -152,7 +152,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.ServerError)
                     {
                         // Gateway V1 flow
-                        ex.ErrorCode.Should().Be(IotHubClientErrorCode.ServerError);
                     }
                     catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.BadRequest)
                     {
