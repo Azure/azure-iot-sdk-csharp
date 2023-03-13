@@ -14,6 +14,12 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    internal enum ClientTransportStatus
+    {
+        Open,
+        Closed
+    }
+
     internal class RetryDelegatingHandler : DefaultDelegatingHandler
     {
         // RetryCount is used for testing purpose and is equal to MaxValue in prod.
@@ -792,8 +798,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _ = Interlocked.Exchange(ref _isOpen, 0); // set the state to "closed"
-
+                SetClientTransportStatus(ClientTransportStatus.Closed);
                 Dispose(true);
 
                 if (Logging.IsEnabled)
@@ -816,7 +821,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
 
-            if (Interlocked.Read(ref _isOpen) == 1)
+            if (IsClientTransportOpen())
             {
                 return;
             }
@@ -824,7 +829,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
             try
             {
-                if (Interlocked.Read(ref _isOpen) == 0)
+                if (!IsClientTransportOpen())
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
@@ -843,7 +848,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!_isDisposed)
                     {
-                        _ = Interlocked.Exchange(ref _isOpen, 1); // set the state to "opened"
+                        SetClientTransportStatus(ClientTransportStatus.Open);
                         _openCalled = true;
 
                         // Send the request for transport close notification.
@@ -886,7 +891,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
 
-            if (Interlocked.Read(ref _isOpen) == 1)
+            if (IsClientTransportOpen())
             {
                 return;
             }
@@ -895,7 +900,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                if (Interlocked.Read(ref _isOpen) == 0)
+                if (!IsClientTransportOpen())
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
@@ -914,7 +919,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!_isDisposed)
                     {
-                        _ = Interlocked.Exchange(ref _isOpen, 1); // set the state to "opened"
+                        SetClientTransportStatus(ClientTransportStatus.Open);
                         _openCalled = true;
 
                         // Send the request for transport close notification.
@@ -1088,7 +1093,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
             await _clientOpenSemaphore.WaitAsync().ConfigureAwait(false);
-            _ = Interlocked.Exchange(ref _isOpen, 0); // set the state to "closed"
+            SetClientTransportStatus(ClientTransportStatus.Closed);
 
             try
             {
@@ -1159,7 +1164,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Send the request for transport close notification.
                     _transportClosedTask = HandleDisconnectAsync();
 
-                    _ = Interlocked.Exchange(ref _isOpen, 1); // set the state to "opened"
+                    SetClientTransportStatus(ClientTransportStatus.Open);
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
                     if (Logging.IsEnabled)
@@ -1233,6 +1238,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     nameof(HandleConnectionStatusExceptions));
         }
 
+        private bool IsClientTransportOpen()
+        {
+            return Interlocked.Read(ref _isOpen) == 1;
+        }
+
+        private void SetClientTransportStatus(ClientTransportStatus transportStatus)
+        {
+            switch (transportStatus)
+            {
+                case ClientTransportStatus.Open:
+                    _ = Interlocked.Exchange(ref _isOpen, 1);
+                    break;
+
+                case ClientTransportStatus.Closed:
+                    _ = Interlocked.Exchange(ref _isOpen, 0);
+                    break;
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             try
@@ -1245,7 +1269,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (!_isDisposed)
                 {
                     _isDisposing = true;
-                    _ = Interlocked.Exchange(ref _isOpen, 0); // set the state to "closed"
+                    SetClientTransportStatus(ClientTransportStatus.Closed);
 
                     base.Dispose(disposing);
 
