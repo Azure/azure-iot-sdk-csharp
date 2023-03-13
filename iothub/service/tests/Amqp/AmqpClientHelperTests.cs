@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
             string jsonString = JsonConvert.SerializeObject(dataList);
 
-            var message = new Message(Encoding.UTF8.GetBytes(jsonString));
+            var message = new OutgoingMessage(Encoding.UTF8.GetBytes(jsonString));
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;

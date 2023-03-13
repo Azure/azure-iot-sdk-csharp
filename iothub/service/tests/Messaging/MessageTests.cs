@@ -5,7 +5,6 @@ using System;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Tests.Messaging
 {
@@ -18,40 +17,38 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         {
             string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new Message(payloadBytes);
+            var msg = new OutgoingMessage(payloadBytes);
             msg.Payload.Should().BeEquivalentTo(payloadBytes);
             msg.HasPayload.Should().BeTrue();
         }
 
         [TestMethod]
-        public void ConstructorTakingEmptyByteArrayTest()
+        public void Message_Ctor_TakesNullObjectTest()
         {
-            var msg = new Message(Array.Empty<byte>());
-            msg.Payload.Should().NotBeNull();
-            msg.Payload.Length.Should().Be(0);
+            var msg = new OutgoingMessage(null);
+            msg.Payload.Should().BeNull();
+            msg.HasPayload.Should().BeFalse();
         }
 
         [TestMethod]
-        public void Message_DefaultPayload_NotNull()
+        public void Message_EmptyCtor_PayloadIsNull()
         {
-            var msg = new Message();
-            msg.Payload.Should().NotBeNull();
-            msg.Payload.Should().BeEquivalentTo(Array.Empty<byte>());
-            msg.Payload.Length.Should().Be(0);
+            var msg = new OutgoingMessage();
+            msg.Payload.Should().BeNull();
             msg.HasPayload.Should().BeFalse();
         }
 
         [TestMethod]
         public void Message_Properties_DefaultNotNull()
         {
-            var msg = new Message();
+            var msg = new OutgoingMessage();
             msg.Properties.Should().NotBeNull();
         }
 
         [TestMethod]
         public void Message_SystemProperties_DefaultNotNull()
         {
-            var msg = new Message();
+            var msg = new OutgoingMessage();
             msg.SystemProperties.Should().NotBeNull();
         }
 
@@ -71,7 +68,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             DateTimeOffset enqueuedOnUtc = DateTimeOffset.UtcNow;
             DateTimeOffset expiresOnUtc = DateTimeOffset.MaxValue;
 
-            var message = new Message(Encoding.UTF8.GetBytes(payload))
+            var message = new OutgoingMessage(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
                 UserId = userId,

@@ -3,20 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The data structure represent the message that is used for interacting with IoT hub.
+    /// An outgoing message to be sent to a device or module using cloud-to-device messaging.
     /// </summary>
-    public sealed class Message
+    /// <seealso href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
+    public sealed class OutgoingMessage
     {
-        private readonly byte[] _payload;
-
         /// <summary>
         /// Default constructor with no body data.
         /// </summary>
-        public Message()
+        public OutgoingMessage()
         {
         }
 
@@ -24,10 +25,11 @@ namespace Microsoft.Azure.Devices
         /// Creates a telemetry message with the specified payload.
         /// </summary>
         /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
-        /// <param name="payload">A byte array to send as a payload.</param>
-        public Message(byte[] payload)
+        /// <param name="payload">The payload will be serialized with
+        /// <see href="https://www.nuget.org/packages/Newtonsoft.Json">Newtonsoft.Json</see> and encoded using <see cref="Encoding.UTF8"/>.</param>
+        public OutgoingMessage(object payload)
         {
-            _payload = payload;
+            Payload = payload;
         }
 
         /// <summary>
@@ -205,18 +207,27 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The message payload.
         /// </summary>
-        public byte[] Payload => _payload ?? Array.Empty<byte>();
+        public object Payload { get; }
 
         /// <summary>
         /// Indicates if the message has a payload.
         /// </summary>
         /// <returns>True, if there is a payload.</returns>
-        public bool HasPayload => _payload != null;
+        public bool HasPayload => Payload != null;
 
         /// <summary>
         /// Gets or sets the delivery tag which is used for server side checkpointing.
         /// </summary>
         internal ArraySegment<byte> DeliveryTag { get; set; }
+
+        /// <summary>
+        /// Gets the payload as a byte array.
+        /// </summary>
+        /// <returns>A fully encoded serialized string as bytes.</returns>
+        internal byte[] GetPayloadObjectBytes()
+        {
+            return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Payload));
+        }
 
         private T GetSystemProperty<T>(string key)
         {
