@@ -231,7 +231,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 #### Notable additions
 
 - `JobProperties` now has a helper property `IsFinished` which returns true if the job status is in a terminal state.
-- `TryGetValue<T>(...)` is available off of the desired and reported properties on `TwinProperties`.
+- `TryGetValue<T>(...)` is available off of the desired and reported properties on `ClientTwinProperties`.
 - Added type `ImportJobError` to deserialize the error details of an import job.
 
 #### API mapping
@@ -254,11 +254,8 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `Twin.StatusUpdatedOn` | `ClientTwin.StatusUpdatedOnUtc` | See¹ |
 | `Twin.LastActivityOn` | `ClientTwin.LastActiveOnUtc` | See¹ |
 | `TwinCollection` | `ClientTwinProperties` | "Client" is a word we often use to indicate the device- or module-side of the data-plane.² |
-| `TwinCollection.GetLastUpdatedOn()` | `ClientTwinProperties.GetLastUpdatedOnUtc()` | See¹ |
-| `TwinCollectionValue` | `ClientTwinPropertyValue` | See² |
-| `TwinCollectionValue.GetLastUpdatedOn()` | `ClientTwinPropertyValue.GetLastUpdatedOnUtc()` | See¹ |
-| `TwinCollectionArray` | `ClientTwinPropertyArray` | See² |
-| `TwinCollectionArray.GetLastUpdatedOn()` | `ClientTwinPropertiesArray.GetLastUpdatedOnUtc()` | See¹ |
+| `TwinCollection.GetLastUpdatedOn()` | `ClientTwinProperties.Metadata.LastUpdatedOnUtc` | See¹ |
+| `TwinCollectionValue` | `ClientTwinProperties.TryGetValue(...)` | Now just get the property as a type you know expect to be. |
 | `Metadata` | `ClientTwinMetadata` | See² |
 | `Metadata.LastUpdatedOn` | `ClientTwinMetadata.LastUpdatedOnUtc` | See¹ |
 | `AuthenticationType` | `ClientAuthenticationType` | See² |
