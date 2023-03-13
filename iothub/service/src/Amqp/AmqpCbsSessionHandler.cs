@@ -12,7 +12,9 @@ namespace Microsoft.Azure.Devices.Amqp
     /// Handles a single CBS session (for SAS token renewal) including the inital authentication and scheduling all subsequent
     /// authentication attempts.
     /// </summary>
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class AmqpCbsSessionHandler : IDisposable
+#pragma warning restore CA1852
     {
         // There is no AmqpSession object to track here because it is encapsulated by the AmqpCbsLink class.
         private readonly IotHubConnectionProperties _credential;

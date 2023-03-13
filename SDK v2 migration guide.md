@@ -286,12 +286,16 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - The `Message` class no longer requires disposal!
 - `FeedbackReceiver` is now a callback assigned to the `MessageFeedbackProcessor` property.
 - `GetFileNotificationReceiver(...)` is now a callback assigned to `FileUploadNotificationProcessor` property. These methods return a callback value.
+- `FileUploadNotification.BlobUriPath` was a string and is now of type `System.Uri`.
 
 #### Notable additions
 
 - The library now includes `IIotHubServiceRetryPolicy` implementations: `IotHubServiceExponentialBackoffRetryPolicy`, `IotHubServiceFixedDelayRetryPolicy`, `IotHubServiceIncrementalDelayRetryPolicy` and `IotHubServiceNoRetry`,
  which can be set via `IotHubServiceClientOptions.RetryPolicy`.
  - `DirectMethodClientResponse` now has a method `TryGetValue<T>` to deserialize the payload to a type of your choice.
+ - Added `ImportJobError` class to help deserialize errors from device/module/configuration import job.
+   - Use the `ImportErrorsBlobName` to load the output errors file, if it exists, in the blob container specified in `ImportJobProperties.InputBlobContainerUri`.
+- `IsFinished` convenience property now exists on `CloudToDeviceMethodScheduledJob`, `ScheduledJob`, and `TwinScheduledJob` which is **true** when `Status` is `Completed`, `Failed`, or `Cancelled`.
 
 #### API mapping
 

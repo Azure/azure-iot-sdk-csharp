@@ -18,12 +18,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="csharp_devices_list.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
   <!--<ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="Microsoft.Azure.Devices" Version="2.0.0-preview001" />
   </ItemGroup>-->
