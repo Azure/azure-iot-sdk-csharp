@@ -145,6 +145,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     try
                     {
+                        // TODO: Gateway V1 wrongly returns 500 for uploading file with invalid correlation id, while Gateway V2 corrects this behavior.
+                        // Therefore we are handling separately here, and will change this after problem in V1 gets addressed.
                         await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
                     }
                     catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.ServerError)
