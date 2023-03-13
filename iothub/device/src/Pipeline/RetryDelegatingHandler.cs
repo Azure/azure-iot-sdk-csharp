@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal enum ClientTransportStatus
     {
-        Open = 0,
-        Closed = 1,
+        Closed = 0,
+        Open = 1,
     }
 
     internal class RetryDelegatingHandler : DefaultDelegatingHandler
