@@ -126,6 +126,11 @@ namespace Microsoft.Azure.Devices
         DeviceNotFound = 404001,
 
         /// <summary>
+        /// The operation failed because the job cannot be found by IoT hub.
+        /// </summary>
+        JobNotFound = 404002,
+
+        /// <summary>
         /// The operation failed because the module cannot be found by IoT hub.
         /// <para>
         /// The module is either not registered or disabled. May be thrown by operations such as
@@ -175,7 +180,7 @@ namespace Microsoft.Azure.Devices
         // RequestEntityTooLarge - 413
 
         /// <summary>
-        /// When the message is too large for IoT hub you will receive this error.'
+        /// When the message is too large for IoT hub you will receive this error.
         /// <para>
         /// You should attempt to reduce your message size and send again.
         /// For more information on message sizes, see <see href="https://aka.ms/iothubthrottling#other-limits">IoT hub quotas and throttling | Other limits</see>
@@ -192,7 +197,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         TooManyDevices = 413002,
 
-        // Throttling Exception
+        /// <summary>
+        /// Too many modules were included in the bulk operation while being added to a device.
+        /// </summary>
+        TooManyModulesOnDevice = 413003,
+
+        // ThrottlingException Exception
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.

@@ -216,6 +216,28 @@ N/A
 This service client has probably seen more updates than any other client library in this v2.
 What was a loose affiliation of separate clients is now a consolidated client with organized subclients by operation type.
 
+#### Exception changes
+
+These span across all clients.
+
+| v1 API | Equivalent v2 API | Notes |
+|:---|:---|:---|
+| `ErrorCode` | `IotHubServiceErrorCode` | See⁵ |
+| `JobNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.JobNotFound`. |
+| `JobQuotaExceededException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.JobQuotaExceeded`. |
+| `MessageTooLargeException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.MessageTooLarge`. |
+| `ModuleAlreadyExistsException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ModuleAlreadyExistsOnDevice`. |
+| `ModuleNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ModuleNotFound`. |
+| `PreconditionFailedException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.PreconditionFailed`. |
+| `QuotaExceededException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.IotHubQuotaExceeded`. |
+| `ServerBusyException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ServiceUnavailable`. |
+| `ServerErrorException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ServerError`. |
+| `ThrottlingException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Throttling` or `IotHubServiceErrorCode.ThrottlingBacklogTimeout`. |
+| `TooManyDevicesException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.TooManyDevices`. |
+| `TooManyModulesOnDeviceException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.TooManyModulesOnDevice`. |
+| `UnauthorizedException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.IotHubUnauthorizedAccess`. |
+
+
 #### RegistryManager
 
 #### Notable breaking changes
