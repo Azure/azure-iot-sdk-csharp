@@ -153,10 +153,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         // Gateway V1 flow
                     }
-                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.BadRequest)
+                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.IotHubFormatError)
                     {
                         // Gateway V2 flow
-                        ex.Message.Should().Contain("400006");
+                        ex.Message.Should().Contain("Cannot decode correlation_id");
+                        ex.TrackingId.Should().NotBe(string.Empty);
+                        ex.IsTransient.Should().BeFalse();
                     }
                 }
             }

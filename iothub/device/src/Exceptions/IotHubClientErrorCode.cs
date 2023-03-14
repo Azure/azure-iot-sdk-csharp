@@ -122,12 +122,6 @@ namespace Microsoft.Azure.Devices.Client
         TlsAuthenticationError,
 
         /// <summary>
-        /// The request failed because the server cannot process it due to a client-side error. Check the error
-        /// message for more details.
-        /// </summary>
-        BadRequest = 400,
-
-        /// <summary>
         /// The request failed because the operation timed out. This can be caused by underlying network issues 
         /// or by the server being too busy to handle the request.
         /// </summary>
