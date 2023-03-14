@@ -9,7 +9,7 @@ using System.Net.Http;
 using Azure;
 using Azure.Core;
 
-namespace Microsoft.Azure.Devices.Query
+namespace Microsoft.Azure.Devices
 {
     internal class QueryResponse : Response
     {

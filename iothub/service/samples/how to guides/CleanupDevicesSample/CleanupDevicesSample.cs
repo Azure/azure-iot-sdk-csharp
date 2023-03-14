@@ -175,13 +175,14 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 string countSqlQuery = "select count() AS numberOfDevices from devices";
                 AsyncPageable<Dictionary<string, int>> countQuery = _hubClient.Query.CreateAsync<Dictionary<string, int>>(countSqlQuery);
-                if (!await countQuery.GetAsyncEnumerator().MoveNextAsync())
+                IAsyncEnumerator<Dictionary<string, int>> enumerator = countQuery.GetAsyncEnumerator();
+                if (!await enumerator.MoveNextAsync())
                 {
                     Console.WriteLine($"Failed to run device count query.");
                     return 0;
                 }
 
-                if (!countQuery.GetAsyncEnumerator().Current.TryGetValue("numberOfDevices", out deviceCount))
+                if (!enumerator.Current.TryGetValue("numberOfDevices", out deviceCount))
                 {
                     Console.WriteLine($"Failed to get device count from query result.");
                     return 0;

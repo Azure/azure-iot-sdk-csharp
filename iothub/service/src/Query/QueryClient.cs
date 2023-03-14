@@ -8,9 +8,6 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Core;
-using Microsoft.Azure.Devices.Query;
-using static Microsoft.Azure.Devices.Amqp.AmqpClientHelper;
 
 namespace Microsoft.Azure.Devices
 {
