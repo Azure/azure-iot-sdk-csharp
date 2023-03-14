@@ -47,8 +47,8 @@ namespace Microsoft.Azure.Devices
         {
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
-                string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
-                Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(responseMessage).ConfigureAwait(false);
+                string errorMessage = await ServiceExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
+                Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(responseMessage).ConfigureAwait(false);
                 string trackingId = pair.Item1;
                 IotHubServiceErrorCode errorCode = pair.Item2;
 

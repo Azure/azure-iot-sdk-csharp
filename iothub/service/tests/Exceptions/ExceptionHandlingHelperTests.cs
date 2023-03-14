@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
             string trackingId = pair.Item1;
             IotHubServiceErrorCode errorCode = pair.Item2;
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
             string trackingId = pair.Item1;
             IotHubServiceErrorCode errorCode = pair.Item2;
 
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             httpResponseMessage.Content = new StringContent(exceptionResult);
 
             // act
-            Tuple<string, IotHubServiceErrorCode> result = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            Tuple<string, IotHubServiceErrorCode> result = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
 
             // assert
             result.Item1.Should().Be(expectedTrackingId);
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
             IotHubServiceErrorCode errorCode = pair.Item2;
 
             // assert
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
             IotHubServiceErrorCode errorCode = pair.Item2;
 
             // assert
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            Tuple<string, IotHubServiceErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
             IotHubServiceErrorCode errorCode = pair.Item2;
 
             // assert
