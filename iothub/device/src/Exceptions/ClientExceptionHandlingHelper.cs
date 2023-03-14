@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal sealed class ExceptionHandlingHelper
+    internal sealed class ClientExceptionHandlingHelper
     {
         internal static IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping()
         {
