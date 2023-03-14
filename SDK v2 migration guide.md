@@ -231,7 +231,7 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 #### Notable additions
 
 - `JobProperties` now has a helper property `IsFinished` which returns true if the job status is in a terminal state.
-- `TryGetValue<T>(...)` is available off of the desired and reported properties on `TwinProperties`.
+- `TryGetValue<T>(...)` is available off of the desired and reported properties on `ClientTwinProperties`.
 - Added type `ImportJobError` to deserialize the error details of an import job.
 
 #### API mapping
@@ -254,11 +254,8 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 | `Twin.StatusUpdatedOn` | `ClientTwin.StatusUpdatedOnUtc` | See¹ |
 | `Twin.LastActivityOn` | `ClientTwin.LastActiveOnUtc` | See¹ |
 | `TwinCollection` | `ClientTwinProperties` | "Client" is a word we often use to indicate the device- or module-side of the data-plane.² |
-| `TwinCollection.GetLastUpdatedOn()` | `ClientTwinProperties.GetLastUpdatedOnUtc()` | See¹ |
-| `TwinCollectionValue` | `ClientTwinPropertyValue` | See² |
-| `TwinCollectionValue.GetLastUpdatedOn()` | `ClientTwinPropertyValue.GetLastUpdatedOnUtc()` | See¹ |
-| `TwinCollectionArray` | `ClientTwinPropertyArray` | See² |
-| `TwinCollectionArray.GetLastUpdatedOn()` | `ClientTwinPropertiesArray.GetLastUpdatedOnUtc()` | See¹ |
+| `TwinCollection.GetLastUpdatedOn()` | `ClientTwinProperties.Metadata.LastUpdatedOnUtc` | See¹ |
+| `TwinCollectionValue` | `ClientTwinProperties.TryGetValue(...)` | Now just get the property as a type you know expect to be. |
 | `Metadata` | `ClientTwinMetadata` | See² |
 | `Metadata.LastUpdatedOn` | `ClientTwinMetadata.LastUpdatedOnUtc` | See¹ |
 | `AuthenticationType` | `ClientAuthenticationType` | See² |
@@ -286,12 +283,16 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 - The `Message` class no longer requires disposal!
 - `FeedbackReceiver` is now a callback assigned to the `MessageFeedbackProcessor` property.
 - `GetFileNotificationReceiver(...)` is now a callback assigned to `FileUploadNotificationProcessor` property. These methods return a callback value.
+- `FileUploadNotification.BlobUriPath` was a string and is now of type `System.Uri`.
 
 #### Notable additions
 
 - The library now includes `IIotHubServiceRetryPolicy` implementations: `IotHubServiceExponentialBackoffRetryPolicy`, `IotHubServiceFixedDelayRetryPolicy`, `IotHubServiceIncrementalDelayRetryPolicy` and `IotHubServiceNoRetry`,
  which can be set via `IotHubServiceClientOptions.RetryPolicy`.
  - `DirectMethodClientResponse` now has a method `TryGetValue<T>` to deserialize the payload to a type of your choice.
+ - Added `ImportJobError` class to help deserialize errors from device/module/configuration import job.
+   - Use the `ImportErrorsBlobName` to load the output errors file, if it exists, in the blob container specified in `ImportJobProperties.InputBlobContainerUri`.
+- `IsFinished` convenience property now exists on `CloudToDeviceMethodScheduledJob`, `ScheduledJob`, and `TwinScheduledJob` which is **true** when `Status` is `Completed`, `Failed`, or `Cancelled`.
 
 #### API mapping
 
@@ -299,8 +300,9 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 |:---|:---|:---|
 | `ServiceClient` | `IotHubServiceClient`, subclients `Messages`, `MessageFeedback`, `FileUploadNotifications` | |
 | `ServiceClient.SendAsync(...)` | `IotHubServiceClient.Messages.SendAsync(...)` | |
-| `Message.ExpiryTimeUtc` | `Message.ExpiresOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
-| `Message.CreationTimeUtc` | `Message.CreatedOnUtc` | See¹ |
+| `Message` | `OutgoingMessage` | Disambiguate from the other kinds of messages used in IoT hub. |
+| `Message.ExpiryTimeUtc` | `OutgoingMessage.ExpiresOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
+| `Message.CreationTimeUtc` | `OutgoingMessage.CreatedOnUtc` | See¹ |
 | `ServiceClient.InvokeDeviceMethodAsync(...)` | `IotHubServiceClient.DirectMethods.InvokeAsync(...)` | |
 | `CloudToDeviceMethod` | `DirectMethodServiceRequest` | Disambiguate from types in the device client.² |
 | `CloudToDeviceMethodResult` | `DirectMethodClientResponse` | See² |

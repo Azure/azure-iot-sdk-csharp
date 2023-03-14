@@ -288,9 +288,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateAsync<ScheduledJob>(query).ConfigureAwait(false);
             while (queryResponse.CurrentPage.Count() < expectedCount)
             {
+                cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
                 await Task.Delay(100).ConfigureAwait(false);
                 queryResponse = await queryClient.CreateAsync<ScheduledJob>(query).ConfigureAwait(false);
-                cancellationTokenSource.Token.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
             }
         }
 
@@ -308,9 +308,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateJobsQueryAsync(options).ConfigureAwait(false);
             while (queryResponse.CurrentPage.Count() < expectedCount)
             {
+                cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
                 await Task.Delay(100).ConfigureAwait(false);
                 queryResponse = await queryClient.CreateJobsQueryAsync(options).ConfigureAwait(false);
-                cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
             }
         }
 

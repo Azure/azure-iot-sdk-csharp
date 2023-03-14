@@ -117,13 +117,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            var messagesSent = new Dictionary<string, Tuple<Message, string>>();
+            var messagesSent = new Dictionary<string, Tuple<OutgoingMessage, string>>();
 
             // Initialize the service client
 
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string _);
+                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string _);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await TestDevice.ServiceClient.Messages.OpenAsync().ConfigureAwait(false);
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 VerboseTestLogger.WriteLine($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
-                Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
+                Tuple<OutgoingMessage, string> msgSent = messagesSent[testDevice.Id];
                 await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(testDevice.DeviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2).ConfigureAwait(false);
             }
 
@@ -166,10 +166,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
-                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string _, out string _);
+                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string _, out string _);
 
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
-                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);

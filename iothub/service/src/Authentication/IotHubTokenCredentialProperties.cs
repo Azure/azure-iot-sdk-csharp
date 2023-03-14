@@ -12,7 +12,9 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The properties required for authentication to IoT hub using a token credential.
     /// </summary>
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class IotHubTokenCredentialProperties : IotHubConnectionProperties
+#pragma warning restore CA1852
     {
         private const string TokenType = "Bearer";
         private static readonly string[] s_iotHubAadTokenScopes = new string[] { "https://iothubs.azure.net/.default" };

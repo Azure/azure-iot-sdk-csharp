@@ -13,7 +13,9 @@ namespace Microsoft.Azure.Devices.Amqp
     /// Handles a single AMQP session that holds the sender or receiver link that does the "work"
     /// for the AMQP connection (receiving file upload notification, sending cloud to device messages, etc).
     /// </summary>
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class AmqpSessionHandler
+#pragma warning restore CA1852
     {
         private readonly AmqpSendingLinkHandler _sendingLinkHandler;
         private readonly AmqpReceivingLinkHandler _receivingLinkHandler;
