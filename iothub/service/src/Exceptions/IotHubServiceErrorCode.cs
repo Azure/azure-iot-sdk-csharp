@@ -145,6 +145,11 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         DeviceNotOnline = 404103,
 
+        /// <summary>
+        /// The operation failed because the configuration cannot be found by IoT hub.
+        /// </summary>
+        ConfigurationNotFound = 404301,
+
         // Conflict - 409
 
         /// <summary>

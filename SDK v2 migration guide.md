@@ -45,6 +45,17 @@ In v2, we've aimed to simplify this experience.
   - From preview001, Microsoft.Azure.Devices.Authentication.
     > Rolled into Microsoft.Azure.Devices.Provisioning.Client.
 
+### Namespace changes
+
+Namespaces have been simplified to reduce confusion and improve discoverability of all available types in the library.
+Each client library has its own namespace, and the namespace is the same as the package name.
+
+The folllowing namespaces have been deprecated:
+
+- `Microsoft.Azure.Devices.Shared`
+- `Microsoft.Azure.Devices.Common.Exceptions`
+- `Microsoft.Azure.Devices.Client.Exceptions`
+
 ### Consolidating IoT hub service clients
 
 Many existing client clients (e.g., RegistryManager, ServiceClient) were confusingly named and contained methods that weren't always consistent with the client's assumed responsibilities.
@@ -215,6 +226,15 @@ N/A
 
 This service client has probably seen more updates than any other client library in this v2.
 What was a loose affiliation of separate clients is now a consolidated client with organized subclients by operation type.
+
+#### Exception changes
+
+These span across all clients.
+
+| v1 API | Equivalent v2 API | Notes |
+|:---|:---|:---|
+| `ErrorCode` | `IotHubServiceErrorCode` | See⁵ |
+| `ConfigurationNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ConfigurationNotFound`. |
 
 #### RegistryManager
 
