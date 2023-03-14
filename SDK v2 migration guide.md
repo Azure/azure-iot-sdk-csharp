@@ -197,8 +197,10 @@ Find a client you currently use below, read the table of API name changes and us
 | `MethodRequest` | `DirectMethodRequest` | Use full name of the operation type.⁴ |
 | `MethodResponse` | `DirectMethodResponse` | See⁴ |
 | `IotHubException` | `IotHubClientException` | Specify the exception is for Hub device and module client only. |
-| `AuthenticationWithTokenRefresh` | `ClientAuthenticationWithSharedAccessKeyRefresh` | More descriptive naming.⁵ |
-| `ClientAuthenticationWithToken` | `ClientAuthenticationWithSharedAccessSignature` | See⁵ |
+| `DeviceAuthenticationWithTokenRefresh` and `ModuleAuthenticationWithTokenRefresh` | `ClientAuthenticationWithTokenRefresh` | More descriptive naming and reduce duplication.⁵ |
+| `DeviceAuthenticationWithToken` and `ModuleAuthenticationWithToken` | `ClientAuthenticationWithSharedAccessSignature` | See⁵ |
+| `DeviceAuthenticationWithSakRefresh` and `ModuleAuthenticationWithSakRefresh` | `ClientAuthenticationWithSharedAccessKeyRefresh` | See⁵ |
+| `AuthenticationWithTokenRefresh.SafeCreateNewToken(...)` and derived classes | `ClientAuthenticationWithTokenRefresh.SafeCreateNewTokenAsync(...)` and derived classes. | Async suffix for async methods. |
 | `RetryPolicyBase` | `IIotHubClientRetryPolicy` | Introducing an interface for client retry policy. |
 
 #### ModuleClient
@@ -210,7 +212,7 @@ The device client and module client share a lot of API surface and underlying im
 | v1 API | Equivalent v2 API | Notes |
 |:---|:---|:---|
 | `ModuleClient.SendEventAsync(string outputName, ...)` | `IotHubModuleClient.SendMessageToRouteAsync(string outputName, ...)` | Change the name to be more descriptive about sending messages between Edge modules.¹ |
-| `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹. |
+| `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹ |
 
 #### Notable additions
 
@@ -229,12 +231,27 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 
 #### Exception changes
 
-These span across all clients.
+These span across all service clients.
 
 | v1 API | Equivalent v2 API | Notes |
 |:---|:---|:---|
 | `ErrorCode` | `IotHubServiceErrorCode` | See⁵ |
+| `IotHubException` | `OperationCanceledException` | When a cancelation token is signaled. |
+| `IotHubException` | `IotHubServiceException` | When an invalid delivery acknowledgement was specified. |
 | `ConfigurationNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ConfigurationNotFound`. |
+| `DeviceAlreadyExistsException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.DeviceAlreadyExists`. |
+| `DeviceMaximumQueueDepthExceededException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.DeviceMaximumQueueDepthExceeded`. |
+| `DeviceNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.DeviceNotFound`. |
+| `InvalidProtocolVersionException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.InvalidProtocolVersion`. |
+| `IotHubSuspendedException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.IotHubSuspended`. |
+| `IotHubThrottledException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ThrottlingException`. |
+| `IotHubCommunicationException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown` when network errors occurred. |
+| `IotHubCommunicationException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown` when an operation timed out. |
+| `IotHubNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown`. |
+| `DeviceInvalidResultCountException` | Deprecated. | Was not thrown by v1 client¹. |
+| `DeviceMessageLockLostException` | Deprecated. | See¹ |
+| `IotHubSerializationVersionException` | Deprecated. | See¹ |
+| `JobCancelledException` | Deprecated. | See¹ |
 
 #### RegistryManager
 
