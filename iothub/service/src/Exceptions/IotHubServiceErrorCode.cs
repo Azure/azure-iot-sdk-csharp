@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         TooManyModulesOnDevice = 413003,
 
-        // ThrottlingException Exception
+        // Throttling Exception
 
         /// <summary>
         /// IoT hub throttling limits have been exceeded for the requested operation.
