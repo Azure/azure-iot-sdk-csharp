@@ -19,12 +19,11 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         /// <example>
         /// <code language="csharp">
-        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
-        /// // This call will use the previous continuation token for you when it comes time to get the
+        /// AsyncEnumerable&lt;Twin&gt; twinQuery = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
+        /// // This call will use the current continuation token for you when it comes time to get the
         /// // next page of results.
-        /// while (await queriedTwins.MoveNextAsync())
+        /// await foreach (ClientTwin queriedTwin in twinQuery)
         /// {
-        ///     Twin queriedTwin = queriedTwins.Current;
         ///     Console.WriteLine(queriedTwin);
         /// }
         /// </code>
