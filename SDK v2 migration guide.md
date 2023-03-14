@@ -232,7 +232,7 @@ These span across all clients.
 | `QuotaExceededException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.IotHubQuotaExceeded`. |
 | `ServerBusyException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ServiceUnavailable`. |
 | `ServerErrorException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ServerError`. |
-| `ThrottlingException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Throttling` or `IotHubServiceErrorCode.ThrottlingBacklogTimeout`. |
+| `ThrottlingException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ThrottlingException` or `IotHubServiceErrorCode.ThrottlingBacklogTimeout`. |
 | `TooManyDevicesException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.TooManyDevices`. |
 | `TooManyModulesOnDeviceException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.TooManyModulesOnDevice`. |
 | `UnauthorizedException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.IotHubUnauthorizedAccess`. |
