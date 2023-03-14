@@ -197,8 +197,10 @@ Find a client you currently use below, read the table of API name changes and us
 | `MethodRequest` | `DirectMethodRequest` | Use full name of the operation type.⁴ |
 | `MethodResponse` | `DirectMethodResponse` | See⁴ |
 | `IotHubException` | `IotHubClientException` | Specify the exception is for Hub device and module client only. |
-| `AuthenticationWithTokenRefresh` | `ClientAuthenticationWithSharedAccessKeyRefresh` | More descriptive naming.⁵ |
-| `ClientAuthenticationWithToken` | `ClientAuthenticationWithSharedAccessSignature` | See⁵ |
+| `DeviceAuthenticationWithTokenRefresh.` and `ModuleAuthenticationWithTokenRefresh` | `ClientAuthenticationWithSharedAccessKeyRefresh` | More descriptive naming and reduce duplication.⁵ |
+| `DeviceAuthenticationWithToken` and `ModuleAuthenticationWithToken` | `ClientAuthenticationWithSharedAccessSignature` | See⁵ |
+| `DeviceAuthenticationWithSakRefresh` and `ModuleAuthenticationWithSakRefresh` | `ClientAuthenticationWithTokenRefresh` | See⁵ |
+| `DeviceAuthenticationWithTokenRefresh.SafeCreateNewToken(...)` and `ModuleAuthenticationWithTokenRefresh.SafeCreateNewToken(...)` | `ClientAuthenticationWithSharedAccessKeyRefresh.SafeCreateNewTokenAsync(...)` | Async suffix for async methods. |
 | `RetryPolicyBase` | `IIotHubClientRetryPolicy` | Introducing an interface for client retry policy. |
 
 #### ModuleClient
