@@ -210,7 +210,7 @@ The device client and module client share a lot of API surface and underlying im
 | v1 API | Equivalent v2 API | Notes |
 |:---|:---|:---|
 | `ModuleClient.SendEventAsync(string outputName, ...)` | `IotHubModuleClient.SendMessageToRouteAsync(string outputName, ...)` | Change the name to be more descriptive about sending messages between Edge modules.¹ |
-| `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹. |
+| `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹ |
 
 #### Notable additions
 
@@ -229,12 +229,27 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 
 #### Exception changes
 
-These span across all clients.
+These span across all service clients.
 
 | v1 API | Equivalent v2 API | Notes |
 |:---|:---|:---|
 | `ErrorCode` | `IotHubServiceErrorCode` | See⁵ |
+| `IotHubException` | `OperationCanceledException` | When a cancelation token is signaled. |
+| `IotHubException` | `IotHubServiceException` | When an invalid delivery acknowledgement was specified. |
 | `ConfigurationNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ConfigurationNotFound`. |
+| `DeviceAlreadyExistsException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.DeviceAlreadyExists`. |
+| `DeviceMaximumQueueDepthExceededException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.DeviceMaximumQueueDepthExceeded`. |
+| `DeviceNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.DeviceNotFound`. |
+| `InvalidProtocolVersionException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.InvalidProtocolVersion`. |
+| `IotHubSuspendedException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.IotHubSuspended`. |
+| `IotHubThrottledException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ThrottlingException`. |
+| `IotHubCommunicationException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown` when network errors occurred. |
+| `IotHubCommunicationException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown` when an operation timed out. |
+| `IotHubNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown`. |
+| `DeviceInvalidResultCountException` | Deprecated. | Was not thrown by v1 client¹. |
+| `DeviceMessageLockLostException` | Deprecated. | See¹ |
+| `IotHubSerializationVersionException` | Deprecated. | See¹ |
+| `JobCancelledException` | Deprecated. | See¹ |
 
 #### RegistryManager
 
