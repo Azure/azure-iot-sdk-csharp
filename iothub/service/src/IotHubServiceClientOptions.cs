@@ -80,10 +80,10 @@ namespace Microsoft.Azure.Devices
         public bool CertificateRevocationCheck { get; set; }
 
         /// <summary>
-        /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the service client instance.
+        /// The configuration for setting <see cref="OutgoingMessage.MessageId"/> for every message sent by the service client instance.
         /// </summary>
         /// <remarks>
-        /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
+        /// The default behavior is that <see cref="OutgoingMessage.MessageId"/> is set only by the user.
         /// </remarks>
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
 

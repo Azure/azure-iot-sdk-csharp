@@ -10,23 +10,22 @@ namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class MessageTests
+    public class TelemetryMessageTests
     {
         [TestMethod]
         public void ConstructorTakingPayloadTest()
         {
             const string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new Message(payloadBytes);
+            var msg = new TelemetryMessage(payloadBytes);
             msg.Payload.Should().BeEquivalentTo(payloadBytes);
         }
 
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
-            var msg = new Message(Array.Empty<byte>());
-            msg.Payload.Should().NotBeNull();
-            msg.Payload.Length.Should().Be(0);
+            var msg = new TelemetryMessage(null);
+            msg.Payload.Should().BeNull();
         }
 
         [TestMethod]

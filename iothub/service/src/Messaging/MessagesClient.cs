@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
+using static System.Net.WebRequestMethods;
 
 namespace Microsoft.Azure.Devices
 {
@@ -172,9 +173,10 @@ namespace Microsoft.Azure.Devices
         /// Send a cloud-to-device message to the specified device.
         /// </summary>
         /// <remarks>
-        /// In order to receive feedback messages on the service client, set the <see cref="Message.Ack"/> property to an appropriate value
+        /// In order to receive feedback messages on the service client, set the <see cref="OutgoingMessage.Ack"/> property to an appropriate value
         /// and use <see cref="IotHubServiceClient.MessageFeedback"/>.
         /// </remarks>
+        /// <seealso href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud-to-device message.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
@@ -185,7 +187,7 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task SendAsync(string deviceId, Message message, CancellationToken cancellationToken = default)
+        public virtual async Task SendAsync(string deviceId, OutgoingMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
@@ -239,6 +241,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Send a cloud-to-device message to the specified module.
         /// </summary>
+        /// <seealso href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="moduleId">The module identifier for the target module.</param>
         /// <param name="message">The cloud-to-module message.</param>
@@ -250,7 +253,7 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task SendAsync(string deviceId, string moduleId, Message message, CancellationToken cancellationToken = default)
+        public virtual async Task SendAsync(string deviceId, string moduleId, OutgoingMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
@@ -405,7 +408,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private void CheckAddMessageId(ref Message message)
+        private void CheckAddMessageId(ref OutgoingMessage message)
         {
             if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
             {

@@ -300,8 +300,9 @@ What was a loose affiliation of separate clients is now a consolidated client wi
 |:---|:---|:---|
 | `ServiceClient` | `IotHubServiceClient`, subclients `Messages`, `MessageFeedback`, `FileUploadNotifications` | |
 | `ServiceClient.SendAsync(...)` | `IotHubServiceClient.Messages.SendAsync(...)` | |
-| `Message.ExpiryTimeUtc` | `Message.ExpiresOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
-| `Message.CreationTimeUtc` | `Message.CreatedOnUtc` | See¹ |
+| `Message` | `OutgoingMessage` | Disambiguate from the other kinds of messages used in IoT hub. |
+| `Message.ExpiryTimeUtc` | `OutgoingMessage.ExpiresOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).¹ |
+| `Message.CreationTimeUtc` | `OutgoingMessage.CreatedOnUtc` | See¹ |
 | `ServiceClient.InvokeDeviceMethodAsync(...)` | `IotHubServiceClient.DirectMethods.InvokeAsync(...)` | |
 | `CloudToDeviceMethod` | `DirectMethodServiceRequest` | Disambiguate from types in the device client.² |
 | `CloudToDeviceMethodResult` | `DirectMethodClientResponse` | See² |

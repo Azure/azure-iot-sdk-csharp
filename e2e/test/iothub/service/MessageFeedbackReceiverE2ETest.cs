@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetIncomingMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
                 // Configure the service client to send the message.
-                var message = new Message(Encoding.UTF8.GetBytes("some payload"))
+                var message = new OutgoingMessage("some payload")
                 {
                     Ack = DeliveryAcknowledgement.Full,
                     MessageId = Guid.NewGuid().ToString(),
