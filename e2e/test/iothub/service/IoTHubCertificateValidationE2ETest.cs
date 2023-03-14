@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Security.Authentication;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionStringInvalidServiceCertificate);
 
             // act
-            Func<Task> act = async () => await sc.Query.CreateAsync<ClientTwin>("select * from devices").ConfigureAwait(false);
+            Func<Task> act = async () => await sc.Query.CreateAsync<ClientTwin>("select * from devices").GetAsyncEnumerator().MoveNextAsync().ConfigureAwait(false);
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();

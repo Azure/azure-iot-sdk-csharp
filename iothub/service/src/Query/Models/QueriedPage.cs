@@ -18,12 +18,12 @@ namespace Microsoft.Azure.Devices
         // in an async function.
         internal QueriedPage(HttpResponseMessage response, string payload)
         {
-            Items = JsonConvert.DeserializeObject<IEnumerable<T>>(payload);
+            Items = JsonConvert.DeserializeObject<IReadOnlyList<T>>(payload);
             ContinuationToken = response.Headers.SafeGetValue(ContinuationTokenHeader);
         }
 
         [JsonProperty("items")]
-        internal IEnumerable<T> Items { get; set; }
+        internal IReadOnlyList<T> Items { get; set; }
 
         [JsonProperty("continuationToken")]
         internal string ContinuationToken { get; set; }

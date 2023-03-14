@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using FluentAssertions;
 using System.Collections;
 using Newtonsoft.Json.Linq;
+using Azure;
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -67,10 +68,11 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            QueryResponse<ClientTwin> response = await queryClient.CreateAsync<ClientTwin>(query);
+            AsyncPageable<ClientTwin> response = queryClient.CreateAsync<ClientTwin>(query);
+            await response.GetAsyncEnumerator().MoveNextAsync().ConfigureAwait(false);
 
             // assert
-            response.CurrentPage.First().DeviceId.Should().Be("foo");
+            response.GetAsyncEnumerator().Current.DeviceId.Should().Be("foo");
         }
 
         [TestMethod]
@@ -80,7 +82,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var serviceClient = new IotHubServiceClient(s_connectionString);
 
             // act
-            Func<Task> act = async () => await serviceClient.Query.CreateAsync<ClientTwin>(null);
+            Func<Task> act = async () => await serviceClient.Query.CreateAsync<ClientTwin>(null).GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -122,7 +124,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             // query returns HttpStatusCode.NotFound
-            Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>("SELECT * FROM devices");
+            Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>("SELECT * FROM devices").GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
@@ -161,7 +163,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await queryClient.CreateJobsQueryAsync();
+            Func<Task> act = async () => await queryClient.CreateJobsQueryAsync().GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             await act.Should().NotThrowAsync();
@@ -202,7 +204,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await queryClient.CreateJobsQueryAsync();
+            Func<Task> act = async () => await queryClient.CreateJobsQueryAsync().GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();

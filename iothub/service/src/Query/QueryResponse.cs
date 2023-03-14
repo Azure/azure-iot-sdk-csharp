@@ -3,194 +3,79 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using Azure;
+using Azure.Core;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Query
 {
-    /// <summary>
-    /// An iterable set of queried items.
-    /// </summary>
-    /// <typeparam name="T">
-    /// The type of the queried items. For instance, when using a query such as "SELECT * FROM devices",
-    /// this type should be type <see cref="ClientTwin"/>. When using a query such as "SELECT * FROM devices.jobs",
-    /// this type should be type <see cref="ScheduledJob"/>.
-    /// </typeparam>
-    public class QueryResponse<T>
+    internal class QueryResponse : Response
     {
-        private readonly QueryClient _client;
-        private readonly string _originalQuery;
-        private readonly JobType? _jobType;
-        private readonly JobStatus? _jobStatus;
-        private readonly int? _defaultPageSize;
-        private IEnumerator<T> _items;
+        private HttpResponseMessage _httpResponse;
+        private List<HttpHeader> _httpHeaders;
 
-        internal QueryResponse(
-            QueryClient client,
-            string query,
-            IEnumerable<T> queryResults,
-            string continuationToken,
-            int? defaultPageSize)
-        {
-            _client = client;
-            _originalQuery = query;
-            CurrentPage = queryResults;
-            _items = queryResults.GetEnumerator();
-            ContinuationToken = continuationToken;
-            Current = _items.Current;
-            _defaultPageSize = defaultPageSize;
+        internal QueryResponse(HttpResponseMessage httpResponse) 
+        { 
+            _httpResponse = httpResponse;
+
+            _httpHeaders = new List<HttpHeader>();
+            foreach (var header in _httpResponse.Headers)
+            {
+                _httpHeaders.Add(new HttpHeader(header.Key, header.Value.First()));
+            }
         }
 
-        internal QueryResponse(
-            QueryClient client,
-            JobType? jobType,
-            JobStatus? jobStatus,
-            IEnumerable<T> queryResults,
-            string continuationToken,
-            int? defaultPageSize)
+        public override int Status => (int)_httpResponse.StatusCode; //TODO check this
+
+        public override string ReasonPhrase => _httpResponse.ReasonPhrase;
+
+        public override Stream ContentStream 
         {
-            _client = client;
-            _jobType = jobType;
-            _jobStatus = jobStatus;
-            CurrentPage = queryResults;
-            _items = queryResults.GetEnumerator();
-            ContinuationToken = continuationToken;
-            Current = _items.Current;
-            _defaultPageSize = defaultPageSize;
+            get =>  _httpResponse.Content.ReadAsStreamAsync().Result; 
+            set => throw new NotImplementedException(); //TODO who needs this?
+        }
+        public override string ClientRequestId 
+        { 
+            get => throw new NotImplementedException(); 
+            set => throw new NotImplementedException(); 
         }
 
-        /// <summary>
-        /// Gets the continuation token to use for continuing the enumeration.
-        /// </summary>
-        /// <remarks>
-        /// This library will handle this value for you automatically when fetching the next
-        /// pages of results. This value is exposed only for more unusual cases where users
-        /// choose to continue a previously interrupted query from a different machine, for example.
-        /// </remarks>
-        public string ContinuationToken { get; internal set; }
-
-        /// <summary>
-        /// The current page of queried items.
-        /// </summary>
-        /// <remarks>
-        /// While you can iterate over the queried page of items using this, there is no logic
-        /// built into it that allows you to fetch the next page of results automatically. Because
-        /// of that, most users are better off following the sample code that iterates item by item
-        /// rather than page by page.
-        /// </remarks>
-        /// <example>
-        /// <code language="csharp">
-        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
-        /// while (await queriedTwins.MoveNextAsync())
-        /// {
-        ///     Twin queriedTwin = queriedTwins.Current;
-        ///     Console.WriteLine(queriedTwin);
-        /// }
-        /// </code>
-        /// </example>
-        public IEnumerable<T> CurrentPage { get; internal set; }
-
-        /// <summary>
-        /// Get the current item in the current page of the query results. Can be called multiple times without advancing the query.
-        /// </summary>
-        /// <remarks>
-        /// Like with a more typical implementation of IEnumerator, this value is null until the first
-        /// <see cref="MoveNextAsync(QueryOptions, CancellationToken)"/> call is made.
-        /// </remarks>
-        /// <example>
-        /// <code language="csharp">
-        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
-        /// while (await queriedTwins.MoveNextAsync()) // no item is skipped by calling this first
-        /// {
-        ///     Twin queriedTwin = queriedTwins.Current;
-        ///     Console.WriteLine(queriedTwin);
-        /// }
-        /// </code>
-        /// </example>
-        public T Current { get; private set; }
-
-        /// <summary>
-        /// Advances to the next element of the query results.
-        /// </summary>
-        /// <returns>True if there was a next item in the query results. False if there were no more items.</returns>
-        /// <exception cref="IotHubServiceException">
-        /// If this method made a request to IoT hub to get the next page of items but IoT hub responded to
-        /// the request with a non-successful status code. For example, if the provided request was throttled,
-        /// <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown. For a complete list of possible error cases,
-        /// see <see cref="IotHubServiceErrorCode"/>.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        /// <example>
-        /// <code language="csharp">
-        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
-        /// while (await queriedTwins.MoveNextAsync())
-        /// {
-        ///     Twin queriedTwin = queriedTwins.Current;
-        ///     Console.WriteLine(queriedTwin);
-        /// }
-        /// </code>
-        /// </example>
-        /// <remarks>
-        /// Like with a more typical implementation of IEnumerator, this function should be called once before checking
-        /// <see cref="Current"/>.
-        ///
-        /// This function is async because it may make a service request to fetch the next page of results if the current page
-        /// of results has been advanced through already. Note that this function will return True even if it is at the end
-        /// of a particular page of items as long as there is at least one more page to be fetched.
-        /// </remarks>
-        public async Task<bool> MoveNextAsync(QueryOptions queryOptions = default, CancellationToken cancellationToken = default)
+        public override void Dispose()
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            _httpResponse?.Dispose();
+        }
 
-            if (_items.MoveNext())
-            {
-                // Current page of results still had an item to return to the user.
-                Current = _items.Current;
-                Debug.Assert(_items.Current != null);
-                return true;
-            }
+        protected override bool ContainsHeader(string name)
+        {
+            return _httpResponse.Headers.Contains(name);
+        }
 
-            if (ContinuationToken == null && queryOptions?.ContinuationToken == null)
-            {
-                // The query has no more pages of results to return and the last page has been
-                // completely exhausted.
-                return false;
-            }
+        protected override IEnumerable<HttpHeader> EnumerateHeaders()
+        {
+            return _httpHeaders;
+        }
 
-            // User's can pass in a continuation token themselves, but the default behavior
-            // is to use the continuation token saved by this class when it last retrieved a page.
-            var queryOptionsClone = new JobQueryOptions
+        protected override bool TryGetHeader(string name, out string value)
+        {
+            IEnumerable<string> outVariableHeaders = new List<string>();
+            bool found = _httpResponse.Headers.TryGetValues(name, out outVariableHeaders);
+            if (found)
             {
-                ContinuationToken = queryOptions?.ContinuationToken ?? ContinuationToken,
-                PageSize = queryOptions?.PageSize ?? _defaultPageSize,
-                JobType = _jobType,
-                JobStatus = _jobStatus,
-            };
-
-            if (!string.IsNullOrEmpty(_originalQuery))
-            {
-                QueryResponse<T> response = await _client
-                    .CreateAsync<T>(_originalQuery, queryOptionsClone, cancellationToken)
-                    .ConfigureAwait(false);
-                CurrentPage = response.CurrentPage;
-                _items = CurrentPage.GetEnumerator();
-                _items.MoveNext();
-                Current = _items.Current;
-                ContinuationToken = response.ContinuationToken;
+                value = outVariableHeaders.First();
             }
             else
             {
-                // Job type and job status may still be null here, but that's okay
-                QueryResponse<ScheduledJob> response = await _client
-                    .CreateJobsQueryAsync(queryOptionsClone, cancellationToken)
-                    .ConfigureAwait(false);
-                CurrentPage = (IEnumerable<T>)response.CurrentPage;
-                Current = CurrentPage.GetEnumerator().Current;
-                ContinuationToken = response.ContinuationToken;
+                value = "";
             }
 
-            return true;
+            return found;
+        }
+
+        protected override bool TryGetHeaderValues(string name, out IEnumerable<string> values)
+        {
+            return _httpResponse.Headers.TryGetValues(name, out values);
         }
     }
 }

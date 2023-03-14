@@ -7,6 +7,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Core;
+using Microsoft.Azure.Devices.Query;
+using static Microsoft.Azure.Devices.Amqp.AmqpClientHelper;
 
 namespace Microsoft.Azure.Devices
 {
@@ -76,24 +80,22 @@ namespace Microsoft.Azure.Devices
         /// <example>
         /// Iterate twins:
         /// <code language="csharp">
-        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
-        /// while (await queriedTwins.MoveNextAsync())
+        /// AsyncPageable&lt;Twin&gt; twinQuery = iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
+        /// await foreach (Twin queriedTwin in twinQuery)
         /// {
-        ///     Twin queriedTwin = queriedTwins.Current;
         ///     Console.WriteLine(queriedTwin);
         /// }
         /// </code>
         /// Or scheduled jobs:
         /// <code language="csharp">
-        /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateAsync&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
-        /// while (await queriedJobs.MoveNextAsync())
+        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = await iotHubServiceClient.Query.CreateAsync&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
+        /// await foreach (ScheduledJob queriedJob in jobsQuery)
         /// {
-        ///     ScheduledJob queriedJob = queriedJobs.Current;
         ///     Console.WriteLine(queriedJob);
         /// }
         /// </code>
         /// </example>
-        public virtual async Task<QueryResponse<T>> CreateAsync<T>(string query, QueryOptions options = default, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<T> CreateAsync<T>(string query, QueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Creating query.", nameof(CreateAsync));
@@ -104,45 +106,29 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
-                    HttpMethod.Post,
-                    s_queryUri,
-                    _credentialProvider,
-                    new QuerySpecification { Sql = query });
-                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
-                if (!string.IsNullOrWhiteSpace(options?.ContinuationToken))
+                async Task<Page<T>> nextPageFunc(string continuationToken, int? pageSizeHint)
                 {
-                    request.Headers.Add(ContinuationTokenHeader, options?.ContinuationToken);
+                    using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                        HttpMethod.Post,
+                        s_queryUri,
+                        _credentialProvider,
+                        new QuerySpecification { Sql = query });
+
+                    return await BuildAndSendRequest<T>(request, options, continuationToken, pageSizeHint, cancellationToken);
                 }
 
-                if (options?.PageSize != null)
+                async Task<Page<T>> firstPageFunc(int? pageSizeHint)
                 {
-                    request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
+                    using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                        HttpMethod.Post,
+                        s_queryUri,
+                        _credentialProvider,
+                        new QuerySpecification { Sql = query });
+
+                    return await BuildAndSendRequest<T>(request, options, null, pageSizeHint, cancellationToken);
                 }
 
-                HttpResponseMessage response = null;
-
-                await _internalRetryHandler
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-
-                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var page = new QueriedPage<T>(response, responsePayload);
-                return new QueryResponse<T>(this, query, page.Items, page.ContinuationToken, options?.PageSize);
-            }
-            catch (HttpRequestException ex)
-            {
-                if (Fx.ContainsAuthenticationException(ex))
-                {
-                    throw new IotHubServiceException(ex.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, ex);
-                }
-                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
+                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, options?.PageSize);
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
@@ -170,14 +156,14 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
         /// <code language="csharp">
-        /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateJobsQueryAsync();
-        /// while (await queriedJobs.MoveNextAsync())
+        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = await iotHubServiceClient.Query.CreateJobsQueryAsync();
+        /// await foreach (ScheduledJob scheduledJob in jobsQuery)
         /// {
-        ///     Console.WriteLine(queriedJobs.Current.JobId);
+        ///     Console.WriteLine(scheduledJob.JobId);
         /// }
         /// </code>
         /// </example>
-        public virtual async Task<QueryResponse<ScheduledJob>> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<ScheduledJob> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize}", nameof(CreateAsync));
@@ -186,38 +172,31 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
-                    HttpMethod.Get,
-                    s_jobsQueryFormat,
-                    _credentialProvider,
-                    null,
-                    BuildQueryJobQueryString(options));
-
-                if (!string.IsNullOrWhiteSpace(options?.ContinuationToken))
+                async Task<Page<ScheduledJob>> nextPageFunc(string continuationToken, int? pageSizeHint)
                 {
-                    request.Headers.Add(ContinuationTokenHeader, options?.ContinuationToken);
+                    using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                                        HttpMethod.Get,
+                                        s_jobsQueryFormat,
+                                        _credentialProvider,
+                                        null,
+                                        BuildQueryJobQueryString(options));
+
+                    return await BuildAndSendRequest<ScheduledJob>(request, options, continuationToken, pageSizeHint, cancellationToken);
                 }
 
-                if (options?.PageSize != null)
+                async Task<Page<ScheduledJob>> firstPageFunc(int? pageSizeHint)
                 {
-                    request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
+                    using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                                        HttpMethod.Get,
+                                        s_jobsQueryFormat,
+                                        _credentialProvider,
+                                        null,
+                                        BuildQueryJobQueryString(options));
+
+                    return await BuildAndSendRequest<ScheduledJob>(request, options, null, pageSizeHint, cancellationToken);
                 }
 
-                HttpResponseMessage response = null;
-
-                await _internalRetryHandler
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-
-                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var page = new QueriedPage<ScheduledJob>(response, responsePayload);
-                return new QueryResponse<ScheduledJob>(this, options?.JobType, options?.JobStatus, page.Items, page.ContinuationToken, options?.PageSize);
+                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, options?.PageSize);
             }
             catch (HttpRequestException ex)
             {
@@ -237,6 +216,65 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize}", nameof(CreateAsync));
             }
+        }
+
+        private async Task<Page<T>> BuildAndSendRequest<T>(HttpRequestMessage request, QueryOptions options, string continuationToken, int? pageSizeHint, CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrWhiteSpace(options?.ContinuationToken))
+            {
+                request.Headers.Add(ContinuationTokenHeader, options?.ContinuationToken);
+            }
+            else if (!string.IsNullOrWhiteSpace(continuationToken))
+            { 
+                request.Headers.Add(ContinuationTokenHeader, continuationToken);
+            }
+
+            if (options?.PageSize != null)
+            {
+                request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
+            }
+            else if (pageSizeHint != null)
+            {
+                request.Headers.Add(PageSizeHeader, pageSizeHint.ToString());
+            }
+
+            if (request.Content != null)
+            { 
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") 
+                { 
+                    CharSet = "utf-8" 
+                };
+            }
+
+            HttpResponseMessage response = null;
+
+            try
+            {
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (HttpRequestException ex)
+            {
+                if (Fx.ContainsAuthenticationException(ex))
+                {
+                    throw new IotHubServiceException(ex.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, ex);
+                }
+                throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, ex);
+            }
+
+            await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+            string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            QueriedPage<T> page = new QueriedPage<T>(response, responsePayload);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // The disposable QueryResponse object is the user's responsibility, not the SDK's
+            return Page<T>.FromValues(page.Items, page.ContinuationToken, new QueryResponse(response));
+#pragma warning restore CA2000 // Dispose objects before losing scope
         }
 
         private static string BuildQueryJobQueryString(JobQueryOptions options)

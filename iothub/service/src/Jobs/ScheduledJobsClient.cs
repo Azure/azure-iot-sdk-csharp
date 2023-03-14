@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Microsoft.Azure.Devices
 {
@@ -121,7 +122,7 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual Task<QueryResponse<ScheduledJob>> CreateQueryAsync(JobQueryOptions options = null, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<ScheduledJob> CreateQueryAsync(JobQueryOptions options = null, CancellationToken cancellationToken = default)
         {
             return _queryClient.CreateJobsQueryAsync(options, cancellationToken);
         }

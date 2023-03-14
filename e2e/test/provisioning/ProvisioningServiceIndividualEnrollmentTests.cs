@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString, options);
 
             string queryString = "SELECT * FROM enrollments";
-            Query query = provisioningServiceClient.IndividualEnrollments.CreateQuery(queryString);
+            Devices.Provisioning.Service.Query query = provisioningServiceClient.IndividualEnrollments.CreateQuery(queryString);
             while (query.HasNext())
             {
                 QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
