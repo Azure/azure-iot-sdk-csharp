@@ -213,9 +213,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
                 },
             };
 
-            string jsonString = JsonConvert.SerializeObject(dataList);
-
-            var message = new OutgoingMessage(jsonString);
+            var message = new OutgoingMessage(dataList);
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;
