@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client
         private static async Task<IotHubClientException> GenerateIotHubClientExceptionAsync(HttpResponseMessage response)
         {
             string message = await GetExceptionMessageAsync(response).ConfigureAwait(false);
-            Tuple<string, IotHubClientErrorCode> pair = await GetErrorCodeAndTrackingIdAsync(response);
+            Tuple<string, IotHubClientErrorCode> pair = await GetErrorCodeAndTrackingIdAsync(response).ConfigureAwait(false);
 
             return new IotHubClientException(message, pair.Item2)
             {
