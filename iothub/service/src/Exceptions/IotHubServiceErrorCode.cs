@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices
         // RequestEntityTooLarge - 413
 
         /// <summary>
-        /// When the message is too large for IoT hub you will receive this error.
+        /// The message is <see href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">too large</see> for IoT hub.
         /// <para>
         /// You should attempt to reduce your message size and send again.
         /// For more information on message sizes, see <see href="https://aka.ms/iothubthrottling#other-limits">IoT hub quotas and throttling | Other limits</see>
