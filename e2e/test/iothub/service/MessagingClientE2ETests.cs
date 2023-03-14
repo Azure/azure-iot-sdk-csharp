@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             VerboseTestLogger.WriteLine($"Testing ServiceClient SendAsync() cancellation.");
             try
             {
-                var testMessage = new OutgoingMessage(Encoding.ASCII.GetBytes("Test Message"));
+                var testMessage = new OutgoingMessage("Test Message");
                 await sender.Messages.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
 
                 // Pass in the cancellation token to see how the operation reacts to it.
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             await sender.Messages.OpenAsync().ConfigureAwait(false);
 
-            var message = new OutgoingMessage(new byte[10]); // arbitrary payload since it shouldn't matter
+            var message = new OutgoingMessage(new object()); // arbitrary payload since it shouldn't matter
 
             await sender.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
             await sender.Messages.CloseAsync().ConfigureAwait(false);
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await sender.Messages.OpenAsync().ConfigureAwait(false);
 
             // Client should still be usable after closing and re-opening
-            var message = new OutgoingMessage(new byte[10]); // arbitrary payload since it shouldn't matter
+            var message = new OutgoingMessage(new object()); // arbitrary payload since it shouldn't matter
             await sender.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
             await sender.Messages.CloseAsync().ConfigureAwait(false);
         }
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Client should be able to send more than one message on an open connection
             for (int i = 0; i < 2; i++)
             {
-                var message = new OutgoingMessage(new byte[10]); // arbitrary payload since it shouldn't matter
+                var message = new OutgoingMessage(new object()); // arbitrary payload since it shouldn't matter
                 await sender.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
             }
 
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                var message = new OutgoingMessage(new byte[10]); // arbitrary payload since it shouldn't matter
+                var message = new OutgoingMessage(new object()); // arbitrary payload since it shouldn't matter
                 Func<Task> act = async () => await sender.Messages.SendAsync("nonexistent-device-id", message).ConfigureAwait(false);
 
                 // assert
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                var message = new OutgoingMessage(new byte[10]); // arbitrary payload since it shouldn't matter
+                var message = new OutgoingMessage(new object()); // arbitrary payload since it shouldn't matter
                 Func<Task> act = async () => await sender.Messages.SendAsync(testDevice.Id, "nonexistent-module-id", message).ConfigureAwait(false);
 
                 // assert

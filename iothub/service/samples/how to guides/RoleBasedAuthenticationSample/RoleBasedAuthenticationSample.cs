@@ -21,7 +21,7 @@ namespace RoleBasedAuthenticationSample
             Console.WriteLine("Successfully opened connection.");
 
             Console.WriteLine("Sending a cloud-to-device message.");
-            var message = new OutgoingMessage(Encoding.ASCII.GetBytes("Hello from the cloud!"));
+            var message = new OutgoingMessage("Hello from the cloud!");
             await client.Messages.SendAsync(deviceId, message);
             Console.WriteLine("Successfully sent message.");
         }

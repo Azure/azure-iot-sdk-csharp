@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Amqp;
@@ -216,7 +215,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
             string jsonString = JsonConvert.SerializeObject(dataList);
 
-            var message = new OutgoingMessage(Encoding.UTF8.GetBytes(jsonString));
+            var message = new OutgoingMessage(jsonString);
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;

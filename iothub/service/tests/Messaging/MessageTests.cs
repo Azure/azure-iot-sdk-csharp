@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             DateTimeOffset enqueuedOnUtc = DateTimeOffset.UtcNow;
             DateTimeOffset expiresOnUtc = DateTimeOffset.MaxValue;
 
-            var message = new OutgoingMessage(Encoding.UTF8.GetBytes(payload))
+            var message = new OutgoingMessage(payload)
             {
                 MessageId = messageId,
                 UserId = userId,
