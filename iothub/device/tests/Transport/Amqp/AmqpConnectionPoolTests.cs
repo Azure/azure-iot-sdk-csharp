@@ -11,6 +11,7 @@ using Moq;
 namespace Microsoft.Azure.Devices.Client.Tests.Amqp
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class AmqpConnectionPoolTests
     {
         internal class AmqpConnectionPoolTest : AmqpConnectionPool

@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -81,6 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("Proxy")]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_GranularSteps_Proxy()
         {
