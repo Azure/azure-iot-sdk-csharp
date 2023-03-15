@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _twinEnabled;
         private bool _deviceReceiveMessageEnabled;
         private bool _isDisposing;
-        private long _clientTransportState; // references the current client transport status as the int value of ClientTransportStatus
+        private long _clientTransportStatus; // references the current client transport status as the int value of ClientTransportStatus
 
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new();
@@ -932,12 +932,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private ClientTransportStatus GetClientTransportStatus()
         {
-            return (ClientTransportStatus)Interlocked.Read(ref _clientTransportState);
+            return (ClientTransportStatus)Interlocked.Read(ref _clientTransportStatus);
         }
 
         private void SetClientTransportStatus(ClientTransportStatus clientTransportStatus)
         {
-            _ = Interlocked.Exchange(ref _clientTransportState, (int)clientTransportStatus);
+            _ = Interlocked.Exchange(ref _clientTransportStatus, (int)clientTransportStatus);
         }
 
         protected private override void Dispose(bool disposing)
