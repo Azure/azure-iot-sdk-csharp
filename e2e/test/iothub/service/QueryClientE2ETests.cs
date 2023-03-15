@@ -29,6 +29,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // timeout is for how long to wait for this latency before failing the test.
         private readonly TimeSpan _queryableDelayTimeout = TimeSpan.FromMinutes(1);
 
+        private static readonly IIotHubServiceRetryPolicy s_scheduleJobRetryPolicy = new HubServiceTestRetryPolicy(
+            new()
+            {
+                                IotHubServiceErrorCode.ThrottlingException,
+                                IotHubServiceErrorCode.ThrottlingBacklogTimeout,
+            });
+
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_Works()
@@ -329,23 +336,32 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private static async Task ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
         {
-            try
-            {
-                var twinUpdate = new ClientTwin();
-                twinUpdate.Properties.Desired["key"] = "value";
+            // Attempt to schedule a job until it works or until hub complains there are too many active jobs
+            await RetryOperationHelper
+                .RunWithHubServiceRetryAsync(
+                    async () =>
+                    {
+                        try
+                        {
+                            var twinUpdate = new ClientTwin();
+                            twinUpdate.Properties.Desired["key"] = "value";
 
-                TwinScheduledJob scheduledJob = await jobsClient
-                    .ScheduleTwinUpdateAsync("DeviceId IN ['" + deviceId + "']", twinUpdate, DateTimeOffset.UtcNow.AddMinutes(3))
-                    .ConfigureAwait(false);
-            }
-            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
-            {
-                // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
-                // tests in this suite are written to work even if the queried job isn't the one they created.
-                VerboseTestLogger.WriteLine("Throttled when creating job. Will use existing job(s) to test query");
-                VerboseTestLogger.WriteLine(ex.Message);
-                VerboseTestLogger.WriteLine(ex.StackTrace);
-            }
+                            TwinScheduledJob scheduledJob = await jobsClient
+                                .ScheduleTwinUpdateAsync("DeviceId IN ['" + deviceId + "']", twinUpdate, DateTimeOffset.UtcNow.AddMinutes(3))
+                                .ConfigureAwait(false);
+                        }
+                        catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429 && ex.Message.Contains("ThrottlingMaxActiveJobCountExceeded"))
+                        {
+                            // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
+                            // tests in this suite are written to work even if the queried job isn't the one they created.
+                            VerboseTestLogger.WriteLine("Throttled when creating job. Will use existing job(s) to test query");
+                            VerboseTestLogger.WriteLine(ex.Message);
+                            VerboseTestLogger.WriteLine(ex.StackTrace);
+                        }
+
+                    },
+                    s_scheduleJobRetryPolicy,
+                    CancellationToken.None);
         }
     }
 }
