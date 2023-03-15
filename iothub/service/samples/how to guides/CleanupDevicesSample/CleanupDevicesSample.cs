@@ -226,11 +226,13 @@ namespace Microsoft.Azure.Devices.Samples
             }
             string queryText = queryTextSb.ToString();
             Console.WriteLine($"Using query: {queryText}");
-            var options = new QueryOptions { PageSize = 1000 };
-            AsyncPageable<DeviceQueryResult> devicesQuery = _hubClient.Query.CreateAsync<DeviceQueryResult>(queryText, options);
-            await foreach (DeviceQueryResult queryResult in devicesQuery)
+            AsyncPageable<DeviceQueryResult> devicesQuery = _hubClient.Query.CreateAsync<DeviceQueryResult>(queryText);
+            await foreach (Page<DeviceQueryResult> page in devicesQuery.AsPages(null, 1000))
             {
-                devicesToDelete.Add(new ExportImportDevice(new Device(queryResult.DeviceId), ImportMode.Delete));
+                foreach (DeviceQueryResult queryResult in page.Values)
+                {
+                    devicesToDelete.Add(new ExportImportDevice(new Device(queryResult.DeviceId), ImportMode.Delete));
+                }
             }
 
             return devicesToDelete;
