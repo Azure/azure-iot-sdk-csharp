@@ -544,8 +544,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                _handleDisconnectCts.Cancel();
                 _cancelPendingOperationsCts.Cancel();
+                _handleDisconnectCts.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -952,9 +952,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (!_isDisposed)
                 {
                     _isDisposing = true;
-
+                    SetClientTransportStatus(ClientTransportStatus.Closing);
                     base.Dispose(disposing);
-                    SetClientTransportStatus(ClientTransportStatus.Closed);
 
                     if (disposing)
                     {
@@ -985,12 +984,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                         }
                     }
-
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
                 }
             }
             finally
             {
+                SetClientTransportStatus(ClientTransportStatus.Closed);
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
             }
