@@ -551,7 +551,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 _cancelPendingOperationsCts.Dispose();
-                _cancelPendingOperationsCts = null;
                 SetClientTransportStatus(ClientTransportStatus.Closed);
 
                 if (Logging.IsEnabled)
