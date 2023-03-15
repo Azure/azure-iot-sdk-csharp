@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     /// Copy of a subset of the helper functions defined in the Azure.Core class by the same name:
     /// https://github.com/Azure/autorest.csharp/blob/main/src/assets/Generator.Shared/PageableHelpers.cs
     /// </summary>
-    internal class PageableHelpers
+    internal static class PageableHelpers
     {
         public static AsyncPageable<T> CreateAsyncEnumerable<T>(Func<int?, Task<Page<T>>> firstPageFunc, Func<string, int?, Task<Page<T>>> nextPageFunc, int? pageSize = default) where T : notnull
         {

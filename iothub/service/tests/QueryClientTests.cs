@@ -7,15 +7,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Net;
 using System.Threading;
-using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Newtonsoft.Json;
 using FluentAssertions;
-using System.Collections;
-using Newtonsoft.Json.Linq;
-using Azure;
 
 namespace Microsoft.Azure.Devices.Tests
 {

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -111,7 +112,7 @@ namespace Microsoft.Azure.Devices
                         _credentialProvider,
                         new QuerySpecification { Sql = query });
 
-                    return await BuildAndSendRequest<T>(request, continuationToken, pageSizeHint, cancellationToken);
+                    return await BuildAndSendRequestAsync<T>(request, continuationToken, pageSizeHint, cancellationToken).ConfigureAwait(false);
                 }
 
                 async Task<Page<T>> firstPageFunc(int? pageSizeHint)
@@ -123,7 +124,7 @@ namespace Microsoft.Azure.Devices
                         _credentialProvider,
                         new QuerySpecification { Sql = query });
 
-                    return await BuildAndSendRequest<T>(request, null, pageSizeHint, cancellationToken);
+                    return await BuildAndSendRequestAsync<T>(request, null, pageSizeHint, cancellationToken).ConfigureAwait(false);
                 }
 
                 return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, null);
@@ -174,13 +175,13 @@ namespace Microsoft.Azure.Devices
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
-                         HttpMethod.Get,
-                         s_jobsQueryFormat,
-                         _credentialProvider,
-                         null,
-                         BuildQueryJobQueryString(options));
+                        HttpMethod.Get,
+                        s_jobsQueryFormat,
+                        _credentialProvider,
+                        null,
+                        BuildQueryJobQueryString(options));
 
-                    return await BuildAndSendRequest<ScheduledJob>(request, continuationToken, pageSizeHint, cancellationToken);
+                    return await BuildAndSendRequestAsync<ScheduledJob>(request, continuationToken, pageSizeHint, cancellationToken).ConfigureAwait(false);
                 }
 
                 async Task<Page<ScheduledJob>> firstPageFunc(int? pageSizeHint)
@@ -193,7 +194,7 @@ namespace Microsoft.Azure.Devices
                         null,
                         BuildQueryJobQueryString(options));
 
-                    return await BuildAndSendRequest<ScheduledJob>(request, null, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                    return await BuildAndSendRequestAsync<ScheduledJob>(request, null, pageSizeHint, cancellationToken).ConfigureAwait(false);
                 }
 
                 return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc);
@@ -220,6 +221,8 @@ namespace Microsoft.Azure.Devices
 
         private async Task<Page<T>> BuildAndSendRequestAsync<T>(HttpRequestMessage request, string continuationToken, int? pageSizeHint, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            
             if (!string.IsNullOrWhiteSpace(continuationToken))
             { 
                 request.Headers.Add(ContinuationTokenHeader, continuationToken);
@@ -230,10 +233,12 @@ namespace Microsoft.Azure.Devices
                 request.Headers.Add(PageSizeHeader, pageSizeHint.ToString());
             }
 
-            (request.Content?.Headers.?ContentType ??= new MediaTypeHeaderValue("application/json") 
-            { 
-                CharSet = "utf-8" 
-            };
+            if (request.Content != null)
+            {
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json")
+                {
+                    CharSet = "utf-8"
+                };
             }
 
             HttpResponseMessage response = null;
@@ -259,11 +264,13 @@ namespace Microsoft.Azure.Devices
             }
 
             await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-            string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            Stream bodyStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using StreamReader bodyStreamReader = new StreamReader(bodyStream);
+            string responsePayload = await bodyStreamReader.ReadToEndAsync().ConfigureAwait(false);
             QueriedPage<T> page = new QueriedPage<T>(response, responsePayload);
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // The disposable QueryResponse object is the user's responsibility, not the SDK's
-            return Page<T>.FromValues(page.Items, page.ContinuationToken, new QueryResponse(response));
+            return Page<T>.FromValues(page.Items, page.ContinuationToken, new QueryResponse(response, bodyStream));
 #pragma warning restore CA2000 // Dispose objects before losing scope
         }
 

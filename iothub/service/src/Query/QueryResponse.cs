@@ -11,14 +11,21 @@ using Azure.Core;
 
 namespace Microsoft.Azure.Devices
 {
+    /// <summary>
+    /// The local implementation of the Azure.Core Response type. Libraries in the azure-sdk-for-net repo have access to 
+    /// helper functions to instantiate the abstract class Response, but this library is not in that repo yet. Because of that,
+    /// we need to implement the abstract class.
+    /// </summary>
     internal class QueryResponse : Response
     {
         private HttpResponseMessage _httpResponse;
+        private Stream _bodyStream;
         private List<HttpHeader> _httpHeaders;
 
-        internal QueryResponse(HttpResponseMessage httpResponse) 
+        internal QueryResponse(HttpResponseMessage httpResponse, Stream bodyStream) 
         { 
             _httpResponse = httpResponse;
+            _bodyStream = bodyStream;
 
             _httpHeaders = new List<HttpHeader>();
             foreach (var header in _httpResponse.Headers)
@@ -33,8 +40,8 @@ namespace Microsoft.Azure.Devices
 
         public override Stream ContentStream 
         {
-            get =>  _httpResponse.Content.ReadAsStreamAsync().Result; 
-            set => throw new NotImplementedException(); //TODO who needs this?
+            get =>  _bodyStream;
+            set => _bodyStream = value;
         }
         public override string ClientRequestId 
         { 
@@ -59,20 +66,8 @@ namespace Microsoft.Azure.Devices
 
         protected override bool TryGetHeader(string name, out string value)
         {
-            IEnumerable<string> outVariableHeaders = new List<string>();
-            value = _httpResponse.Headers.TryGetValues(name, out outVariableHeaders)
-                ? outVariableHeaders.First()
-                : string.Empty;
-            if (found)
-            {
-                value = outVariableHeaders.First();
-            }
-            else
-            {
-                value = "";
-            }
-
-            return found;
+            value = _httpResponse.Headers.SafeGetValue(name);
+            return string.IsNullOrWhiteSpace(value);
         }
 
         protected override bool TryGetHeaderValues(string name, out IEnumerable<string> values)
