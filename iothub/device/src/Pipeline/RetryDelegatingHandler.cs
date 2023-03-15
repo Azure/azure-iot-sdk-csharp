@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         Closed = 0,
         Open = 1,
+        Closing = 2,
     }
 
     internal sealed class RetryDelegatingHandler : DefaultDelegatingHandler
@@ -539,6 +540,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // Already closed so gracefully exit, instead of throw.
                 return;
             }
+            SetClientTransportStatus(ClientTransportStatus.Closing);
 
             try
             {
@@ -548,9 +550,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                SetClientTransportStatus(ClientTransportStatus.Closed);
                 _cancelPendingOperationsCts.Dispose();
                 _cancelPendingOperationsCts = null;
+                SetClientTransportStatus(ClientTransportStatus.Closed);
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
