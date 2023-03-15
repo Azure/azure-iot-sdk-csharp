@@ -248,6 +248,19 @@ These span across all service clients.
 | `IotHubCommunicationException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown` when network errors occurred. |
 | `IotHubCommunicationException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown` when an operation timed out. |
 | `IotHubNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.Unknown`. |
+| `JobNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.JobNotFound`. |
+| `JobQuotaExceededException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.JobQuotaExceeded`. |
+| `MessageTooLargeException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.MessageTooLarge`. |
+| `ModuleAlreadyExistsException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ModuleAlreadyExistsOnDevice`. |
+| `ModuleNotFoundException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ModuleNotFound`. |
+| `PreconditionFailedException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.PreconditionFailed`. |
+| `QuotaExceededException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.IotHubQuotaExceeded`. |
+| `ServerBusyException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ServiceUnavailable`. |
+| `ServerErrorException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ServerError`. |
+| `ThrottlingException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.ThrottlingException` or `IotHubServiceErrorCode.ThrottlingBacklogTimeout`. |
+| `TooManyDevicesException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.TooManyDevices`. |
+| `TooManyModulesOnDeviceException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.TooManyModulesOnDevice`. |
+| `UnauthorizedException` | `IotHubServiceException` | With an `ErrorCode` of `IotHubServiceErrorCode.IotHubUnauthorizedAccess`. |
 | `DeviceInvalidResultCountException` | Deprecated. | Was not thrown by v1 client¹. |
 | `DeviceMessageLockLostException` | Deprecated. | See¹ |
 | `IotHubSerializationVersionException` | Deprecated. | See¹ |
