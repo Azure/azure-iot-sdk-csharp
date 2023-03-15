@@ -174,11 +174,11 @@ namespace Microsoft.Azure.Devices
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
-                                        HttpMethod.Get,
-                                        s_jobsQueryFormat,
-                                        _credentialProvider,
-                                        null,
-                                        BuildQueryJobQueryString(options));
+                         HttpMethod.Get,
+                         s_jobsQueryFormat,
+                         _credentialProvider,
+                         null,
+                         BuildQueryJobQueryString(options));
 
                     return await BuildAndSendRequest<ScheduledJob>(request, continuationToken, pageSizeHint, cancellationToken);
                 }
@@ -187,13 +187,13 @@ namespace Microsoft.Azure.Devices
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
-                                        HttpMethod.Get,
-                                        s_jobsQueryFormat,
-                                        _credentialProvider,
-                                        null,
-                                        BuildQueryJobQueryString(options));
+                        HttpMethod.Get,
+                        s_jobsQueryFormat,
+                        _credentialProvider,
+                        null,
+                        BuildQueryJobQueryString(options));
 
-                    return await BuildAndSendRequest<ScheduledJob>(request, null, pageSizeHint, cancellationToken);
+                    return await BuildAndSendRequest<ScheduledJob>(request, null, pageSizeHint, cancellationToken).ConfigureAwait(false);
                 }
 
                 return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc);
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private async Task<Page<T>> BuildAndSendRequest<T>(HttpRequestMessage request, string continuationToken, int? pageSizeHint, CancellationToken cancellationToken)
+        private async Task<Page<T>> BuildAndSendRequestAsync<T>(HttpRequestMessage request, string continuationToken, int? pageSizeHint, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(continuationToken))
             { 
@@ -230,12 +230,10 @@ namespace Microsoft.Azure.Devices
                 request.Headers.Add(PageSizeHeader, pageSizeHint.ToString());
             }
 
-            if (request.Content != null)
+            (request.Content?.Headers.?ContentType ??= new MediaTypeHeaderValue("application/json") 
             { 
-                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") 
-                { 
-                    CharSet = "utf-8" 
-                };
+                CharSet = "utf-8" 
+            };
             }
 
             HttpResponseMessage response = null;

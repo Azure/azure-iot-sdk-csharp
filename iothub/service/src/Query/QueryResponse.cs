@@ -60,7 +60,9 @@ namespace Microsoft.Azure.Devices
         protected override bool TryGetHeader(string name, out string value)
         {
             IEnumerable<string> outVariableHeaders = new List<string>();
-            bool found = _httpResponse.Headers.TryGetValues(name, out outVariableHeaders);
+            value = _httpResponse.Headers.TryGetValues(name, out outVariableHeaders)
+                ? outVariableHeaders.First()
+                : string.Empty;
             if (found)
             {
                 value = outVariableHeaders.First();

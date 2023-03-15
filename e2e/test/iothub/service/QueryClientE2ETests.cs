@@ -45,8 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 2).ConfigureAwait(false);
 
-            AsyncPageable<ClientTwin> queryResponse = serviceClient.Query
-                .CreateAsync<ClientTwin>(queryText);
+            AsyncPageable<ClientTwin> queryResponse = serviceClient.Query.CreateAsync<ClientTwin>(queryText);
             IAsyncEnumerator<ClientTwin> enumerator = queryResponse.GetAsyncEnumerator();
 
             // assert
