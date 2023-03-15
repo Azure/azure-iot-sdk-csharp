@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override int Status => (int)_httpResponse.StatusCode; //TODO check this
+        public override int Status => (int)_httpResponse.StatusCode;
 
         public override string ReasonPhrase => _httpResponse.ReasonPhrase;
 
@@ -45,8 +45,8 @@ namespace Microsoft.Azure.Devices
         }
         public override string ClientRequestId 
         { 
-            get => throw new NotImplementedException(); 
-            set => throw new NotImplementedException(); 
+            get => throw new NotImplementedException("This SDK does not define this feature"); 
+            set => throw new NotImplementedException("This SDK does not define this feature"); 
         }
 
         public override void Dispose()
