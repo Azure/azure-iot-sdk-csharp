@@ -43,6 +43,7 @@ namespace Microsoft.Azure.Devices
             get =>  _bodyStream;
             set => _bodyStream = value;
         }
+
         public override string ClientRequestId 
         { 
             get => throw new NotImplementedException("This SDK does not define this feature"); 
