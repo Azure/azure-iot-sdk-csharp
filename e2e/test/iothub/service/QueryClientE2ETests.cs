@@ -207,11 +207,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
 
-            await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id).ConfigureAwait(false);
-
             string query = "SELECT * FROM devices.jobs";
 
-            await WaitForJobToBeQueryableAsync(serviceClient.Query, query, 1).ConfigureAwait(false);
+            await WaitForJobToBeQueryableAsync(serviceClient, testDevice.Id, query, 1).ConfigureAwait(false);
 
             AsyncPageable<ScheduledJob> queryResponse = serviceClient.Query.CreateAsync<ScheduledJob>(query);
             IAsyncEnumerator<ScheduledJob> enumerator = queryResponse.GetAsyncEnumerator();
@@ -239,8 +237,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
 
-            await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id).ConfigureAwait(false);
-            await WaitForJobToBeQueryableAsync(serviceClient.Query, 1, null, null).ConfigureAwait(false);
+            await WaitForJobToBeQueryableAsync(serviceClient, testDevice.Id, 1, null, null).ConfigureAwait(false);
 
             AsyncPageable<ScheduledJob> queryResponse = serviceClient.Query.CreateJobsQueryAsync();
             IAsyncEnumerator<ScheduledJob> enumerator = queryResponse.GetAsyncEnumerator();
@@ -292,25 +289,30 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, string query, int expectedCount)
+        private async Task WaitForJobToBeQueryableAsync(IotHubServiceClient serviceClient, string deviceId, string query, int expectedCount)
         {
             // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
-            AsyncPageable<ScheduledJob> queryResponse = queryClient.CreateAsync<ScheduledJob>(query);
+            AsyncPageable<ScheduledJob> queryResponse = serviceClient.Query.CreateAsync<ScheduledJob>(query);
             IAsyncEnumerator<Page<ScheduledJob>> enumerator = queryResponse.AsPages().GetAsyncEnumerator();
             await enumerator.MoveNextAsync().ConfigureAwait(false);
             while (enumerator.Current.Values.Count < expectedCount)
             {
+                // If this is just called once, there is a chance that it both fails to schedule a job because the
+                // hub is at it's max quota for concurrent jobs but then those jobs finish and become unqueriable before
+                // this function can query them. To avoid this, keep trying to schedule jobs until at least one is queriable.
+                await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, deviceId).ConfigureAwait(false);
+                
                 cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
                 await Task.Delay(100).ConfigureAwait(false);
-                queryResponse = queryClient.CreateAsync<ScheduledJob>(query);
+                queryResponse = serviceClient.Query.CreateAsync<ScheduledJob>(query);
                 enumerator = queryResponse.AsPages().GetAsyncEnumerator();
                 await enumerator.MoveNextAsync().ConfigureAwait(false);
             }
         }
 
-        private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, int expectedCount, JobType? jobType = null, JobStatus? status = null)
+        private async Task WaitForJobToBeQueryableAsync(IotHubServiceClient serviceClient, string deviceId, int expectedCount, JobType? jobType = null, JobStatus? status = null)
         {
             // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
@@ -321,14 +323,19 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 JobType = jobType,
                 JobStatus = status,
             };
-            AsyncPageable<ScheduledJob> queryResponse = queryClient.CreateJobsQueryAsync(options);
+            AsyncPageable<ScheduledJob> queryResponse = serviceClient.Query.CreateJobsQueryAsync(options);
             IAsyncEnumerator<Page<ScheduledJob>> enumerator = queryResponse.AsPages().GetAsyncEnumerator();
             await enumerator.MoveNextAsync().ConfigureAwait(false);
             while (enumerator.Current.Values.Count < expectedCount)
             {
+                // If this is just called once, there is a chance that it both fails to schedule a job because the
+                // hub is at it's max quota for concurrent jobs but then those jobs finish and become unqueriable before
+                // this function can query them. To avoid this, keep trying to schedule jobs until at least one is queriable.
+                await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, deviceId).ConfigureAwait(false);
+                
                 cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
                 await Task.Delay(100).ConfigureAwait(false);
-                queryResponse = queryClient.CreateJobsQueryAsync(options);
+                queryResponse = serviceClient.Query.CreateJobsQueryAsync(options);
                 enumerator = queryResponse.AsPages().GetAsyncEnumerator();
                 await enumerator.MoveNextAsync().ConfigureAwait(false);
             }
