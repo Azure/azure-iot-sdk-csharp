@@ -65,10 +65,11 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             AsyncPageable<ClientTwin> response = queryClient.CreateAsync<ClientTwin>(query);
-            await response.GetAsyncEnumerator().MoveNextAsync().ConfigureAwait(false);
+            IAsyncEnumerator<ClientTwin> enumerator = response.GetAsyncEnumerator();
+            await enumerator.MoveNextAsync().ConfigureAwait(false);
 
             // assert
-            response.GetAsyncEnumerator().Current.DeviceId.Should().Be("foo");
+            enumerator.Current.DeviceId.Should().Be("foo");
         }
 
         [TestMethod]
