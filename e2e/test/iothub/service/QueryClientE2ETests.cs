@@ -343,6 +343,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
                 // tests in this suite are written to work even if the queried job isn't the one they created.
                 VerboseTestLogger.WriteLine("Throttled when creating job. Will use existing job(s) to test query");
+                VerboseTestLogger.WriteLine(ex.Message);
+                VerboseTestLogger.WriteLine(ex.StackTrace);
             }
         }
     }
