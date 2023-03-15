@@ -104,6 +104,7 @@ namespace Microsoft.Azure.Devices
             {
                 async Task<Page<T>> nextPageFunc(string continuationToken, int? pageSizeHint)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                         HttpMethod.Post,
                         s_queryUri,
@@ -115,6 +116,7 @@ namespace Microsoft.Azure.Devices
 
                 async Task<Page<T>> firstPageFunc(int? pageSizeHint)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                         HttpMethod.Post,
                         s_queryUri,
@@ -170,6 +172,7 @@ namespace Microsoft.Azure.Devices
             {
                 async Task<Page<ScheduledJob>> nextPageFunc(string continuationToken, int? pageSizeHint)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                                         HttpMethod.Get,
                                         s_jobsQueryFormat,
@@ -182,6 +185,7 @@ namespace Microsoft.Azure.Devices
 
                 async Task<Page<ScheduledJob>> firstPageFunc(int? pageSizeHint)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                                         HttpMethod.Get,
                                         s_jobsQueryFormat,
