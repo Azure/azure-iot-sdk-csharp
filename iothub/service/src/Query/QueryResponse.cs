@@ -53,10 +53,12 @@ namespace Microsoft.Azure.Devices
         public override void Dispose()
         {
             _httpResponse?.Dispose();
+            _bodyStream?.Dispose();
         }
 
         protected override bool ContainsHeader(string name)
         {
+            Argument.AssertNotNullOrWhiteSpace(name, nameof(name));
             return _httpResponse.Headers.Contains(name);
         }
 
@@ -67,12 +69,14 @@ namespace Microsoft.Azure.Devices
 
         protected override bool TryGetHeader(string name, out string value)
         {
+            Argument.AssertNotNullOrWhiteSpace(name, nameof(name));
             value = _httpResponse.Headers.SafeGetValue(name);
             return string.IsNullOrWhiteSpace(value);
         }
 
         protected override bool TryGetHeaderValues(string name, out IEnumerable<string> values)
         {
+            Argument.AssertNotNullOrWhiteSpace(name, nameof(name));
             return _httpResponse.Headers.TryGetValues(name, out values);
         }
     }

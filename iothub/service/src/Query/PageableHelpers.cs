@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     internal static class PageableHelpers
     {
-        public static AsyncPageable<T> CreateAsyncEnumerable<T>(Func<int?, Task<Page<T>>> firstPageFunc, Func<string, int?, Task<Page<T>>> nextPageFunc, int? pageSize = default) where T : notnull
+        internal static AsyncPageable<T> CreateAsyncEnumerable<T>(Func<int?, Task<Page<T>>> firstPageFunc, Func<string, int?, Task<Page<T>>> nextPageFunc, int? pageSize = default) where T : notnull
         {
             AsyncPageFunc<T> first = (continuationToken, pageSizeHint) => firstPageFunc(pageSizeHint);
             AsyncPageFunc<T> next = nextPageFunc != null ? new AsyncPageFunc<T>(nextPageFunc) : null;
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
             private readonly AsyncPageFunc<T> _nextPageFunc;
             private readonly int? _defaultPageSize;
 
-            public FuncAsyncPageable(AsyncPageFunc<T> firstPageFunc, AsyncPageFunc<T> nextPageFunc, int? defaultPageSize = default)
+            internal FuncAsyncPageable(AsyncPageFunc<T> firstPageFunc, AsyncPageFunc<T> nextPageFunc, int? defaultPageSize = default)
             {
                 _firstPageFunc = firstPageFunc;
                 _nextPageFunc = nextPageFunc;
