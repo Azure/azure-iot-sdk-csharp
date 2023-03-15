@@ -57,7 +57,6 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         /// <param name="query">The query. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language">this document</see>
         /// for more details on how to build this query.</param>
-        /// <param name="options">The optional parameters to execute the query with.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <typeparam name="T">
         /// The type to deserialize the set of items into. For example, when running a query like "SELECT * FROM devices",
@@ -92,7 +91,7 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </code>
         /// </example>
-        public virtual AsyncPageable<T> CreateAsync<T>(string query, QueryOptions options = default, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<T> CreateAsync<T>(string query, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Creating query.", nameof(CreateAsync));
@@ -111,7 +110,7 @@ namespace Microsoft.Azure.Devices
                         _credentialProvider,
                         new QuerySpecification { Sql = query });
 
-                    return await BuildAndSendRequest<T>(request, options, continuationToken, pageSizeHint, cancellationToken);
+                    return await BuildAndSendRequest<T>(request, continuationToken, pageSizeHint, cancellationToken);
                 }
 
                 async Task<Page<T>> firstPageFunc(int? pageSizeHint)
@@ -122,10 +121,10 @@ namespace Microsoft.Azure.Devices
                         _credentialProvider,
                         new QuerySpecification { Sql = query });
 
-                    return await BuildAndSendRequest<T>(request, options, null, pageSizeHint, cancellationToken);
+                    return await BuildAndSendRequest<T>(request, null, pageSizeHint, cancellationToken);
                 }
 
-                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, options?.PageSize);
+                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, null);
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
@@ -163,7 +162,7 @@ namespace Microsoft.Azure.Devices
         public virtual AsyncPageable<ScheduledJob> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(CreateAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -178,7 +177,7 @@ namespace Microsoft.Azure.Devices
                                         null,
                                         BuildQueryJobQueryString(options));
 
-                    return await BuildAndSendRequest<ScheduledJob>(request, options, continuationToken, pageSizeHint, cancellationToken);
+                    return await BuildAndSendRequest<ScheduledJob>(request, continuationToken, pageSizeHint, cancellationToken);
                 }
 
                 async Task<Page<ScheduledJob>> firstPageFunc(int? pageSizeHint)
@@ -190,10 +189,10 @@ namespace Microsoft.Azure.Devices
                                         null,
                                         BuildQueryJobQueryString(options));
 
-                    return await BuildAndSendRequest<ScheduledJob>(request, options, null, pageSizeHint, cancellationToken);
+                    return await BuildAndSendRequest<ScheduledJob>(request, null, pageSizeHint, cancellationToken);
                 }
 
-                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, options?.PageSize);
+                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc);
             }
             catch (HttpRequestException ex)
             {
@@ -205,32 +204,24 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize} threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}, pageSize: {options?.PageSize}", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(CreateAsync));
             }
         }
 
-        private async Task<Page<T>> BuildAndSendRequest<T>(HttpRequestMessage request, QueryOptions options, string continuationToken, int? pageSizeHint, CancellationToken cancellationToken)
+        private async Task<Page<T>> BuildAndSendRequest<T>(HttpRequestMessage request, string continuationToken, int? pageSizeHint, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrWhiteSpace(options?.ContinuationToken))
-            {
-                request.Headers.Add(ContinuationTokenHeader, options?.ContinuationToken);
-            }
-            else if (!string.IsNullOrWhiteSpace(continuationToken))
+            if (!string.IsNullOrWhiteSpace(continuationToken))
             { 
                 request.Headers.Add(ContinuationTokenHeader, continuationToken);
             }
 
-            if (options?.PageSize != null)
-            {
-                request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
-            }
-            else if (pageSizeHint != null)
+            if (pageSizeHint != null)
             {
                 request.Headers.Add(PageSizeHeader, pageSizeHint.ToString());
             }

@@ -73,18 +73,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
 
             string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
-            var firstPageOptions = new QueryOptions
-            {
-                PageSize = 1
-            };
 
             // act
-
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3).ConfigureAwait(false);
 
             AsyncPageable<ClientTwin> queryResponse = serviceClient.Query.
-                CreateAsync<ClientTwin>(queryText, firstPageOptions);
-            IAsyncEnumerator<Page<ClientTwin>> enumerator = queryResponse.AsPages().GetAsyncEnumerator();
+                CreateAsync<ClientTwin>(queryText);
+            IAsyncEnumerator<Page<ClientTwin>> enumerator = queryResponse.AsPages(null, 1).GetAsyncEnumerator();
             (await enumerator.MoveNextAsync().ConfigureAwait(false)).Should().BeTrue("Should have at least one page of jobs.");
 
             // assert
@@ -133,25 +128,25 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
 
-            // For this test, we want the query logic to have to fetch multiple pages of results. To force
-            // that, set the page size to 1 when there are 3 total results to be queried.
-            var queryOptions = new QueryOptions
-            {
-                PageSize = 1
-            };
-
             // act
 
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3).ConfigureAwait(false);
 
             AsyncPageable<ClientTwin> twinQuery = serviceClient.Query.
-                CreateAsync<ClientTwin>(queryText, queryOptions);
+                CreateAsync<ClientTwin>(queryText);
 
             // assert
+
+            // For this test, we want the query logic to have to fetch multiple pages of results. To force
+            // that, set the page size to 1 when there are 3 total results to be queried.
+            IAsyncEnumerable<Page<ClientTwin>> twinPages = twinQuery.AsPages(null, 1);
             var returnedTwinDeviceIds = new List<string>();
-            await foreach (ClientTwin queriedTwin in twinQuery)
+            await foreach (Page<ClientTwin> queriedTwinPage in twinPages)
             {
-                returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
+                foreach (ClientTwin queriedTwin in queriedTwinPage.Values)
+                { 
+                    returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
+                }
             }
 
             var expectedDeviceIds = new List<string>() { testDevice1.Id, testDevice2.Id, testDevice3.Id };
@@ -172,25 +167,26 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
 
-            // For this test, we want the query logic to only fetch one page of results. To force
-            // that, set the page size to 3 when there are 3 total results to be queried.
-            var queryOptions = new QueryOptions
-            {
-                PageSize = 3
-            };
 
             // act
 
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3).ConfigureAwait(false);
 
             AsyncPageable<ClientTwin> twinQuery = serviceClient.Query
-                .CreateAsync<ClientTwin>(queryText, queryOptions);
+                .CreateAsync<ClientTwin>(queryText);
 
             // assert
+
+            // For this test, we want the query logic to only fetch one page of results. To force
+            // that, set the page size to 3 when there are 3 total results to be queried.
+            IAsyncEnumerable<Page<ClientTwin>> twinPages = twinQuery.AsPages(null, 3);
             var returnedTwinDeviceIds = new List<string>();
-            await foreach (ClientTwin queriedTwin in twinQuery)
+            await foreach (Page<ClientTwin> queriedTwinPage in twinPages)
             {
-                returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
+                foreach (ClientTwin queriedTwin in queriedTwinPage.Values)
+                {
+                    returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
+                }
             }
 
             var expectedDeviceIds = new List<string>() { testDevice1.Id, testDevice2.Id, testDevice3.Id };
