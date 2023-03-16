@@ -430,8 +430,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task CloseAsyncCancelPendingSendTelemetryAsync()
         {
             // arrange
-            using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
+            var contextMock = Substitute.For<PipelineContext>();
+            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
+
             innerHandlerMock.CloseAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             innerHandlerMock
                 .SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>())
@@ -440,8 +444,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                     await Task.Delay(TimeSpan.FromSeconds(5));
                 });
 
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act
@@ -457,6 +459,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task CloseAsyncCancelPendingOpenAsync()
         {
             // arrange
+            var contextMock = Substitute.For<PipelineContext>();
+            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.CloseAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             innerHandlerMock
@@ -466,8 +471,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                     await Task.Delay(TimeSpan.FromSeconds(5));
                 });
 
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act
@@ -483,12 +486,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task OpenAsyncAfterCloseAsyncThrowsObjectDisposedException()
         {
             // arrange
+            var contextMock = Substitute.For<PipelineContext>();
+            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             innerHandlerMock.CloseAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -502,11 +506,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task OpenAsyncAfterDisposeThrowsObjectDisposedException()
         {
             // arrange
+            var contextMock = Substitute.For<PipelineContext>();
+            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -520,11 +525,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task SendTelemetryAsyncAfterDisposeThrowsObjectDisposedException()
         {
             // arrange
+            var contextMock = Substitute.For<PipelineContext>();
+            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
             innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
 
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
