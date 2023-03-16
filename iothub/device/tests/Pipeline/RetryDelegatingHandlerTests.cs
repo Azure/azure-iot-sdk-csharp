@@ -503,6 +503,26 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public async Task SendEventAsyncAfterCloseAsyncThrowsObjectDisposedException()
+        {
+            // arrange
+            var contextMock = Substitute.For<PipelineContext>();
+            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+
+            var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandlerMock.CloseAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+
+            var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
+
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await sut.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // act and assert
+            await sut.SendEventAsync(Arg.Any<Message>(), CancellationToken.None).ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task OpenAsyncAfterDisposeThrowsObjectDisposedException()
         {
             // arrange
