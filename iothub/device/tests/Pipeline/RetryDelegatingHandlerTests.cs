@@ -454,7 +454,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task CloseAsyncCancelPendingSendTelemetryAsync()
+        public async Task CloseAsyncCancelPendingSendEventAsync()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
