@@ -427,6 +427,33 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public async Task CloseAsyncCancelPendingOpenAsync()
+        {
+            // arrange
+            var contextMock = Substitute.For<PipelineContext>();
+            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+
+            var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            innerHandlerMock.CloseAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandlerMock
+                .OpenAsync(Arg.Any<CancellationToken>())
+                .Returns(async t =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                });
+
+            var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
+
+            // act
+            Task openAsync = sut.OpenAsync(CancellationToken.None);
+            await sut.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            await openAsync.ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
+            await innerHandlerMock.Received(1).OpenAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task CloseAsyncCancelPendingSendTelemetryAsync()
         {
             // arrange
@@ -453,33 +480,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             await sendEventAsync.ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
             await innerHandlerMock.Received(1).SendEventAsync(message, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task CloseAsyncCancelPendingOpenAsync()
-        {
-            // arrange
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
-
-            var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.CloseAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-            innerHandlerMock
-                .OpenAsync(Arg.Any<CancellationToken>())
-                .Returns(async t =>
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(5));
-                });
-
-            var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
-
-            // act
-            Task openAsync = sut.OpenAsync(CancellationToken.None);
-            await sut.CloseAsync(CancellationToken.None).ConfigureAwait(false);
-
-            // assert
-            await openAsync.ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
-            await innerHandlerMock.Received(1).OpenAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
