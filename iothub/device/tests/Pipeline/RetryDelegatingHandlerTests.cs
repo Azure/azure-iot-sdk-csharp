@@ -542,7 +542,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task SendTelemetryAsyncAfterDisposeThrowsObjectDisposedException()
+        public async Task SendEventAsyncAfterDisposeThrowsObjectDisposedException()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
