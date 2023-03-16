@@ -12,7 +12,6 @@ using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using FluentAssertions;
-using NSubstitute.Core;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
