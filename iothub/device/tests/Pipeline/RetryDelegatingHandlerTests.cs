@@ -295,7 +295,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.SendEventAsync((Message)null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
+            innerHandlerMock.SendEventAsync(Arg.Is(message), CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             using var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
@@ -303,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
 
             // act and assert
-            await sut.SendEventAsync(Arg.Any<Message>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.SendEventAsync(message, cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -396,7 +397,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.AbandonAsync(null, Arg.Any<CancellationToken>()).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            innerHandlerMock.AbandonAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             using var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
@@ -405,7 +406,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act and assert
             await sut
-                .AbandonAsync(Arg.Any<string>(), cts.Token)
+                .AbandonAsync("", cts.Token)
                 .ExpectedAsync<TaskCanceledException>()
                 .ConfigureAwait(false);
         }
@@ -415,7 +416,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.RejectAsync(null, Arg.Any<CancellationToken>()).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            innerHandlerMock.RejectAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             using var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
@@ -423,7 +424,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             cts.Cancel();
 
             // act and assert
-            await sut.RejectAsync(Arg.Any<string>(), cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.RejectAsync("", cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -519,7 +520,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             await sut.CloseAsync(CancellationToken.None).ConfigureAwait(false);
 
             // act and assert
-            await sut.SendEventAsync(Arg.Any<Message>(), CancellationToken.None).ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
+            using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
+            await sut.SendEventAsync(message, CancellationToken.None).ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -555,7 +557,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             sut.Dispose();
 
             // act and assert
-            await sut.SendEventAsync(Arg.Any<Message>(), CancellationToken.None).ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
+            using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
+            await sut.SendEventAsync(message, CancellationToken.None).ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
 
         private class TestRetryPolicyRetryOnce : IRetryPolicy
