@@ -1,5 +1,3 @@
-@description('The name of application insights.')
-
 @minLength(3)
 @maxLength(24)
 @description('The name of the storage account used by the IoT hub.')
