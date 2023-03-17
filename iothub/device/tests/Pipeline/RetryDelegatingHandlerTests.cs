@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryOneMessageHasBeenTouchedTransientExceptionOccuredSuccess()
+        public async Task RetryDelegatingHandler_OneMessageHasBeenTouchedTransientExceptionOccuredRetriesSuccessfully()
         {
             // arrange
             int callCounter = 0;
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryMessageWithSeekableStreamHasBeenReadTransientExceptionOccuredThrows()
+        public async Task RetryDelegatingHandler_MessageWithSeekableStreamHasBeenReadTransientExceptionOccuredRetriesSuccessfully()
         {
             // arrange
             int callCounter = 0;
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryNonTransientErrorThrownThrows()
+        public async Task RetryDelegatingHandler_NonTransientErrorThrown_Throws()
         {
             // arrange
             int callCounter = 0;
@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceNotFoundExceptionReturnsDeviceDisabledStatus()
+        public async Task RetryDelegatingHandler_DeviceNotFoundException_ReturnsDeviceDisabledStatus()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryTransientErrorThrownAfterNumberOfRetriesThrows()
+        public async Task RetryDelegatingHandler_TransientErrorThrownAfterNumberOfRetries_Throws()
         {
             // arrange
             using var cts = new CancellationTokenSource(1000);
@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledOpen()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceledOpen_Throws()
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledSendEvent()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceledSendEventThrows()
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledSendEventWithIEnumMessage()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceledSendEventWithIEnumMessage_Throws()
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledReceive()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceledReceive_Throws()
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -342,7 +342,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetrySetRetryPolicyVerifyInternalsSuccess()
+        public async Task RetryDelegatingHandler_SetRetryPolicyVerifyInternals_Succeeds()
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
             using var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
-            var retryPolicy = new TestRetryPolicyRetryTwice();
+            var retryPolicy = new TestRetryPolicyRetryOnce();
             sut.SetRetryPolicy(retryPolicy);
 
             int innerHandlerCallCounter = 0;
@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledComplete()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceledComplete_Throws()
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -392,7 +392,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledAbandon()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceledAbandon_Throws()
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledReject()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceledReject_Throws()
         {
             // arrange
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -427,7 +427,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task CloseAsyncCancelPendingOpenAsync()
+        public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingOpenAsync()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
@@ -454,7 +454,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task CloseAsyncCancelPendingSendEventAsync()
+        public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingSendEventAsync()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
@@ -483,7 +483,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task OpenAsyncAfterCloseAsyncThrowsObjectDisposedException()
+        public async Task RetryDelegatingHandler_OpenAsyncAfterCloseAsync_Throws()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
@@ -503,7 +503,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task SendEventAsyncAfterCloseAsyncThrowsObjectDisposedException()
+        public async Task RetryDelegatingHandler_SendEventAsyncAfterCloseAsync_Throws()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
@@ -523,7 +523,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task OpenAsyncAfterDisposeThrowsObjectDisposedException()
+        public async Task RetryDelegatingHandler_OpenAsyncAfterDispose_Throws()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
@@ -542,7 +542,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task SendEventAsyncAfterDisposeThrowsObjectDisposedException()
+        public async Task RetryDelegatingHandler_SendEventAsyncAfterDispose_Throws()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
@@ -558,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await sut.SendEventAsync(Arg.Any<Message>(), CancellationToken.None).ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
 
-        private class TestRetryPolicyRetryTwice : IRetryPolicy
+        private class TestRetryPolicyRetryOnce : IRetryPolicy
         {
             public int Counter { get; private set; }
 
