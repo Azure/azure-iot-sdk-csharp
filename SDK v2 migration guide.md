@@ -55,6 +55,7 @@ The folllowing namespaces have been deprecated:
 - `Microsoft.Azure.Devices.Shared`
 - `Microsoft.Azure.Devices.Common.Exceptions`
 - `Microsoft.Azure.Devices.Client.Exceptions`
+- `Microsoft.Azure.Devices.Client.Transport.Mqtt`
 
 ### Consolidating IoT hub service clients
 
@@ -178,30 +179,34 @@ Find a client you currently use below, read the table of API name changes and us
 | v1 API | Equivalent v2 API | Notes |
 |:---|:---|:---|
 | `DeviceClient` | `IotHubDeviceClient` | Specify the service it is a device client for. |
+| `ITransportSettings` | `IotHubClientTransportSettings` | Disambiguate with other clients. |
+| `IRetryPolicy` | `IIotHubClientRetryPolicy` | Disambiguate with other clients. |
 | `DeviceClient.Dispose()` | `IotHubDeviceClient.DisposeAsync()` | Ensures the client is closed before disposing. |
 | `DeviceClient.SendEventAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(TelemetryMessage, ...)` | Even our public documentation calls this telemetry, so we renamed the method to describe this better.¹ |
 | `DeviceClient.SendEventBatchAsync(...)` | `IotHubDeviceClient.SendTelemetryAsync(IEnumerable<TelemetryMessage>, ...)` | This is now only supported over AMQP. Support over MQTT has been removed. Also, see¹. |
 | `DeviceClient.SetConnectionStatusChangesHandler(...)` | `IotHubDeviceClient.ConnectionStatusChangeCallback` | Local operation doesn't require being a method. |
 | `DeviceClient.SetReceiveMessageHandlerAsync(...)` | `IotHubDeviceClient.SetIncomingMessageCallbackAsync(...)` | Disambiguate from telemetry messages. |
+| `SetMethodDefaultHandlerAsync` | `SetDirectMethodCallbackAsync` | Use full name of the operation type.⁴ |
+| `SetMethodHandlerAsync` | Deprecated. | Handler by method name is deprecated. Use `SetDirectMethodCallbackAsync` and filter by method name in the callback. |
 | `DeviceClient.GetTwinAsync(...)` | `IotHubDeviceClient.GetTwinPropertiesAsync(...)` | The device client doesn't get the full twin, just the properties so this helps avoid that confusion.² |
 | `Twin` | `TwinProperties` | See² |
 | `Twin.Properties.Desired` | `TwinProperties.Desired` | See² |
 | `Twin.Properties.Reported` | `TwinProperties.Reported` | See² |
 | `MessageResponse` | `MessageAcknowledgement` | It isn't a full response, just a simple acknowledgement. |
+| `MessageResponse.Completed` | `MessageAcknowledgement.Complete` | Use imperative tense for acknowledgements. |
 | `Message` | `TelemetryMessage`, `IncomingMessage` | Distinguished between the different messaging operations. |
 | `Message.CreationTimeUtc` | `TelemetryMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).³ |
 | `Message.EnqueuedTimeUtc` | `TelemetryMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` | See³ |
 | `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` | See³ |
 | `DeviceClient.SetRetryPolicy(...)` | `IotHubClientOptions.RetryPolicy` | Should be specified at initialization time, and putting it in the client options object reduces the client API surface. |
 | `ExponentialBackOff` | `IotHubClientExponentialBackOffRetryPolicy` | Clarify it is a retry policy. |
-| `MethodRequest` | `DirectMethodRequest` | Use full name of the operation type.⁴ |
+| `MethodRequest` | `DirectMethodRequest` | See⁴ |
 | `MethodResponse` | `DirectMethodResponse` | See⁴ |
 | `IotHubException` | `IotHubClientException` | Specify the exception is for Hub device and module client only. |
 | `DeviceAuthenticationWithTokenRefresh` and `ModuleAuthenticationWithTokenRefresh` | `ClientAuthenticationWithTokenRefresh` | More descriptive naming and reduce duplication.⁵ |
 | `DeviceAuthenticationWithToken` and `ModuleAuthenticationWithToken` | `ClientAuthenticationWithSharedAccessSignature` | See⁵ |
 | `DeviceAuthenticationWithSakRefresh` and `ModuleAuthenticationWithSakRefresh` | `ClientAuthenticationWithSharedAccessKeyRefresh` | See⁵ |
 | `AuthenticationWithTokenRefresh.SafeCreateNewToken(...)` and derived classes | `ClientAuthenticationWithTokenRefresh.SafeCreateNewTokenAsync(...)` and derived classes. | Async suffix for async methods. |
-| `RetryPolicyBase` | `IIotHubClientRetryPolicy` | Introducing an interface for client retry policy. |
 | `TwinCollection` | `DesiredProperties`, `ReportedProperties` | Distinguished between the desired and reported properties. |
 
 #### ModuleClient
@@ -212,6 +217,8 @@ The device client and module client share a lot of API surface and underlying im
 
 | v1 API | Equivalent v2 API | Notes |
 |:---|:---|:---|
+| `SetMessageHandlerAsync` | `SetIncomingMessageCallbackAsync` | Renamed to be more descriptive about the callback being set. |
+| `SetInputMessageHandlerAsync` | `SetIncomingMessageCallbackAsync` | The input parameter is deprecated; the callback can observe and filter using the `IncomingMessage.InputName` property. |
 | `ModuleClient.SendEventAsync(string outputName, ...)` | `IotHubModuleClient.SendMessageToRouteAsync(string outputName, ...)` | Change the name to be more descriptive about sending messages between Edge modules.¹ |
 | `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹ |
 
@@ -229,6 +236,10 @@ N/A
 
 This service client has probably seen more updates than any other client library in this v2.
 What was a loose affiliation of separate clients is now a consolidated client with organized subclients by operation type.
+
+#### Non-client specific changes
+
+- `IotHubConnectionStringBuilder` has been removed. It was not required as part of any API calls and was intended to be internal.
 
 #### Exception changes
 
