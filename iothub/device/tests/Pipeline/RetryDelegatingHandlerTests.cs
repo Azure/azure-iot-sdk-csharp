@@ -439,8 +439,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .OpenAsync(Arg.Any<CancellationToken>())
                 .Returns(async t =>
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(5));
-                    t.Arg<CancellationToken>().ThrowIfCancellationRequested();
+                    await Task.Delay(TimeSpan.FromSeconds(5), t.Arg<CancellationToken>());
                 });
 
             using var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
@@ -469,8 +468,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>())
                 .Returns(async t =>
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(5));
-                    t.Arg<CancellationToken>().ThrowIfCancellationRequested();
+                    await Task.Delay(TimeSpan.FromSeconds(5), t.Arg<CancellationToken>());
                 });
 
             using var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
