@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{A48437
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{3AE168FC-23DB-4BB6-9A85-C6D2055BADEB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{9C260BF0-1CCA-45A2-AAB8-6419291B8B88}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9C260BF0-1CCA-45A2-AAB8-6419291B8B88}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{F94CC11B-7FA5-4CF0-9103-2B89BE631AB0}"
 EndProject
@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Pro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Service.Tests", "provisioning\service\tests\Microsoft.Azure.Devices.Provisioning.Service.Tests.csproj", "{C1DFF192-CDAB-4CC1-A340-F78C186EFC0A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E2ETests", "e2e\test\E2ETests.csproj", "{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E2ETests", "e2e\Tests\E2ETests.csproj", "{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{719D18A7-E943-461B-B777-0AAEC43916F5}"
 	ProjectSection(SolutionItems) = preProject
@@ -178,19 +178,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vsts", "vsts", "{CC532097-8
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisites", "{1C8A8E21-1EBC-4771-BB17-1E81434168B8}"
-	ProjectSection(SolutionItems) = preProject
-		e2e\test\prerequisites\E2ETestsSetup\e2eTestsSetup.ps1 = e2e\test\prerequisites\E2ETestsSetup\e2eTestsSetup.ps1
-		e2e\test\prerequisites\E2ETestsSetup\generateArmTemplate.ps1 = e2e\test\prerequisites\E2ETestsSetup\generateArmTemplate.ps1
-		e2e\test\prerequisites\E2ETestsSetup\LoadEnvironmentVariablesFromKeyVault.ps1 = e2e\test\prerequisites\E2ETestsSetup\LoadEnvironmentVariablesFromKeyVault.ps1
-		e2e\test\prerequisites\readme.md = e2e\test\prerequisites\readme.md
-		e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep = e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep
-		e2e\test\prerequisites\E2ETestsSetup\test-resources.json = e2e\test\prerequisites\E2ETestsSetup\test-resources.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DpsCustomAllocator", "DpsCustomAllocator", "{FE579E0D-D55A-495E-A758-B611BA8C5C24}"
 	ProjectSection(SolutionItems) = preProject
-		e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\function.proj = e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\function.proj
-		e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\run.csx = e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\run.csx
+		e2e\Tests\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\function.proj = e2e\Tests\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\function.proj
+		e2e\Tests\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\run.csx = e2e\Tests\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\run.csx
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HubRoutingSample", "iothub\device\samples\how to guides\HubRoutingSample\HubRoutingSample.csproj", "{8F651FE8-BD4B-45C8-A57C-69A85DBAE366}"
@@ -200,6 +192,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdgeModuleMessageSample", "iothub\device\samples\getting started\EdgeModuleMessageSample\EdgeModuleMessageSample.csproj", "{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdgeModuleMethodSample", "iothub\device\samples\getting started\EdgeModuleMethodSample\EdgeModuleMethodSample.csproj", "{B7439987-3DAC-4490-B759-C77983D38EF1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LongHaul", "LongHaul", "{F27C6BDA-1756-4B90-AD83-65DB54166FEA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "device", "e2e\LongHaul\device\device.csproj", "{44B673A1-8651-4801-A905-7A7E10F7E962}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -395,6 +391,10 @@ Global
 		{B7439987-3DAC-4490-B759-C77983D38EF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7439987-3DAC-4490-B759-C77983D38EF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7439987-3DAC-4490-B759-C77983D38EF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44B673A1-8651-4801-A905-7A7E10F7E962}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44B673A1-8651-4801-A905-7A7E10F7E962}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44B673A1-8651-4801-A905-7A7E10F7E962}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44B673A1-8651-4801-A905-7A7E10F7E962}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -466,12 +466,14 @@ Global
 		{0C078DE2-1785-44A3-8235-C990FA680F76} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{F4DA6FA4-7655-4116-994B-9B2E3D3522C0} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
 		{CC532097-89B3-4971-97CB-A790573E38DA} = {719D18A7-E943-461B-B777-0AAEC43916F5}
-		{1C8A8E21-1EBC-4771-BB17-1E81434168B8} = {662CE01D-7A7F-48D8-80CE-5DC9C60677E8}
+		{1C8A8E21-1EBC-4771-BB17-1E81434168B8} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
 		{FE579E0D-D55A-495E-A758-B611BA8C5C24} = {1C8A8E21-1EBC-4771-BB17-1E81434168B8}
 		{8F651FE8-BD4B-45C8-A57C-69A85DBAE366} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
 		{CBAB50ED-91E9-42D7-878F-B547E98B953F} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
 		{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{B7439987-3DAC-4490-B759-C77983D38EF1} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
+		{F27C6BDA-1756-4B90-AD83-65DB54166FEA} = {662CE01D-7A7F-48D8-80CE-5DC9C60677E8}
+		{44B673A1-8651-4801-A905-7A7E10F7E962} = {F27C6BDA-1756-4B90-AD83-65DB54166FEA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
