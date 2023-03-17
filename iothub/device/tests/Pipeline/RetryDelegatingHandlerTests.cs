@@ -551,8 +551,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
 
             using var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-
             using var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
