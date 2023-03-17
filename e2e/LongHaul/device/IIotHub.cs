@@ -21,6 +21,6 @@ namespace Microsoft.Azure.IoT.Thief.Device
         /// </summary>
         /// <param name="properties">Twin properties to set.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
-        Task SetPropertiesAsync(object properties, CancellationToken cancellationToken = default);
+        Task SetPropertiesAsync(SystemProperties properties, CancellationToken cancellationToken = default);
     }
 }

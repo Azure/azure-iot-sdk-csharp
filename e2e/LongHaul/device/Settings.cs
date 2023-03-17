@@ -6,6 +6,6 @@ namespace Microsoft.Azure.IoT.Thief.Device
     {
         public string AiKey { get; set; }
         public string DeviceConnectionString { get; set; }
-        public TransportType Transport { get; set; }
+        public string TransportProtocolType { get; set; }
     }
 }

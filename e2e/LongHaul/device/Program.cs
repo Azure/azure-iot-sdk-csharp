@@ -27,7 +27,7 @@ namespace ThiefDevice
             _commonProperties.Add(SdkVersion, "1.34.0");
 
             _settings = InitializeSettings();
-            _logger = InitializeLogging(_settings.DeviceConnectionString, _settings.AiKey, _settings.Transport);
+            _logger = InitializeLogging(_settings.DeviceConnectionString, _settings.AiKey, _settings.TransportProtocolType);
             _iotHub = InitializeHub(_logger);
 
             _logger.Event(StartingRun);
@@ -79,16 +79,17 @@ namespace ThiefDevice
                 .Get<Settings>();
         }
 
-        private static Logger InitializeLogging(string deviceConnectionString, string aiKey, TransportType transportType)
+        private static Logger InitializeLogging(string deviceConnectionString, string aiKey, string transportProtocolType)
         {
-            var csBuilder = IotHubConnectionStringBuilder.Create(deviceConnectionString);
+            var helper = new IotHubConnectionStringHelper();
+            helper.GetValuesFromConnectionString(deviceConnectionString);
             var logBuilder = new LoggingBuilder
             {
                 AppContext =
                 {
-                    { Hub, csBuilder.HostName },
-                    { DeviceId, csBuilder.DeviceId },
-                    { Transport, transportType.ToString() },
+                    { Hub, helper.HostName },
+                    { DeviceId, helper.DeviceId },
+                    { Transport, transportProtocolType },
                 },
             };
             foreach (var kvp in _commonProperties)
@@ -104,13 +105,36 @@ namespace ThiefDevice
 
         private static IotHub InitializeHub(Logger logger)
         {
-            var iotHub = new IotHub(logger, _settings.DeviceConnectionString, _settings.Transport);
+            var iotHub = new IotHub(logger, _settings.DeviceConnectionString, GetTransportSettings(_settings.TransportProtocolType));
             foreach (var prop in _commonProperties)
             {
                 iotHub.IotProperties.Add(prop.Key, prop.Value);
             }
 
             return iotHub;
+        }
+
+        private static IotHubClientTransportSettings GetTransportSettings(string transportProtocolType)
+        {
+            switch (transportProtocolType)
+            {
+                case "Amqp":
+                case "Amqp_Tcp_only":
+                    return new IotHubClientAmqpSettings();
+
+                case "Amqp_Websocket_Only":
+                    return new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket);
+
+                case "Mqtt":
+                case "Mqtt_Tcp_only":
+                    return new IotHubClientMqttSettings();
+
+                case "Mqtt_Websocket_Only":
+                    return new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket);
+
+                default:
+                    throw new InvalidOperationException();
+            }
         }
     }
 }
