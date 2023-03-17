@@ -102,7 +102,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
 
                             await base.SendEventAsync(message, operationCts.Token).ConfigureAwait(false);
-                            await Console.Out.WriteLineAsync("Done");
                         },
                         operationCts.Token)
                     .ConfigureAwait(false);
