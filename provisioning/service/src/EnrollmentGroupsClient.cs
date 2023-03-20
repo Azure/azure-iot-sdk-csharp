@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// The service expects a SQL-like query such as
         ///
-        /// <c>"SELECT * FROM enrollments"</c>.
+        /// <c>"SELECT * FROM enrollmentGroups"</c>.
         ///
         /// For each iteration, the query will return a page of results. The maximum number of
         /// items per page can be specified by the pageSize parameter.
@@ -272,6 +272,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <example>
+        /// Iterate enrollment groups:
+        /// <code language="csharp">
+        /// AsyncPageable&lt;EnrollmentGroup&gt; enrollmentGroupQuery = dpsServiceClient.EnrollmentGroups.CreateQuery&lt;EnrollmentGroup&gt;("SELECT * FROM enrollmentGroups");
+        /// await foreach (EnrollmentGroup queriedEnrollment in enrollmentGroupQuery)
+        /// {
+        ///     Console.WriteLine(queriedEnrollment);
+        /// }
+        /// </code>
+        /// </example>
         public AsyncPageable<EnrollmentGroup> CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)

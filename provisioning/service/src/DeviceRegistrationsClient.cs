@@ -142,6 +142,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <example>
+        /// Iterate over device registration states in an enrollment group:
+        /// <code language="csharp">
+        /// AsyncPageable&lt;DeviceRegistrationState&gt; deviceRegistrationStatesQuery = dpsServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery&lt;DeviceRegistrationState&gt;("SELECT * FROM enrollmentGroups");
+        /// await foreach (DeviceRegistrationState queriedState in deviceRegistrationStatesQuery)
+        /// {
+        ///     Console.WriteLine(queriedState);
+        /// }
+        /// </code>
+        /// </example>
         public AsyncPageable<DeviceRegistrationState> CreateEnrollmentGroupQuery(string query, string enrollmentGroupId, int pageSize = 0, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)

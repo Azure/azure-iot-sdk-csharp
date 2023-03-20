@@ -263,6 +263,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <example>
+        /// Iterate over individual enrollments:
+        /// <code language="csharp">
+        /// AsyncPageable&lt;IndividualEnrollment&gt; individualEnrollmentsQuery = dpsServiceClient.IndividualEnrollments.CreateQuery&lt;EnrollmentGroup&gt;("SELECT * FROM enrollments");
+        /// await foreach (IndividualEnrollment queriedEnrollment in individualEnrollmentsQuery)
+        /// {
+        ///     Console.WriteLine(queriedEnrollment);
+        /// }
+        /// </code>
+        /// </example>
         public AsyncPageable<IndividualEnrollment> CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
