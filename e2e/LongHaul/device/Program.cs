@@ -46,7 +46,7 @@ namespace ThiefDevice
             }
             catch (TaskCanceledException) { } // user signalled an exit
 
-            _iotHub.Dispose();
+            await _iotHub.DisposeAsync().ConfigureAwait(false);
             _logger.Flush();
         }
 
@@ -81,8 +81,7 @@ namespace ThiefDevice
 
         private static Logger InitializeLogging(string deviceConnectionString, string aiKey, TransportType transportType, IotHubClientTransportProtocol transportProtocol)
         {
-            var helper = new IotHubConnectionStringHelper();
-            helper.GetValuesFromConnectionString(deviceConnectionString);
+            var helper = new IotHubConnectionStringHelper(deviceConnectionString);
             var logBuilder = new LoggingBuilder
             {
                 AppContext =

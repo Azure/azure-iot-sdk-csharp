@@ -11,7 +11,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
         public string DeviceId { get; private set; }
 
-        public void GetValuesFromConnectionString(string connectionString)
+        public IotHubConnectionStringHelper(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
             {

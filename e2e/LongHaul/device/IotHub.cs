@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ using static Microsoft.Azure.IoT.Thief.Device.LoggingConstants;
 
 namespace Microsoft.Azure.IoT.Thief.Device
 {
-    internal class IotHub : IIotHub, IDisposable
+    internal class IotHub : IIotHub, IAsyncDisposable
     {
         private readonly string _deviceConnectionString;
         private readonly IotHubClientTransportSettings _transportSettings;
@@ -21,11 +20,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
         private SemaphoreSlim _lifetimeControl = new SemaphoreSlim(1, 1);
 
-        private const string _contentEncoding = "utf-8";
-        private const string _contentType = "application/json";
-
         private volatile bool _isConnected;
-        private volatile bool _wasEverConnected;
         private volatile ConnectionStatus _connectionStatus;
         private volatile int _connectionStatusChangeCount = 0;
         private readonly Stopwatch _disconnectedTimer = new Stopwatch();
@@ -36,8 +31,6 @@ namespace Microsoft.Azure.IoT.Thief.Device
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new ConcurrentQueue<TelemetryMessage>();
         private long _totalMessagesSent = 0;
-
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { IgnoreNullValues = true };
 
         public IDictionary<string, string> IotProperties { get; } = new Dictionary<string, string>();
 
@@ -58,16 +51,16 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
             try
             {
-                if (_deviceClient != null)
-                {
-                    await _deviceClient.CloseAsync().ConfigureAwait(false);
-                }
-                else
+                if (_deviceClient == null)
                 {
                     _deviceClient = new IotHubDeviceClient(_deviceConnectionString, new IotHubClientOptions(_transportSettings));
                     _deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangesHandler;
-                    await _deviceClient.OpenAsync().ConfigureAwait(false);
                 }
+                else
+                {
+                    await _deviceClient.CloseAsync().ConfigureAwait(false);
+                }
+                await _deviceClient.OpenAsync().ConfigureAwait(false);
             }
             finally
             {
@@ -172,16 +165,14 @@ namespace Microsoft.Azure.IoT.Thief.Device
             _messagesToSend.Enqueue(iotMessage);
         }
 
-        public async Task SetPropertiesAsync(SystemProperties properties, CancellationToken cancellationToken)
+        public async Task SetPropertiesAsync(string keyName, object properties, CancellationToken cancellationToken)
         {
             Debug.Assert(_deviceClient != null);
             Debug.Assert(properties != null);
 
             var reportedProperties = new ReportedProperties
             {
-                { "systemArchitecture", properties.SystemArchitecture },
-                { "osVersion", properties.OsVersion },
-                { "frameworkDescription", properties.FrameworkDescription }
+                { keyName, properties },
             };
 
             await _deviceClient
@@ -191,7 +182,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 .ConfigureAwait(false);
         }
 
-        public async void Dispose()
+        public async ValueTask DisposeAsync()
         {
             _logger.Trace("Disposing");
 
@@ -201,27 +192,10 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 _lifetimeControl = null;
             }
 
-            await ResetClientAsync(true);
+            await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
             _logger.Trace($"IotHub instance disposed");
 
-        }
-
-        private async Task<bool> ResetClientAsync(bool force = false)
-        {
-            if (_deviceClient != null
-                && _wasEverConnected
-                && (force || _connectionStatus == ConnectionStatus.Disconnected))
-            {
-                await _deviceClient.DisposeAsync();
-                _deviceClient = null;
-                _wasEverConnected = false;
-                _logger.Trace($"IotHub reset");
-                return true;
-            }
-
-            _logger.Trace($"IotHub not reset: device client instance {_deviceClient}, was ever connected {_wasEverConnected}, connection status {_connectionStatus}");
-            return false;
         }
 
         private async void ConnectionStatusChangesHandler(ConnectionStatusInfo connectionInfo)
@@ -236,7 +210,6 @@ namespace Microsoft.Azure.IoT.Thief.Device
             if (_isConnected)
             {
                 // The DeviceClient has connected.
-                _wasEverConnected = true;
                 if (_disconnectedTimer.IsRunning)
                 {
                     _disconnectedTimer.Stop();
@@ -245,9 +218,9 @@ namespace Microsoft.Azure.IoT.Thief.Device
                         _disconnectedTimer.Elapsed.TotalSeconds,
                         new Dictionary<string, string>
                         {
-                        { DisconnectedStatus, _disconnectedStatus.ToString() },
-                        { DisconnectedReason, _disconnectedReason.ToString() },
-                        { ConnectionStatusChangeCount, _connectionStatusChangeCount.ToString() },
+                            { DisconnectedStatus, _disconnectedStatus.ToString() },
+                            { DisconnectedReason, _disconnectedReason.ToString() },
+                            { ConnectionStatusChangeCount, _connectionStatusChangeCount.ToString() },
                         });
                 }
             }
