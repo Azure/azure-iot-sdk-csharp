@@ -55,11 +55,6 @@
     </None>
   </ItemGroup>
 
-  <!--Project reference dependencies-->
-  <ItemGroup>
-    <ProjectReference Include="..\..\service\src\Microsoft.Azure.Devices.csproj" />
-  </ItemGroup>
-
   <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="MQTTnet" Version="4.1.2.350" />

@@ -1,0 +1,223 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.15.31.15270",
+      "templateHash": "977298854607594937"
+    }
+  },
+  "parameters": {
+    "ApplicationInsightsName": {
+      "type": "string",
+      "defaultValue": "[format('{0}-ai', resourceGroup().name)]",
+      "metadata": {
+        "description": "The name of application insights."
+      }
+    },
+    "AiLocation": {
+      "type": "string",
+      "defaultValue": "centralus",
+      "metadata": {
+        "description": "The location for the Application insights instance."
+      }
+    },
+    "StorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the storage account used by the IoT hub."
+      },
+      "maxLength": 24,
+      "minLength": 3
+    },
+    "HubName": {
+      "type": "string",
+      "defaultValue": "[format('{0}-hub', resourceGroup().name)]",
+      "metadata": {
+        "description": "The name of the main IoT hub used by tests."
+      }
+    },
+    "HubLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "The location of the IoT hub."
+      }
+    },
+    "HubUnitsCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "The number of IoT hub units to be deployed."
+      }
+    },
+    "ConsumerGroupName": {
+      "type": "string",
+      "defaultValue": "longhaul",
+      "metadata": {
+        "description": "The IoT hub consumer group name."
+      }
+    },
+    "BlobServiceName": {
+      "type": "string",
+      "defaultValue": "default",
+      "metadata": {
+        "description": "The name of BlobService inside the StorageAccount."
+      }
+    },
+    "ContainerName": {
+      "type": "string",
+      "defaultValue": "fileupload",
+      "metadata": {
+        "description": "The name of the Container inside the BlobService."
+      }
+    }
+  },
+  "variables": {
+    "hubKeysId": "[resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2020-08-01",
+      "name": "[parameters('ApplicationInsightsName')]",
+      "location": "[parameters('AiLocation')]"
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02-preview",
+      "name": "[parameters('ApplicationInsightsName')]",
+      "location": "[parameters('AiLocation')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('ApplicationInsightsName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-06-01",
+      "name": "[parameters('StorageAccountName')]",
+      "location": "[parameters('HubLocation')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage",
+      "properties": {
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "keyType": "Account",
+              "enabled": true
+            },
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName'))]",
+      "properties": {
+        "deleteRetentionPolicy": {
+          "enabled": false
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}/{1}/{2}', parameters('StorageAccountName'), parameters('BlobServiceName'), parameters('ContainerName'))]",
+      "properties": {
+        "publicAccess": "None"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('StorageAccountName'), parameters('BlobServiceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2021-07-01",
+      "name": "[parameters('HubName')]",
+      "location": "[parameters('HubLocation')]",
+      "properties": {
+        "eventHubEndpoints": {
+          "events": {
+            "retentionTimeInDays": 1,
+            "partitionCount": 4
+          }
+        },
+        "cloudToDevice": {
+          "defaultTtlAsIso8601": "PT1H",
+          "maxDeliveryCount": 100,
+          "feedback": {
+            "ttlAsIso8601": "PT1H",
+            "lockDurationAsIso8601": "PT5S",
+            "maxDeliveryCount": 100
+          }
+        },
+        "messagingEndpoints": {
+          "fileNotifications": {
+            "ttlAsIso8601": "PT1H",
+            "lockDurationAsIso8601": "PT5S",
+            "maxDeliveryCount": 100
+          }
+        },
+        "storageEndPoints": {
+          "$default": {
+            "sasTtlAsIso8601": "PT1H",
+            "connectionString": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2022-09-01').keys[0].value)]",
+            "containerName": "[parameters('ContainerName')]"
+          }
+        },
+        "enableFileUploadNotifications": true
+      },
+      "sku": {
+        "name": "S1",
+        "capacity": "[parameters('HubUnitsCount')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('StorageAccountName'), parameters('BlobServiceName'), parameters('ContainerName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups",
+      "apiVersion": "2018-04-01",
+      "name": "[format('{0}/events/{1}', parameters('HubName'), parameters('ConsumerGroupName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "hubName": {
+      "type": "string",
+      "value": "[parameters('HubName')]"
+    },
+    "hubConnectionString": {
+      "type": "string",
+      "value": "[format('HostName={0}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey={1}', parameters('HubName'), listkeys(variables('hubKeysId'), '2021-07-01').primaryKey)]"
+    },
+    "storageAccountConnectionString": {
+      "type": "string",
+      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2021-06-01').keys[0].value)]"
+    },
+    "instrumentationKey": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName')), '2020-02-02-preview').InstrumentationKey]"
+    }
+  }
+}

@@ -174,7 +174,7 @@ if ($GenerateResourcesForTestDevOpsPipeline)
 }
 
 #################################################################################################
-# Get Function App contents to pass to deployment
+# Get resource names to pass to deployment
 #################################################################################################
 
 ## remove any characters that aren't letters or numbers, and then validate
