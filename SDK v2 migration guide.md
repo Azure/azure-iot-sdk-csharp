@@ -195,11 +195,11 @@ Find a client you currently use below, read the table of API name changes and us
 | `MessageResponse` | `MessageAcknowledgement` | It isn't a full response, just a simple acknowledgement. |
 | `MessageResponse.Completed` | `MessageAcknowledgement.Complete` | Use imperative tense for acknowledgements. |
 | `Message` | `TelemetryMessage`, `IncomingMessage` | Distinguished between the different messaging operations. |
-| `DeviceClient.SetRetryPolicy(...)` | `IotHubClientOptions.RetryPolicy` | Should be specified at initialization time, and putting it in the client options object reduces the client API surface. |
-| `ExponentialBackOff` | `IotHubClientExponentialBackOffRetryPolicy` | Clarify it is a retry policy. |
 | `Message.CreationTimeUtc` | `TelemetryMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).³ |
 | `Message.EnqueuedTimeUtc` | `TelemetryMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` | See³ |
 | `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` | See³ |
+| `DeviceClient.SetRetryPolicy(...)` | `IotHubClientOptions.RetryPolicy` | Should be specified at initialization time, and putting it in the client options object reduces the client API surface. |
+| `ExponentialBackOff` | `IotHubClientExponentialBackOffRetryPolicy` | Clarify it is a retry policy. |
 | `MethodRequest` | `DirectMethodRequest` | See⁴ |
 | `MethodResponse` | `DirectMethodResponse` | See⁴ |
 | `IotHubException` | `IotHubClientException` | Specify the exception is for Hub device and module client only. |
@@ -208,6 +208,7 @@ Find a client you currently use below, read the table of API name changes and us
 | `DeviceAuthenticationWithSakRefresh` and `ModuleAuthenticationWithSakRefresh` | `ClientAuthenticationWithSharedAccessKeyRefresh` | See⁵ |
 | `DeviceAuthenticationWithX509Certificate` and `ModuleAuthenticationWithX509Certificate` | `ClientAuthenticationWithX509Certificate` | See⁵ |
 | `AuthenticationWithTokenRefresh.SafeCreateNewToken(...)` and derived classes | `ClientAuthenticationWithTokenRefresh.SafeCreateNewTokenAsync(...)` and derived classes. | Async suffix for async methods. |
+| `TwinCollection` | `DesiredProperties`, `ReportedProperties` | Distinguished between the desired and reported properties. |
 
 #### ModuleClient
 
