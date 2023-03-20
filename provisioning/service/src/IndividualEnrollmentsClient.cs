@@ -58,13 +58,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = null;
+            HttpResponseMessage response = null;
 
             await _internalRetryHandler
                 .RunWithRetryAsync(
                     async () =>
                     {
-                        contractApiResponse = await _contractApiHttp
+                        response = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Put,
                                 GetEnrollmentUri(individualEnrollment.RegistrationId),
@@ -77,7 +77,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
+            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<IndividualEnrollment>(payload);
         }
 
         /// <summary>
@@ -96,13 +97,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = null;
+            HttpResponseMessage response = null;
 
             await _internalRetryHandler
                 .RunWithRetryAsync(
                     async () =>
                     {
-                        contractApiResponse = await _contractApiHttp
+                        response = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Get,
                                 GetEnrollmentUri(registrationId),
@@ -115,7 +116,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
+            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<IndividualEnrollment>(payload);
         }
 
         /// <summary>
@@ -219,13 +221,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 Enrollments = individualEnrollments.ToList(),
             };
 
-            ContractApiResponse contractApiResponse = null;
+            HttpResponseMessage response = null;
 
             await _internalRetryHandler
                 .RunWithRetryAsync(
                     async () =>
                     {
-                        contractApiResponse = await _contractApiHttp
+                        response = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Post,
                                 GetEnrollmentUri(),
@@ -238,7 +240,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
+            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(payload);
         }
 
         /// <summary>
@@ -260,11 +263,41 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public Query CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<IndividualEnrollment> CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, "Creating query.", nameof(CreateQuery));
+
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
-            return new Query(ServiceName, query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                async Task<Page<IndividualEnrollment>> nextPageFunc(string continuationToken, int? pageSizeHint)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return await QueryBuilder.BuildAndSendRequestAsync<IndividualEnrollment>(_contractApiHttp, _internalRetryHandler, query, GetEnrollmentUri(), continuationToken, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                }
+
+                async Task<Page<IndividualEnrollment>> firstPageFunc(int? pageSizeHint)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return await QueryBuilder.BuildAndSendRequestAsync<IndividualEnrollment>(_contractApiHttp, _internalRetryHandler, query, GetEnrollmentUri(), null, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                }
+
+                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, null);
+            }
+            catch (Exception ex) when (Logging.IsEnabled)
+            {
+                Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(CreateQuery));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, "Creating query.", nameof(CreateQuery));
+            }
         }
 
         /// <summary>
@@ -285,13 +318,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = null;
+            HttpResponseMessage response = null;
 
             await _internalRetryHandler
                 .RunWithRetryAsync(
                     async () =>
                     {
-                        contractApiResponse = await _contractApiHttp
+                        response = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Post,
                                 GetEnrollmentAttestationUri(registrationId),
@@ -304,7 +337,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
+            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<AttestationMechanism>(payload);
         }
 
         private static Uri GetEnrollmentUri(string registrationId)

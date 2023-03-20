@@ -99,11 +99,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="body">the string with the message body. It can be null or empty.</param>
         /// <param name="eTag">the optional string with the match condition, normally an eTag. It can be null.</param>
         /// <param name="cancellationToken">the task cancellation Token.</param>
-        /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
+        /// <returns>The HTTP response.</returns>
         /// <exception cref="OperationCanceledException">If the cancellation was requested.</exception>
         /// <exception cref="ProvisioningServiceException">If there is an error in the HTTP communication
         /// between client and service or the service answers the request with error status.</exception>
-        public async Task<ContractApiResponse> RequestAsync(
+        public async Task<HttpResponseMessage> RequestAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             IDictionary<string, string> customHeaders,
@@ -111,11 +111,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ETag eTag,
             CancellationToken cancellationToken)
         {
-            ContractApiResponse response;
-
             using var msg = new HttpRequestMessage(
                 httpMethod,
                 new Uri($"{requestUri}?{SdkUtils.ApiVersionQueryString}", UriKind.Relative));
+
+            HttpResponseMessage httpResponse;
+
             if (!string.IsNullOrEmpty(body))
             {
                 msg.Content = new StringContent(body, Encoding.UTF8, MediaTypeForDeviceManagementApis);
@@ -145,18 +146,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             try
             {
-                using HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
-                if (httpResponse == null)
-                {
-                    throw new ProvisioningServiceException(
-                        $"The response message was null when executing operation {httpMethod}.", isTransient: true);
-                }
-
-                response = new ContractApiResponse(
-                    await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false),
-                    httpResponse.StatusCode,
-                    httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
-                    httpResponse.ReasonPhrase);
+                httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
             }
             catch (AggregateException ex)
             {
@@ -195,9 +185,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceException($"The {httpMethod} operation timed out.", HttpStatusCode.RequestTimeout, ex);
             }
 
-            ValidateHttpResponse(response);
+            await ValidateHttpResponse(httpResponse).ConfigureAwait(false);
 
-            return response;
+            return httpResponse;
         }
 
         private static bool ContainsAuthenticationException(Exception ex)
@@ -207,11 +197,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     || ContainsAuthenticationException(ex.InnerException));
         }
 
-        private static void ValidateHttpResponse(ContractApiResponse response)
+        private static async Task ValidateHttpResponse(HttpResponseMessage response)
         {
-            if (response.Body == null)
+            if (response.Content == null)
             {
-                throw new ProvisioningServiceException(response.ErrorMessage, response.StatusCode, response.Fields);
+                throw new ProvisioningServiceException(response.ReasonPhrase, response.StatusCode, response.Headers);
             }
 
             // Both 200 and 204 indicate a successful operation, so there is no reason to parse the body for an error code
@@ -219,22 +209,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 try
                 {
-                    ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(response.Body);
+                    string payload = await response.Content.ReadAsStringAsync();
+                    ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(payload);
 
                     if (response.StatusCode >= HttpStatusCode.Ambiguous)
                     {
                         throw new ProvisioningServiceException(
-                            $"{response.ErrorMessage}:{responseBody.Message}",
+                            $"{response.ReasonPhrase}:{responseBody.Message}",
                             response.StatusCode,
                             responseBody.ErrorCode,
                             responseBody.TrackingId,
-                            response.Fields);
+                            response.Headers);
                     }
                 }
                 catch (JsonException jex)
                 {
                     throw new ProvisioningServiceException(
-                        $"Fail to deserialize the received response body: {response.Body}",
+                        $"Fail to deserialize the received response body: {response.Content}",
                         jex,
                         false);
                 }

@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal interface IContractApiHttp : IDisposable
     {
-        Task<ContractApiResponse> RequestAsync(
+        Task<HttpResponseMessage> RequestAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             IDictionary<string, string> customHeaders,

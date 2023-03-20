@@ -55,13 +55,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = null;
+            HttpResponseMessage response = null;
 
             await _internalRetryHandler
                 .RunWithRetryAsync(
                     async () =>
                     {
-                        contractApiResponse = await _contractApiHttp
+                        response = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Get,
                                 GetDeviceRegistrationStatusUri(registrationId),
@@ -74,7 +74,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body);
+            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<DeviceRegistrationState>(payload);
         }
 
         /// <summary>
@@ -141,10 +142,41 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public Query CreateEnrollmentGroupQuery(string query, string enrollmentGroupId, int pageSize = 0, CancellationToken cancellationToken = default)
+        public AsyncPageable<DeviceRegistrationState> CreateEnrollmentGroupQuery(string query, string enrollmentGroupId, int pageSize = 0, CancellationToken cancellationToken = default)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, "Creating query.", nameof(CreateEnrollmentGroupQuery));
+
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-            return new Query(GetDeviceRegistrationStatusUri(enrollmentGroupId).ToString(), query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                async Task<Page<DeviceRegistrationState>> nextPageFunc(string continuationToken, int? pageSizeHint)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return await QueryBuilder.BuildAndSendRequestAsync<DeviceRegistrationState>(_contractApiHttp, _internalRetryHandler, query, GetDeviceRegistrationStatusUri(enrollmentGroupId), continuationToken, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                }
+
+                async Task<Page<DeviceRegistrationState>> firstPageFunc(int? pageSizeHint)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return await QueryBuilder.BuildAndSendRequestAsync<DeviceRegistrationState>(_contractApiHttp, _internalRetryHandler, query, GetDeviceRegistrationStatusUri(enrollmentGroupId), null, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                }
+
+                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, null);
+            }
+            catch (Exception ex) when (Logging.IsEnabled)
+            {
+                Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(CreateEnrollmentGroupQuery));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, "Creating query.", nameof(CreateEnrollmentGroupQuery));
+            }
         }
 
         private static Uri GetDeviceRegistrationStatusUri(string id)

@@ -81,12 +81,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nCreating a query for enrollments...");
 
-            Query query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments", QueryPageSize);
-            while (query.HasNext())
+            IAsyncEnumerable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments", QueryPageSize);
+            await foreach (IndividualEnrollment enrollment in query)
             {
                 Console.WriteLine("\nQuerying the next enrollments...");
-                QueryResult queryResult = await query.NextAsync();
-                Console.WriteLine(queryResult);
+                Console.WriteLine(enrollment);
             }
         }
     }
