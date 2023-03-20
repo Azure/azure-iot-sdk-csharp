@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
                 },
                 {
                     HttpStatusCode.BadRequest,
-                    async (response) => await GenerateIotHubClientExceptionAsync(response)
+                    async (response) => await GenerateIotHubClientExceptionAsync(response).ConfigureAwait(false)
                 },
                 { 
                     HttpStatusCode.Unauthorized,
