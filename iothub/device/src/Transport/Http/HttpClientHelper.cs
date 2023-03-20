@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (!errorMapping.TryGetValue(response.StatusCode, out Func<HttpResponseMessage, Task<Exception>> func))
             {
-                return new IotHubClientException(await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false))
+                return new IotHubClientException(await ClientExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false))
                 {
                     IsTransient = true,
                 };

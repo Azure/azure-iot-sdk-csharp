@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 httpsEndpoint,
                 context.IotHubConnectionCredentials,
                 additionalClientInformation,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                ClientExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 httpClientHandler,
                 transportSettings);
