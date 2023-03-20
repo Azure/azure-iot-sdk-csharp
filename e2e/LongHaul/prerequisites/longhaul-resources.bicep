@@ -1,6 +1,9 @@
 @description('The name of application insights.')
 param ApplicationInsightsName string = '${resourceGroup().name}-ai'
 
+@description('The location for the Application insights instance.')
+param AiLocation string = 'centralus'
+
 @minLength(3)
 @maxLength(24)
 @description('The name of the storage account used by the IoT hub.')
@@ -8,6 +11,9 @@ param StorageAccountName string
 
 @description('The name of the main IoT hub used by tests.')
 param HubName string = '${resourceGroup().name}-hub'
+
+@description('The location of the IoT hub.')
+param HubLocation string = resourceGroup().location
 
 @description('The number of IoT hub units to be deployed.')
 param HubUnitsCount int = 1
@@ -23,10 +29,18 @@ param ContainerName string = 'fileupload'
 
 var hubKeysId = resourceId('Microsoft.Devices/IotHubs/Iothubkeys', HubName, 'iothubowner')
 
-resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
+resource oiWorkspace 'Microsoft.OperationalInsights/workspaces@2020-08-01' = {
   name: ApplicationInsightsName
+  location: AiLocation
+}
+
+resource applicationInsights 'microsoft.insights/components@2020-02-02-preview' = {
+  dependsOn: [
+    oiWorkspace
+  ]
+  name: ApplicationInsightsName
+  location: AiLocation
   kind: 'web'
-  location: 'westus2'
   properties: {
     Application_Type: 'web'
   }
@@ -34,10 +48,9 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: StorageAccountName
-  location: resourceGroup().location
+  location: HubLocation
   sku: {
     name: 'Standard_LRS'
-    tier: 'Standard'
   }
   kind: 'Storage'
   properties: {
@@ -59,7 +72,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
 }
 
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-06-01' = {
-  name: '${storageAccount.name}/${BlobServiceName}'
+  parent: storageAccount
+  name: BlobServiceName
   properties: {
     deleteRetentionPolicy: {
       enabled: false
@@ -68,7 +82,8 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-06-01'
 }
 
 resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-06-01' = {
-  name: '${blobService.name}/${ContainerName}'
+  parent: blobService
+  name: ContainerName
   properties: {
     publicAccess: 'None'
   }
@@ -76,7 +91,7 @@ resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@20
 
 resource iotHub 'Microsoft.Devices/IotHubs@2021-07-01' = {
   name: HubName
-  location: resourceGroup().location
+  location: HubLocation
   properties: {
     eventHubEndpoints: {
       events: {
@@ -100,7 +115,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-01' = {
         maxDeliveryCount: 100
       }
     }
-    StorageEndPoints: {
+    storageEndPoints: {
       '$default': {
         sasTtlAsIso8601: 'PT1H'
         connectionString: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listkeys(storageAccount.id, '2022-09-01').keys[0].value}'
@@ -111,7 +126,6 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-01' = {
   }
   sku: {
     name: 'S1'
-    tier: 'Standard'
     capacity: HubUnitsCount
   }
   dependsOn: [
@@ -119,11 +133,11 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-01' = {
   ]
 }
 
-resource consumerGroups 'Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups@2021-07-01' = {
+resource consumerGroups 'Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups@2018-04-01' = {
   name: '${iotHub.name}/events/${ConsumerGroupName}'
 }
 
 output hubName string = HubName
 output hubConnectionString string = 'HostName=${HubName}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=${listkeys(hubKeysId, '2021-07-01').primaryKey}'
 output storageAccountConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${StorageAccountName};AccountKey=${listkeys(storageAccount.id, '2021-06-01').keys[0].value};EndpointSuffix=core.windows.net'
-output instrumentationKey string = reference(applicationInsights.id, '2022-06-15').InstrumentationKey
+output instrumentationKey string = reference(applicationInsights.id, '2020-02-02-preview').InstrumentationKey
