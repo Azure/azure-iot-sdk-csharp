@@ -202,10 +202,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
 
-            await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id).ConfigureAwait(false);
+            string jobId = await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id).ConfigureAwait(false);
 
             string query = "SELECT * FROM devices.jobs";
-
             await WaitForJobToBeQueryableAsync(serviceClient.Query, query, 1).ConfigureAwait(false);
 
             QueryResponse<ScheduledJob> queryResponse = await serviceClient.Query.CreateAsync<ScheduledJob>(query).ConfigureAwait(false);
@@ -285,13 +284,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
-            QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateAsync<ScheduledJob>(query).ConfigureAwait(false);
-            while (queryResponse.CurrentPage.Count() < expectedCount)
+            QueryResponse<ScheduledJob> queryResponse;
+            do
             {
-                cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
                 await Task.Delay(100).ConfigureAwait(false);
+                cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
                 queryResponse = await queryClient.CreateAsync<ScheduledJob>(query).ConfigureAwait(false);
-            }
+            } while (queryResponse.CurrentPage.Count() < expectedCount);
         }
 
         private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, int expectedCount, JobType? jobType = null, JobStatus? status = null)
@@ -314,22 +313,25 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        private static async Task ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
+        private static async Task<string> ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
         {
-            try
-            {
-                var twinUpdate = new ClientTwin();
-                twinUpdate.Properties.Desired["key"] = "value";
+            var twinUpdate = new ClientTwin();
+            twinUpdate.Properties.Desired["key"] = "value";
 
-                TwinScheduledJob scheduledJob = await jobsClient
-                    .ScheduleTwinUpdateAsync("DeviceId IN ['" + deviceId + "']", twinUpdate, DateTimeOffset.UtcNow.AddMinutes(3))
-                    .ConfigureAwait(false);
-            }
-            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
+            while (true)
             {
-                // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
-                // tests in this suite are written to work even if the queried job isn't the one they created.
-                VerboseTestLogger.WriteLine("Throttled when creating job. Will use existing job(s) to test query");
+                try
+                {
+                    TwinScheduledJob scheduledJob = await jobsClient
+                        .ScheduleTwinUpdateAsync("DeviceId IN ['" + deviceId + "']", twinUpdate, DateTimeOffset.UtcNow)
+                        .ConfigureAwait(false);
+
+                    return scheduledJob.JobId;
+                }
+                catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
+                {
+                    await Task.Delay(100).ConfigureAwait(false);
+                }
             }
         }
     }
