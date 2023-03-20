@@ -206,6 +206,7 @@ Find a client you currently use below, read the table of API name changes and us
 | `DeviceAuthenticationWithTokenRefresh` and `ModuleAuthenticationWithTokenRefresh` | `ClientAuthenticationWithTokenRefresh` | More descriptive naming and reduce duplication.⁵ |
 | `DeviceAuthenticationWithToken` and `ModuleAuthenticationWithToken` | `ClientAuthenticationWithSharedAccessSignature` | See⁵ |
 | `DeviceAuthenticationWithSakRefresh` and `ModuleAuthenticationWithSakRefresh` | `ClientAuthenticationWithSharedAccessKeyRefresh` | See⁵ |
+| `DeviceAuthenticationWithX509Certificate` and `ModuleAuthenticationWithX509Certificate` | `ClientAuthenticationWithX509Certificate` | See⁵ |
 | `AuthenticationWithTokenRefresh.SafeCreateNewToken(...)` and derived classes | `ClientAuthenticationWithTokenRefresh.SafeCreateNewTokenAsync(...)` and derived classes. | Async suffix for async methods. |
 
 #### ModuleClient
