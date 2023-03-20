@@ -8,6 +8,7 @@ using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
@@ -37,10 +38,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             // arrange
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
-            Query q = provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups");
+            AsyncPageable<EnrollmentGroup> q = provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups");
 
             // act
-            Func<Task> act = async () => await q.NextAsync();
+            Func<Task> act = async () => await q.GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             var error = await act.Should().ThrowAsync<ProvisioningServiceException>().ConfigureAwait(false);

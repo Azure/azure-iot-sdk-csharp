@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public IAsyncEnumerable<EnrollmentGroup> CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
+        public AsyncPageable<EnrollmentGroup> CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Creating query.", nameof(CreateQuery));
