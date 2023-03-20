@@ -29,13 +29,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // timeout is for how long to wait for this latency before failing the test.
         private readonly TimeSpan _queryableDelayTimeout = TimeSpan.FromMinutes(1);
 
-        private static readonly IIotHubServiceRetryPolicy s_scheduleJobRetryPolicy = new HubServiceTestRetryPolicy(
-            new()
-            {
-                                IotHubServiceErrorCode.ThrottlingException,
-                                IotHubServiceErrorCode.ThrottlingBacklogTimeout,
-            });
-
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_Works()
