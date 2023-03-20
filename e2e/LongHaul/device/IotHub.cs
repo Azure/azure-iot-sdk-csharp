@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,8 +58,11 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
             try
             {
-                if (_deviceClient == null
-                    || await ResetClientAsync())
+                if (_deviceClient != null)
+                {
+                    await _deviceClient.CloseAsync().ConfigureAwait(false);
+                }
+                else
                 {
                     _deviceClient = new IotHubDeviceClient(_deviceConnectionString, new IotHubClientOptions(_transportSettings));
                     _deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangesHandler;
@@ -133,9 +137,16 @@ namespace Microsoft.Azure.IoT.Thief.Device
             Debug.Assert(_deviceClient != null);
             Debug.Assert(telemetryObject != null);
 
+            // Save off the event time, or use "now" if not specified
+            var createdOnUtc = telemetryObject.EventDateTimeUtc ?? DateTime.UtcNow;
+            // Remove it so it does not get serialized in the message
+            telemetryObject.EventDateTimeUtc = null;
+
             var iotMessage = new TelemetryMessage(telemetryObject)
             {
                 MessageId = Guid.NewGuid().ToString(),
+                // Add the event time to the system property
+                CreatedOnUtc = createdOnUtc,
             };
 
             foreach (var prop in IotProperties)
