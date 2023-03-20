@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -146,19 +145,18 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     try
                     {
-                        // TODO: the HTTP layer handles errors differently and does not produce the right kind of exceptions.
-                        // It should be updated to throw the same kind of exceptions as MQTT and AMQP.
                         await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
                     }
-                    catch (IotHubClientException ex)
+                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.ServerError)
                     {
                         // Gateway V1 flow
-                        ex.ErrorCode.Should().Be(IotHubClientErrorCode.ServerError);
                     }
-                    catch (ArgumentException ex)
+                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.IotHubFormatError)
                     {
                         // Gateway V2 flow
-                        ex.Message.Should().Contain("400006");
+                        ex.Message.Should().Contain("Cannot decode correlation_id");
+                        ex.TrackingId.Should().NotBe(string.Empty);
+                        ex.IsTransient.Should().BeFalse();
                     }
                 }
             }

@@ -207,10 +207,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix).ConfigureAwait(false);
 
-            await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id).ConfigureAwait(false);
+            string jobId = await ScheduleJobToBeQueriedAsync(serviceClient.ScheduledJobs, testDevice.Id).ConfigureAwait(false);
 
             string query = "SELECT * FROM devices.jobs";
-
             await WaitForJobToBeQueryableAsync(serviceClient.Query, query, 1).ConfigureAwait(false);
 
             AsyncPageable<ScheduledJob> queryResponse = serviceClient.Query.CreateAsync<ScheduledJob>(query);
@@ -297,17 +296,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
-            AsyncPageable<ScheduledJob> queryResponse = queryClient.CreateAsync<ScheduledJob>(query);
-            IAsyncEnumerator<Page<ScheduledJob>> enumerator = queryResponse.AsPages().GetAsyncEnumerator();
-            await enumerator.MoveNextAsync().ConfigureAwait(false);
-            while (enumerator.Current.Values.Count < expectedCount)
+            IAsyncEnumerable<Page<ScheduledJob>> queryResponse;
+            IAsyncEnumerator<Page<ScheduledJob>> enumerator;
+            do
             {
-                cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
                 await Task.Delay(100).ConfigureAwait(false);
-                queryResponse = queryClient.CreateAsync<ScheduledJob>(query);
-                enumerator = queryResponse.AsPages().GetAsyncEnumerator();
-                await enumerator.MoveNextAsync().ConfigureAwait(false);
-            }
+                cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
+                queryResponse = queryClient.CreateAsync<ScheduledJob>(query).AsPages();
+                enumerator = queryResponse.GetAsyncEnumerator();
+            } while (await enumerator.MoveNextAsync().ConfigureAwait(false) && enumerator.Current.Values.Count < expectedCount);
         }
 
         private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, int expectedCount, JobType? jobType = null, JobStatus? status = null)
@@ -334,34 +331,26 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        private static async Task ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
+        private static async Task<string> ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)
         {
-            // Attempt to schedule a job until it works or until hub complains there are too many active jobs
-            await RetryOperationHelper
-                .RunWithHubServiceRetryAsync(
-                    async () =>
-                    {
-                        try
-                        {
-                            var twinUpdate = new ClientTwin();
-                            twinUpdate.Properties.Desired["key"] = "value";
+            var twinUpdate = new ClientTwin();
+            twinUpdate.Properties.Desired["key"] = "value";
 
-                            TwinScheduledJob scheduledJob = await jobsClient
-                                .ScheduleTwinUpdateAsync("DeviceId IN ['" + deviceId + "']", twinUpdate, DateTimeOffset.UtcNow.AddMinutes(3))
-                                .ConfigureAwait(false);
-                        }
-                        catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429 && ex.Message.Contains("ThrottlingMaxActiveJobCountExceeded"))
-                        {
-                            // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
-                            // tests in this suite are written to work even if the queried job isn't the one they created.
-                            VerboseTestLogger.WriteLine("Throttled when creating job. Will use existing job(s) to test query");
-                            VerboseTestLogger.WriteLine(ex.Message);
-                            VerboseTestLogger.WriteLine(ex.StackTrace);
-                        }
+            while (true)
+            {
+                try
+                {
+                    TwinScheduledJob scheduledJob = await jobsClient
+                        .ScheduleTwinUpdateAsync("DeviceId IN ['" + deviceId + "']", twinUpdate, DateTimeOffset.UtcNow)
+                        .ConfigureAwait(false);
 
-                    },
-                    s_scheduleJobRetryPolicy,
-                    CancellationToken.None);
+                    return scheduledJob.JobId;
+                }
+                catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
+                {
+                    await Task.Delay(100).ConfigureAwait(false);
+                }
+            }
         }
     }
 }

@@ -10,13 +10,19 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ConnectionStatusInfo
     {
-        internal ConnectionStatusInfo()
+        /// <summary>
+        /// Generally only created by the SDK or for unit testing, using defaults of disconnected and client closed.
+        /// </summary>
+        public ConnectionStatusInfo()
             : this(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.ClientClosed)
         {
             RecommendedAction = RecommendedAction.OpenConnection;
         }
 
-        internal ConnectionStatusInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
+        /// <summary>
+        /// Generally only created by the SDK or for unit testing.
+        /// </summary>
+        public ConnectionStatusInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
         {
             Status = status;
             ChangeReason = changeReason;
