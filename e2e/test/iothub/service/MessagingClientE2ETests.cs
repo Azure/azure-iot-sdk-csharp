@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow (IotHubTransportProtocol.WebSocket)]
-        public async Task MessagingClient_SendMessageOnClosedClient_ThrowsIotHubServiceException(IotHubTransportProtocol protocol)
+        public async Task MessagingClient_SendMessageOnClosedClient_ThrowsInvalidOperationException(IotHubTransportProtocol protocol)
         {
             // arrange
             var options = new IotHubServiceClientOptions
