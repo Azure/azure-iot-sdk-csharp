@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string DeviceRegistrationStatusUriFormat = "registrations/{0}";
         private const string DeviceRegistrationQueryUriFormat = "registrations/{0}/query";
 
-        private readonly IContractApiHttp _contractApiHttp;
+        private readonly ContractApiHttp _contractApiHttp;
         private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal DeviceRegistrationStatesClient(IContractApiHttp contractApiHttp, RetryHandler retryHandler)
+        internal DeviceRegistrationStatesClient(ContractApiHttp contractApiHttp, RetryHandler retryHandler)
         {
             _contractApiHttp = contractApiHttp;
             _internalRetryHandler = retryHandler;

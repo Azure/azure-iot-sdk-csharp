@@ -12,9 +12,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class CleanupEnrollmentsSample
     {
-        // Maximum number of elements per query - DPS has a limit of 10.
-        private const int QueryPageSize = 10;
-
         private readonly ProvisioningServiceClient _provisioningServiceClient;
         private static int s_individualEnrollmentsDeleted;
         private static int s_enrollmentGroupsDeleted;
@@ -49,7 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task QueryAndDeleteIndividualEnrollmentsAsync()
         {
             Console.WriteLine("Creating a query for enrollments...");
-            AsyncPageable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments", QueryPageSize);
+            AsyncPageable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
             List<IndividualEnrollment> individualEnrollments = new List<IndividualEnrollment>();
             await foreach (IndividualEnrollment enrollment in query)
             {
@@ -73,7 +70,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private async Task QueryAndDeleteEnrollmentGroupsAsync()
         {
             Console.WriteLine("Creating a query for enrollment groups...");
-            AsyncPageable<EnrollmentGroup> query = _provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups", QueryPageSize);
+            AsyncPageable<EnrollmentGroup> query = _provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups");
             await foreach (EnrollmentGroup enrollment in query)
             {
                 Console.WriteLine("Querying the next enrollment groups...");

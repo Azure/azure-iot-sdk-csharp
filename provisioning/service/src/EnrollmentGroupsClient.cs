@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string EnrollmentAttestationUriFormat = "enrollmentGroups/{0}/attestationmechanism";
         private const string EnrollmentGroupQueryUriFormat = "enrollmentGroups/query";
 
-        private readonly IContractApiHttp _contractApiHttp;
+        private readonly ContractApiHttp _contractApiHttp;
         private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal EnrollmentGroupsClient(IContractApiHttp contractApiHttp, RetryHandler retryHandler)
+        internal EnrollmentGroupsClient(ContractApiHttp contractApiHttp, RetryHandler retryHandler)
         {
             _contractApiHttp = contractApiHttp;
             _internalRetryHandler = retryHandler;

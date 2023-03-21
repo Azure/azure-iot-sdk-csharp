@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal sealed class ContractApiHttp : IContractApiHttp
+    internal sealed class ContractApiHttp : IDisposable
     {
         private const string MediaTypeForDeviceManagementApis = "application/json";
 
