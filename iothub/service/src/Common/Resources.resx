@@ -223,7 +223,7 @@
     <value>The value of this argument must be non-negative.</value>
   </data>
   <data name="UserErrorFormat" xml:space="preserve">
-    <value>{0} [identifier: {1}, timestamp: {2:u}, errorcode: IH{3}]. See more info for this error code at https://learn.microsoft.com/en-us/rest/api/iothub/common-error-codes.</value>
+    <value>{0} [identifier: {1}, timestamp: {2:u}, errorcode: IH{3}]. For more info about this error code, see https://learn.microsoft.com/en-us/rest/api/iothub/common-error-codes.</value>
   </data>
   <data name="UnspecifiedError" xml:space="preserve">
     <value>An error occurred.</value>
