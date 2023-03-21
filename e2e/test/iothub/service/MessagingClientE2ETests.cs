@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             // act
-            var message = new Message(new byte[10]);
+            var message = new OutgoingMessage(new byte[10]);
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messages.CloseAsync();
 

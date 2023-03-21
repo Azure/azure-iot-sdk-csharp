@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // act
             // making sure the queue is empty
             PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false);
-            var testMessage = new Message(Encoding.UTF8.GetBytes("some payload"));
+            var testMessage = new OutgoingMessage(Encoding.UTF8.GetBytes("some payload"));
             await sc.Messages.OpenAsync().ConfigureAwait(false);
 
             // assert
