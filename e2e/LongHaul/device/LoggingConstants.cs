@@ -12,7 +12,8 @@
         // Events
 
         public const string StartingRun = "StartingRun";
-
+        public const string ConnectedEvent = "Connected";
+        public const string DiscconnectedEvent = "Disconnected";
 
         // Logging properties
 
@@ -24,8 +25,12 @@
         public const string DeviceId = "deviceId";
         public const string Transport = "transport";
 
+        public const string ConnectionReason = "connectionReason";
+        public const string ConnectionRecommendedAction = "connectionRecommendedAction";
+
         public const string DisconnectedStatus = "disconnectedStatus";
         public const string DisconnectedReason = "disconnectedReason";
+        public const string DisconnectedRecommendedAction = "disconnectedRecommendedAction";
         public const string ConnectionStatusChangeCount = "connectionStatusChangeCount";
     }
 }

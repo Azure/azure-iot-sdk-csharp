@@ -24,6 +24,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
         private readonly Stopwatch _disconnectedTimer = new();
         private ConnectionStatus _disconnectedStatus;
         private ConnectionStatusChangeReason _disconnectedReason;
+        private RecommendedAction _disconnectedRecommendedAction;
         private volatile IotHubDeviceClient _deviceClient;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
@@ -62,6 +63,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 {
                     await _deviceClient.CloseAsync().ConfigureAwait(false);
                 }
+
                 await _deviceClient.OpenAsync().ConfigureAwait(false);
             }
             finally
@@ -80,6 +82,8 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
             while (!ct.IsCancellationRequested)
             {
+                _logger.Metric(MessageBacklog, _messagesToSend.Count);
+
                 // Wait when there are no messages to send, or if not connected
                 if (!IsConnected
                     || !_messagesToSend.Any())
@@ -95,8 +99,6 @@ namespace Microsoft.Azure.IoT.Thief.Device
                         return;
                     }
                 }
-
-                _logger.Metric(MessageBacklog, _messagesToSend.Count);
 
                 // If not connected, skip the work below this round
                 if (!IsConnected)
@@ -204,11 +206,27 @@ namespace Microsoft.Azure.IoT.Thief.Device
         {
             ConnectionStatus status = connectionInfo.Status;
             ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
-            _logger.Trace($"Connection status changed ({++_connectionStatusChangeCount}): status=[{status}], reason=[{reason}]", TraceSeverity.Information);
+            RecommendedAction recommendedAction = connectionInfo.RecommendedAction;
+
+            string eventName = status == ConnectionStatus.Connected
+                ? ConnectedEvent
+                : DiscconnectedEvent;
+
+            _logger.Event(
+                eventName,
+                new Dictionary<string, string>
+                {
+                    { ConnectionReason, reason.ToString() },
+                    { ConnectionRecommendedAction, recommendedAction.ToString() },
+                });
+
+            _logger.Trace(
+                $"Connection status changed ({++_connectionStatusChangeCount}): status=[{status}], reason=[{reason}], recommendation=[{recommendedAction}]",
+                TraceSeverity.Information);
 
             if (IsConnected)
             {
-                // The DeviceClient has connected.
+                // The device client has connected.
                 if (_disconnectedTimer.IsRunning)
                 {
                     _disconnectedTimer.Stop();
@@ -219,6 +237,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
                         {
                             { DisconnectedStatus, _disconnectedStatus.ToString() },
                             { DisconnectedReason, _disconnectedReason.ToString() },
+                            { DisconnectedRecommendedAction, _disconnectedRecommendedAction.ToString() },
                             { ConnectionStatusChangeCount, _connectionStatusChangeCount.ToString() },
                         });
                 }
@@ -229,13 +248,14 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 _disconnectedTimer.Restart();
                 _disconnectedStatus = status;
                 _disconnectedReason = reason;
+                _disconnectedRecommendedAction = recommendedAction;
             }
 
             switch (connectionInfo.RecommendedAction)
             {
                 case RecommendedAction.OpenConnection:
                     _logger.Trace($"Following recommended action of reinitializing the client.", TraceSeverity.Information);
-                    await InitializeAsync();
+                    await InitializeAsync().ConfigureAwait(false);
                     break;
 
                 case RecommendedAction.PerformNormally:

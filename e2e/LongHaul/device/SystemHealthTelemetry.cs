@@ -5,28 +5,28 @@ namespace Microsoft.Azure.IoT.Thief.Device
 {
     internal class SystemHealthTelemetry : TelemetryBase
     {
-        private static readonly Process _currentProcess = Process.GetCurrentProcess();
-        private static readonly string _processName = _currentProcess.ProcessName;
+        private static readonly Process s_currentProcess = Process.GetCurrentProcess();
+        private static readonly string s_processName = s_currentProcess.ProcessName;
 
-        private static readonly PerformanceCounter _processCpuCounter = new PerformanceCounter(
+        private static readonly PerformanceCounter s_processCpuCounter = new(
             "Process",
             "% Processor Time",
-            _processName,
+            s_processName,
             true);
-        private static readonly PerformanceCounter _processWorkingSet = new PerformanceCounter(
+        private static readonly PerformanceCounter s_processWorkingSet = new(
             "Process",
             "Working Set",
-            _processName,
+            s_processName,
             true);
-        private static readonly PerformanceCounter _processWorkingSetPrivate = new PerformanceCounter(
+        private static readonly PerformanceCounter s_processWorkingSetPrivate = new(
             "Process",
             "Working Set - Private",
-            _processName,
+            s_processName,
             true);
-        private static readonly PerformanceCounter _processPrivateBytes = new PerformanceCounter(
+        private static readonly PerformanceCounter s_processPrivateBytes = new(
             "Process",
             "Private bytes",
-            _processName,
+            s_processName,
             true);
         private static readonly PerformanceCounter _processBytesInAllHeaps = null;
         //new PerformanceCounter(
@@ -36,16 +36,16 @@ namespace Microsoft.Azure.IoT.Thief.Device
         //    true);
 
         [JsonPropertyName("processCpuUsagePercent")]
-        public float ProcessCpuUsagePercent { get; set; } = _processCpuCounter.NextValue();
+        public float ProcessCpuUsagePercent { get; set; } = s_processCpuCounter.NextValue();
 
         [JsonPropertyName("processWorkingSet")]
-        public float ProcessWorkingSet { get; set; } = _processWorkingSet.NextValue();
+        public float ProcessWorkingSet { get; set; } = s_processWorkingSet.NextValue();
 
         [JsonPropertyName("processWorkingSetPrivate")]
-        public float ProcessWorkingSetPrivate { get; set; } = _processWorkingSetPrivate.NextValue();
+        public float ProcessWorkingSetPrivate { get; set; } = s_processWorkingSetPrivate.NextValue();
 
         [JsonPropertyName("processPrivateBytes")]
-        public float ProcessPrivateBytes { get; set; } = _processPrivateBytes.NextValue();
+        public float ProcessPrivateBytes { get; set; } = s_processPrivateBytes.NextValue();
 
         [JsonPropertyName("processBytesInAllHeaps")]
         public float? ProcessBytesInAllHeaps { get; set; } = _processBytesInAllHeaps?.NextValue();
