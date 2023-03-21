@@ -36,7 +36,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
                     { nameof(properties.OsVersion), properties.OsVersion },
                     { nameof(properties.SystemArchitecture), properties.SystemArchitecture },
                 });
-            await _iotHub.SetPropertiesAsync(properties, ct).ConfigureAwait(false);
+            await _iotHub.SetPropertiesAsync("systemProperties", properties, ct).ConfigureAwait(false);
 
             int errorCount = 0;
 

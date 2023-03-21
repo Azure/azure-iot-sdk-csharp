@@ -1,13 +1,10 @@
 ﻿using Mash.Logging;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,39 +12,33 @@ using static Microsoft.Azure.IoT.Thief.Device.LoggingConstants;
 
 namespace Microsoft.Azure.IoT.Thief.Device
 {
-    internal class IotHub : IIotHub, IDisposable
+    internal class IotHub : IIotHub, IAsyncDisposable
     {
         private readonly string _deviceConnectionString;
-        private readonly TransportType _transportType;
+        private readonly IotHubClientTransportSettings _transportSettings;
         private readonly Logger _logger;
 
         private SemaphoreSlim _lifetimeControl = new SemaphoreSlim(1, 1);
 
-        private const string _contentEncoding = "utf-8";
-        private const string _contentType = "application/json";
-
         private volatile bool _isConnected;
-        private volatile bool _wasEverConnected;
         private volatile ConnectionStatus _connectionStatus;
         private volatile int _connectionStatusChangeCount = 0;
         private readonly Stopwatch _disconnectedTimer = new Stopwatch();
         private ConnectionStatus _disconnectedStatus;
         private ConnectionStatusChangeReason _disconnectedReason;
-        private volatile DeviceClient _deviceClient;
+        private volatile IotHubDeviceClient _deviceClient;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
-        private readonly ConcurrentQueue<Message> _messagesToSend = new ConcurrentQueue<Message>();
+        private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new ConcurrentQueue<TelemetryMessage>();
         private long _totalMessagesSent = 0;
-
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { IgnoreNullValues = true };
 
         public IDictionary<string, string> IotProperties { get; } = new Dictionary<string, string>();
 
-        public IotHub(Logger logger, string deviceConnectionString, TransportType transportType)
+        public IotHub(Logger logger, string deviceConnectionString, IotHubClientTransportSettings transportSettings)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _deviceConnectionString = deviceConnectionString;
-            _transportType = transportType;
+            _transportSettings = transportSettings;
             _deviceClient = null;
         }
 
@@ -60,13 +51,16 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
             try
             {
-                if (_deviceClient == null
-                    || ResetClient())
+                if (_deviceClient == null)
                 {
-                    _deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionString, _transportType);
-                    _deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler);
-                    await _deviceClient.OpenAsync().ConfigureAwait(false);
+                    _deviceClient = new IotHubDeviceClient(_deviceConnectionString, new IotHubClientOptions(_transportSettings));
+                    _deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangesHandler;
                 }
+                else
+                {
+                    await _deviceClient.CloseAsync().ConfigureAwait(false);
+                }
+                await _deviceClient.OpenAsync().ConfigureAwait(false);
             }
             finally
             {
@@ -80,7 +74,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
         /// <param name="ct">The cancellation token</param>
         public async Task RunAsync(CancellationToken ct)
         {
-            Message pendingMessage = null;
+            TelemetryMessage pendingMessage = null;
 
             while (!ct.IsCancellationRequested)
             {
@@ -118,35 +112,13 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 // Send any message prepped to send
                 if (pendingMessage != null)
                 {
-                    try
-                    {
-                        await _deviceClient.SendEventAsync(pendingMessage, ct).ConfigureAwait(false);
+                    await _deviceClient.SendTelemetryAsync(pendingMessage, ct).ConfigureAwait(false);
 
-                        ++_totalMessagesSent;
-                        _logger.Metric(TotalMessagesSent, _totalMessagesSent);
-                        _logger.Metric(MessageDelaySeconds, (DateTime.UtcNow - pendingMessage.CreationTimeUtc).TotalSeconds);
+                    ++_totalMessagesSent;
+                    _logger.Metric(TotalMessagesSent, _totalMessagesSent);
+                    _logger.Metric(MessageDelaySeconds, (DateTime.UtcNow - pendingMessage.CreatedOnUtc).TotalSeconds);
 
-                        pendingMessage.Dispose();
-                        pendingMessage = null;
-                    }
-                    catch (IotHubException ex) when (ex.IsTransient)
-                    {
-                        _logger.Trace($"Caught transient exception; will retry: {ex}", TraceSeverity.Warning);
-                    }
-                    catch (Exception ex) when (ExceptionHelper.IsNetworkExceptionChain(ex))
-                    {
-                        _logger.Trace($"A network-related exception was caught; will retry: {ex}", TraceSeverity.Warning);
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        // App is signalled to exit
-                        _logger.Trace($"Exit signal encountered. Terminating telemetry message pump.");
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Trace($"Unknown error sending telemetry: {ex}", TraceSeverity.Critical);
-                    }
+                    pendingMessage = null;
                 }
             }
         }
@@ -159,20 +131,15 @@ namespace Microsoft.Azure.IoT.Thief.Device
             Debug.Assert(telemetryObject != null);
 
             // Save off the event time, or use "now" if not specified
-            var creationTimeUtc = telemetryObject.EventDateTimeUtc ?? DateTime.UtcNow;
+            var createdOnUtc = telemetryObject.EventDateTimeUtc ?? DateTime.UtcNow;
             // Remove it so it does not get serialized in the message
             telemetryObject.EventDateTimeUtc = null;
 
-            string message = JsonSerializer.Serialize(telemetryObject, _jsonSerializerOptions);
-            Debug.Assert(!string.IsNullOrWhiteSpace(message));
-
-            var iotMessage = new Message(Encoding.UTF8.GetBytes(message))
+            var iotMessage = new TelemetryMessage(telemetryObject)
             {
-                ContentEncoding = _contentEncoding,
-                ContentType = _contentType,
                 MessageId = Guid.NewGuid().ToString(),
                 // Add the event time to the system property
-                CreationTimeUtc = creationTimeUtc,
+                CreatedOnUtc = createdOnUtc,
             };
 
             foreach (var prop in IotProperties)
@@ -198,22 +165,24 @@ namespace Microsoft.Azure.IoT.Thief.Device
             _messagesToSend.Enqueue(iotMessage);
         }
 
-        public async Task SetPropertiesAsync(object properties, CancellationToken cancellationToken)
+        public async Task SetPropertiesAsync(string keyName, object properties, CancellationToken cancellationToken)
         {
             Debug.Assert(_deviceClient != null);
             Debug.Assert(properties != null);
 
-            string propertiesPayload = JsonSerializer.Serialize(properties, _jsonSerializerOptions);
-            Debug.Assert(!string.IsNullOrWhiteSpace(propertiesPayload));
+            var reportedProperties = new ReportedProperties
+            {
+                { keyName, properties },
+            };
 
             await _deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new TwinCollection(propertiesPayload),
+                    reportedProperties,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             _logger.Trace("Disposing");
 
@@ -223,48 +192,37 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 _lifetimeControl = null;
             }
 
-            ResetClient(true);
+            await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
             _logger.Trace($"IotHub instance disposed");
 
         }
 
-        private bool ResetClient(bool force = false)
+        private async void ConnectionStatusChangesHandler(ConnectionStatusInfo connectionInfo)
         {
-            if (_deviceClient != null
-                && _wasEverConnected
-                && (force || _connectionStatus == ConnectionStatus.Disconnected))
-            {
-                _deviceClient?.Dispose();
-                _deviceClient = null;
-                _wasEverConnected = false;
-                _logger.Trace($"IotHub reset");
-                return true;
-            }
-
-            _logger.Trace($"IotHub not reset: device client instance {_deviceClient}, was ever connected {_wasEverConnected}, connection status {_connectionStatus}");
-            return false;
-        }
-
-        private void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
-        {
+            ConnectionStatus status = connectionInfo.Status;
+            ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
             _logger.Trace($"Connection status changed ({++_connectionStatusChangeCount}): status=[{status}], reason=[{reason}]", TraceSeverity.Information);
 
             _connectionStatus = status;
             _isConnected = status == ConnectionStatus.Connected;
 
-            if (_isConnected && _disconnectedTimer.IsRunning)
+            if (_isConnected)
             {
-                _disconnectedTimer.Stop();
-                _logger.Metric(
-                    DisconnectedDurationSeconds,
-                    _disconnectedTimer.Elapsed.TotalSeconds,
-                    new Dictionary<string, string>
-                    {
-                        { DisconnectedStatus, _disconnectedStatus.ToString() },
-                        { DisconnectedReason, _disconnectedReason.ToString() },
-                        { ConnectionStatusChangeCount, _connectionStatusChangeCount.ToString() },
-                    });
+                // The DeviceClient has connected.
+                if (_disconnectedTimer.IsRunning)
+                {
+                    _disconnectedTimer.Stop();
+                    _logger.Metric(
+                        DisconnectedDurationSeconds,
+                        _disconnectedTimer.Elapsed.TotalSeconds,
+                        new Dictionary<string, string>
+                        {
+                            { DisconnectedStatus, _disconnectedStatus.ToString() },
+                            { DisconnectedReason, _disconnectedReason.ToString() },
+                            { ConnectionStatusChangeCount, _connectionStatusChangeCount.ToString() },
+                        });
+                }
             }
             else if (!_isConnected && !_disconnectedTimer.IsRunning)
             {
@@ -273,56 +231,23 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 _disconnectedReason = reason;
             }
 
-            switch (status)
+            switch (connectionInfo.RecommendedAction)
             {
-                case ConnectionStatus.Connected:
-                    // The DeviceClient has connected.
-                    _wasEverConnected = true;
+                case RecommendedAction.OpenConnection:
+                    _logger.Trace($"Following recommended action of reinitializing the client.", TraceSeverity.Information);
+                    await InitializeAsync();
                     break;
 
-                case ConnectionStatus.Disconnected_Retrying:
-                    // The DeviceClient is retrying based on the retry policy. Just wait.
+                case RecommendedAction.PerformNormally:
+                    _logger.Trace("The client has retrieved twin values after the connection status changes into CONNECTED.", TraceSeverity.Information);
                     break;
 
-                case ConnectionStatus.Disabled:
-                    // The DeviceClient has been closed gracefully. Do nothing.
+                case RecommendedAction.WaitForRetryPolicy:
+                    _logger.Trace("Letting the client retry.", TraceSeverity.Information);
                     break;
 
-                case ConnectionStatus.Disconnected:
-                    switch (reason)
-                    {
-                        case ConnectionStatusChangeReason.Bad_Credential:
-                            // The supplied credentials were invalid. Fix the input and then create a new device client instance.
-                            break;
-
-                        case ConnectionStatusChangeReason.Device_Disabled:
-                            // The device has been deleted or marked as disabled (on your hub instance).
-                            // Fix the device status in Azure and then create a new device client instance.
-                            break;
-
-                        case ConnectionStatusChangeReason.Retry_Expired:
-                            // The DeviceClient has been disconnected because the retry policy expired.
-                            // If you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.
-
-                            _ = InitializeAsync();
-                            break;
-
-                        case ConnectionStatusChangeReason.Communication_Error:
-                            // The DeviceClient has been disconnected due to a non-retry-able exception. Inspect the exception for details.
-                            // If you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.
-
-                            _ = InitializeAsync();
-                            break;
-
-                        default:
-                            _logger.Trace("This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected", TraceSeverity.Critical);
-                            break;
-                    }
-
-                    break;
-
-                default:
-                    _logger.Trace("This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected", TraceSeverity.Critical);
+                case RecommendedAction.Quit:
+                    _logger.Trace("Quitting.", TraceSeverity.Information);
                     break;
             }
         }

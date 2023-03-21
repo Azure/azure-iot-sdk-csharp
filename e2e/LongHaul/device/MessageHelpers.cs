@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Devices.Client;
-using System;
-using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Microsoft.Azure.IoT.Thief.Device
 {
@@ -11,27 +11,24 @@ namespace Microsoft.Azure.IoT.Thief.Device
         /// </summary>
         public const int MaxMessagePayloadBytes = (256 * 1024) - 1024;
 
-        private const int Iso8601Length = 24;
-
-        public static int GetMessagePayloadSize(Message message)
+        public static int GetMessagePayloadSize(TelemetryMessage message)
         {
-            int size = (int)message.BodyStream.Length;
-            
-            foreach (KeyValuePair<string, string> prop in message.Properties)
-            {
-                size += prop.Key.Length;
-                size += prop.Value.Length;
-            }
-
-            size += message.MessageId?.Length ?? 0;
-            size += message.ContentType?.Length ?? 0;
-            size += message.ContentEncoding?.Length ?? 0;
-            size += message.CorrelationId?.Length ?? 0;
-            size += message.UserId?.Length ?? 0;
-            size += message.To?.Length ?? 0;
-            size += message.ExpiryTimeUtc == DateTime.MinValue ? 0 : Iso8601Length;
+            var payload = message.Payload;
+            int size = ObjectToByteArray(payload).Length;
 
             return size;
+        }
+
+        private static byte[] ObjectToByteArray(object obj)
+        {
+            if (obj == null)
+                return null;
+            BinaryFormatter bf = new BinaryFormatter();
+            using (MemoryStream ms = new MemoryStream())
+            {
+                bf.Serialize(ms, obj);
+                return ms.ToArray();
+            }
         }
     }
 }

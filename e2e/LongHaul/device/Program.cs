@@ -27,7 +27,7 @@ namespace ThiefDevice
             _commonProperties.Add(SdkVersion, "1.34.0");
 
             _settings = InitializeSettings();
-            _logger = InitializeLogging(_settings.DeviceConnectionString, _settings.AiKey, _settings.Transport);
+            _logger = InitializeLogging(_settings.DeviceConnectionString, _settings.AiKey, _settings.TransportType, _settings.TransportProtocol);
             _iotHub = InitializeHub(_logger);
 
             _logger.Event(StartingRun);
@@ -46,7 +46,7 @@ namespace ThiefDevice
             }
             catch (TaskCanceledException) { } // user signalled an exit
 
-            _iotHub.Dispose();
+            await _iotHub.DisposeAsync().ConfigureAwait(false);
             _logger.Flush();
         }
 
@@ -79,16 +79,16 @@ namespace ThiefDevice
                 .Get<Settings>();
         }
 
-        private static Logger InitializeLogging(string deviceConnectionString, string aiKey, TransportType transportType)
+        private static Logger InitializeLogging(string deviceConnectionString, string aiKey, TransportType transportType, IotHubClientTransportProtocol transportProtocol)
         {
-            var csBuilder = IotHubConnectionStringBuilder.Create(deviceConnectionString);
+            var helper = new IotHubConnectionStringHelper(deviceConnectionString);
             var logBuilder = new LoggingBuilder
             {
                 AppContext =
                 {
-                    { Hub, csBuilder.HostName },
-                    { DeviceId, csBuilder.DeviceId },
-                    { Transport, transportType.ToString() },
+                    { Hub, helper.HostName },
+                    { DeviceId, helper.DeviceId },
+                    { Transport, GetTransportSettings(transportType, transportProtocol).ToString() },
                 },
             };
             foreach (var kvp in _commonProperties)
@@ -104,7 +104,7 @@ namespace ThiefDevice
 
         private static IotHub InitializeHub(Logger logger)
         {
-            var iotHub = new IotHub(logger, _settings.DeviceConnectionString, _settings.Transport);
+            var iotHub = new IotHub(logger, _settings.DeviceConnectionString, GetTransportSettings(_settings.TransportType, _settings.TransportProtocol));
             foreach (var prop in _commonProperties)
             {
                 iotHub.IotProperties.Add(prop.Key, prop.Value);
@@ -112,5 +112,21 @@ namespace ThiefDevice
 
             return iotHub;
         }
+
+        private static IotHubClientTransportSettings GetTransportSettings(TransportType transportType, IotHubClientTransportProtocol transportProtocol)
+        {
+            return transportType switch
+            {
+                TransportType.Mqtt => new IotHubClientMqttSettings(transportProtocol),
+                TransportType.Amqp => new IotHubClientAmqpSettings(transportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {transportType}/{transportProtocol}"),
+            };
+        }
     }
+
+    public enum TransportType
+    {
+        Mqtt,
+        Amqp,
+    };
 }
