@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Specifies the options associated with job queries.
     /// </summary>
-    public class JobQueryOptions : QueryOptions
+    public class JobQueryOptions
     {
         /// <summary>
         /// The job type to query.

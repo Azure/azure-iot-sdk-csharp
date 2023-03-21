@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using Newtonsoft.Json;
@@ -173,14 +174,15 @@ namespace Microsoft.Azure.Devices.Samples
             try
             {
                 string countSqlQuery = "select count() AS numberOfDevices from devices";
-                QueryResponse<Dictionary<string, int>> countQuery = await _hubClient.Query.CreateAsync<Dictionary<string, int>>(countSqlQuery);
-                if (!await countQuery.MoveNextAsync())
+                AsyncPageable<Dictionary<string, int>> countQuery = _hubClient.Query.CreateAsync<Dictionary<string, int>>(countSqlQuery);
+                IAsyncEnumerator<Dictionary<string, int>> enumerator = countQuery.GetAsyncEnumerator();
+                if (!await enumerator.MoveNextAsync())
                 {
                     Console.WriteLine($"Failed to run device count query.");
                     return 0;
                 }
 
-                if (!countQuery.Current.TryGetValue("numberOfDevices", out deviceCount))
+                if (!enumerator.Current.TryGetValue("numberOfDevices", out deviceCount))
                 {
                     Console.WriteLine($"Failed to get device count from query result.");
                     return 0;
@@ -224,11 +226,13 @@ namespace Microsoft.Azure.Devices.Samples
             }
             string queryText = queryTextSb.ToString();
             Console.WriteLine($"Using query: {queryText}");
-            var options = new QueryOptions { PageSize = 1000 };
-            QueryResponse<DeviceQueryResult> devicesQuery = await _hubClient.Query.CreateAsync<DeviceQueryResult>(queryText, options);
-            while (await devicesQuery.MoveNextAsync())
+            AsyncPageable<DeviceQueryResult> devicesQuery = _hubClient.Query.CreateAsync<DeviceQueryResult>(queryText);
+            await foreach (Page<DeviceQueryResult> page in devicesQuery.AsPages(null, 1000))
             {
-                devicesToDelete.Add(new ExportImportDevice(new Device(devicesQuery.Current.DeviceId), ImportMode.Delete));
+                foreach (DeviceQueryResult queryResult in page.Values)
+                {
+                    devicesToDelete.Add(new ExportImportDevice(new Device(queryResult.DeviceId), ImportMode.Delete));
+                }
             }
 
             return devicesToDelete;

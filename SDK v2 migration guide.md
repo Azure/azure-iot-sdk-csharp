@@ -284,8 +284,9 @@ These span across all service clients.
 #### Notable breaking changes
 
 - Operations that offer concurrency protection using `ETag`s, now take a parameter `onlyIfUnchanged` that relies on the ETag property of the submitted entity.
-- `IotHubServiceClient.Query.CreateAsync<T>(...)` is now async.
-  - Call `QueryResponse<T>.MoveNextAsync()` in a loop (end when it returns `false`) and access `QueryResponse<T>.Current`.
+- `IotHubServiceClient.Query.CreateAsync<T>(...)` now returns an `AsyncPageable` of the queried results.
+  - Iterate on entries by using `await foreach (ClientTwin queriedTwin in client.Query.CreateAsync<ClientTwin>(queryText))`.
+  - Iterate on pages of entries by using `await foreach (Page<ClientTwin> queriedTwinPage in _client.Query.CreateAsync<ClientTwin>(queryText).AsPages())`
 - `JobProperties` properties that hold Azure Storage SAS URIs are now of type `System.Uri` instead of `string`.
 - `JobProperties` has been split into several classes with only the necessary properties for the specified operation.
   - See `ExportJobProperties`, `ImportJobProperties`, and `IotHubJobResponse`.
@@ -378,7 +379,7 @@ These span across all service clients.
 
 #### Notable breaking changes
 - `JobClient.ScheduleTwinUpdateAsync(...)` previously returned a `JobResponse`, now returns `ScheduledJob`.
-- `ScheduleJobs.GetAsync()` return type has changed to `QueryResponse<ScheduledJob>` from `IEnumerable<JobResponse>`.
+- `ScheduleJobs.GetAsync()` return type has changed to `AsyncPageable<ScheduledJob>` from `IEnumerable<JobResponse>`.
 
 | v1 API | Equivalent v2 API | Notes |
 |:---|:---|:---|
