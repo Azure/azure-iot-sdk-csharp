@@ -125,6 +125,33 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
+        [DataRow (IotHubTransportProtocol.WebSocket)]
+        public async Task MessagingClient_SendMessageOnClosedClient_ThrowsIotHubServiceException(IotHubTransportProtocol protocol)
+        {
+            // arrange
+            var options = new IotHubServiceClientOptions
+            {
+                Protocol = protocol
+            };
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync (DevicePrefix).ConfigureAwait(false);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
+
+            // act
+            var message = new Message(new byte[10]);
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+            await serviceClient.Messages.CloseAsync();
+
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync(testDevice.Id, message);
+
+            // assert
+            await act.Should().ThrowAsync<IotHubServiceException>();
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessagingClient_CanSendMultipleMessagesInOneConnection(IotHubTransportProtocol protocol)
         {
