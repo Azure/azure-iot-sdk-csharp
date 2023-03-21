@@ -22,10 +22,8 @@ namespace Microsoft.Azure.Devices
             ContinuationToken = response.Headers.SafeGetValue(ContinuationTokenHeader);
         }
 
-        [JsonProperty("items")]
         internal IReadOnlyList<T> Items { get; set; }
 
-        [JsonProperty("continuationToken")]
         internal string ContinuationToken { get; set; }
     }
 }

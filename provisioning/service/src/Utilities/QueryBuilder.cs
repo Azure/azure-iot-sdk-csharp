@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Dictionary<string, string> headers = new Dictionary<string, string>();
+            var headers = new Dictionary<string, string>();
             if (!string.IsNullOrWhiteSpace(continuationToken))
             {
                 headers.Add(ContinuationTokenHeaderKey, continuationToken);

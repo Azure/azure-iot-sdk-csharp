@@ -19,13 +19,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     internal class QueryResponse : Response
     {
         private HttpResponseMessage _httpResponse;
-        private Stream _bodyStream;
         private List<HttpHeader> _httpHeaders;
 
         internal QueryResponse(HttpResponseMessage httpResponse, Stream bodyStream) 
         { 
             _httpResponse = httpResponse;
-            _bodyStream = bodyStream;
+            ContentStream = bodyStream;
 
             _httpHeaders = new List<HttpHeader>();
             foreach (var header in _httpResponse.Headers)
@@ -38,11 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override string ReasonPhrase => _httpResponse.ReasonPhrase;
 
-        public override Stream ContentStream 
-        {
-            get =>  _bodyStream;
-            set => _bodyStream = value;
-        }
+        public override Stream ContentStream { get; set; }
 
         public override string ClientRequestId 
         { 
@@ -53,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public override void Dispose()
         {
             _httpResponse?.Dispose();
-            _bodyStream?.Dispose();
+            ContentStream?.Dispose();
         }
 
         protected override bool ContainsHeader(string name)

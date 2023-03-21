@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("Creating a query for enrollments...");
             AsyncPageable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
-            List<IndividualEnrollment> individualEnrollments = new List<IndividualEnrollment>();
+            var individualEnrollments = new List<IndividualEnrollment>();
             await foreach (IndividualEnrollment enrollment in query)
             {
                 Console.WriteLine("Querying the next enrollments...");
