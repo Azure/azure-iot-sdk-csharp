@@ -75,19 +75,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 RetryPolicy = _customRetryPolicy,
             };
 
-            if (!String.IsNullOrWhiteSpace(parameters.DeviceId)){
+            if (!string.IsNullOrWhiteSpace(parameters.DeviceId)){
                 _deviceId = parameters.DeviceId;
             }
 
-            if (!String.IsNullOrWhiteSpace(parameters.CertificateName)){
+            if (!string.IsNullOrWhiteSpace(parameters.CertificateName)){
                 _certificatePath = parameters.CertificateName;
             }
 
-            if (!String.IsNullOrWhiteSpace(parameters.CertificatePassword)){
+            if (!string.IsNullOrWhiteSpace(parameters.CertificatePassword)){
                 _certificatePassword = parameters.CertificatePassword;
             }
 
-            if (!String.IsNullOrWhiteSpace(parameters.HostName)){
+            if (!string.IsNullOrWhiteSpace(parameters.HostName)){
                 _hostname = parameters.HostName;
             }
         }
@@ -145,7 +145,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         else
                         {
                             // if the certificate is provided, initialize the client using certificate
-                            if (!String.IsNullOrWhiteSpace(_certificatePath) && !String.IsNullOrWhiteSpace(_certificatePassword))
+                            if (!string.IsNullOrWhiteSpace(_certificatePath)
+                                && !string.IsNullOrWhiteSpace(_certificatePassword))
                             {
                                 using var deviceCert = new X509Certificate2(_certificatePath, _certificatePassword);
                                 var auth = new ClientAuthenticationWithX509Certificate(deviceCert, _deviceId);
@@ -216,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 case RecommendedAction.PerformNormally:
                     // Call GetTwinAndDetectChangesAsync() to retrieve twin values from the server once the connection status changes into Connected.
                     // This can get back "lost" twin updates in a device reconnection from status like Disconnected_Retrying or Disconnected.
-                    await GetTwinAndDetectChangesAsync(s_appCancellation.Token);
+                    await GetTwinAndDetectChangesAsync();
                     Console.WriteLine("The client has retrieved twin values after the connection status changes into CONNECTED.");
                     break;
 
@@ -230,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task GetTwinAndDetectChangesAsync(CancellationToken cancellationToken)
+        private async Task GetTwinAndDetectChangesAsync()
         {
             TwinProperties twin = await s_deviceClient.GetTwinPropertiesAsync(s_appCancellation.Token);
             _logger.LogInformation($"Device retrieving twin values: {twin.Desired.GetSerializedString()}");
