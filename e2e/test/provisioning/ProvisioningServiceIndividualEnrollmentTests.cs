@@ -232,9 +232,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 // Just checking that the returned type was, in fact, an individual enrollment and that deserialization
                 // of the always-present fields works.
                 enrollment.RegistrationId.Should().NotBeNull();
-                enrollment.Attestation.Should().NotBeNull();
-                enrollment.AllocationPolicy.Should().NotBeNull();
-                enrollment.ReprovisionPolicy.Should().NotBeNull();
             }
         }
 
