@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -98,12 +99,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         JobResponse createJobResponse = await jobClient.ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
                         break;
                     }
-                    // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                    catch (ThrottlingException) when (++tryCount < MaxIterationWait)
+                    catch (ThrottlingException ex)
                     {
-                        Logger.Trace($"ThrottlingException... waiting.");
-                        await Task.Delay(_waitDuration).ConfigureAwait(false);
-                        continue;
+                        // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
+                        if (++tryCount < MaxIterationWait)
+                        {
+                            Logger.Trace($"ThrottlingException... waiting.");
+                            await Task.Delay(_waitDuration).ConfigureAwait(false);
+                            continue;
+                        }
+
+                        IEnumerable<JobResponse> queryResults = await jobClient.CreateQuery().GetNextAsJobResponseAsync();
+                        string message = "";
+                        foreach (JobResponse response in queryResults)
+                        {
+                            if (response.Status != JobStatus.Completed && response.Status != JobStatus.Failed && response.Status != JobStatus.Cancelled)
+                            {
+                                message += $"Job Id {response.JobId} is {response.Status}.";
+                            }
+                        }
+                        message += $"{ex.Message}";
+                        throw new ThrottlingException(message);
                     }
                 }
             }
