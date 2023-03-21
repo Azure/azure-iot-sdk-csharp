@@ -202,14 +202,14 @@ namespace Microsoft.Azure.Devices.Client
         protected internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
 
         /// <summary>
-        /// Clones an existing <see cref="OutgoingMessage"/> instance and sets content body defined by <paramref name="payload"/> on it.
+        /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="payload"/> on it.
         /// </summary>
         /// <remarks>
         /// The cloned message has the message <see cref="MessageId" /> as the original message.
         /// </remarks>
         /// <param name="payload">Message content to be set after clone.</param>
-        /// <returns>A new instance of <see cref="OutgoingMessage"/> with body content defined by <paramref name="payload"/>,
-        /// and user/system properties of the cloned <see cref="OutgoingMessage"/> instance.
+        /// <returns>A new instance of <see cref="Message"/> with body content defined by <paramref name="payload"/>,
+        /// and user/system properties of the cloned <see cref="Message"/> instance.
         /// </returns>
         public TelemetryMessage CloneWithBody(object payload)
         {

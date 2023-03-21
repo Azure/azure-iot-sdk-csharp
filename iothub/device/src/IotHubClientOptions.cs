@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ModelId { get; set; }
 
         /// <summary>
-        /// The configuration for setting <see cref="OutgoingMessage.MessageId"/> for every message sent by the device or module client instance.
+        /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the device or module client instance.
         /// </summary>
         /// <remarks>
         /// The default behavior is that a message Id is sent only if set by the user.

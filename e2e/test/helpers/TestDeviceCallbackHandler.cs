@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
-        private OutgoingMessage _expectedMessageSentByService;
+        private Message _expectedMessageSentByService;
 
         internal TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, TestDevice testDevice)
         {
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             set => Volatile.Write(ref _expectedTwinPropertyValue, value);
         }
 
-        internal OutgoingMessage ExpectedMessageSentByService
+        internal Message ExpectedMessageSentByService
         {
             get => Volatile.Read(ref _expectedMessageSentByService);
             set => Volatile.Write(ref _expectedMessageSentByService, value);

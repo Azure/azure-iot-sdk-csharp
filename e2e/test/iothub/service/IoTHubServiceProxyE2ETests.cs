@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
-            (OutgoingMessage testMessage, string messageId, string payload, string p1Value) = ComposeTelemetryMessage();
+            (Message testMessage, string messageId, string payload, string p1Value) = ComposeTelemetryMessage();
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messages.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
 
@@ -111,14 +111,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        private (OutgoingMessage message, string messageId, string payload, string p1Value) ComposeTelemetryMessage()
+        private (Message message, string messageId, string payload, string p1Value) ComposeTelemetryMessage()
         {
             string messageId = Guid.NewGuid().ToString();
             string payload = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
 
             VerboseTestLogger.WriteLine($"{nameof(ComposeTelemetryMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
-            var message = new OutgoingMessage(Encoding.UTF8.GetBytes(payload))
+            var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
                 Properties = { ["property1"] = p1Value }

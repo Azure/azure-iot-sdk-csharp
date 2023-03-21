@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         {
             string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new OutgoingMessage(payloadBytes);
+            var msg = new Message(payloadBytes);
             msg.Payload.Should().BeEquivalentTo(payloadBytes);
             msg.HasPayload.Should().BeTrue();
         }
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
-            var msg = new OutgoingMessage(Array.Empty<byte>());
+            var msg = new Message(Array.Empty<byte>());
             msg.Payload.Should().NotBeNull();
             msg.Payload.Length.Should().Be(0);
         }
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         [TestMethod]
         public void Message_DefaultPayload_NotNull()
         {
-            var msg = new OutgoingMessage();
+            var msg = new Message();
             msg.Payload.Should().NotBeNull();
             msg.Payload.Should().BeEquivalentTo(Array.Empty<byte>());
             msg.Payload.Length.Should().Be(0);
@@ -44,14 +44,14 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         [TestMethod]
         public void Message_Properties_DefaultNotNull()
         {
-            var msg = new OutgoingMessage();
+            var msg = new Message();
             msg.Properties.Should().NotBeNull();
         }
 
         [TestMethod]
         public void Message_SystemProperties_DefaultNotNull()
         {
-            var msg = new OutgoingMessage();
+            var msg = new Message();
             msg.SystemProperties.Should().NotBeNull();
         }
 
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             DateTimeOffset enqueuedOnUtc = DateTimeOffset.UtcNow;
             DateTimeOffset expiresOnUtc = DateTimeOffset.MaxValue;
 
-            var message = new OutgoingMessage(Encoding.UTF8.GetBytes(payload))
+            var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
                 UserId = userId,

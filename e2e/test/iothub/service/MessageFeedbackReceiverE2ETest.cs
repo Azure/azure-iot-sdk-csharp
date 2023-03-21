@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             try
             {
-                var message = new OutgoingMessage(Encoding.UTF8.GetBytes("some payload"))
+                var message = new Message(Encoding.UTF8.GetBytes("some payload"))
                 {
                     Ack = DeliveryAcknowledgement.Full,
                     MessageId = Guid.NewGuid().ToString(),

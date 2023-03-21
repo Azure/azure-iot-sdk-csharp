@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            var messagesSent = new Dictionary<string, Tuple<OutgoingMessage, string>>();
+            var messagesSent = new Dictionary<string, Tuple<Message, string>>();
 
             // Initialize the service client
             var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string _);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string _);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 VerboseTestLogger.WriteLine($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                Tuple<OutgoingMessage, string> msgSent = messagesSent[testDevice.Id];
+                Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
                 await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(deviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2).ConfigureAwait(false);
             }
 
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
-                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string _, out string _);
+                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string _, out string _);
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);

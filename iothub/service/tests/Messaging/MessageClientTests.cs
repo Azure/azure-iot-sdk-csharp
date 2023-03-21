@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
 
-            var msg = new OutgoingMessage(payloadBytes);
+            var msg = new Message(payloadBytes);
 
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
 
-            var msg = new OutgoingMessage(payloadBytes);
+            var msg = new Message(payloadBytes);
 
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
-            var msg = new OutgoingMessage(payloadBytes);
+            var msg = new Message(payloadBytes);
 
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             // arrange
             string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new OutgoingMessage(payloadBytes);
+            var msg = new Message(payloadBytes);
 
             // arrange
             using var serviceClient = new IotHubServiceClient(
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             // arrange
             string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new OutgoingMessage(payloadBytes);
+            var msg = new Message(payloadBytes);
 
             using var serviceClient = new IotHubServiceClient(
                 s_connectionString,
@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             // arrange
             string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new OutgoingMessage(payloadBytes);
+            var msg = new Message(payloadBytes);
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
@@ -320,7 +320,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             // arrange
             string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new OutgoingMessage(payloadBytes);
+            var msg = new Message(payloadBytes);
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider
