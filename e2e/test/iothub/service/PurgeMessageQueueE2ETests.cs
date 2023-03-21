@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -65,7 +66,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             Func<Task> act = async () => await sc.Messages.PurgeMessageQueueAsync(faultyId, CancellationToken.None).ConfigureAwait(false);
-            await act.Should().ThrowAsync<IotHubServiceException>();
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.Should().Be(HttpStatusCode.NotFound);
+            error.And.IsTransient.Should().BeFalse();
         }
     }
 }
