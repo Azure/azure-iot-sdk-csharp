@@ -554,7 +554,7 @@ jobs:
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
       
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
         displayName: "Run PoliCheck"
         inputs:
           targetType: F
@@ -562,7 +562,7 @@ jobs:
           optionsSEV: '1|2|3|4'
           optionsPE: 1
       
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@4
         displayName: "Run MpCmdRun.exe"
         inputs:
           EnableServices: true
@@ -570,13 +570,6 @@ jobs:
           # Signature refreshes on Hosted Agents can sometimes have a delay of a day or two.
           # The support team already has a process to address this, so our pipeline can treat stale signatures as warnings (instead of treating it as an error).
           TreatStaleSignatureAs: Warning
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
-        displayName: "Run AutoApplicability"
-        inputs:
-          ExternalRelease: true
-          IsSoftware: true
-          UsesHSM: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
         displayName: "Run BinSkim"
@@ -594,7 +587,7 @@ jobs:
         # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
         enabled: false
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@3
         displayName: "Run CredScan"
         inputs:
           toolMajorVersion: V2
@@ -604,13 +597,10 @@ jobs:
           # TODO #181 Samples / tests fail the test due to fake connection strings.
           debugMode: false
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
-        displayName: "Run Vulnerability Assessment"
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@3
         displayName: "Publish Security Analysis Logs"
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
         displayName: "Create Security Analysis Report"
         inputs:
           AllTools: true
