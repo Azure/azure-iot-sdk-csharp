@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -158,20 +159,19 @@ namespace Microsoft.Azure.Devices.Samples
             string queryText = $"SELECT * FROM devices WHERE STARTSWITH(id, '{_parameters.DevicePrefix}')";
             Console.WriteLine($"Using query text of: {queryText}");
 
-            QueryResponse<ClientTwin> query = await _client.Query.CreateAsync<ClientTwin>(queryText);
+            AsyncPageable<ClientTwin> query = _client.Query.CreateAsync<ClientTwin>(queryText);
 
-            while (await query.MoveNextAsync())
+            await foreach (ClientTwin queriedTwin in query)
             {
-                ClientTwin twin = query.Current;
-                Console.WriteLine($"{twin.DeviceId}");
-                Console.WriteLine($"\tIs edge: {twin.Capabilities.IsIotEdge}");
-                if (!string.IsNullOrWhiteSpace(twin.DeviceScope))
+                Console.WriteLine($"{queriedTwin.DeviceId}");
+                Console.WriteLine($"\tIs edge: {queriedTwin.Capabilities.IsIotEdge}");
+                if (!string.IsNullOrWhiteSpace(queriedTwin.DeviceScope))
                 {
-                    Console.WriteLine($"\tDevice scope: {twin.DeviceScope}");
+                    Console.WriteLine($"\tDevice scope: {queriedTwin.DeviceScope}");
                 }
-                if (twin.ParentScopes?.Any() ?? false)
+                if (queriedTwin.ParentScopes?.Any() ?? false)
                 {
-                    Console.WriteLine($"\tParent scope: {twin.ParentScopes[0]}");
+                    Console.WriteLine($"\tParent scope: {queriedTwin.ParentScopes[0]}");
                 }
             }
         }

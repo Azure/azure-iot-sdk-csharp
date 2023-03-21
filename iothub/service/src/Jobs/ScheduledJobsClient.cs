@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Microsoft.Azure.Devices
 {
@@ -121,7 +122,7 @@ namespace Microsoft.Azure.Devices
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual Task<QueryResponse<ScheduledJob>> CreateQueryAsync(JobQueryOptions options = null, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<ScheduledJob> CreateQueryAsync(JobQueryOptions options = null, CancellationToken cancellationToken = default)
         {
             return _queryClient.CreateJobsQueryAsync(options, cancellationToken);
         }
@@ -280,10 +281,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="queryCondition">Query condition to evaluate which devices to run the job on.</param>
         /// <param name="twin">Twin object to use for the update.</param>
         /// <param name="startOnUtc">When to start the job, in UTC.</param>
-        /// <param name="scheduledJobsOptions">Optional parameters for scheduled twin update, i.e: <paramref name="scheduledJobsOptions.JobId"/> and <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/>.</param>
+        /// <param name="scheduledJobsOptions">Optional parameters for scheduled twin update, i.e: <paramref name="scheduledJobsOptions.JobId"/> and
+        /// <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/>.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>A job object.</returns>
-        /// <exception cref="ArgumentNullException">When the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="queryCondition"/> or <paramref name="twin"/> or <paramref name="startOnUtc"/> or <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="queryCondition"/>
+        /// or <paramref name="twin"/> or <paramref name="startOnUtc"/> or <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/> is null.</exception>
         /// <exception cref="ArgumentException">If the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="queryCondition"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided

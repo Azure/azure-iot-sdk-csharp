@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
@@ -32,49 +31,50 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_GetModulesOnDevice()
         {
+            // arrange
+
             const int moduleCount = 2;
-            string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
             string[] testModuleIds = new string[moduleCount];
             for (int i = 0; i < moduleCount; i++)
             {
-                testModuleIds[i] = $"IdentityLifecycleModule{i}-{Guid.NewGuid()}";
+                testModuleIds[i] = $"{nameof(ModulesClient_GetModulesOnDevice)}{i}-{Guid.NewGuid()}";
             }
 
-            Device device = null;
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
-            try
+            // Create a device to house the modules
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(ModulesClient_GetModulesOnDevice)).ConfigureAwait(false);
+
+
+            // Create the modules on the device
+            for (int i = 0; i < moduleCount; i++)
             {
-                // Create a device to house the modules
-                device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId)).ConfigureAwait(false);
-
-                // Create the modules on the device
-                for (int i = 0; i < moduleCount; i++)
-                {
-                    Module createdModule = await serviceClient.Modules.CreateAsync(
-                        new Module(testDeviceId, testModuleIds[i])).ConfigureAwait(false);
-                }
-
-                // Give the hub a moment
-                await Task.Delay(250).ConfigureAwait(false);
-
-                // List the modules on the test device
-                IEnumerable<Module> modulesOnDevice = await serviceClient.Devices.GetModulesAsync(testDeviceId).ConfigureAwait(false);
-
-                IList<string> moduleIdsOnDevice = modulesOnDevice
-                    .Select(module => module.Id)
-                    .ToList();
-
-                Assert.AreEqual(moduleCount, moduleIdsOnDevice.Count);
-                for (int i = 0; i < moduleCount; i++)
-                {
-                    moduleIdsOnDevice.Should().Contain(testModuleIds[i]);
-                }
+                Module createdModule = await serviceClient.Modules.CreateAsync(
+                    new Module(testDevice.Id, testModuleIds[i])).ConfigureAwait(false);
             }
-            finally
+
+            // Ensure devices are getable from the device registry before we act and assert
+            for (int i = 0; i < moduleCount; i++)
             {
-                await Task.WhenAll(testModuleIds.Select(moduleId => serviceClient.Modules.DeleteAsync(testDeviceId, moduleId))).ConfigureAwait(false);
-                await CleanupAsync(serviceClient, testDeviceId).ConfigureAwait(false);
+                await RetryOperationHelper
+                    .RunWithHubServiceRetryAsync(
+                        async () => _ = await serviceClient.Modules.GetAsync(testDevice.Id, testModuleIds[i]).ConfigureAwait(false),
+                        s_retryPolicy)
+                .ConfigureAwait(false);
+            }
+
+            // act
+            IEnumerable<Module> modulesOnDevice = await serviceClient.Devices.GetModulesAsync(testDevice.Id).ConfigureAwait(false);
+
+            IList<string> moduleIdsOnDevice = modulesOnDevice
+                .Select(module => module.Id)
+                .ToList();
+
+            // assert
+            moduleIdsOnDevice.Count.Should().Be(moduleCount);
+            for (int i = 0; i < moduleCount; i++)
+            {
+                moduleIdsOnDevice.Should().Contain(testModuleIds[i]);
             }
         }
 
@@ -127,12 +127,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 updatedModule.ManagedBy.Should().Be(managedByValue, "Module should have changed its managedBy value");
 
+                await serviceClient.Modules.DeleteAsync(testDeviceId, testModuleId).ConfigureAwait(false);
+
                 // Delete the device
                 // Deleting the device happens in the finally block as cleanup.
             }
             finally
             {
-                await serviceClient.Modules.DeleteAsync(testDeviceId, testModuleId).ConfigureAwait(false);
                 await CleanupAsync(serviceClient, testDeviceId).ConfigureAwait(false);
             }
         }
@@ -142,93 +143,71 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task ModulesClient_SetModulesETag_Works()
         {
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            string deviceId = _idPrefix + Guid.NewGuid();
-            string moduleId = _idPrefix + Guid.NewGuid();
-            var module = new Module(deviceId, moduleId);
-            Device device = await serviceClient.Devices.CreateAsync(new Device(deviceId)).ConfigureAwait(false);
-            module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
+            await using TestModule testModule = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix).ConfigureAwait(false);
 
             await RetryOperationHelper
                 .RunWithHubServiceRetryAsync(
                     async () =>
                     {
-                        module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
+                        testModule.Module = await serviceClient.Modules.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
                     },
                     s_retryPolicy)
                 .ConfigureAwait(false);
 
-            try
-            {
-                ETag oldEtag = module.ETag;
+            // Update the device once so that the last ETag falls out of date.
+            ETag oldEtag = testModule.Module.ETag;
+            testModule.Module.ManagedBy = "test";
+            testModule.Module = await serviceClient.Modules.SetAsync(testModule.Module).ConfigureAwait(false);
 
-                module.ManagedBy = "test";
+            // Deliberately set the ETag to an older version to test that the SDK is setting the If-Match
+            // header appropriately when sending the request.
+            testModule.Module.ETag = oldEtag;
 
-                // Update the device once so that the last ETag falls out of date.
-                module = await serviceClient.Modules.SetAsync(module).ConfigureAwait(false);
+            // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+            Func<Task> act = async () => await serviceClient.Modules.SetAsync(testModule.Module, true).ConfigureAwait(false);
+            var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
+            error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
+            error.And.IsTransient.Should().BeFalse();
 
-                // Deliberately set the ETag to an older version to test that the SDK is setting the If-Match
-                // header appropriately when sending the request.
-                module.ETag = oldEtag;
+            // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+            await FluentActions
+                .Invoking(async () => { testModule.Module = await serviceClient.Modules.SetAsync(testModule.Module, false).ConfigureAwait(false); })
+                .Should()
+                .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
-                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                Func<Task> act = async () => await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false);
-                var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
-                error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
-                error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
-                error.And.IsTransient.Should().BeFalse();
-
-                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
-                await FluentActions
-                    .Invoking(async () => { module = await serviceClient.Modules.SetAsync(module, false).ConfigureAwait(false); })
-                    .Should()
-                    .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-
-                // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
-                module.ManagedBy = "";
-                device.Status = ClientStatus.Enabled;
-                await FluentActions
-                    .Invoking(async () => { await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false); })
-                    .Should()
-                    .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
-            }
-            finally
-            {
-                try
-                {
-                    await serviceClient.Modules.DeleteAsync(deviceId, moduleId).ConfigureAwait(false);
-                    await CleanupAsync(serviceClient, deviceId).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    VerboseTestLogger.WriteLine($"Failed to clean up module due to {ex}");
-                }
-            }
+            // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
+            testModule.Module.ManagedBy = "";
+            await FluentActions
+                .Invoking(async () => { await serviceClient.Modules.SetAsync(testModule.Module, true).ConfigureAwait(false); })
+                .Should()
+                .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_DeleteModulesETag_Works()
         {
-            var serviceClient = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             string deviceId = _idPrefix + Guid.NewGuid();
             string moduleId = _idPrefix + Guid.NewGuid();
             var module = new Module(deviceId, moduleId);
             Device device = await serviceClient.Devices.CreateAsync(new Device(deviceId)).ConfigureAwait(false);
-            module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
-
-            await RetryOperationHelper
-                .RunWithHubServiceRetryAsync(
-                    async () =>
-                    {
-                        module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
-                    },
-                    s_retryPolicy)
-                .ConfigureAwait(false);
 
             try
             {
-                ETag oldEtag = module.ETag;
+                module = await serviceClient.Modules.CreateAsync(module).ConfigureAwait(false);
 
+                await RetryOperationHelper
+                    .RunWithHubServiceRetryAsync(
+                        async () =>
+                        {
+                            module = await serviceClient.Modules.GetAsync(deviceId, moduleId).ConfigureAwait(false);
+                        },
+                        s_retryPolicy)
+                    .ConfigureAwait(false);
+
+                ETag oldEtag = module.ETag;
                 module.ManagedBy = "test";
 
                 // Update the device once so that the last ETag falls out of date.
@@ -255,13 +234,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 try
                 {
-                    await serviceClient.Modules.DeleteAsync(deviceId, moduleId).ConfigureAwait(false);
                     await CleanupAsync(serviceClient, deviceId).ConfigureAwait(false);
-                }
-                catch (IotHubServiceException ex)
-                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubServiceErrorCode.DeviceNotFound)
-                {
-                    // device was already deleted during the normal test flow
                 }
                 catch (Exception ex)
                 {

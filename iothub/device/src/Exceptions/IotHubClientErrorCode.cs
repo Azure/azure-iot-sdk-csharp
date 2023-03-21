@@ -145,5 +145,11 @@ namespace Microsoft.Azure.Devices.Client
         /// For twin properties format see <see chef="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins#tags-and-properties-format"/>.
         /// </remarks>
         ArgumentInvalid = 400004,
+
+        /// <summary>
+        /// Something in the request payload is invalid. Check the error message for more information about what
+        /// is invalid.
+        /// </summary>
+        IotHubFormatError = 400006,
     }
 }

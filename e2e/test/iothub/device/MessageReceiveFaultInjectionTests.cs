@@ -196,12 +196,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
-                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                Message message = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string p1Value);
+                OutgoingMessage message = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string p1Value);
 
                 testDeviceCallbackHandler.ExpectedMessageSentByService = message;
 

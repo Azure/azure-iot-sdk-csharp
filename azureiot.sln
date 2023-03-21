@@ -138,6 +138,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8208
 		provisioning\service\samples\readme.md = provisioning\service\samples\readme.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvokeDeviceMethod", "iothub\service\samples\getting started\InvokeDeviceMethod\InvokeDeviceMethod.csproj", "{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\getting started\SimulatedDevice\SimulatedDevice.csproj", "{D3C4B21A-D79C-4DF9-919B-466680654C6B}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "getting started", "getting started", "{01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how to guides", "how to guides", "{23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}"
@@ -150,13 +154,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupCertificateVerificatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SymmetricKeySample", "provisioning\device\samples\how to guides\SymmetricKeySample\SymmetricKeySample.csproj", "{094C77B4-5921-439B-91CB-74555275C2B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvokeDeviceMethod", "iothub\service\samples\getting started\InvokeDeviceMethod\InvokeDeviceMethod.csproj", "{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupSample", "provisioning\service\samples\getting started\EnrollmentGroupSample\EnrollmentGroupSample.csproj", "{83170B36-375E-40A9-B25D-999072362626}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IndividualEnrollmentSample", "provisioning\service\samples\getting started\IndividualEnrollmentSample\IndividualEnrollmentSample.csproj", "{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDevice", "iothub\device\samples\getting started\SimulatedDevice\SimulatedDevice.csproj", "{D3A771DC-1763-4A14-952C-CD69433FEC74}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatedDeviceWithCommand", "iothub\device\samples\getting started\SimulatedDeviceWithCommand\SimulatedDeviceWithCommand.csproj", "{0C078DE2-1785-44A3-8235-C990FA680F76}"
 EndProject
@@ -185,12 +185,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisi
 		e2e\test\prerequisites\readme.md = e2e\test\prerequisites\readme.md
 		e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep = e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep
 		e2e\test\prerequisites\E2ETestsSetup\test-resources.json = e2e\test\prerequisites\E2ETestsSetup\test-resources.json
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DpsCustomAllocator", "DpsCustomAllocator", "{FE579E0D-D55A-495E-A758-B611BA8C5C24}"
-	ProjectSection(SolutionItems) = preProject
-		e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\function.proj = e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\function.proj
-		e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\run.csx = e2e\test\prerequisites\E2ETestsSetup\DpsCustomAllocatorFunctionFiles\run.csx
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HubRoutingSample", "iothub\device\samples\how to guides\HubRoutingSample\HubRoutingSample.csproj", "{8F651FE8-BD4B-45C8-A57C-69A85DBAE366}"
@@ -339,6 +333,14 @@ Global
 		{071A6BA6-1C2B-4E05-A80C-03B6F73B9979}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{071A6BA6-1C2B-4E05-A80C-03B6F73B9979}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{071A6BA6-1C2B-4E05-A80C-03B6F73B9979}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3C4B21A-D79C-4DF9-919B-466680654C6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3C4B21A-D79C-4DF9-919B-466680654C6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3C4B21A-D79C-4DF9-919B-466680654C6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3C4B21A-D79C-4DF9-919B-466680654C6B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DCBD8161-B03B-48E7-8827-7E5D271181AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DCBD8161-B03B-48E7-8827-7E5D271181AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCBD8161-B03B-48E7-8827-7E5D271181AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -355,10 +357,6 @@ Global
 		{094C77B4-5921-439B-91CB-74555275C2B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{094C77B4-5921-439B-91CB-74555275C2B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{094C77B4-5921-439B-91CB-74555275C2B8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{83170B36-375E-40A9-B25D-999072362626}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{83170B36-375E-40A9-B25D-999072362626}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83170B36-375E-40A9-B25D-999072362626}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -367,10 +365,6 @@ Global
 		{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D3A771DC-1763-4A14-952C-CD69433FEC74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D3A771DC-1763-4A14-952C-CD69433FEC74}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D3A771DC-1763-4A14-952C-CD69433FEC74}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D3A771DC-1763-4A14-952C-CD69433FEC74}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0C078DE2-1785-44A3-8235-C990FA680F76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0C078DE2-1785-44A3-8235-C990FA680F76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C078DE2-1785-44A3-8235-C990FA680F76}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -453,21 +447,20 @@ Global
 		{071A6BA6-1C2B-4E05-A80C-03B6F73B9979} = {280F3839-7D12-4569-B932-6E280497971E}
 		{8415821D-5A32-4CE7-8203-CF457229F2A9} = {03B0C7AD-4F92-4429-8111-7981802ECE79}
 		{82088ECF-6C0D-4249-B40E-B0EF2D9A1436} = {873E717F-49D6-41E2-B073-6474B160A0F2}
+		{B2ADC8B7-7DCF-4657-B34A-F202E7FC5AB8} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
+		{D3C4B21A-D79C-4DF9-919B-466680654C6B} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D} = {82088ECF-6C0D-4249-B40E-B0EF2D9A1436}
 		{23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3} = {82088ECF-6C0D-4249-B40E-B0EF2D9A1436}
 		{DCBD8161-B03B-48E7-8827-7E5D271181AD} = {01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}
 		{ED719662-D4F8-4014-951F-418169AEB876} = {23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}
 		{4D529C9A-6644-4222-95C8-87EA17B8D37A} = {23BE31A9-AF2A-42C6-B0B9-C5B431E6E9C3}
 		{094C77B4-5921-439B-91CB-74555275C2B8} = {8415821D-5A32-4CE7-8203-CF457229F2A9}
-		{A9058CEC-E0EB-4461-A1B0-4C6CB83A8AAC} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
 		{83170B36-375E-40A9-B25D-999072362626} = {01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}
 		{8F8EF9CB-EF6A-4E39-9CE1-8CD06C1AB255} = {01ED1C8E-E1FC-46B9-A05D-DFF217F20F9D}
-		{D3A771DC-1763-4A14-952C-CD69433FEC74} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{0C078DE2-1785-44A3-8235-C990FA680F76} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}
 		{F4DA6FA4-7655-4116-994B-9B2E3D3522C0} = {E94FE5CB-3D5E-4E2E-97F6-73D27E1F6491}
 		{CC532097-89B3-4971-97CB-A790573E38DA} = {719D18A7-E943-461B-B777-0AAEC43916F5}
 		{1C8A8E21-1EBC-4771-BB17-1E81434168B8} = {662CE01D-7A7F-48D8-80CE-5DC9C60677E8}
-		{FE579E0D-D55A-495E-A758-B611BA8C5C24} = {1C8A8E21-1EBC-4771-BB17-1E81434168B8}
 		{8F651FE8-BD4B-45C8-A57C-69A85DBAE366} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
 		{CBAB50ED-91E9-42D7-878F-B547E98B953F} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
 		{639F4FA5-FAD5-4668-B2CE-E84878A7C1F9} = {9BEF9B8B-7800-4C14-819F-F736DB4F1426}

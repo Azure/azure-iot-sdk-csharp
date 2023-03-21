@@ -178,8 +178,7 @@ $assemblyRootNames = @(
     "Microsoft.Azure.Devices.Client",
     "Microsoft.Azure.Devices",
     "Microsoft.Azure.Devices.Provisioning.Client",
-    "Microsoft.Azure.Devices.Provisioning.Service",
-    "Microsoft.Azure.Devices.Authentication"
+    "Microsoft.Azure.Devices.Provisioning.Service"
 )
 
 # All of the files from the build
@@ -187,8 +186,7 @@ $assemblyFilePath = @(
     (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\iothub\device\src\bin\Release\netstandard2.0\" -ChildPath ($assemblyRootNames[0] + ".dll"))),
     (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\iothub\service\src\bin\Release\netstandard2.0\" -ChildPath ($assemblyRootNames[1] + ".dll"))),
     (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\provisioning\device\src\bin\Release\netstandard2.0\" -ChildPath ($assemblyRootNames[2] + ".dll"))),
-    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\provisioning\service\src\bin\Release\netstandard2.0\" -ChildPath ($assemblyRootNames[3] + ".dll"))),
-    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\authentication\src\bin\Release\netstandard2.0\" -ChildPath ($assemblyRootNames[4] + ".dll")))
+    (Join-Path -Path $repoRootPath -ChildPath (Join-Path -Path "\provisioning\service\src\bin\Release\netstandard2.0\" -ChildPath ($assemblyRootNames[3] + ".dll")))
 )
 
 # Get the last tag from the git repository and do the comparison
@@ -296,7 +294,6 @@ Set-Location -Path $compareDirectory
 #
 # 9       3       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Client.md
 # 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Client.md
-# 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Authentication.md
 # 2       0       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.Provisioning.Service.md
 # 7       9       sdk_design_docs/CSharp/main/Microsoft.Azure.Devices.md
 $gitDiffOutput = git diff --ignore-all-space --numstat

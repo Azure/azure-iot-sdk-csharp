@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        protected internal IotHubClientException()
+        public IotHubClientException()
             : base()
         {
         }
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="message">The message that describes the error.</param>
         /// <param name="errorCode">The specific error code.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected internal IotHubClientException(string message, IotHubClientErrorCode errorCode = IotHubClientErrorCode.Unknown, Exception innerException = null)
+        public IotHubClientException(string message, IotHubClientErrorCode errorCode = IotHubClientErrorCode.Unknown, Exception innerException = null)
             : base(message, innerException)
         {
             ErrorCode = errorCode;
@@ -69,12 +69,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
-        public string TrackingId { get; protected internal set; } = string.Empty;
+        public string TrackingId { get; set; } = string.Empty;
 
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient { get; protected internal set; }
+        public bool IsTransient { get; set; }
 
         /// <summary>
         /// The specific error code.

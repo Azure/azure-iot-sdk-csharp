@@ -34,6 +34,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             });
 
         private X509Certificate2 _authCertificate;
+
+        /// <summary>
+        /// A single service client instance to be used by all the tests that simply need one initialized with a connection string.
+        /// </summary>
+        /// <remarks>
+        /// It is better for tests to use a single instance so we don't run out of sockets due to the HttpClient dispose anti-pattern.
+        /// <para>
+        /// We won't dispose this client either, but it'll be fine because the test process will exit and memory leaks aren't a concern then.
+        /// </para>
+        /// </remarks>
         internal static IotHubServiceClient ServiceClient { get; } = new(TestConfiguration.IotHub.ConnectionString);
 
         private TestDevice(Device device, IAuthenticationMethod authenticationMethod)
@@ -79,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Device identity object.
         /// </summary>
-        internal Device Device { get; private set; }
+        internal Device Device { get; set; }
 
         internal IotHubDeviceClient DeviceClient { get; private set; }
 
@@ -112,17 +122,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// Sometimes the just newly created device can fail to connect if there is lag in the hub for the identity existing.
         /// Retry a few times to prevent test failures.
         /// </summary>
-        internal async Task OpenWithRetryAsync()
+        internal async Task OpenWithRetryAsync(CancellationToken ct = default)
         {
             if (DeviceClient == null)
             {
                 throw new InvalidOperationException("The device client has not been initialized. Call CreateDeviceClient() first.");
             }
-            await OpenWithRetryAsync(DeviceClient).ConfigureAwait(false);
+            await OpenWithRetryAsync(DeviceClient, ct).ConfigureAwait(false);
         }
 
         /// <summary>
-        internal static async Task OpenWithRetryAsync(IotHubDeviceClient client)
+        internal static async Task OpenWithRetryAsync(IotHubDeviceClient client, CancellationToken ct = default)
         {
             int attempt = 1;
             while (true)
@@ -130,14 +140,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 try
                 {
                     VerboseTestLogger.WriteLine("Opening device client...");
-                    await client.OpenAsync().ConfigureAwait(false);
+                    await client.OpenAsync(ct).ConfigureAwait(false);
                     break;
                 }
                 catch (IotHubClientException ex) when (ex.ErrorCode == IotHubClientErrorCode.Unauthorized
                     && attempt++ < 4)
                 {
                     VerboseTestLogger.WriteLine($"Attempt #{attempt} failed to open device connection due to {ex}");
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(1000, ct).ConfigureAwait(false);
                 }
             }
         }

@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -142,13 +141,23 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     var notification = new FileUploadCompletionNotification("invalid-correlation-id", uploadTask.IsCompleted);
 
-                    // act
-                    Func<Task> act = async () => await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
+                    // act and assert
 
-                    // assert
-                    var error = await act.Should().ThrowAsync<IotHubClientException>();
-                    error.And.ErrorCode.Should().Be(IotHubClientErrorCode.ServerError);
-                    error.And.IsTransient.Should().BeTrue();
+                    try
+                    {
+                        await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
+                    }
+                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.ServerError)
+                    {
+                        // Gateway V1 flow
+                    }
+                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.IotHubFormatError)
+                    {
+                        // Gateway V2 flow
+                        ex.Message.Should().Contain("Cannot decode correlation_id");
+                        ex.TrackingId.Should().NotBe(string.Empty);
+                        ex.IsTransient.Should().BeFalse();
+                    }
                 }
             }
         }

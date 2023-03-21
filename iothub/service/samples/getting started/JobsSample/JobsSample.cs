@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Microsoft.Azure.Devices.Samples.JobsSample
 {
@@ -67,11 +68,9 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
             }
 
             // *************************************** Get all Jobs ***************************************
-            QueryResponse<ScheduledJob> queryResults = await _jobClient.ScheduledJobs.CreateQueryAsync();
+            AsyncPageable<ScheduledJob> queryResults =  _jobClient.ScheduledJobs.CreateQueryAsync();
 
-            IEnumerable<ScheduledJob> getJobs = queryResults.CurrentPage;
-
-            foreach (ScheduledJob job in getJobs)
+            await foreach (ScheduledJob job in queryResults)
             {
                 Console.WriteLine(JsonSerializer.Serialize(job, new JsonSerializerOptions { WriteIndented = true }));
             }

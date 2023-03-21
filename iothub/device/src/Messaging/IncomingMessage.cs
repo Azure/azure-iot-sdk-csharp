@@ -7,8 +7,9 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure that represents the message that is received from IoT hub.
+    /// An incoming message sent by a service client to this device or module using cloud-to-device messaging.
     /// </summary>
+    /// <seealso href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
     public class IncomingMessage
     {
         private readonly byte[] _payload;
@@ -168,14 +169,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 string payloadString = PayloadConvention.PayloadEncoder.ContentEncoding.GetString(_payload);
-
-                // IncomingMessage payload isn't required to always be a json payload.
-                // If the type to cast payload to is string then return the payload string.
-                // Else, deserialize it into the specified type.
-
-                payload = typeof(T) == typeof(string)
-                    ? (T)(object)payloadString
-                    : PayloadConvention.PayloadSerializer.DeserializeToType<T>(payloadString);
+                payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(payloadString);
 
                 return true;
             }

@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Copies the message instance's properties to the AMQP message instance.
         /// </summary>
-        internal static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, Message data, bool copyUserProperties = true)
+        internal static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, OutgoingMessage data, bool copyUserProperties = true)
         {
             amqpMessage.Properties.MessageId = data.MessageId;
 
@@ -182,12 +182,12 @@ namespace Microsoft.Azure.Devices
             return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
         }
 
-        internal static AmqpMessage MessageToAmqpMessage(Message message)
+        internal static AmqpMessage MessageToAmqpMessage(OutgoingMessage message)
         {
             Argument.AssertNotNull(message, nameof(message));
 
             AmqpMessage amqpMessage = message.HasPayload
-                ? AmqpMessage.Create(new MemoryStream(message.Payload), true)
+                ? AmqpMessage.Create(new MemoryStream(message.GetPayloadObjectBytes()), true)
                 : AmqpMessage.Create();
 
             UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);

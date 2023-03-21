@@ -122,52 +122,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void ModuleClient_ValidateIncomingMessage()
-        {
-            // arrange
-            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes("test message"))
-            {
-                InputName = "endpoint1",
-                MessageId = "123",
-                CorrelationId = "1234",
-                SequenceNumber = 123,
-                To = "destination",
-                UserId = "id",
-                CreatedOnUtc = new DateTimeOffset(DateTime.MinValue),
-                EnqueuedOnUtc = new DateTimeOffset(DateTime.MinValue),
-                ExpiresOnUtc = new DateTimeOffset(DateTime.MinValue),
-                MessageSchema = "schema",
-                ContentType = "type",
-                ContentEncoding = "encoding",
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
-
-            // act
-            var testMessage1 = new IncomingMessage(Encoding.UTF8.GetBytes("test message"));
-
-            // assert
-            testMessage.TryGetPayload(out bool boolPayload);
-            boolPayload.Should().BeFalse();
-            testMessage.TryGetPayload(out string payload);
-            payload.Should().Be("test message");
-            testMessage.InputName.Should().Be("endpoint1");
-            testMessage.MessageId.Should().Be("123");
-            testMessage.CorrelationId.Should().Be("1234");
-            testMessage.SequenceNumber.Should().Be(123);
-            testMessage.To.Should().Be("destination");
-            testMessage.UserId.Should().Be("id");
-            testMessage.CreatedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
-            testMessage.EnqueuedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
-            testMessage.ExpiresOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
-            testMessage.MessageSchema.Should().Be("schema");
-            testMessage.ContentType.Should().Be("type");
-            testMessage.ContentEncoding.Should().Be("encoding");
-            testMessage.Properties.Should().NotBeNull();
-            testMessage.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
-            testMessage1.InputName.Should().BeNull();
-        }
-
-        [TestMethod]
         public void ModuleClient_ValidateTelemetryMessage()
         {
             // arrange and act

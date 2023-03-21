@@ -14,6 +14,7 @@ This folder contains simple samples showing how to use the various features of M
 - [Registry manager][reg-man-sample] sample
 - [Service client][service-client-sample] sample
 - [Plug and Play services][pnp-service-sample] sample
+- [Read device-to-cloud messages][read-d2c-messages-sample] sample
 - [Digital twin clients][digital-twin-client-sample] sample
 - [File upload notification receiver][file-upload-notification-receiver-sample] sample
 - [Azure SAS credential authentication][azure-sas-credential-authentication-sample]  sample
@@ -35,3 +36,4 @@ This folder contains simple samples showing how to use the various features of M
 [import-export-with-managed-identity-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/ImportExportDevicesWithManagedIdentitySample
 [role-based-authentication-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/RoleBasedAuthenticationSample
 [d-invoke-device-method-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/InvokeDeviceMethod
+[read-d2c-messages-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/ReadD2cMessages

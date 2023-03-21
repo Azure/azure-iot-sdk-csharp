@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
-        protected internal ProvisioningClientException(string message, bool isTransient)
+        public ProvisioningClientException(string message, bool isTransient)
             : this(message, null, isTransient)
         {
         }
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
         /// <param name="innerException">The inner exception.</param>
-        protected internal ProvisioningClientException(string message, Exception innerException, bool isTransient)
+        public ProvisioningClientException(string message, Exception innerException, bool isTransient)
             : base(message, innerException)
         {
             IsTransient = isTransient;
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="isTransient">If the error is transient and the application should retry at a later time.</param>
         /// <param name="errorCode">The specific 6-digit error code in the DPS response, if available.</param>
         /// <param name="trackingId">Service reported tracking Id.</param>
-        protected internal ProvisioningClientException(string message, Exception innerException, bool isTransient, int errorCode, string trackingId)
+        public ProvisioningClientException(string message, Exception innerException, bool isTransient, int errorCode, string trackingId)
             : base(message, innerException)
         {
             IsTransient = isTransient;

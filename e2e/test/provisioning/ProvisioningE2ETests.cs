@@ -583,7 +583,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         #endregion InvalidGlobalAddress
 
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+        private async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
@@ -605,7 +605,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+        private async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
@@ -650,6 +650,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
 
             bool shouldCleanupEnrollment = groupId == null || groupId != TestConfiguration.Provisioning.X509GroupEnrollmentName;
+            string deviceId = null;
 
             ProvisioningClientOptions clientOptions = CreateProvisioningClientOptionsFromName(transportSettings);
             AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
@@ -693,6 +694,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     try
                     {
                         result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                        deviceId = result.DeviceId;
                         break;
                     }
                     // Catching all ProvisioningClientException as the status code is not the same for Mqtt, Amqp and Http.
@@ -724,6 +726,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 else
                 {
                     VerboseTestLogger.WriteLine($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
+                }
+
+                if (deviceId != null)
+                {
+                    await TestDevice.ServiceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
                 }
 
                 if (authMethod is AuthenticationProviderX509 x509Auth)
@@ -1082,7 +1089,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AuthenticationProvider authProvider,
             string groupId)
         {
-            using ProvisioningServiceClient dpsClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+            using var dpsClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
 
             try
             {

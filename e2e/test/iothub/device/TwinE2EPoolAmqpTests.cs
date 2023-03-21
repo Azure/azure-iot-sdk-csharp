@@ -129,10 +129,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString()).ConfigureAwait(false);
+                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(testDevice.DeviceClient, testDevice.Id, Guid.NewGuid().ToString()).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
@@ -167,10 +167,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
                 VerboseTestLogger.WriteLine($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
-                Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
+                Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(testDevice.DeviceClient, propName, propValue).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];

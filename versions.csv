@@ -1,5 +1,5 @@
 AssemblyPath, Version
-iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 2.0.0-preview003
-iothub\service\src\Microsoft.Azure.Devices.csproj, 2.0.0-preview003
-provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 2.0.0-preview003
-provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 2.0.0-preview003
+iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 2.0.0-preview004
+iothub\service\src\Microsoft.Azure.Devices.csproj, 2.0.0-preview004
+provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 2.0.0-preview004
+provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 2.0.0-preview004

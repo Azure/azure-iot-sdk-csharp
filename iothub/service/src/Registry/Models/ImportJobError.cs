@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     /// Any errors that occur during a bulk import job can be deserialized with this class from a blob file named "importErrors.log"
     /// in the container specified during import.
     /// </remarks>
-    public class ImportJobError
+    public sealed class ImportJobError
     {
         /// <summary>
         /// The name of the blob file that contains the import errors.
