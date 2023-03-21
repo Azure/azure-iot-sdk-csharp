@@ -7,10 +7,6 @@ namespace Microsoft.Azure.IoT.Thief.Device
 {
     internal class IotHubConnectionStringHelper
     {
-        public string HostName { get; private set; }
-
-        public string DeviceId { get; private set; }
-
         public IotHubConnectionStringHelper(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
@@ -34,5 +30,9 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 }
             }
         }
+
+        public string HostName { get; private set; }
+
+        public string DeviceId { get; private set; }
     }
 }
