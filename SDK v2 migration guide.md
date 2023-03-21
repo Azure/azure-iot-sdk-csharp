@@ -513,6 +513,10 @@ These span across all service clients.
 | `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` | See³ |
 | `ProvisioningServiceClientException` | `ProvisioningServiceException` | |
 | `ProvisioningClientCapabilities.IotEdge` | `InitialClientCapabilities.IsIotEdge` | Boolean properties should start with a verb, usually "Is". |
+| `Query` | Class removed | `AsyncPageable` type replaces this type and is returned by all query functions now |
+| `QueryResult` | Class removed | `AsyncPageable` type replaces this type and is returned by all query functions now |
+| `QueryResultType` | Class removed | The `AsyncPageable` returned by each Query API has a hardcoded type now (`IndividualEnrollment`, `EnrollmentGroup`, or `DeviceRegistrationState`) |
+
 
 ### Security provider client
 
