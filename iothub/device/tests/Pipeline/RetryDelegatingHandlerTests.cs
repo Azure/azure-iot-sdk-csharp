@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Specialized;
+using Microsoft.Azure.Devices.Client.Tests;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -368,7 +369,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetrySetRetryPolicyVerifyInternalsSuccess()
+        public async Task RetryDelegatingHandler_SetRetryPolicyVerifyInternals_Succeeds()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -411,77 +412,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task CloseAsyncCancelPendingOpenAsync()
+        public async Task RetryDelegatingHandler_OpenAsyncWhenClientIsClosing_Exits()
         {
-            // arrange
-            var contextMock = new PipelineContext
-            {
-                RetryPolicy = new TestRetryOncePolicy(),
-                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
-            };
 
-            var nextHandlerMock = new Mock<IDelegatingHandler>();
-            bool openInvoked = false;
-            nextHandlerMock
-                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-                .Returns(async (CancellationToken ct) =>
-                {
-                    try
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(5), ct);
-                        openInvoked = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Out.WriteLine(ex);
-                    }
-                    finally
-                    {
-                        Console.Out.WriteLine("done");
-                    }
-                });
-/*            nextHandlerMock
-                .Setup(x => x.CloseAsync(It.IsAny<CancellationToken>()))
-                .Returns(async (CancellationToken ct) =>
-                {
-                    try
-                    {
-                        while (!openInvoked)
-                        {
-                            await Task.Delay(TimeSpan.FromSeconds(1), ct);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Out.WriteLine(ex);
-                    }
-                    finally
-                    {
-                        Console.Out.WriteLine("done");
-                    }
-                });*/
-
-            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
-            //await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-
-            // act
-            Func<Task> open = () => retryDelegatingHandler.OpenAsync(CancellationToken.None);
-
-            // We are not awaiting the CloseAsync() task.
-            // The scenario that we want to test here is that if OpenAsync() is called while the transport layer is closing, i.e. CloseAsync() execution is in progress but hasn't completed yet
-            // then we expect the in-progress OpenAsync() call to get canceled.
-            // If OpenAsync() is called after CloseAsync() has completed successfully then we would expect OpenAsync() to complete by successfully reopening the connection.
-            await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
-
-            // assert
-            await open.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
-            nextHandlerMock.Verify(
-                x => x.OpenAsync(It.IsAny<CancellationToken>()),
-                Times.Once);
         }
 
+
         [TestMethod]
-        public async Task CloseAsyncCancelPendingSendTelemetryAsync()
+        public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingOpenAsync()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -492,10 +430,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
-                .Setup(x => x.CloseAsync(It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
-            nextHandlerMock
-                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(async (CancellationToken ct) =>
                 {
                     await Task.Delay(TimeSpan.FromSeconds(5), ct);
@@ -504,20 +439,53 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // act
-            Func<Task> sendTelemetry = () => retryDelegatingHandler.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), CancellationToken.None);
+            Task open = retryDelegatingHandler.OpenAsync(CancellationToken.None);
             await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            await sendTelemetry.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
+            await open.ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
             nextHandlerMock.Verify(
-                x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()),
+                x => x.OpenAsync(It.IsAny<CancellationToken>()),
                 Times.Once);
-
-            //using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
         }
 
         [TestMethod]
-        public async Task OpenAsyncAfterCloseAsyncThrowsObjectDisposedException()
+        public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingSendTelemetryAsync()
+        {
+            // arrange
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new TestRetryOncePolicy(),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+            nextHandlerMock
+               .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+               .Returns(Task.CompletedTask);
+            nextHandlerMock
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(async (TelemetryMessage message, CancellationToken ct) =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), ct);
+                });
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            // act
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            Task sendTelemetry = retryDelegatingHandler.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), CancellationToken.None);
+            await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            await sendTelemetry.ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
+            nextHandlerMock.Verify(
+                x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandler_OpenAsyncAfterCloseAsync_Succeeds()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -547,7 +515,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task SendTelemetryAsyncAfterCloseAsyncThrowsObjectDisposedException()
+        public async Task RetryDelegatingHandler_SendTelemetryAsyncAfterCloseAsync_Throws()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -577,7 +545,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task OpenAsyncAfterDisposeThrowsObjectDisposedException()
+        public async Task RetryDelegatingHandler_OpenAsyncAfterDispose_Throws()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -604,7 +572,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task SendTelemetryAsyncAfterDisposeThrowsObjectDisposedException()
+        public async Task RetryDelegatingHandler_SendTelemetryAsyncAfterDispose_Throws()
         {
             // arrange
             var contextMock = new PipelineContext

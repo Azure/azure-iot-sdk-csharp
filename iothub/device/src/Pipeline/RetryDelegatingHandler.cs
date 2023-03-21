@@ -473,61 +473,67 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // The current behavior does not support open->close->open
             if (_isDisposed)
             {
-                throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
             }
-
-            if (GetClientTransportStatus() == ClientTransportStatus.Open)
+            switch (GetClientTransportStatus())
             {
-                return;
-            }
+                case ClientTransportStatus.Open:
+                case ClientTransportStatus.Opening:
+                    return;
 
-            if (GetClientTransportStatus() == ClientTransportStatus.Closed)
-            {
-                // Create a new cancellation token source that will be signaled by any subsequently invoked CloseAsync() for cancellation.
-                _cancelPendingOperationsCts = new CancellationTokenSource();
-            }
+                case ClientTransportStatus.Closing:
+                    throw new InvalidOperationException($"The client is currently closing. Wait until {nameof(CloseAsync)} completes and then invoke {nameof(OpenAsync)} again.");
 
-            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
-
-            await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
-            try
-            {
-                if (GetClientTransportStatus() == ClientTransportStatus.Closed)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, "Opening connection", nameof(OpenAsync));
-
-                    // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
-                    // we are returning the corresponding connection status change event => disconnected: retry_expired.
-                    try
+                case ClientTransportStatus.Closed:
                     {
-                        await OpenInternalAsync(operationCts.Token).ConfigureAwait(false);
-                    }
-                    catch (Exception ex) when (!Fx.IsFatal(ex))
-                    {
-                        HandleConnectionStatusExceptions(ex, true);
-                        throw;
-                    }
+                        // Create a new cancellation token source that will be signaled by any subsequently invoked CloseAsync() for cancellation.
+                        _cancelPendingOperationsCts = new CancellationTokenSource();
+                        SetClientTransportStatus(ClientTransportStatus.Opening);
 
-                    if (!_isDisposed)
-                    {
-                        SetClientTransportStatus(ClientTransportStatus.Open);
+                        using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
-                        // Send the request for transport close notification.
-                        _transportClosedTask = HandleDisconnectAsync();
-                    }
-                    else
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, "Race condition: Disposed during opening.", nameof(OpenAsync));
+                        await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
+                        try
+                        {
+                            if (GetClientTransportStatus() == ClientTransportStatus.Opening)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Info(this, "Opening connection", nameof(OpenAsync));
 
-                        _handleDisconnectCts.Cancel();
+                                // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
+                                // we are returning the corresponding connection status change event => disconnected: retry_expired.
+                                try
+                                {
+                                    await OpenInternalAsync(operationCts.Token).ConfigureAwait(false);
+                                }
+                                catch (Exception ex) when (!Fx.IsFatal(ex))
+                                {
+                                    HandleConnectionStatusExceptions(ex, true);
+                                    throw;
+                                }
+
+                                if (!_isDisposed)
+                                {
+                                    SetClientTransportStatus(ClientTransportStatus.Open);
+
+                                    // Send the request for transport close notification.
+                                    _transportClosedTask = HandleDisconnectAsync();
+                                }
+                                else
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Info(this, "Race condition: Disposed during opening.", nameof(OpenAsync));
+
+                                    _handleDisconnectCts.Cancel();
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            _clientOpenSemaphore?.Release();
+                        }
                     }
-                }
-            }
-            finally
-            {
-                _clientOpenSemaphore?.Release();
+                    break;
             }
         }
 
@@ -714,7 +720,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                if (GetClientTransportStatus() == ClientTransportStatus.Closed)
+                if (GetClientTransportStatus() != ClientTransportStatus.Open)
                 {
                     throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
                 }
@@ -953,13 +959,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (!_isDisposed)
                 {
                     _isDisposing = true;
-                    SetClientTransportStatus(ClientTransportStatus.Closing);
+
+                    if (GetClientTransportStatus() != ClientTransportStatus.Closed)
+                    {
+                        SetClientTransportStatus(ClientTransportStatus.Closing);
+                    }
                     base.Dispose(disposing);
 
                     if (disposing)
                     {
                         _handleDisconnectCts?.Cancel();
-                        _cancelPendingOperationsCts?.Cancel();
 
                         var disposables = new List<IDisposable>
                         {
