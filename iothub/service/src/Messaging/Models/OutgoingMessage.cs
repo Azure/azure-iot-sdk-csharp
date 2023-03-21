@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a telemetry message with the specified payload.
+        /// Creates a cloud-to-device message with the specified payload.
         /// </summary>
         /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
         /// <param name="payload">The payload will be serialized with
