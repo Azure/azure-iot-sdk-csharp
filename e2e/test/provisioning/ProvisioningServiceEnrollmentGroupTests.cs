@@ -149,6 +149,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await provisioningServiceClient.EnrollmentGroups
                 .CreateOrUpdateAsync(enrollmentGroup).ConfigureAwait(false);
 
+            int maxCount = 5;
+            int currentCount = 0;
+
             try
             {
                 string queryString = "SELECT * FROM enrollmentGroups";
@@ -158,6 +161,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     // Just checking that the returned type was, in fact, an enrollment group and that deserialization
                     // of the always-present field works.
                     enrollment.Id.Should().NotBeNull();
+
+                    // Don't want to query all the enrollment groups. Just query a few.
+                    if (++currentCount >= maxCount)
+                    {
+                        return;
+                    }
                 }
             }
             finally
