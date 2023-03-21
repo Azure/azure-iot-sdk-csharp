@@ -21,10 +21,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     public class EnrollmentGroupsClient
     {
-        private const string ServiceName = "enrollmentGroups";
-        private const string EnrollmentIdUriFormat = "{0}/{1}";
-        private const string EnrollmentAttestationName = "attestationmechanism";
-        private const string EnrollmentAttestationUriFormat = "{0}/{1}/{2}";
+        private const string EnrollmentsUriFormat = "enrollmentGroups";
+        private const string EnrollmentIdUriFormat = "enrollmentGroups/{0}";
+        private const string EnrollmentAttestationUriFormat = "enrollmentGroups/{0}/attestationmechanism";
+        private const string EnrollmentGroupQueryUriFormat = "enrollmentGroups/query";
 
         private readonly IContractApiHttp _contractApiHttp;
         private readonly RetryHandler _internalRetryHandler;
@@ -260,17 +260,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The service expects a SQL-like query such as
         ///
         /// <c>"SELECT * FROM enrollmentGroups"</c>.
-        ///
-        /// For each iteration, the query will return a page of results. The maximum number of
-        /// items per page can be specified by the pageSize parameter.
         /// </remarks>
         /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be null.</param>
-        /// <param name="pageSize">The int with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The iterable set of query results.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="query"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         /// <example>
         /// Iterate enrollment groups:
@@ -282,7 +277,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// }
         /// </code>
         /// </example>
-        public AsyncPageable<EnrollmentGroup> CreateQuery(string query, int pageSize = 0, CancellationToken cancellationToken = default)
+        public AsyncPageable<EnrollmentGroup> CreateQuery(string query, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, "Creating query.", nameof(CreateQuery));
@@ -296,13 +291,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 async Task<Page<EnrollmentGroup>> nextPageFunc(string continuationToken, int? pageSizeHint)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    return await QueryBuilder.BuildAndSendRequestAsync<EnrollmentGroup>(_contractApiHttp, _internalRetryHandler, query, GetEnrollmentUri(), continuationToken, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                    return await QueryBuilder.BuildAndSendRequestAsync<EnrollmentGroup>(_contractApiHttp, _internalRetryHandler, query, GetEnrollmentGroupQueryUri(), continuationToken, pageSizeHint, cancellationToken).ConfigureAwait(false);
                 }
 
                 async Task<Page<EnrollmentGroup>> firstPageFunc(int? pageSizeHint)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    return await QueryBuilder.BuildAndSendRequestAsync<EnrollmentGroup>(_contractApiHttp, _internalRetryHandler, query, GetEnrollmentUri(), null, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                    return await QueryBuilder.BuildAndSendRequestAsync<EnrollmentGroup>(_contractApiHttp, _internalRetryHandler, query, GetEnrollmentGroupQueryUri(), null, pageSizeHint, cancellationToken).ConfigureAwait(false);
                 }
 
                 return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, null);
@@ -364,19 +359,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             if (string.IsNullOrWhiteSpace(enrollmentGroupId))
             {
-                return new Uri(ServiceName, UriKind.Relative);
+                return new Uri(EnrollmentsUriFormat, UriKind.Relative);
             }
 
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentIdUriFormat, ServiceName, enrollmentGroupId), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentIdUriFormat, enrollmentGroupId), UriKind.Relative);
         }
 
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
             return new Uri(
-                string.Format(CultureInfo.InvariantCulture, EnrollmentAttestationUriFormat, ServiceName, enrollmentGroupId, EnrollmentAttestationName),
+                string.Format(CultureInfo.InvariantCulture, EnrollmentAttestationUriFormat, enrollmentGroupId),
                 UriKind.Relative);
+        }
+
+        private static Uri GetEnrollmentGroupQueryUri()
+        {
+            return new Uri(EnrollmentGroupQueryUriFormat, UriKind.Relative);
         }
     }
 }
