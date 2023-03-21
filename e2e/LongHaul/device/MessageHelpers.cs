@@ -9,11 +9,11 @@ namespace Microsoft.Azure.IoT.Thief.Device
         /// <summary>
         /// Reported max of entire payload is 256k, but we'll hold back 1 k as fudge factor for things we can't calculate.
         /// </summary>
-        public const int MaxMessagePayloadBytes = (256 * 1024) - 1024;
+        public const int MaxMessagePayloadBytes = 256 * 1024 - 1024;
 
         public static int GetMessagePayloadSize(TelemetryMessage message)
         {
-            var payload = message.Payload;
+            object payload = message.Payload;
             int size = ObjectToByteArray(payload).Length;
 
             return size;
@@ -22,13 +22,16 @@ namespace Microsoft.Azure.IoT.Thief.Device
         private static byte[] ObjectToByteArray(object obj)
         {
             if (obj == null)
-                return null;
-            BinaryFormatter bf = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream())
             {
-                bf.Serialize(ms, obj);
-                return ms.ToArray();
+                return null;
             }
+
+            var bf = new BinaryFormatter();
+            using var ms = new MemoryStream();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
+            bf.Serialize(ms, obj);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
+            return ms.ToArray();
         }
     }
 }

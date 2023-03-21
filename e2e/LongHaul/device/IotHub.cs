@@ -12,24 +12,22 @@ using static Microsoft.Azure.IoT.Thief.Device.LoggingConstants;
 
 namespace Microsoft.Azure.IoT.Thief.Device
 {
-    internal class IotHub : IIotHub, IAsyncDisposable
+    internal sealed class IotHub : IIotHub, IAsyncDisposable
     {
         private readonly string _deviceConnectionString;
         private readonly IotHubClientTransportSettings _transportSettings;
         private readonly Logger _logger;
 
-        private SemaphoreSlim _lifetimeControl = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _lifetimeControl = new(1, 1);
 
-        private volatile bool _isConnected;
-        private volatile ConnectionStatus _connectionStatus;
         private volatile int _connectionStatusChangeCount = 0;
-        private readonly Stopwatch _disconnectedTimer = new Stopwatch();
+        private readonly Stopwatch _disconnectedTimer = new();
         private ConnectionStatus _disconnectedStatus;
         private ConnectionStatusChangeReason _disconnectedReason;
         private volatile IotHubDeviceClient _deviceClient;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
-        private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new ConcurrentQueue<TelemetryMessage>();
+        private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
         private long _totalMessagesSent = 0;
 
         public IDictionary<string, string> IotProperties { get; } = new Dictionary<string, string>();
@@ -42,6 +40,8 @@ namespace Microsoft.Azure.IoT.Thief.Device
             _deviceClient = null;
         }
 
+        public bool IsConnected => _deviceClient.ConnectionStatusInfo.Status == ConnectionStatus.Connected;
+
         /// <summary>
         /// Initializes the connection to IoT Hub.
         /// </summary>
@@ -53,8 +53,10 @@ namespace Microsoft.Azure.IoT.Thief.Device
             {
                 if (_deviceClient == null)
                 {
-                    _deviceClient = new IotHubDeviceClient(_deviceConnectionString, new IotHubClientOptions(_transportSettings));
-                    _deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangesHandler;
+                    _deviceClient = new IotHubDeviceClient(_deviceConnectionString, new IotHubClientOptions(_transportSettings))
+                    {
+                        ConnectionStatusChangeCallback = ConnectionStatusChangesHandlerAsync
+                    };
                 }
                 else
                 {
@@ -79,7 +81,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
             while (!ct.IsCancellationRequested)
             {
                 // Wait when there are no messages to send, or if not connected
-                if (!_isConnected
+                if (!IsConnected
                     || !_messagesToSend.Any())
                 {
                     try
@@ -97,7 +99,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 _logger.Metric(MessageBacklog, _messagesToSend.Count);
 
                 // If not connected, skip the work below this round
-                if (!_isConnected)
+                if (!IsConnected)
                 {
                     _logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
                     continue;
@@ -131,7 +133,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
             Debug.Assert(telemetryObject != null);
 
             // Save off the event time, or use "now" if not specified
-            var createdOnUtc = telemetryObject.EventDateTimeUtc ?? DateTime.UtcNow;
+            DateTime createdOnUtc = telemetryObject.EventDateTimeUtc ?? DateTime.UtcNow;
             // Remove it so it does not get serialized in the message
             telemetryObject.EventDateTimeUtc = null;
 
@@ -142,14 +144,14 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 CreatedOnUtc = createdOnUtc,
             };
 
-            foreach (var prop in IotProperties)
+            foreach (KeyValuePair<string, string> prop in IotProperties)
             {
                 iotMessage.Properties.TryAdd(prop.Key, prop.Value);
             }
 
             if (extraProperties != null)
             {
-                foreach (var prop in extraProperties)
+                foreach (KeyValuePair<string, string> prop in extraProperties)
                 {
                     // Use TryAdd to ensure the attempt does not fail with an exception
                     // in the event that this key already exists in this dictionary,
@@ -198,16 +200,13 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
         }
 
-        private async void ConnectionStatusChangesHandler(ConnectionStatusInfo connectionInfo)
+        private async void ConnectionStatusChangesHandlerAsync(ConnectionStatusInfo connectionInfo)
         {
             ConnectionStatus status = connectionInfo.Status;
             ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
             _logger.Trace($"Connection status changed ({++_connectionStatusChangeCount}): status=[{status}], reason=[{reason}]", TraceSeverity.Information);
 
-            _connectionStatus = status;
-            _isConnected = status == ConnectionStatus.Connected;
-
-            if (_isConnected)
+            if (IsConnected)
             {
                 // The DeviceClient has connected.
                 if (_disconnectedTimer.IsRunning)
@@ -224,7 +223,8 @@ namespace Microsoft.Azure.IoT.Thief.Device
                         });
                 }
             }
-            else if (!_isConnected && !_disconnectedTimer.IsRunning)
+            else if (!IsConnected
+                && !_disconnectedTimer.IsRunning)
             {
                 _disconnectedTimer.Restart();
                 _disconnectedStatus = status;

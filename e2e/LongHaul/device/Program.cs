@@ -13,41 +13,43 @@ using static Microsoft.Azure.IoT.Thief.Device.LoggingConstants;
 
 namespace ThiefDevice
 {
-    class Program
+    internal class Program
     {
-        private static readonly IDictionary<string, string> _commonProperties = new Dictionary<string, string>();
-        private static Settings _settings;
-        private static Logger _logger;
-        private static IotHub _iotHub;
+        private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
+        private static Settings s_settings;
+        private static Logger s_logger;
+        private static IotHub s_iotHub;
+        private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
 
-        static async Task Main(string[] args)
+        private static async Task Main()
         {
-            _commonProperties.Add(RunId, Guid.NewGuid().ToString());
-            _commonProperties.Add(SdkLanguage, ".NET");
-            _commonProperties.Add(SdkVersion, "1.34.0");
+            s_commonProperties.Add(RunId, Guid.NewGuid().ToString());
+            s_commonProperties.Add(SdkLanguage, ".NET");
+            s_commonProperties.Add(SdkVersion, "2.0.0-preview004");
 
-            _settings = InitializeSettings();
-            _logger = InitializeLogging(_settings.DeviceConnectionString, _settings.AiKey, _settings.TransportType, _settings.TransportProtocol);
-            _iotHub = InitializeHub(_logger);
+            s_settings = InitializeSettings();
+            s_logger = InitializeLogging(s_settings.DeviceConnectionString, s_settings.AiKey, s_settings.TransportType, s_settings.TransportProtocol);
+            s_iotHub = InitializeHub(s_logger);
 
-            _logger.Event(StartingRun);
+            s_logger.Event(StartingRun);
 
-            await _iotHub.InitializeAsync().ConfigureAwait(false);
+            await s_iotHub.InitializeAsync().ConfigureAwait(false);
             using CancellationTokenSource cancellationTokenSource = ConfigureAppExit();
-            var systemHealthMonitor = new SystemHealthMonitor(_iotHub, _logger.Clone());
+            var systemHealthMonitor = new SystemHealthMonitor(s_iotHub, s_logger.Clone());
 
             try
             {
                 await Task
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
-                        _iotHub.RunAsync(cancellationTokenSource.Token))
+                        s_iotHub.RunAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
 
-            await _iotHub.DisposeAsync().ConfigureAwait(false);
-            _logger.Flush();
+            await s_iotHub.DisposeAsync().ConfigureAwait(false);
+            s_logger.Flush();
+            s_aiLoggingProvider.Dispose();
         }
 
         private static CancellationTokenSource ConfigureAppExit()
@@ -65,12 +67,12 @@ namespace ThiefDevice
 
         private static Settings InitializeSettings()
         {
-            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            string assembly = Assembly.GetExecutingAssembly().Location;
+            string codeBase = Path.GetDirectoryName(assembly);
             var uri = new UriBuilder(codeBase);
             string path = Uri.UnescapeDataString(uri.Path);
-            string workingDirectory = Path.GetDirectoryName(path);
-            string commonAppSettings = Path.Combine(workingDirectory, "Settings", "common.config.json");
-            string userAppSettings = Path.Combine(workingDirectory, "Settings", $"{Environment.UserName}.config.json");
+            string commonAppSettings = Path.Combine(path, "Settings", "common.config.json");
+            string userAppSettings = Path.Combine(path, "Settings", $"{Environment.UserName}.config.json");
 
             return new ConfigurationBuilder()
                 .AddJsonFile(commonAppSettings)
@@ -91,21 +93,22 @@ namespace ThiefDevice
                     { Transport, GetTransportSettings(transportType, transportProtocol).ToString() },
                 },
             };
-            foreach (var kvp in _commonProperties)
+            foreach (KeyValuePair<string, string> kvp in s_commonProperties)
             {
                 logBuilder.AppContext.Add(kvp.Key, kvp.Value);
             }
             logBuilder.LogProviders.Add(new ConsoleLogProvider { ShouldLogContext = false, ShouldUseColor = true });
-            logBuilder.LogProviders.Add(new ApplicationInsightsLoggingProvider(aiKey));
+            s_aiLoggingProvider = new ApplicationInsightsLoggingProvider(aiKey);
+            logBuilder.LogProviders.Add(s_aiLoggingProvider);
 
-            var logger = logBuilder.BuildLogger();
+            Logger logger = logBuilder.BuildLogger();
             return logger;
         }
 
         private static IotHub InitializeHub(Logger logger)
         {
-            var iotHub = new IotHub(logger, _settings.DeviceConnectionString, GetTransportSettings(_settings.TransportType, _settings.TransportProtocol));
-            foreach (var prop in _commonProperties)
+            var iotHub = new IotHub(logger, s_settings.DeviceConnectionString, GetTransportSettings(s_settings.TransportType, s_settings.TransportProtocol));
+            foreach (KeyValuePair<string, string> prop in s_commonProperties)
             {
                 iotHub.IotProperties.Add(prop.Key, prop.Value);
             }

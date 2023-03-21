@@ -1,5 +1,6 @@
 ﻿{
   "aiKey": "",
   "deviceConnectionString": "",
-  "transport": "MQTT"
+  "transportType": "Mqtt",
+  "transportProtocol": "Tcp"
 }

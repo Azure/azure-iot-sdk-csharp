@@ -57,6 +57,7 @@
 
   <!--Nuget package dependencies-->
   <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.26.0" />
     <PackageReference Include="MQTTnet" Version="4.1.2.350" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1-preview1.23061.1">
