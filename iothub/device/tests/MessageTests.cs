@@ -17,14 +17,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             const string payloadString = "Hello, World!";
             byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
-            var msg = new Message(payloadBytes);
+            var msg = new OutgoingMessage(payloadBytes);
             msg.Payload.Should().BeEquivalentTo(payloadBytes);
         }
 
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
-            var msg = new Message(Array.Empty<byte>());
+            var msg = new OutgoingMessage(Array.Empty<byte>());
             msg.Payload.Should().NotBeNull();
             msg.Payload.Length.Should().Be(0);
         }

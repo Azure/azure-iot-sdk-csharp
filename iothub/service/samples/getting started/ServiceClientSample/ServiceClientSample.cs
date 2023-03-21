@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Samples
             while (!cancellationToken.IsCancellationRequested)
             {
                 string str = $"Hello, Cloud! - Message {++messageCount }";
-                var message = new Message(Encoding.ASCII.GetBytes(str))
+                var message = new OutgoingMessage(Encoding.ASCII.GetBytes(str))
                 {
                     // An acknowledgment is sent on delivery success or failure.
                     Ack = DeliveryAcknowledgement.Full

@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices
         /// Send a cloud-to-device message to the specified device.
         /// </summary>
         /// <remarks>
-        /// In order to receive feedback messages on the service client, set the <see cref="Message.Ack"/> property to an appropriate value
+        /// In order to receive feedback messages on the service client, set the <see cref="OutgoingMessage.Ack"/> property to an appropriate value
         /// and use <see cref="IotHubServiceClient.MessageFeedback"/>.
         /// </remarks>
         /// <param name="deviceId">The device identifier for the target device.</param>
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task SendAsync(string deviceId, Message message, CancellationToken cancellationToken = default)
+        public virtual async Task SendAsync(string deviceId, OutgoingMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task SendAsync(string deviceId, string moduleId, Message message, CancellationToken cancellationToken = default)
+        public virtual async Task SendAsync(string deviceId, string moduleId, OutgoingMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private void CheckAddMessageId(ref Message message)
+        private void CheckAddMessageId(ref OutgoingMessage message)
         {
             if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
             {

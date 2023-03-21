@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
             // Message payload and properties for C2D operation
-            var messagesSent = new Dictionary<string, Tuple<Message, string>>();
+            var messagesSent = new Dictionary<string, Tuple<OutgoingMessage, string>>();
 
             // Twin properties
             var twinPropertyMap = new Dictionary<string, List<string>>();
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Send C2D Message
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
-                Message msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string p1Value);
+                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string p1Value);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
                 Task sendC2dMessage = serviceClient.Messages.SendAsync(testDevice.Id, msg);
@@ -100,8 +100,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // C2D Operation
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 2: Receive C2D for device={testDevice.Id}");
-                Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
-                Message msg = msgSent.Item1;
+                Tuple<OutgoingMessage, string> msgSent = messagesSent[testDevice.Id];
+                OutgoingMessage msg = msgSent.Item1;
                 string payload = msgSent.Item2;
 
                 Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(deviceClient, testDevice.Id, msg, payload);

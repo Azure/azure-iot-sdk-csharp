@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
@@ -35,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // making sure the queue is empty
             PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false);
 
-            var testMessage = new Message(Encoding.UTF8.GetBytes("some payload"));
+            var testMessage = new OutgoingMessage(Encoding.UTF8.GetBytes("some payload"));
 
             await sc.Messages.OpenAsync().ConfigureAwait(false);
             const int numberOfSends = 3;
@@ -62,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // act
             // making sure the queue is empty
             PurgeMessageQueueResult result = await sc.Messages.PurgeMessageQueueAsync(expectedDeviceId, CancellationToken.None).ConfigureAwait(false);
-            var testMessage = new Message(Encoding.UTF8.GetBytes("some payload"));
+            var testMessage = new OutgoingMessage(Encoding.UTF8.GetBytes("some payload"));
             await sc.Messages.OpenAsync().ConfigureAwait(false);
 
             // assert

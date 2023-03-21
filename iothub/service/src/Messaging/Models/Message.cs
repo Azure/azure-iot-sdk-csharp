@@ -9,14 +9,14 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The data structure represent the message that is used for interacting with IoT hub.
     /// </summary>
-    public sealed class Message
+    public sealed class OutgoingMessage
     {
         private readonly byte[] _payload;
 
         /// <summary>
         /// Default constructor with no body data.
         /// </summary>
-        public Message()
+        public OutgoingMessage()
         {
         }
 
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
         /// <param name="payload">A byte array to send as a payload.</param>
-        public Message(byte[] payload)
+        public OutgoingMessage(byte[] payload)
         {
             _payload = payload;
         }
