@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Samples
             string queryText = $"SELECT * FROM devices WHERE STARTSWITH(id, '{_parameters.DevicePrefix}')";
             Console.WriteLine($"Using query text of: {queryText}");
 
-            AsyncPageable<ClientTwin> query = _client.Query.CreateAsync<ClientTwin>(queryText);
+            AsyncPageable<ClientTwin> query = _client.Query.Create<ClientTwin>(queryText);
 
             await foreach (ClientTwin queriedTwin in query)
             {

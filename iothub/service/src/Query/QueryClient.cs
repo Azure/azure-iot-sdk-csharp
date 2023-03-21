@@ -92,10 +92,10 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </code>
         /// </example>
-        public virtual AsyncPageable<T> CreateAsync<T>(string query, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<T> Create<T>(string query, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, "Creating query.", nameof(CreateAsync));
+                Logging.Enter(this, "Creating query.", nameof(Create));
 
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
@@ -131,13 +131,13 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(Create));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, "Creating query.", nameof(CreateAsync));
+                    Logging.Exit(this, "Creating query.", nameof(Create));
             }
         }
 
@@ -162,10 +162,10 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </code>
         /// </example>
-        public virtual AsyncPageable<ScheduledJob> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<ScheduledJob> CreateJobsQuery(JobQueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(Create));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -209,13 +209,13 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus} threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus} threw an exception: {ex}", nameof(Create));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(Create));
             }
         }
 
