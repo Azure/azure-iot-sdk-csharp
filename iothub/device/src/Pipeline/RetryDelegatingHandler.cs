@@ -12,9 +12,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal enum ClientTransportStatus
     {
-        Closed = 0,
-        Open = 1,
-        Closing = 2,
+        Closed,
+        Opening,
+        Open,
+        Closing,
     }
 
     internal sealed class RetryDelegatingHandler : DefaultDelegatingHandler
@@ -475,7 +476,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
             }
 
-
             if (GetClientTransportStatus() == ClientTransportStatus.Open)
             {
                 return;
@@ -483,9 +483,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (GetClientTransportStatus() == ClientTransportStatus.Closed)
             {
-                // Create a new cancellation token source that will be signaled by CloseAsync() for cancellation.
+                // Create a new cancellation token source that will be signaled by any subsequently invoked CloseAsync() for cancellation.
                 _cancelPendingOperationsCts = new CancellationTokenSource();
             }
+
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
@@ -544,13 +545,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                _cancelPendingOperationsCts.Cancel();
-                _handleDisconnectCts.Cancel();
+                _cancelPendingOperationsCts?.Cancel();
+                _handleDisconnectCts?.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
+            //catch { } // catch any exceptions thrown in L552 - close ungraceful should be handled
             finally
             {
-                _cancelPendingOperationsCts.Dispose();
+                _cancelPendingOperationsCts?.Dispose();
                 SetClientTransportStatus(ClientTransportStatus.Closed);
 
                 if (Logging.IsEnabled)
