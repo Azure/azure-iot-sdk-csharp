@@ -50,13 +50,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task PurgeMessageQueueOperation_ThrowsIotHubServiceExeception()
+        public async Task PurgeMessageQueueOperation_InvalidDeviceId_ThrowsIotHubServiceExeception()
         {
             // arrange
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             string faultyId = "some wrong Id";
             string expectedDeviceId = testDevice.Device.Id;
-            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient sc = TestDevice.ServiceClient;
 
             // act
             // making sure the queue is empty
@@ -67,7 +67,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // assert
             Func<Task> act = async () => await sc.Messages.PurgeMessageQueueAsync(faultyId, CancellationToken.None).ConfigureAwait(false);
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.Should().Be(HttpStatusCode.NotFound);
             error.And.IsTransient.Should().BeFalse();
         }
     }

@@ -138,13 +138,21 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
-            // act
-            // Call OpenAsync on already open client
-            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-            Func<Task> act = async() => await serviceClient.Messages.OpenAsync();
+            try
+            {
+                // act
+                // Call OpenAsync on already open client
+                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+                Func<Task> act = async () => await serviceClient.Messages.OpenAsync();
 
-            // assert
-            await act.Should().NotThrowAsync();
+                // assert
+                await act.Should().NotThrowAsync();
+            }
+            finally
+            {
+                await serviceClient.Messages.CloseAsync();
+            }
+
         }
 
         [TestMethod]
@@ -165,15 +173,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // act
             var message = new Message(new byte[10]);
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-            await serviceClient.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
             await serviceClient.Messages.CloseAsync();
 
             Func<Task> act = async () => await serviceClient.Messages.SendAsync(testDevice.Id, message);
 
             // assert
-            var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.Should().Be(HttpStatusCode.NotFound);
-            error.And.IsTransient.Should().BeFalse();
+            var error = await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [TestMethod]

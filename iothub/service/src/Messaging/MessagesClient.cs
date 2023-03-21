@@ -405,7 +405,7 @@ namespace Microsoft.Azure.Devices
         {
             if (!_amqpConnection.IsOpen)
             {
-                throw new IotHubServiceException("Must open client before sending messages.");
+                throw new InvalidOperationException("Must open client before sending messages.");
             }
         }
 
