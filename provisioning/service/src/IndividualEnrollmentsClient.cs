@@ -260,10 +260,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <example>
         /// Iterate over individual enrollments:
         /// <code language="csharp">
-        /// AsyncPageable&lt;IndividualEnrollment&gt; individualEnrollmentsQuery = dpsServiceClient.IndividualEnrollments.CreateQuery&lt;EnrollmentGroup&gt;("SELECT * FROM enrollments");
+        /// AsyncPageable&lt;IndividualEnrollment&gt; individualEnrollmentsQuery = dpsServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
         /// await foreach (IndividualEnrollment queriedEnrollment in individualEnrollmentsQuery)
         /// {
-        ///     Console.WriteLine(queriedEnrollment);
+        ///     Console.WriteLine(queriedEnrollment.RegistrationId);
+        /// }
+        /// </code>
+        /// Iterate over pages of individual enrollments:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;IndividualEnrollment&gt;&gt; individualEnrollmentsQuery = dpsServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments").AsPages();
+        /// await foreach (Page&lt;IndividualEnrollment&gt; queriedEnrollmentPage in individualEnrollmentsQuery)
+        /// {
+        ///     foreach (IndividualEnrollment queriedEnrollment in queriedEnrollmentPage.Values)
+        ///     {
+        ///         Console.WriteLine(queriedEnrollment.RegistrationId);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     queriedEnrollmentPage.GetRawResponse().Dispose();
         /// }
         /// </code>
         /// </example>

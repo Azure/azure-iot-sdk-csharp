@@ -233,6 +233,8 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     devicesToDelete.Add(new ExportImportDevice(new Device(queryResult.DeviceId), ImportMode.Delete));
                 }
+
+                page.GetRawResponse().Dispose();
             }
 
             return devicesToDelete;

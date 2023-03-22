@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             AsyncPageable<ClientTwin> queryResponse = serviceClient.Query.
                 Create<ClientTwin>(queryText);
-            IAsyncEnumerator<Page<ClientTwin>> enumerator = queryResponse.AsPages(null, 1).GetAsyncEnumerator();
+            await using IAsyncEnumerator<Page<ClientTwin>> enumerator = queryResponse.AsPages(null, 1).GetAsyncEnumerator();
             (await enumerator.MoveNextAsync().ConfigureAwait(false)).Should().BeTrue("Should have at least one page of jobs.");
 
             // assert
@@ -89,11 +89,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // restart the query, but with a page size of 3 this time
             queryResponse = serviceClient.Query.
-                Create<ClientTwin>(queryText); 
-            enumerator = queryResponse.AsPages(null, 3).GetAsyncEnumerator();
+                Create<ClientTwin>(queryText);
+            await using IAsyncEnumerator<Page<ClientTwin>> nextEnumerator = queryResponse.AsPages(null, 3).GetAsyncEnumerator();
 
             // consume the first page of results so the next MoveNextAsync gets a new page
-            (await enumerator.MoveNextAsync().ConfigureAwait(false)).Should().BeTrue("Should have at least one page of jobs.");
+            (await nextEnumerator.MoveNextAsync().ConfigureAwait(false)).Should().BeTrue("Should have at least one page of jobs.");
 
             currentPage = enumerator.Current;
             currentPage.Values.Count.Should().Be(3);
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             ClientTwin thirdQueriedTwin = pageContentsEnumerator.Current;
             thirdQueriedTwin.DeviceId.Should().BeOneOf(testDevice1.Id, testDevice2.Id, testDevice3.Id);
 
-            (await enumerator.MoveNextAsync().ConfigureAwait(false)).Should().BeFalse("After 3 query results in one page, there should not be a second page");
+            (await nextEnumerator.MoveNextAsync().ConfigureAwait(false)).Should().BeFalse("After 3 query results in one page, there should not be a second page");
         }
 
         [TestMethod]
@@ -131,14 +131,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             await WaitForDevicesToBeQueryableAsync(serviceClient.Query, queryText, 3).ConfigureAwait(false);
 
-            AsyncPageable<ClientTwin> twinQuery = serviceClient.Query.
-                Create<ClientTwin>(queryText);
+            // For this test, we want the query logic to have to fetch multiple pages of results. To force
+            // that, set the page size to 1 when there are 3 total results to be queried.
+            IAsyncEnumerable<Page<ClientTwin>> twinPages = serviceClient.Query.
+                Create<ClientTwin>(queryText)
+                .AsPages(null, 1);
 
             // assert
 
-            // For this test, we want the query logic to have to fetch multiple pages of results. To force
-            // that, set the page size to 1 when there are 3 total results to be queried.
-            IAsyncEnumerable<Page<ClientTwin>> twinPages = twinQuery.AsPages(null, 1);
             var returnedTwinDeviceIds = new List<string>();
             await foreach (Page<ClientTwin> queriedTwinPage in twinPages)
             {
@@ -146,6 +146,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 { 
                     returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
                 }
+
+                queriedTwinPage.GetRawResponse().Dispose();
             }
 
             var expectedDeviceIds = new List<string>() { testDevice1.Id, testDevice2.Id, testDevice3.Id };
@@ -186,6 +188,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     returnedTwinDeviceIds.Add(queriedTwin.DeviceId);
                 }
+
+                queriedTwinPage.GetRawResponse().Dispose();
             }
 
             var expectedDeviceIds = new List<string>() { testDevice1.Id, testDevice2.Id, testDevice3.Id };
@@ -259,7 +263,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string query = "SELECT COUNT() as TotalNumberOfDevices FROM devices";
 
             AsyncPageable<RawQuerySerializationClass> queryResponse = serviceClient.Query.Create<RawQuerySerializationClass>(query);
-            IAsyncEnumerator<RawQuerySerializationClass> enumerator = queryResponse.GetAsyncEnumerator();
+            await using IAsyncEnumerator<RawQuerySerializationClass> enumerator = queryResponse.GetAsyncEnumerator();
             (await enumerator.MoveNextAsync().ConfigureAwait(false)).Should().BeTrue("Should have at least one page of jobs.");
             RawQuerySerializationClass queriedJob = enumerator.Current;
             queriedJob.TotalNumberOfDevices.Should().BeGreaterOrEqualTo(0);
@@ -276,10 +280,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             while (enumerator.Current.Values.Count < expectedCount)
             {
                 await Task.Delay(100).ConfigureAwait(false);
+                await enumerator.DisposeAsync().ConfigureAwait(false);
                 enumerator = queryClient.Create<ClientTwin>(query).AsPages().GetAsyncEnumerator();
                 await enumerator.MoveNextAsync().ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
             }
+
+            await enumerator.DisposeAsync().ConfigureAwait(false);
         }
 
         private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, string query, int expectedCount)
@@ -287,14 +294,18 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
-            IAsyncEnumerator<Page<ScheduledJob>> enumerator;
-            do
+            IAsyncEnumerator<Page<ScheduledJob>> enumerator = queryClient.Create<ScheduledJob>(query).AsPages().GetAsyncEnumerator();
+            await enumerator.MoveNextAsync().ConfigureAwait(false);
+            while (enumerator.Current.Values.Count < expectedCount)
             {
                 await Task.Delay(100).ConfigureAwait(false);
                 cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
+                await enumerator.DisposeAsync().ConfigureAwait(false); 
                 enumerator = queryClient.Create<ScheduledJob>(query).AsPages().GetAsyncEnumerator();
                 await enumerator.MoveNextAsync().ConfigureAwait(false);
-            } while (enumerator.Current.Values.Count < expectedCount);
+            }
+
+            await enumerator.DisposeAsync().ConfigureAwait(false);
         }
 
         private async Task WaitForJobToBeQueryableAsync(QueryClient queryClient, int expectedCount, JobType? jobType = null, JobStatus? status = null)
@@ -314,9 +325,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 cancellationTokenSource.Token.IsCancellationRequested.Should().BeFalse("timed out waiting for the devices to become queryable");
                 await Task.Delay(100).ConfigureAwait(false);
+                await enumerator.DisposeAsync().ConfigureAwait(false);
                 enumerator = queryClient.CreateJobsQuery(options).AsPages().GetAsyncEnumerator();
                 await enumerator.MoveNextAsync().ConfigureAwait(false);
             }
+
+            await enumerator.DisposeAsync().ConfigureAwait(false);
         }
 
         private static async Task<string> ScheduleJobToBeQueriedAsync(ScheduledJobsClient jobsClient, string deviceId)

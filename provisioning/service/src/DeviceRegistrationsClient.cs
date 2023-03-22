@@ -143,10 +143,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <example>
         /// Iterate over device registration states in an enrollment group:
         /// <code language="csharp">
-        /// AsyncPageable&lt;DeviceRegistrationState&gt; deviceRegistrationStatesQuery = dpsServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery&lt;DeviceRegistrationState&gt;("SELECT * FROM enrollmentGroups");
+        /// AsyncPageable&lt;DeviceRegistrationState&gt; deviceRegistrationStatesQuery = dpsServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery("SELECT * FROM enrollmentGroups", "myEnrollmentGroupId");
         /// await foreach (DeviceRegistrationState queriedState in deviceRegistrationStatesQuery)
         /// {
-        ///     Console.WriteLine(queriedState);
+        ///     Console.WriteLine(queriedState.RegistrationId);
+        /// }
+        /// </code>
+        /// Iterate over pages of device registration states in an enrollment group:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;DeviceRegistrationState&gt;&gt; deviceRegistrationStatesQuery = dpsServiceClient.DeviceRegistrationState.CreateQuery("SELECT * FROM enrollmentGroups", "myEnrollmentGroupId").AsPages();
+        /// await foreach (Page&lt;DeviceRegistrationState&gt; queriedStatePage in deviceRegistrationStatesQuery)
+        /// {
+        ///     foreach (DeviceRegistrationState queriedState in queriedStatePage.Values)
+        ///     {
+        ///         Console.WriteLine(queriedState.RegistrationId);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     queriedStatePage.GetRawResponse().Dispose();
         /// }
         /// </code>
         /// </example>

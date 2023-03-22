@@ -75,20 +75,36 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
         /// <example>
-        /// Iterate twins:
+        /// Iterate over twins:
         /// <code language="csharp">
-        /// AsyncPageable&lt;Twin&gt; twinQuery = iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
-        /// await foreach (Twin queriedTwin in twinQuery)
+        /// AsyncPageable&lt;Twin&gt; twinsQuery = iotHubServiceClient.Query.Create&lt;ClientTwin&gt;("SELECT * FROM devices");
+        /// await foreach (Twin queriedTwin in twinsQuery)
         /// {
-        ///     Console.WriteLine(queriedTwin);
+        ///     Console.WriteLine(queriedTwin.DeviceId);
         /// }
         /// </code>
         /// Or scheduled jobs:
         /// <code language="csharp">
-        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = await iotHubServiceClient.Query.CreateAsync&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
+        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = iotHubServiceClient.Query.Create&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
         /// await foreach (ScheduledJob queriedJob in jobsQuery)
         /// {
         ///     Console.WriteLine(queriedJob);
+        /// }
+        /// </code>
+        /// Iterate over pages of twins:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;ClientTwin&gt;&gt; twinsQuery = iotHubServiceClient.Query.Create&lt;ClientTwin&gt;("SELECT * FROM devices").AsPages();
+        /// await foreach (Page&lt;ClientTwin&gt; queriedTwinsPage in twinsQuery)
+        /// {
+        ///     foreach (ClientTwin queriedTwin in queriedTwinsPage.Values)
+        ///     {
+        ///         Console.WriteLine(queriedTwin.DeviceId);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     queriedTwinsPage.GetRawResponse().Dispose();
         /// }
         /// </code>
         /// </example>
@@ -154,11 +170,28 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
+        /// Iterate over jobs:
         /// <code language="csharp">
-        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = await iotHubServiceClient.Query.CreateJobsQueryAsync();
+        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = iotHubServiceClient.Query.CreateJobsQuery();
         /// await foreach (ScheduledJob scheduledJob in jobsQuery)
         /// {
         ///     Console.WriteLine(scheduledJob.JobId);
+        /// }
+        /// </code>
+        /// Iterate over pages of twins:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;ScheduledJob&gt;&gt; jobsQuery = iotHubServiceClient.Query.CreateJobsQuery().AsPages();
+        /// await foreach (Page&lt;ScheduledJob&gt; scheduledJobsPage in jobsQuery)
+        /// {
+        ///     foreach (ScheduledJob scheduledJob in scheduledJobsPage.Values)
+        ///     {
+        ///         Console.WriteLine(scheduledJob.JobId);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     scheduledJobsPage.GetRawResponse().Dispose();
         /// }
         /// </code>
         /// </example>

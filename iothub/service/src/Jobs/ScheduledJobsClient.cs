@@ -111,17 +111,43 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Queries an iterable set of jobs for specified type and status.
+        /// Query all jobs or query jobs by type and/or status.
         /// </summary>
-        /// <param name="options">The optional parameters to run with the query.</param>
+        /// <param name="options">The optional parameters to run the query with.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>An iterable set of jobs for specified type and status.</returns>
+        /// <returns>An iterable set of the queried jobs.</returns>
         /// <exception cref="IotHubServiceException">
         /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        /// <example>
+        /// Iterate over jobs:
+        /// <code language="csharp">
+        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = iotHubServiceClient.Query.CreateJobsQuery();
+        /// await foreach (ScheduledJob scheduledJob in jobsQuery)
+        /// {
+        ///     Console.WriteLine(scheduledJob.JobId);
+        /// }
+        /// </code>
+        /// Iterate over pages of twins:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;ScheduledJob&gt;&gt; jobsQuery = iotHubServiceClient.Query.CreateJobsQuery().AsPages();
+        /// await foreach (Page&lt;ScheduledJob&gt; scheduledJobsPage in jobsQuery)
+        /// {
+        ///     foreach (ScheduledJob scheduledJob in scheduledJobsPage.Values)
+        ///     {
+        ///         Console.WriteLine(scheduledJob.JobId);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     scheduledJobsPage.GetRawResponse().Dispose();
+        /// }
+        /// </code>
+        /// </example>
         public virtual AsyncPageable<ScheduledJob> CreateQuery(JobQueryOptions options = null, CancellationToken cancellationToken = default)
         {
             return _queryClient.CreateJobsQuery(options, cancellationToken);

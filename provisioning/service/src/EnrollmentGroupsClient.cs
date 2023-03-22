@@ -268,12 +268,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         /// <example>
-        /// Iterate enrollment groups:
+        /// Iterate over enrollment groups:
         /// <code language="csharp">
-        /// AsyncPageable&lt;EnrollmentGroup&gt; enrollmentGroupQuery = dpsServiceClient.EnrollmentGroups.CreateQuery&lt;EnrollmentGroup&gt;("SELECT * FROM enrollmentGroups");
-        /// await foreach (EnrollmentGroup queriedEnrollment in enrollmentGroupQuery)
+        /// AsyncPageable&lt;EnrollmentGroup&gt; enrollmentGroupsQuery = dpsServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups");
+        /// await foreach (EnrollmentGroup queriedEnrollment in enrollmentGroupsQuery)
         /// {
-        ///     Console.WriteLine(queriedEnrollment);
+        ///     Console.WriteLine(queriedEnrollment.Id);
+        /// }
+        /// </code>
+        /// Iterate over pages of enrollment groups:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;EnrollmentGroup&gt;&gt; enrollmentGroupsQuery = dpsServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups").AsPages();
+        /// await foreach (Page&lt;EnrollmentGroup&gt; queriedEnrollmentPage in enrollmentGroupsQuery)
+        /// {
+        ///     foreach (EnrollmentGroup queriedEnrollment in queriedEnrollmentPage.Values)
+        ///     {
+        ///         Console.WriteLine(queriedEnrollment.Id);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     queriedEnrollmentPage.GetRawResponse().Dispose();
         /// }
         /// </code>
         /// </example>
