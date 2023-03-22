@@ -613,7 +613,7 @@ jobs:
           alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
         condition: always()
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@2
         displayName: "TSA upload"
         inputs:
           tsaVersion: 'TsaV2'
