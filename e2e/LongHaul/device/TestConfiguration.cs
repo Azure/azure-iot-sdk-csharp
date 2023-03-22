@@ -7,7 +7,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
 {
     public static class TestConfiguration
     {
-        public static string DeviceConnectionString => GetValue("IOTHUB-LONG-HAUL-DEVICE-CONNECTION-STRING");
+        public static string DeviceConnectionString => GetValue("IOTHUB_LONG_HAUL_DEVICE_CONNECTION_STRING");
 
         private static string GetValue(string envName, string defaultValue = null)
         {
