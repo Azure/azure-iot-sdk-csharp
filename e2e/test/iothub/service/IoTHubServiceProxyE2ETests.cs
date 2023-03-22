@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -88,22 +89,43 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             using (JobClient jobClient = JobClient.CreateFromConnectionString(s_connectionString, httpTransportSettings))
             {
+                string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
+                string query = $"DeviceId IN ['{JobDeviceId}']";
                 int tryCount = 0;
                 while (true)
                 {
                     try
                     {
-                        string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
-                        string query = $"DeviceId IN ['{JobDeviceId}']";
+                        Logger.Trace($"Scheduling twin job {jobId} for device {JobDeviceId}.");
                         JobResponse createJobResponse = await jobClient.ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
                         break;
                     }
-                    // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                    catch (ThrottlingException) when (++tryCount < MaxIterationWait)
+                    catch (ThrottlingException ex)
                     {
-                        Logger.Trace($"ThrottlingException... waiting.");
-                        await Task.Delay(_waitDuration).ConfigureAwait(false);
-                        continue;
+                        // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
+                        if (++tryCount < MaxIterationWait)
+                        {
+                            Logger.Trace($"ThrottlingException... waiting.");
+                            await Task.Delay(_waitDuration).ConfigureAwait(false);
+                            continue;
+                        }
+
+                        Logger.Trace($"Failed to scheule twin job {jobId} for device {JobDeviceId} because {ex.Message}.");
+                        string jobErrors = "";
+                        IEnumerable<JobResponse> queryResults = await jobClient.CreateQuery().GetNextAsJobResponseAsync();
+                        foreach (JobResponse response in queryResults)
+                        {
+                            if (response.Status != JobStatus.Completed && response.Status != JobStatus.Failed && response.Status != JobStatus.Cancelled)
+                            {
+                                jobErrors += $"Job Id {response.JobId} is in status {response.Status}.";
+                            }
+                        }
+                        jobErrors += ex.Message;
+
+                        // This is a temporary change to identify the job Id for the test failure on the pipeline.
+                        // We are aware that this will destroy the stacktrace from where the exception originated.
+                        // Due to the nature of this exception, since we know where the call stack originates from, we are ok with the trade-off.
+                        throw new ThrottlingException(ex.Code, jobErrors);
                     }
                 }
             }
