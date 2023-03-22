@@ -26,13 +26,14 @@ namespace Microsoft.Azure.Devices.Client.Tests
             using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult
             {
-                Message = JsonConvert.SerializeObject(new ErrorPayload
-                {
-                    ErrorCode = ((int)expectedErrorCode).ToString(),
-                    TrackingId = expectedTrackingId,
-                    Message = "Cannot decode correlation_id",
-                    OccurredOnUtc = "2023-03-14T16:57:54.324613222+00:00",
-                }),
+                Message = JsonConvert.SerializeObject(
+                    new ErrorPayload
+                    {
+                        ErrorCode = ((int)expectedErrorCode).ToString(),
+                        TrackingId = expectedTrackingId,
+                        Message = "Cannot decode correlation_id",
+                        OccurredOnUtc = "2023-03-14T16:57:54.324613222+00:00",
+                    }),
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 

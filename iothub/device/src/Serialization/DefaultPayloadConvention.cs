@@ -1,19 +1,40 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The default implementation of the <see cref="PayloadConvention"/> class.
+    /// The default implementation of the <see cref="PayloadConvention"/> class for Newtonsoft.Json.
     /// </summary>
     /// <remarks>
-    /// This class makes use of the <see cref="NewtonsoftJsonPayloadSerializer"/> serializer and the <see cref="Utf8PayloadEncoder"/>.
+    /// This class makes use of the <see cref="JsonConvert"/> serializer and the <see cref="Encoding.UTF8"/> encoder.
     /// </remarks>
     public sealed class DefaultPayloadConvention : PayloadConvention
     {
+        private static readonly JsonSerializer s_jsonSerializer = new();
+
+        /// <summary>
+        /// A static instance of JsonSerializerSettings which sets DateParseHandling to None.
+        /// </summary>
+        /// <remarks>
+        /// By default, serializing/deserializing with Newtonsoft.Json will try to parse date-formatted
+        /// strings to a date type, which drops trailing zeros in the microseconds portion. By
+        /// specifying DateParseHandling with None, the original string will be read as-is. For more details
+        /// about the known issue, see https://github.com/JamesNK/Newtonsoft.Json/issues/1511.
+        /// </remarks>
+        private static readonly JsonSerializerSettings s_settings = new()
+        {
+            DateParseHandling = DateParseHandling.None,
+        };
+
         private DefaultPayloadConvention()
         {
-
+            JsonConvert.DefaultSettings = () => s_settings;
         }
 
         /// <summary>
@@ -22,9 +43,48 @@ namespace Microsoft.Azure.Devices.Client
         public static DefaultPayloadConvention Instance { get; } = new DefaultPayloadConvention();
 
         /// <inheritdoc/>
-        public override PayloadSerializer PayloadSerializer { get; } = NewtonsoftJsonPayloadSerializer.Instance;
+        public override string ContentType => "application/json";
 
         /// <inheritdoc/>
-        public override PayloadEncoder PayloadEncoder { get; } = Utf8PayloadEncoder.Instance;
+        public override Encoding ContentEncoding => Encoding.UTF8;
+
+        /// <inheritdoc/>
+        public override byte[] GetObjectBytes(object objectToSendWithConvention)
+        {
+            string payloadString = Serialize(objectToSendWithConvention);
+            return ContentEncoding.GetBytes(payloadString);
+        }
+
+        /// <inheritdoc/>
+        public override T GetObject<T>(byte[] objectToConvert)
+        {
+            if (objectToConvert is null)
+            {
+                return default;
+            }
+
+            string payloadString = ContentEncoding.GetString(objectToConvert);
+            return GetObject<T>(payloadString);
+        }
+
+        /// <inheritdoc/>
+        public override Task<T> GetObjectAsync<T>(Stream streamToConvert)
+        {
+            using var sw = new StreamReader(streamToConvert);
+            using var jtr = new JsonTextReader(sw);
+            return Task.FromResult(s_jsonSerializer.Deserialize<T>(jtr));
+        }
+
+        /// <inheritdoc/>
+        public override T GetObject<T>(string jsonObjectAsText)
+        {
+            return JsonConvert.DeserializeObject<T>(jsonObjectAsText);
+        }
+
+        // For unit testing
+        internal static string Serialize(object objectToSerialize)
+        {
+            return JsonConvert.SerializeObject(objectToSerialize);
+        }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -83,12 +84,6 @@ namespace Microsoft.Azure.Devices.Client
         public string RequestId { get; protected internal set; }
 
         /// <summary>
-        /// The JSON payload in JRaw type.
-        /// </summary>
-        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        protected internal JRaw JsonPayload { get; set; }
-
-        /// <summary>
         /// The direct method payload.
         /// </summary>
         protected internal byte[] Payload { get; set; }
@@ -128,7 +123,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(GetPayloadAsJsonString());
+                payload = PayloadConvention.GetObject<T>(Payload);
                 return true;
             }
             catch (Exception)
@@ -147,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Payload == null || Payload.Length == 0
                 ? null
-                : PayloadConvention.PayloadEncoder.ContentEncoding.GetString(Payload);
+                : PayloadConvention.ContentEncoding.GetString(Payload);
         }
     }
 }

@@ -236,14 +236,6 @@ namespace Microsoft.Azure.Devices.Client
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
-        /// <summary>
-        /// Gets the payload as a byte array.
-        /// </summary>
-        /// <remarks>
-        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/>.
-        /// and <see cref="PayloadEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
-        /// </remarks>
-        /// <returns>A fully encoded serialized string.</returns>
         internal byte[] GetPayloadObjectBytes()
         {
             return PayloadConvention.GetObjectBytes(Payload);
