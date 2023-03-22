@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -120,6 +121,64 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var message = new OutgoingMessage(new object()); // arbitrary payload since it shouldn't matter
             await sender.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
             await sender.Messages.CloseAsync().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DataRow(IotHubTransportProtocol.Tcp)]
+        [DataRow(IotHubTransportProtocol.WebSocket)]
+        public async Task MessagingClient_OpeningAlreadyOpenClient_DoesNotThrow(IotHubTransportProtocol protocol)
+        {
+            // arrange
+            var options = new IotHubServiceClientOptions
+            {
+                Protocol = protocol
+            };
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
+
+            try
+            {
+                // act
+                // Call OpenAsync on already open client
+                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+                Func<Task> act = async () => await serviceClient.Messages.OpenAsync();
+
+                // assert
+                await act.Should().NotThrowAsync();
+            }
+            finally
+            {
+                await serviceClient.Messages.CloseAsync();
+            }
+
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DataRow(IotHubTransportProtocol.Tcp)]
+        [DataRow (IotHubTransportProtocol.WebSocket)]
+        public async Task MessagingClient_SendMessageOnClosedClient_ThrowsInvalidOperationException(IotHubTransportProtocol protocol)
+        {
+            // arrange
+            var options = new IotHubServiceClientOptions
+            {
+                Protocol = protocol
+            };
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync (DevicePrefix).ConfigureAwait(false);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
+
+            // act
+            var message = new OutgoingMessage(new byte[10]);
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messages.CloseAsync();
+
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync(testDevice.Id, message);
+
+            // assert
+            var error = await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [TestMethod]
