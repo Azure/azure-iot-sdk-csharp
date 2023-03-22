@@ -558,7 +558,7 @@ jobs:
         displayName: "Run PoliCheck"
         inputs:
           targetType: F
-          optionsRulesDBPath: 'vsts/PolicheckExclusionsDB.mdb'
+          optionsRulesDBPath: '$(Build.SourcesDirectory)\vsts\PolicheckExclusionsDB.mdb'
           optionsSEV: '1|2|3|4'
           optionsPE: 1
       
