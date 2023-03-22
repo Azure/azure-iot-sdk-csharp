@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task QueryIndividualEnrollmentsAsync()
         {
-            const string queryText = "";
+            const string queryText = "SELECT * FROM enrollments";
             AsyncPageable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery(queryText);
             Console.WriteLine($"Querying for individual enrollments: {queryText}");
             await foreach (IndividualEnrollment enrollment in query)
