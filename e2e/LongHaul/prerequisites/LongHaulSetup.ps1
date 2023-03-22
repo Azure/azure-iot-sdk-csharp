@@ -109,6 +109,13 @@ if (-not ($storageAccountName -match "^[a-z0-9][a-z0-9]{1,22}[a-z0-9]$"))
     throw "Storage account name derived from resource group has illegal characters: $storageAccountName"
 }
 
+$keyVaultName = "env-$ResourceGroup-kv";
+$keyVaultName = [regex]::Replace($keyVaultName, "[^a-zA-Z0-9-]", "")
+if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
+{
+    throw "Key vault name derived from resource group has illegal characters: $keyVaultName";
+}
+
 ########################################################################################################
 # Install latest version of az cli.
 ########################################################################################################
@@ -178,6 +185,7 @@ az deployment group create `
     --template-file "$PSScriptRoot\longhaul-resources.json" `
     --parameters `
     StorageAccountName=$storageAccountName `
+    KeyVaultName=$keyVaultName `
     HubUnitsCount=$iothubUnitsToBeCreated `
 
 if ($LastExitCode -ne 0)
@@ -194,6 +202,7 @@ Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), re
 Write-Host "`nGetting generated names and secrets from ARM template output."
 $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
+$keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
 
 ##################################################################################################################################
@@ -219,8 +228,42 @@ if (-not $longhaulDevice)
 $longhaulDeviceConnectionString = az iot hub device-identity connection-string show --device-id $longhaulDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
 
 ############################################################################################################################
-# Print variables
+# Store all secrets in a KeyVault - Values will be pulled down from here to configure environment variables.
 ############################################################################################################################
 
-Write-Host "Device connection string is $longhaulDeviceConnectionString"
-Write-Host "Service $iothubownerSasPolicy SAK is $iothubownerSasPrimaryKey"
+$keyvaultKvps = @{
+    # Environment variables for IoT Hub E2E tests
+    "IOTHUB-LONG-HAUL-DEVICE-CONNECTION-STRING" = $longhaulDeviceConnectionString;
+}
+
+Write-Host "`nWriting secrets to KeyVault $keyVaultName."
+az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id "$userObjectId" --output none --only-show-errors --secret-permissions delete get list set;
+foreach ($kvp in $keyvaultKvps.GetEnumerator())
+{
+    Write-Host "`tWriting $($kvp.Name)."
+    if ($null -eq $kvp.Value)
+    {
+        Write-Warning "`t`tValue is unexpectedly null!";
+    }
+    az keyvault secret set --vault-name $keyVaultName --name $kvp.Name --value "$($kvp.Value)" --output none --only-show-errors
+}
+
+############################################################################################################################
+# Creating a file to run to load environment variables
+############################################################################################################################
+
+$loadScriptDir = Join-Path $PSScriptRoot "..\..\..\..\.." -Resolve
+$loadScriptName = "Load-$keyVaultName.ps1";
+Write-Host "`nWriting environment loading file to $loadScriptDir\$loadScriptName.`n"
+$file = New-Item -Path $loadScriptDir -Name $loadScriptName -ItemType "file" -Force
+Add-Content -Path $file.PSPath -Value "$PSScriptRoot\LoadEnvironmentVariablesFromKeyVault.ps1 -SubscriptionId $SubscriptionId -KeyVaultName $keyVaultName"
+
+############################################################################################################################
+# Configure environment variables
+############################################################################################################################
+
+Invoke-Expression "$loadScriptDir\$loadScriptName"
+
+$endTime = (Get-Date)
+$elapsedTime = (($endTime - $startTime).TotalMinutes).ToString("N1")
+Write-Host "`n`nCompleted in $elapsedTime minutes.`n`t- For future sessions, run the generated file $loadScriptDir\$loadScriptName to load environment variables.`n`t- Values will be overwritten if you run LongHaulSetup.ps1 with a same resource group name.`n"
