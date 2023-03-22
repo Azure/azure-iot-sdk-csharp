@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
         }
 
         [TestMethod]
-        public async Task MessageClient_SendAsync_WithoutExplicitOpenAsync_ThrowsIotHubServiceException()
+        public async Task MessageClient_SendAsync_WithoutExplicitOpenAsync_ThrowsInvalidOperationException()
         {
             // arrange
             string payloadString = "Hello, World!";
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
             Func<Task> act = async () => await serviceClient.Messages.SendAsync("deviceId123", msg);
 
             // assert
-            await act.Should().ThrowAsync<IotHubServiceException>();
+            await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [TestMethod]
