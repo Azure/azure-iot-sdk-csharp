@@ -773,7 +773,7 @@ catch
 CleanUp-Certs
 
 # Creating a file to run to load environment variables
-$loadScriptDir = Join-Path $PSScriptRoot ".." -Resolve
+$loadScriptDir = Join-Path $PSScriptRoot "..\..\..\.." -Resolve
 $loadScriptName = "Load-$keyVaultName.ps1";
 Write-Host "`nWriting environment loading file to $loadScriptDir\$loadScriptName.`n"
 $file = New-Item -Path $loadScriptDir -Name $loadScriptName -ItemType "file" -Force

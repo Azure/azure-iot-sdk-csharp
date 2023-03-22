@@ -15,11 +15,18 @@ namespace Microsoft.Azure.IoT.Thief.Device
     internal class Parameters
     {
         [Option(
-            'a',
-            "ApplicationKey",
-            Required = true,
+            'c',
+            "ConnectionString",
+            Required = false,
+            HelpText = "The connection string for the device to simulate.")]
+        public string ConnectionString { get; set; }
+
+        [Option(
+            'i',
+            "InstrumentationKey",
+            Required = false,
             HelpText = "The instrumentation key string for application insights.")]
-        public string ApplicationKey { get; set; }
+        public string InstrumentationKey { get; set; }
 
         [Option(
             't',
@@ -34,7 +41,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
             "TransportProtocol",
             Default = IotHubClientTransportProtocol.Tcp,
             Required = false,
-            HelpText = "The transport to use to communicate with the device provisioning instance.")]
+            HelpText = "The protocol over which a transport (i.e., MQTT, AMQP) communicates.")]
         public IotHubClientTransportProtocol TransportProtocol { get; set; }
     }
 }

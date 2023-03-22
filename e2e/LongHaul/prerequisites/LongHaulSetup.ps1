@@ -205,6 +205,7 @@ $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploym
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
 $keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
+$instrumentationKey = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.instrumentationKey.value' --output tsv
 
 ##################################################################################################################################
 # Fetch the iothubowner policy details.
@@ -235,6 +236,7 @@ $longhaulDeviceConnectionString = az iot hub device-identity connection-string s
 $keyvaultKvps = @{
     # Environment variables for IoT Hub E2E tests
     "IOTHUB-LONG-HAUL-DEVICE-CONNECTION-STRING" = $longhaulDeviceConnectionString;
+    "APPLICATION-INSIGHTS-INSTRUMENTATION-KEY" = $instrumentationKey;
 }
 
 Write-Host "`nWriting secrets to KeyVault $keyVaultName."
@@ -253,11 +255,11 @@ foreach ($kvp in $keyvaultKvps.GetEnumerator())
 # Creating a file to run to load environment variables
 ############################################################################################################################
 
-$loadScriptDir = Join-Path $PSScriptRoot ".." -Resolve
+$loadScriptDir = Join-Path $PSScriptRoot "..\..\..\.." -Resolve
 $loadScriptName = "Load-$keyVaultName.ps1";
 Write-Host "`nWriting environment loading file to $loadScriptDir\$loadScriptName.`n"
 $file = New-Item -Path $loadScriptDir -Name $loadScriptName -ItemType "file" -Force
-Add-Content -Path $file.PSPath -Value "$PSScriptRoot\LoadEnvironmentVariablesFromKeyVault.ps1 -SubscriptionId $SubscriptionId -KeyVaultName $keyVaultName"
+Add-Content -Path $file.PSPath -Value "$loadScriptDir\azure-iot-sdk-csharp\e2e\Tests\prerequisites\LoadEnvironmentVariablesFromKeyVault.ps1 -SubscriptionId $SubscriptionId -KeyVaultName $keyVaultName"
 
 ############################################################################################################################
 # Configure environment variables

@@ -16,7 +16,7 @@ namespace ThiefDevice
         private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
         private static Logger s_logger;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
-        private static readonly string s_deviceConnectionString = TestConfiguration.DeviceConnectionString;
+        private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_DEVICE_CONNECTION_STRING");
 
         private static async Task Main(string[] args)
         {
@@ -116,7 +116,7 @@ namespace ThiefDevice
                 logBuilder.AppContext.Add(kvp.Key, kvp.Value);
             }
             logBuilder.LogProviders.Add(new ConsoleLogProvider { ShouldLogContext = false, ShouldUseColor = true });
-            s_aiLoggingProvider = new ApplicationInsightsLoggingProvider(parameters.ApplicationKey);
+            s_aiLoggingProvider = new ApplicationInsightsLoggingProvider(parameters.InstrumentationKey);
             logBuilder.LogProviders.Add(s_aiLoggingProvider);
 
             Logger logger = logBuilder.BuildLogger();
