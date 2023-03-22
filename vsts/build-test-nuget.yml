@@ -201,7 +201,7 @@ jobs:
         inputs:
           testRunner: VSTest
           testResultsFiles: '**/*.trx'
-          testRunTitle: 'Windows Tests $(FRAMEWORK)'
+          testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
           configuration: 'Debug UT + Release E2E ($(FRAMEWORK))'
         condition: always()
@@ -437,7 +437,7 @@ jobs:
         inputs:
           testRunner: VSTest
           testResultsFiles: '**/*.trx'
-          testRunTitle: 'Linux Tests $(FRAMEWORK)'
+          testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
         condition: always()
 
   ### Upload unisgned packages for partner signing and release pipeline ###
