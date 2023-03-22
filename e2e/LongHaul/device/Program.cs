@@ -14,9 +14,11 @@ namespace ThiefDevice
     internal class Program
     {
         private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
+        private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_DEVICE_CONNECTION_STRING");
+        private static readonly string s_instrumentationKey = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_INSTRUMENTATION_KEY");
         private static Logger s_logger;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
-        private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_DEVICE_CONNECTION_STRING");
+        private static Parameters s_parameters;
 
         private static async Task Main(string[] args)
         {
@@ -26,18 +28,17 @@ namespace ThiefDevice
             s_commonProperties.Add(SdkVersion, "2.0.0-preview004");
 
             // Parse application parameters
-            Parameters parameters = null;
             ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
                 .WithParsed(parsedParams =>
                 {
-                    parameters = parsedParams;
+                    s_parameters = parsedParams;
                 })
                 .WithNotParsed(errors =>
                 {
                     Environment.Exit(1);
                 });
 
-            s_logger = InitializeLogging(s_deviceConnectionString, parameters);
+            s_logger = InitializeLogging(s_parameters.ConnectionString ?? s_deviceConnectionString);
 
             // Log system health before initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -46,8 +47,8 @@ namespace ThiefDevice
 
             await using var iotHub = new IotHub(
                 s_logger,
-                s_deviceConnectionString,
-                GetTransportSettings(parameters.Transport, parameters.TransportProtocol));
+                s_parameters.ConnectionString ?? s_deviceConnectionString,
+                GetTransportSettings());
             foreach (KeyValuePair<string, string> prop in s_commonProperties)
             {
                 iotHub.IotProperties.Add(prop.Key, prop.Value);
@@ -99,7 +100,7 @@ namespace ThiefDevice
             return cancellationTokenSource;
         }
 
-        private static Logger InitializeLogging(string deviceConnectionString, Parameters parameters)
+        private static Logger InitializeLogging(string deviceConnectionString)
         {
             var helper = new IotHubConnectionStringHelper(deviceConnectionString);
             var logBuilder = new LoggingBuilder
@@ -108,7 +109,7 @@ namespace ThiefDevice
                 {
                     { Hub, helper.HostName },
                     { DeviceId, helper.DeviceId },
-                    { Transport, GetTransportSettings(parameters.Transport, parameters.TransportProtocol).ToString() },
+                    { Transport, GetTransportSettings().ToString() },
                 },
             };
             foreach (KeyValuePair<string, string> kvp in s_commonProperties)
@@ -116,22 +117,20 @@ namespace ThiefDevice
                 logBuilder.AppContext.Add(kvp.Key, kvp.Value);
             }
             logBuilder.LogProviders.Add(new ConsoleLogProvider { ShouldLogContext = false, ShouldUseColor = true });
-            s_aiLoggingProvider = new ApplicationInsightsLoggingProvider(parameters.InstrumentationKey);
+            s_aiLoggingProvider = new ApplicationInsightsLoggingProvider(s_parameters.InstrumentationKey ?? s_instrumentationKey);
             logBuilder.LogProviders.Add(s_aiLoggingProvider);
 
             Logger logger = logBuilder.BuildLogger();
             return logger;
         }
 
-        private static IotHubClientTransportSettings GetTransportSettings(
-            TransportType transportType,
-            IotHubClientTransportProtocol transportProtocol)
+        private static IotHubClientTransportSettings GetTransportSettings()
         {
-            return transportType switch
+            return s_parameters.Transport switch
             {
-                TransportType.Mqtt => new IotHubClientMqttSettings(transportProtocol),
-                TransportType.Amqp => new IotHubClientAmqpSettings(transportProtocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {transportType}/{transportProtocol}"),
+                TransportType.Mqtt => new IotHubClientMqttSettings(s_parameters.TransportProtocol),
+                TransportType.Amqp => new IotHubClientAmqpSettings(s_parameters.TransportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {s_parameters.Transport}/{s_parameters.TransportProtocol}"),
             };
         }
     }
