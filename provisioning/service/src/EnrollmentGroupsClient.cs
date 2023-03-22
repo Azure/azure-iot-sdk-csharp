@@ -288,19 +288,37 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             try
             {
-                async Task<Page<EnrollmentGroup>> nextPageFunc(string continuationToken, int? pageSizeHint)
+                async Task<Page<EnrollmentGroup>> NextPageFunc(string continuationToken, int? pageSizeHint)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    return await QueryBuilder.BuildAndSendRequestAsync<EnrollmentGroup>(_contractApiHttp, _internalRetryHandler, query, GetEnrollmentGroupQueryUri(), continuationToken, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                    return await QueryBuilder
+                        .BuildAndSendRequestAsync<EnrollmentGroup>(
+                            _contractApiHttp,
+                            _internalRetryHandler,
+                            query,
+                            GetEnrollmentGroupQueryUri(),
+                            continuationToken,
+                            pageSizeHint,
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
 
-                async Task<Page<EnrollmentGroup>> firstPageFunc(int? pageSizeHint)
+                async Task<Page<EnrollmentGroup>> FirstPageFunc(int? pageSizeHint)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    return await QueryBuilder.BuildAndSendRequestAsync<EnrollmentGroup>(_contractApiHttp, _internalRetryHandler, query, GetEnrollmentGroupQueryUri(), null, pageSizeHint, cancellationToken).ConfigureAwait(false);
+                    return await QueryBuilder
+                        .BuildAndSendRequestAsync<EnrollmentGroup>(
+                            _contractApiHttp,
+                            _internalRetryHandler,
+                            query,
+                            GetEnrollmentGroupQueryUri(),
+                            null,
+                            pageSizeHint,
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
 
-                return PageableHelpers.CreateAsyncEnumerable(firstPageFunc, nextPageFunc, null);
+                return PageableHelpers.CreateAsyncEnumerable(FirstPageFunc, NextPageFunc, null);
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {

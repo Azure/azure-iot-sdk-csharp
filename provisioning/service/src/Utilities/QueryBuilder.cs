@@ -19,7 +19,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string PageSizeHeaderKey = "x-ms-max-item-count";
         private const string QueryUriFormat = "{0}/query";
 
-        internal static async Task<Page<T>> BuildAndSendRequestAsync<T>(ContractApiHttp contractApiHttp, RetryHandler retryHandler, string query, Uri path, string continuationToken, int? pageSizeHint, CancellationToken cancellationToken)
+        internal static async Task<Page<T>> BuildAndSendRequestAsync<T>(
+            ContractApiHttp contractApiHttp,
+            RetryHandler retryHandler,
+            string query,
+            Uri path,
+            string continuationToken,
+            int? pageSizeHint,
+            CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

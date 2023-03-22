@@ -35,8 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // Create an enrollment group so that the query is guaranteed to return at least one entry
             string enrollmentGroupId = Guid.NewGuid().ToString();
             var enrollmentGroup = new EnrollmentGroup(enrollmentGroupId, new SymmetricKeyAttestation());
-            await provisioningServiceClient.EnrollmentGroups
-                .CreateOrUpdateAsync(enrollmentGroup).ConfigureAwait(false);
+            await provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup).ConfigureAwait(false);
 
             try
             {
@@ -51,8 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 try
                 {
-                    await provisioningServiceClient.EnrollmentGroups
-                        .DeleteAsync(enrollmentGroupId).ConfigureAwait(false);
+                    await provisioningServiceClient.EnrollmentGroups.DeleteAsync(enrollmentGroupId).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
