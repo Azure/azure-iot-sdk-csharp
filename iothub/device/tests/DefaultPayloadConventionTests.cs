@@ -13,32 +13,32 @@ namespace Microsoft.Azure.Devices.Client.Tests
     /// </summary>
     [TestClass]
     [TestCategory("Unit")]
-    public class NewtonsoftJsonPayloadSerializerTests
+    public class DefaultPayloadConventionTests
     {
         private static readonly string s_dateTimeString = "2023-01-31T10:37:08.4599400";
         private static readonly string s_serializedPayloadString = "{\"time\":\"2023-01-31T10:37:08.4599400\"}";
 
         [TestMethod]
-        public void NewtonsoftJsonPayloadSerializer_DateTime_SerializesProperly()
+        public void DefaultPayloadConvention_DateTime_SerializesProperly()
         {
             // arrange
             var testDateTime = new TestDateTime { DateTimeString = s_dateTimeString };
 
             // act
-            var result = NewtonsoftJsonPayloadSerializer.Instance.SerializeToString(testDateTime);
+            string result = DefaultPayloadConvention.Serialize(testDateTime);
 
             // assert
             result.Should().Be(s_serializedPayloadString);
         }
 
         [TestMethod]
-        public void NewtonsoftJsonPayloadSerializer_DateTime_DeserializesProperly()
+        public void DefaultPayloadConvention_DateTime_DeserializesProperly()
         {
             // arrange
             string jsonStr = $@"{{""time"":""{s_dateTimeString}""}}";
 
             // act
-            JObject payload = NewtonsoftJsonPayloadSerializer.Instance.DeserializeToType<JObject>(jsonStr);
+            JObject payload = DefaultPayloadConvention.Instance.GetObject<JObject>(jsonStr);
 
             //assert
             payload.ToString(Formatting.None).Should().Be(s_serializedPayloadString);

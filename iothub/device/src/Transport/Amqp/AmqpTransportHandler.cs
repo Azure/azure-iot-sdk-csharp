@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 additionalClientInformation,
                 transportSettings,
                 context.MethodCallback,
-                TwinMessageListener,
+                TwinMessageListenerAsync,
                 context.MessageEventCallback,
                 OnDisconnected);
 
@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
 
                 // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
-                using var reader = new StreamReader(responseFromService.BodyStream, _payloadConvention.PayloadEncoder.ContentEncoding);
+                using var reader = new StreamReader(responseFromService.BodyStream, _payloadConvention.ContentEncoding);
                 string body = reader.ReadToEnd();
 
                 try
@@ -474,15 +474,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return response;
         }
 
-        private void TwinMessageListener(AmqpMessage responseFromService, string correlationId, IotHubClientException ex = default)
+        private async Task TwinMessageListenerAsync(AmqpMessage responseFromService, string correlationId, IotHubClientException ex = default)
         {
             if (correlationId == null)
             {
                 // This is desired property updates, so call the callback with DesiredPropertyCollection.
-                using var reader = new StreamReader(responseFromService.BodyStream, _payloadConvention.PayloadEncoder.ContentEncoding);
-                string responseBody = reader.ReadToEnd();
-
-                Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(responseBody);
+                Dictionary<string, object> desiredPropertyPatchDictionary = await _payloadConvention
+                    .GetObjectAsync<Dictionary<string, object>>(responseFromService.BodyStream)
+                    .ConfigureAwait(false);
                 var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
                 {
                     PayloadConvention = _payloadConvention,
@@ -496,7 +495,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"Received a response for operation with correlation Id {correlationId}.", nameof(TwinMessageListener));
+                        Logging.Info(this, $"Received a response for operation with correlation Id {correlationId}.", nameof(TwinMessageListenerAsync));
 
                     // For Get and Patch, complete the task.
                     if (_twinResponseCompletions.TryRemove(correlationId, out TaskCompletionSource<AmqpMessage> task))
@@ -514,14 +513,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         // This can happen if we received a message from service with correlation Id that was not set by SDK or does not exist in dictionary.
                         if (Logging.IsEnabled)
-                            Logging.Info("Could not remove correlation Id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
+                            Logging.Info("Could not remove correlation Id to complete the task awaiter for a twin operation.", nameof(TwinMessageListenerAsync));
                     }
                 }
                 else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     // This is an acknowledgement received from service for subscribing to desired property updates
                     if (Logging.IsEnabled)
-                        Logging.Info("Subscribed for twin desired property updates successfully", nameof(TwinMessageListener));
+                        Logging.Info("Subscribed for twin desired property updates successfully", nameof(TwinMessageListenerAsync));
                 }
             }
         }

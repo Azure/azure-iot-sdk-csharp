@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -100,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string GetSerializedString()
         {
-            return PayloadConvention.PayloadSerializer.SerializeToString(_properties);
+            return JsonConvert.SerializeObject(_properties);
         }
 
         /// <inheritdoc/>

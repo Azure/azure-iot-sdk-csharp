@@ -168,8 +168,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                string payloadString = PayloadConvention.PayloadEncoder.ContentEncoding.GetString(_payload);
-                payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(payloadString);
+                payload = PayloadConvention.GetObject<T>(_payload);
 
                 return true;
             }
