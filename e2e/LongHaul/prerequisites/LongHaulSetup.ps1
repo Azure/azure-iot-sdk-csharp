@@ -184,6 +184,7 @@ az deployment group create `
     --only-show-errors `
     --template-file "$PSScriptRoot\longhaul-resources.json" `
     --parameters `
+    UserObjectId=$userObjectId `
     StorageAccountName=$storageAccountName `
     KeyVaultName=$keyVaultName `
     HubUnitsCount=$iothubUnitsToBeCreated `

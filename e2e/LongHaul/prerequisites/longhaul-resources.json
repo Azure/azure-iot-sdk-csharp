@@ -31,6 +31,21 @@
       "maxLength": 24,
       "minLength": 3
     },
+    "UserObjectId": {
+      "type": "string",
+      "metadata": {
+        "description": "Signed in user objectId"
+      }
+    },
+    "KeyVaultName": {
+      "type": "string",
+      "defaultValue": "[format('{0}-kv', resourceGroup().name)]",
+      "metadata": {
+        "description": "The name of the key vault for storing secrets needed for running tests."
+      },
+      "maxLength": 24,
+      "minLength": 3
+    },
     "HubName": {
       "type": "string",
       "defaultValue": "[format('{0}-hub', resourceGroup().name)]",
@@ -96,6 +111,46 @@
       "dependsOn": [
         "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('ApplicationInsightsName'))]"
       ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2018-02-14",
+      "name": "[parameters('KeyVaultName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "enabledForDeployment": false,
+        "enabledForTemplateDeployment": false,
+        "enabledForDiskEncryption": false,
+        "accessPolicies": [
+          {
+            "objectId": "[parameters('UserObjectId')]",
+            "tenantId": "[subscription().tenantId]",
+            "permissions": {
+              "secrets": [
+                "all"
+              ],
+              "certificates": [
+                "all"
+              ],
+              "keys": [
+                "all"
+              ]
+            }
+          }
+        ],
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "name": "standard",
+          "family": "A"
+        },
+        "enableSoftDelete": true,
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        }
+      }
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
@@ -214,6 +269,10 @@
     "storageAccountConnectionString": {
       "type": "string",
       "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2021-06-01').keys[0].value)]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "value": "[parameters('KeyVaultName')]"
     },
     "instrumentationKey": {
       "type": "string",

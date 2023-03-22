@@ -4,10 +4,18 @@ param ApplicationInsightsName string = '${resourceGroup().name}-ai'
 @description('The location for the Application insights instance.')
 param AiLocation string = 'centralus'
 
+@description('Signed in user objectId')
+param UserObjectId string
+
 @minLength(3)
 @maxLength(24)
 @description('The name of the storage account used by the IoT hub.')
 param StorageAccountName string
+
+@minLength(3)
+@maxLength(24)
+@description('The name of the key vault for storing secrets needed for running tests.')
+param KeyVaultName string = '${resourceGroup().name}-kv'
 
 @description('The name of the main IoT hub used by tests.')
 param HubName string = '${resourceGroup().name}-hub'
@@ -67,6 +75,47 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
         }
       }
       keySource: 'Microsoft.Storage'
+    }
+  }
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2018-02-14' = {
+  name: KeyVaultName
+  location: resourceGroup().location
+  properties: {
+    enabledForDeployment: false
+    enabledForTemplateDeployment: false
+    enabledForDiskEncryption: false
+    accessPolicies: [
+      {
+        objectId: UserObjectId
+        tenantId: subscription().tenantId
+        permissions: {
+          secrets: [
+            'all'
+          ]
+          certificates: [
+            'all'
+          ]
+          keys: [
+            'all'
+          ]
+        }
+      }
+    ]
+    tenantId: subscription().tenantId
+    sku: {
+      name: 'standard'
+      family: 'A'
+    }
+    enableSoftDelete: true
+    networkAcls: {
+      defaultAction: 'Allow'
+      bypass: 'AzureServices'
+      ipRules: [
+      ]
+      virtualNetworkRules: [
+      ]
     }
   }
 }
@@ -141,3 +190,4 @@ output hubName string = HubName
 output hubConnectionString string = 'HostName=${HubName}.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=${listkeys(hubKeysId, '2021-07-01').primaryKey}'
 output storageAccountConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${StorageAccountName};AccountKey=${listkeys(storageAccount.id, '2021-06-01').keys[0].value};EndpointSuffix=core.windows.net'
 output instrumentationKey string = reference(applicationInsights.id, '2020-02-02-preview').InstrumentationKey
+output keyVaultName string = KeyVaultName
