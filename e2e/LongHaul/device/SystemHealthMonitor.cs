@@ -44,15 +44,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
             {
                 try
                 {
-                    var telemetry = new SystemHealthTelemetry();
-                    _logger.Metric(nameof(telemetry.ProcessCpuUsagePercent), telemetry.ProcessCpuUsagePercent);
-                    _logger.Metric(nameof(telemetry.ProcessWorkingSet), telemetry.ProcessWorkingSet);
-                    _logger.Metric(nameof(telemetry.ProcessWorkingSetPrivate), telemetry.ProcessWorkingSetPrivate);
-                    _logger.Metric(nameof(telemetry.ProcessPrivateBytes), telemetry.ProcessPrivateBytes);
-                    if (telemetry.ProcessBytesInAllHeaps.HasValue)
-                    {
-                        _logger.Metric(nameof(telemetry.ProcessBytesInAllHeaps), telemetry.ProcessBytesInAllHeaps.Value);
-                    }
+                    SystemHealthTelemetry telemetry = BuildAndLogSystemHealth(_logger);
                     _iotHub.AddTelemetry(telemetry);
                     errorCount = 0;
                 }
@@ -71,6 +63,21 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
                 await Task.Delay(_interval, ct).ConfigureAwait(false);
             }
+        }
+
+        internal static SystemHealthTelemetry BuildAndLogSystemHealth(Logger logger)
+        {
+            var telemetry = new SystemHealthTelemetry();
+            logger.Metric(nameof(telemetry.ProcessCpuUsagePercent), telemetry.ProcessCpuUsagePercent);
+            logger.Metric(nameof(telemetry.ProcessWorkingSet), telemetry.ProcessWorkingSet);
+            logger.Metric(nameof(telemetry.ProcessWorkingSetPrivate), telemetry.ProcessWorkingSetPrivate);
+            logger.Metric(nameof(telemetry.ProcessPrivateBytes), telemetry.ProcessPrivateBytes);
+            if (telemetry.ProcessBytesInAllHeaps.HasValue)
+            {
+                logger.Metric(nameof(telemetry.ProcessBytesInAllHeaps), telemetry.ProcessBytesInAllHeaps.Value);
+            }
+
+            return telemetry;
         }
     }
 }

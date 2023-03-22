@@ -15,7 +15,6 @@ namespace ThiefDevice
     {
         private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
         private static Logger s_logger;
-        private static IotHub s_iotHub;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
         private static readonly string s_deviceConnectionString = TestConfiguration.DeviceConnectionString;
 
@@ -23,6 +22,7 @@ namespace ThiefDevice
         {
             s_commonProperties.Add(RunId, Guid.NewGuid().ToString());
             s_commonProperties.Add(SdkLanguage, ".NET");
+            // TODO: get this info at runtime rather than hard-coding it
             s_commonProperties.Add(SdkVersion, "2.0.0-preview004");
 
             // Parse application parameters
@@ -38,25 +38,50 @@ namespace ThiefDevice
                 });
 
             s_logger = InitializeLogging(s_deviceConnectionString, parameters);
-            s_iotHub = InitializeHub(s_logger, parameters);
+
+            // Log system health before initializing hub
+            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
             s_logger.Event(StartingRun);
 
-            await s_iotHub.InitializeAsync().ConfigureAwait(false);
+            await using var iotHub = new IotHub(
+                s_logger,
+                s_deviceConnectionString,
+                GetTransportSettings(parameters.Transport, parameters.TransportProtocol));
+            foreach (KeyValuePair<string, string> prop in s_commonProperties)
+            {
+                iotHub.IotProperties.Add(prop.Key, prop.Value);
+            }
+
+            // Log system health after initializing hub
+            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
+            await iotHub.InitializeAsync().ConfigureAwait(false);
+
+            // Log system health after opening connection to hub
+            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
+
             using CancellationTokenSource cancellationTokenSource = ConfigureAppExit();
-            var systemHealthMonitor = new SystemHealthMonitor(s_iotHub, s_logger.Clone());
+            var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_logger.Clone());
 
             try
             {
                 await Task
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
-                        s_iotHub.RunAsync(cancellationTokenSource.Token))
+                        iotHub.RunAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
+            catch (Exception ex)
+            {
+                s_logger.Trace($"Device app failed with exception {ex}");
+            }
 
-            await s_iotHub.DisposeAsync().ConfigureAwait(false);
+            await iotHub.DisposeAsync().ConfigureAwait(false);
+
+            // Log system health after disposing hub
+            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
+
             s_logger.Flush();
             s_aiLoggingProvider.Dispose();
         }
@@ -98,18 +123,9 @@ namespace ThiefDevice
             return logger;
         }
 
-        private static IotHub InitializeHub(Logger logger, Parameters parameters)
-        {
-            var iotHub = new IotHub(logger, s_deviceConnectionString, GetTransportSettings(parameters.Transport, parameters.TransportProtocol));
-            foreach (KeyValuePair<string, string> prop in s_commonProperties)
-            {
-                iotHub.IotProperties.Add(prop.Key, prop.Value);
-            }
-
-            return iotHub;
-        }
-
-        private static IotHubClientTransportSettings GetTransportSettings(TransportType transportType, IotHubClientTransportProtocol transportProtocol)
+        private static IotHubClientTransportSettings GetTransportSettings(
+            TransportType transportType,
+            IotHubClientTransportProtocol transportProtocol)
         {
             return transportType switch
             {
