@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // consume the first page of results so the next MoveNextAsync gets a new page
             (await nextEnumerator.MoveNextAsync().ConfigureAwait(false)).Should().BeTrue("Should have at least one page of jobs.");
 
-            currentPage = enumerator.Current;
+            currentPage = nextEnumerator.Current;
             currentPage.Values.Count.Should().Be(3);
             IEnumerator<ClientTwin> pageContentsEnumerator = currentPage.Values.GetEnumerator();
             pageContentsEnumerator.MoveNext().Should().BeTrue();
