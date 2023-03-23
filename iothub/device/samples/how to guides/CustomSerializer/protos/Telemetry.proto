@@ -1,0 +1,5 @@
+﻿syntax = "proto3";
+
+message Telemetries {
+	double workingSet = 1;
+}

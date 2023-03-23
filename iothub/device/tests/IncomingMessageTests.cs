@@ -120,5 +120,14 @@ namespace Microsoft.Azure.Devices.Client.Tests
             testMessage.Properties.Should().NotBeNull();
             testMessage.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
         }
+
+        [TestMethod]
+        public void IncomingMessage_ValidateBinaryPayload()
+        {
+            double payload = 45.67;
+            var testMessage = new IncomingMessage(BitConverter.GetBytes(payload));
+            testMessage.TryGetPayload(out double actualPayload);
+            actualPayload.Should().Be(payload);
+        }
     }
 }
