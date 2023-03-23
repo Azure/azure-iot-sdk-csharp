@@ -71,9 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, cancellationToken, nameof(SendTelemetryAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -100,9 +98,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, messages, cancellationToken, nameof(SendTelemetryAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -129,9 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -158,9 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -206,9 +198,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -254,9 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -302,9 +290,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -350,9 +336,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -398,9 +382,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -446,9 +428,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -475,9 +455,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
             try
@@ -605,7 +583,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(RefreshSasTokenAsync));
 
-            ThrowIfDisposed();
             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
 
             try
@@ -751,6 +728,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task VerifyIsOpenAsync(CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
             await _clientOpenSemaphore.WaitAsync(cancellationToken);
 
             try
