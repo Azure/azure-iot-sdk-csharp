@@ -498,9 +498,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
-            nextHandlerMock
-                .Setup(x => x.CloseAsync(It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
 
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
@@ -511,7 +508,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> open = () => retryDelegatingHandler.OpenAsync(CancellationToken.None);
 
             // assert
-            await open.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
+            await open.Should().NotThrowAsync().ConfigureAwait(false); ;
         }
 
         [TestMethod]
@@ -528,9 +525,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
-            nextHandlerMock
-                .Setup(x => x.CloseAsync(It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
 
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
@@ -541,7 +535,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> sendTelemetry = () => retryDelegatingHandler.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), CancellationToken.None);
 
             // assert
-            await sendTelemetry.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
+            await sendTelemetry.Should().ThrowAsync<InvalidOperationException>().ConfigureAwait(false);
         }
 
         [TestMethod]
