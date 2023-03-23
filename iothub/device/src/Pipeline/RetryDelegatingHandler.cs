@@ -567,7 +567,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _handleDisconnectCts?.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
-            //catch { } // catch any exceptions thrown in L552 - close ungraceful should be handled
             finally
             {
                 _cancelPendingOperationsCts?.Dispose();
