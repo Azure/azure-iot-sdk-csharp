@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class DefaultPayloadConvention : PayloadConvention
     {
         private static readonly JsonSerializer s_jsonSerializer = new();
+        internal static readonly Encoding Encoding = Encoding.UTF8;
 
         /// <summary>
         /// A static instance of JsonSerializerSettings which sets DateParseHandling to None.
@@ -46,13 +47,13 @@ namespace Microsoft.Azure.Devices.Client
         public override string ContentType => "application/json";
 
         /// <inheritdoc/>
-        public override Encoding ContentEncoding => Encoding.UTF8;
+        public override string ContentEncoding => Encoding.WebName;
 
         /// <inheritdoc/>
         public override byte[] GetObjectBytes(object objectToSendWithConvention)
         {
             string payloadString = Serialize(objectToSendWithConvention);
-            return ContentEncoding.GetBytes(payloadString);
+            return Encoding.GetBytes(payloadString);
         }
 
         /// <inheritdoc/>
@@ -63,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client
                 return default;
             }
 
-            string payloadString = ContentEncoding.GetString(objectToConvert);
+            string payloadString = Encoding.GetString(objectToConvert);
             return GetObject<T>(payloadString);
         }
 

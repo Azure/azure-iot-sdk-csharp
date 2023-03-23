@@ -25,21 +25,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The encoding used for the payload.
         /// </summary>
-        public abstract Encoding ContentEncoding { get; }
+        public abstract string ContentEncoding { get; }
 
         /// <summary>
         /// Returns the byte array for the convention-based serialized/encoded message.
         /// </summary>
         /// <returns>The correctly encoded object for this convention.</returns>
         public abstract byte[] GetObjectBytes(object objectToSendWithConvention);
-
-        /// <summary>
-        /// Returns the object as the specified type.
-        /// </summary>
-        /// <typeparam name="T">The type to convert to.</typeparam>
-        /// <param name="jsonObjectAsText">The object as JSON text to convert.</param>
-        /// <returns>The converted object.</returns>
-        public abstract T GetObject<T>(string jsonObjectAsText);
 
         /// <summary>
         /// Returns the object as the specified type.
@@ -56,5 +48,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="streamToConvert">The stream to convert.</param>
         /// <returns>The converted object.</returns>
         public abstract Task<T> GetObjectAsync<T>(Stream streamToConvert);
+
+        /// <summary>
+        /// Returns the object as the specified type.
+        /// </summary>
+        /// <remarks>
+        /// Used to deserialize a twin property value.
+        /// </remarks>
+        /// <typeparam name="T">The type to convert to.</typeparam>
+        /// <param name="jsonObjectAsText">The serialized object as text to convert.</param>
+        /// <returns>The converted object.</returns>
+        public abstract T GetObject<T>(string jsonObjectAsText);
     }
 }

@@ -136,13 +136,13 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The command payload as a JSON string.
+        /// The command payload as a JSON string, if applicable.
         /// </summary>
         public string GetPayloadAsJsonString()
         {
             return Payload == null || Payload.Length == 0
                 ? null
-                : PayloadConvention.ContentEncoding.GetString(Payload);
+                : DefaultPayloadConvention.Encoding.GetString(Payload);
         }
     }
 }

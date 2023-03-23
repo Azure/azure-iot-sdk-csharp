@@ -360,8 +360,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
 
-                AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken)
-                    .ConfigureAwait(false);
+                AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken).ConfigureAwait(false);
 
                 if (responseFromService == null)
                 {
@@ -369,7 +368,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
 
                 // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
-                using var reader = new StreamReader(responseFromService.BodyStream, _payloadConvention.ContentEncoding);
+                using var reader = new StreamReader(responseFromService.BodyStream);
                 string body = reader.ReadToEnd();
 
                 try

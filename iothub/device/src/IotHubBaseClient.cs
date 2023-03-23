@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client
 
             message.PayloadConvention = _clientOptions.PayloadConvention;
             message.ContentType = _clientOptions.PayloadConvention.ContentType;
-            message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding.WebName;
+            message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding;
 
             try
             {
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 message.PayloadConvention = _clientOptions.PayloadConvention;
                 message.ContentType = _clientOptions.PayloadConvention.ContentType;
-                message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding.WebName;
+                message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding;
 
                 if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
                 {
