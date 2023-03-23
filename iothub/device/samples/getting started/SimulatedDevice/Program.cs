@@ -18,6 +18,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
     /// </summary>
     internal class Program
     {
+        private static TimeSpan s_telemetryInterval = TimeSpan.FromSeconds(30);
+
         private static async Task Main(string[] args)
         {
             Parameters parameters = null;
@@ -44,6 +46,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Exiting...");
             };
 
+            await deviceClient.SetDirectMethodCallbackAsync(DirectMethodCallback);
+
             // Run the telemetry loop
             await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
 
@@ -56,6 +60,31 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await deviceClient.CloseAsync();
 
             Console.WriteLine("Device simulator finished.");
+        }
+        private static Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
+        {
+            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{methodRequest.GetPayloadAsJsonString()}].");
+
+            switch (methodRequest.MethodName)
+            {
+                case "SetTelemetryInterval":
+                    try
+                    {
+                        if (methodRequest.TryGetPayload(out int telemetryIntervalSeconds))
+                        {
+                            s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalSeconds);
+                            Console.WriteLine($"Setting the telemetry interval to {s_telemetryInterval}.");
+                            return Task.FromResult(new DirectMethodResponse(200));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}");
+                    }
+                    break;
+            }
+
+            return Task.FromResult(new DirectMethodResponse(400));
         }
 
         // Async method to send simulated telemetry
@@ -89,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.SendTelemetryAsync(message, ct);
                     Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
 
-                    await Task.Delay(1000, ct);
+                    await Task.Delay(s_telemetryInterval, ct);
                 }
             }
             catch (TaskCanceledException) { } // ct was signaled
