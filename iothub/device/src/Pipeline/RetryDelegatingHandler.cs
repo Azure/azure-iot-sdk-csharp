@@ -812,6 +812,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 
         // Triggered from connection loss event
+        // This method is set up for SDK internal retry attempts. We invoke this task as soon as the client is opened.
+        // WaitForTransportClosedAsync() waits for the signal that the transport layer has been closed or disconnected.
+        // Once disconnected, either gracefully or ungracefully, the SDK begins its reconnection attempt.
+        // This reconnection attempt consults the retry policy supplied to infer if a reconnection attempt should be made.
+        // These reconnection attempts are monitored through the _handleDisconnectCts cancellation token source.
+        // This cancellation token source is set to be canceled when either CloseAsync() or Dispose() is invoked.
         private async Task HandleDisconnectAsync()
         {
             var connectionStatusInfo = new ConnectionStatusInfo();

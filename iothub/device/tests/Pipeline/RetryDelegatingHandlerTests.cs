@@ -412,13 +412,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryDelegatingHandler_OpenAsyncWhenClientIsClosing_Exits()
-        {
-
-        }
-
-
-        [TestMethod]
         public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingOpenAsync()
         {
             // arrange
@@ -433,6 +426,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(async (CancellationToken ct) =>
                 {
+                    // Artificial wait to simulate the transport protocol level operations.
                     await Task.Delay(TimeSpan.FromSeconds(5), ct);
                 });
 
@@ -461,14 +455,16 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
-               .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-               .Returns(Task.CompletedTask);
-            nextHandlerMock
                 .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
                 .Returns(async (TelemetryMessage message, CancellationToken ct) =>
                 {
+                    // Artificial wait to simulate the transport protocol level operations.
                     await Task.Delay(TimeSpan.FromSeconds(5), ct);
                 });
+            // Artificial wait to simulate the transport protocol level operations.
+            nextHandlerMock
+                .Setup(x => x.WaitForTransportClosedAsync())
+                .Returns(() => Task.Delay(TimeSpan.FromSeconds(5)));
 
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
