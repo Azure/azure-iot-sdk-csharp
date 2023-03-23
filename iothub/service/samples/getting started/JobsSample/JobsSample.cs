@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
             }
 
             // *************************************** Get all Jobs ***************************************
-            AsyncPageable<ScheduledJob> queryResults =  _jobClient.ScheduledJobs.CreateQueryAsync();
+            AsyncPageable<ScheduledJob> queryResults =  _jobClient.ScheduledJobs.CreateQuery();
 
             await foreach (ScheduledJob job in queryResults)
             {

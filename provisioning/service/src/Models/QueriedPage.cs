@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// Contains the result of a twin, scheduled job or raw query.

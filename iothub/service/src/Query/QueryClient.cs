@@ -75,27 +75,43 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
         /// <example>
-        /// Iterate twins:
+        /// Iterate over twins:
         /// <code language="csharp">
-        /// AsyncPageable&lt;Twin&gt; twinQuery = iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
-        /// await foreach (Twin queriedTwin in twinQuery)
+        /// AsyncPageable&lt;Twin&gt; twinsQuery = iotHubServiceClient.Query.Create&lt;ClientTwin&gt;("SELECT * FROM devices");
+        /// await foreach (Twin queriedTwin in twinsQuery)
         /// {
-        ///     Console.WriteLine(queriedTwin);
+        ///     Console.WriteLine(queriedTwin.DeviceId);
         /// }
         /// </code>
         /// Or scheduled jobs:
         /// <code language="csharp">
-        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = await iotHubServiceClient.Query.CreateAsync&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
+        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = iotHubServiceClient.Query.Create&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
         /// await foreach (ScheduledJob queriedJob in jobsQuery)
         /// {
         ///     Console.WriteLine(queriedJob);
         /// }
         /// </code>
+        /// Iterate over pages of twins:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;ClientTwin&gt;&gt; twinsQuery = iotHubServiceClient.Query.Create&lt;ClientTwin&gt;("SELECT * FROM devices").AsPages();
+        /// await foreach (Page&lt;ClientTwin&gt; queriedTwinsPage in twinsQuery)
+        /// {
+        ///     foreach (ClientTwin queriedTwin in queriedTwinsPage.Values)
+        ///     {
+        ///         Console.WriteLine(queriedTwin.DeviceId);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     queriedTwinsPage.GetRawResponse().Dispose();
+        /// }
+        /// </code>
         /// </example>
-        public virtual AsyncPageable<T> CreateAsync<T>(string query, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<T> Create<T>(string query, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, "Creating query.", nameof(CreateAsync));
+                Logging.Enter(this, "Creating query.", nameof(Create));
 
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
@@ -131,13 +147,13 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(Create));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, "Creating query.", nameof(CreateAsync));
+                    Logging.Exit(this, "Creating query.", nameof(Create));
             }
         }
 
@@ -154,18 +170,35 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
+        /// Iterate over jobs:
         /// <code language="csharp">
-        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = await iotHubServiceClient.Query.CreateJobsQueryAsync();
+        /// AsyncPageable&lt;ScheduledJob&gt; jobsQuery = iotHubServiceClient.Query.CreateJobsQuery();
         /// await foreach (ScheduledJob scheduledJob in jobsQuery)
         /// {
         ///     Console.WriteLine(scheduledJob.JobId);
         /// }
         /// </code>
+        /// Iterate over pages of twins:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;ScheduledJob&gt;&gt; jobsQuery = iotHubServiceClient.Query.CreateJobsQuery().AsPages();
+        /// await foreach (Page&lt;ScheduledJob&gt; scheduledJobsPage in jobsQuery)
+        /// {
+        ///     foreach (ScheduledJob scheduledJob in scheduledJobsPage.Values)
+        ///     {
+        ///         Console.WriteLine(scheduledJob.JobId);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     scheduledJobsPage.GetRawResponse().Dispose();
+        /// }
+        /// </code>
         /// </example>
-        public virtual AsyncPageable<ScheduledJob> CreateJobsQueryAsync(JobQueryOptions options = default, CancellationToken cancellationToken = default)
+        public virtual AsyncPageable<ScheduledJob> CreateJobsQuery(JobQueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(Create));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -209,13 +242,13 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus} threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus} threw an exception: {ex}", nameof(Create));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating query with jobType: {options?.JobType}, jobStatus: {options?.JobStatus}", nameof(Create));
             }
         }
 

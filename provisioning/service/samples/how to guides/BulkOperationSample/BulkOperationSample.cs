@@ -14,9 +14,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private const string SampleRegistrationId1 = "myvalid-registratioid-csharp-1";
         private const string SampleRegistrationId2 = "myvalid-registratioid-csharp-2";
 
-        // Maximum number of elements per query.
-        private const int QueryPageSize = 100;
-
         private static readonly List<string> s_registrationIds = new() { SampleRegistrationId1, SampleRegistrationId2 };
 
         public BulkOperationSample(ProvisioningServiceClient provisioningServiceClient)
@@ -81,12 +78,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nCreating a query for enrollments...");
 
-            Query query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments", QueryPageSize);
-            while (query.HasNext())
+            IAsyncEnumerable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
+            await foreach (IndividualEnrollment enrollment in query)
             {
                 Console.WriteLine("\nQuerying the next enrollments...");
-                QueryResult queryResult = await query.NextAsync();
-                Console.WriteLine(queryResult);
+                Console.WriteLine(enrollment);
             }
         }
     }

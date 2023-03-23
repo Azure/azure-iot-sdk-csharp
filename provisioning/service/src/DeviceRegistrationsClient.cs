@@ -18,10 +18,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     public class DeviceRegistrationStatesClient
     {
-        private const string ServiceName = "registrations";
-        private const string DeviceRegistrationStatusUriFormat = "{0}/{1}";
+        private const string DeviceRegistrationStatusUriFormat = "registrations/{0}";
+        private const string DeviceRegistrationQueryUriFormat = "registrations/{0}/query";
 
-        private readonly IContractApiHttp _contractApiHttp;
+        private readonly ContractApiHttp _contractApiHttp;
         private readonly RetryHandler _internalRetryHandler;
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
         }
 
-        internal DeviceRegistrationStatesClient(IContractApiHttp contractApiHttp, RetryHandler retryHandler)
+        internal DeviceRegistrationStatesClient(ContractApiHttp contractApiHttp, RetryHandler retryHandler)
         {
             _contractApiHttp = contractApiHttp;
             _internalRetryHandler = retryHandler;
@@ -55,13 +55,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ContractApiResponse contractApiResponse = null;
+            HttpResponseMessage response = null;
 
             await _internalRetryHandler
                 .RunWithRetryAsync(
                     async () =>
                     {
-                        contractApiResponse = await _contractApiHttp
+                        response = await _contractApiHttp
                             .RequestAsync(
                                 HttpMethod.Get,
                                 GetDeviceRegistrationStatusUri(registrationId),
@@ -74,7 +74,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body);
+            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<DeviceRegistrationState>(payload);
         }
 
         /// <summary>
@@ -134,24 +135,99 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="query">The SQL query.</param>
         /// <param name="enrollmentGroupId">The enrollment group Id to query.</param>
-        /// <param name="pageSize">The int with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The iterable set of query results.</returns>
         /// <exception cref="ArgumentNullException">If the provided <paramref name="query"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or white space.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">If the provided <paramref name="pageSize"/> value is less than zero.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public Query CreateEnrollmentGroupQuery(string query, string enrollmentGroupId, int pageSize = 0, CancellationToken cancellationToken = default)
+        /// <example>
+        /// Iterate over device registration states in an enrollment group:
+        /// <code language="csharp">
+        /// AsyncPageable&lt;DeviceRegistrationState&gt; deviceRegistrationStatesQuery = dpsServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery("SELECT * FROM enrollmentGroups", "myEnrollmentGroupId");
+        /// await foreach (DeviceRegistrationState queriedState in deviceRegistrationStatesQuery)
+        /// {
+        ///     Console.WriteLine(queriedState.RegistrationId);
+        /// }
+        /// </code>
+        /// Iterate over pages of device registration states in an enrollment group:
+        /// <code language="csharp">
+        /// IAsyncEnumerable&lt;Page&lt;DeviceRegistrationState&gt;&gt; deviceRegistrationStatesQuery = dpsServiceClient.DeviceRegistrationState.CreateQuery("SELECT * FROM enrollmentGroups", "myEnrollmentGroupId").AsPages();
+        /// await foreach (Page&lt;DeviceRegistrationState&gt; queriedStatePage in deviceRegistrationStatesQuery)
+        /// {
+        ///     foreach (DeviceRegistrationState queriedState in queriedStatePage.Values)
+        ///     {
+        ///         Console.WriteLine(queriedState.RegistrationId);
+        ///     }
+        ///     
+        ///     // Note that this is disposed for you while iterating item-by-item, but not when
+        ///     // iterating page-by-page. That is why this sample has to manually call dispose
+        ///     // on the response object here.
+        ///     queriedStatePage.GetRawResponse().Dispose();
+        /// }
+        /// </code>
+        /// </example>
+        public AsyncPageable<DeviceRegistrationState> CreateEnrollmentGroupQuery(string query, string enrollmentGroupId, CancellationToken cancellationToken = default)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, "Creating query.", nameof(CreateEnrollmentGroupQuery));
+
             Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
-            return new Query(GetDeviceRegistrationStatusUri(enrollmentGroupId).ToString(), query, _contractApiHttp, pageSize, _internalRetryHandler, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                async Task<Page<DeviceRegistrationState>> NextPageFunc(string continuationToken, int? pageSizeHint)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return await QueryBuilder
+                        .BuildAndSendRequestAsync<DeviceRegistrationState>(
+                            _contractApiHttp,
+                            _internalRetryHandler,
+                            query,
+                            GetDeviceRegistrationQueryUri(enrollmentGroupId), continuationToken, pageSizeHint, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                async Task<Page<DeviceRegistrationState>> FirstPageFunc(int? pageSizeHint)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return await QueryBuilder
+                        .BuildAndSendRequestAsync<DeviceRegistrationState>(
+                            _contractApiHttp,
+                            _internalRetryHandler,
+                            query,
+                            GetDeviceRegistrationQueryUri(enrollmentGroupId), null, pageSizeHint, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                return PageableHelpers.CreateAsyncEnumerable(FirstPageFunc, NextPageFunc, null);
+            }
+            catch (Exception ex) when (Logging.IsEnabled)
+            {
+                Logging.Error(this, $"Creating query threw an exception: {ex}", nameof(CreateEnrollmentGroupQuery));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, "Creating query.", nameof(CreateEnrollmentGroupQuery));
+            }
         }
 
         private static Uri GetDeviceRegistrationStatusUri(string id)
         {
             id = WebUtility.UrlEncode(id);
             return new Uri(
-                string.Format(CultureInfo.InvariantCulture, DeviceRegistrationStatusUriFormat, ServiceName, id),
+                string.Format(CultureInfo.InvariantCulture, DeviceRegistrationStatusUriFormat, id),
+                UriKind.Relative);
+        }
+
+        private static Uri GetDeviceRegistrationQueryUri(string id)
+        {
+            id = WebUtility.UrlEncode(id);
+            return new Uri(
+                string.Format(CultureInfo.InvariantCulture, DeviceRegistrationQueryUriFormat, id),
                 UriKind.Relative);
         }
     }

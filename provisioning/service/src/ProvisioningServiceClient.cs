@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class ProvisioningServiceClient : IDisposable
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
-        private readonly IContractApiHttp _contractApiHttp;
+        private readonly ContractApiHttp _contractApiHttp;
         private readonly IProvisioningServiceRetryPolicy _retryPolicy;
         private readonly RetryHandler _retryHandler;
 

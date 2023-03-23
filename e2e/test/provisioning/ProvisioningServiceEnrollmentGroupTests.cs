@@ -138,6 +138,52 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             deleteBulkEnrollmentResult.IsSuccessful.Should().BeTrue();
         }
 
+        [TestMethod]
+        public async Task ProvisioningServiceClient_EnrollmentGroups_Query_Ok()
+        {
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
+
+            // Create an enrollment group so that the query is guaranteed to return at least one entry
+            string enrollmentGroupId = Guid.NewGuid().ToString();
+            var enrollmentGroup = new EnrollmentGroup(enrollmentGroupId, new SymmetricKeyAttestation());
+            await provisioningServiceClient.EnrollmentGroups
+                .CreateOrUpdateAsync(enrollmentGroup).ConfigureAwait(false);
+
+            int maxCount = 5;
+            int currentCount = 0;
+
+            try
+            {
+                string queryString = "SELECT * FROM enrollmentGroups";
+                IAsyncEnumerable<EnrollmentGroup> query = provisioningServiceClient.EnrollmentGroups.CreateQuery(queryString);
+                await foreach (EnrollmentGroup enrollment in query)
+                {
+                    // Just checking that the returned type was, in fact, an enrollment group and that deserialization
+                    // of the always-present field works.
+                    enrollment.Id.Should().NotBeNull();
+
+                    // Don't want to query all the enrollment groups. Just query a few.
+                    if (++currentCount >= maxCount)
+                    {
+                        return;
+                    }
+                }
+            }
+            finally
+            {
+                try
+                {
+                    await provisioningServiceClient.EnrollmentGroups
+                        .DeleteAsync(enrollmentGroupId).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    // Failed to cleanup after the test, but don't fail the test because of this
+                    VerboseTestLogger.WriteLine($"Failed to clean up enrollment group due to {e}");
+                }
+            }
+        }
+
         private static async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
         {
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();

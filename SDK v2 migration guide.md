@@ -284,9 +284,9 @@ These span across all service clients.
 #### Notable breaking changes
 
 - Operations that offer concurrency protection using `ETag`s, now take a parameter `onlyIfUnchanged` that relies on the ETag property of the submitted entity.
-- `IotHubServiceClient.Query.CreateAsync<T>(...)` now returns an `AsyncPageable` of the queried results.
-  - Iterate on entries by using `await foreach (ClientTwin queriedTwin in client.Query.CreateAsync<ClientTwin>(queryText))`.
-  - Iterate on pages of entries by using `await foreach (Page<ClientTwin> queriedTwinPage in _client.Query.CreateAsync<ClientTwin>(queryText).AsPages())`
+- `IotHubServiceClient.Query.Create<T>(...)` now returns an `AsyncPageable` of the queried results.
+  - Iterate on entries by using `await foreach (ClientTwin queriedTwin in client.Query.Create<ClientTwin>(queryText))`.
+  - Iterate on pages of entries by using `await foreach (Page<ClientTwin> queriedTwinPage in _client.Query.Create<ClientTwin>(queryText).AsPages())`.
 - `JobProperties` properties that hold Azure Storage SAS URIs are now of type `System.Uri` instead of `string`.
 - `JobProperties` has been split into several classes with only the necessary properties for the specified operation.
   - See `ExportJobProperties`, `ImportJobProperties`, and `IotHubJobResponse`.
@@ -326,7 +326,7 @@ These span across all service clients.
 | `DeviceConnectionState` | `ClientConnectionState` | See² |
 | `DeviceStatus` | `ClientStatus` | See² |
 | `DeviceCapabilities` | `ClientCapabilities` | See² |
-| `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.CreateAsync<T>(...)` | |
+| `RegistryManager.CreateQuery(...)` | `IotHubServiceClient.Query.Create<T>(...)` | |
 | `RegistryManager.AddConfigurationAsync(...)` | `IotHubServiceClient.Configurations.CreateAsync(...)` | |
 | `RegistryManager.GetConfigurationsAsync(int maxCount)`| `IotHubServiceClient.Configurations.GetAsync(int maxCount)` | |
 | `RegistryManager.RemoveConfigurationAsync(...)` | `IotHubServiceClient.Configurations.DeleteAsync(...)` | |
@@ -385,7 +385,7 @@ These span across all service clients.
 |:---|:---|:---|
 | `JobsClient` | `IotHubServiceClient`, subclients  `ScheduledJobs` | |
 | `JobClient.GetJobAsync(...)` | `IotHubServiceClient.ScheduledJobs.GetAsync(...)` | |
-| `JobClient.CreateQuery()` | `IotHubServiceClient.ScheduledJobs.CreateQueryAsync()` | |
+| `JobClient.CreateQuery()` | `IotHubServiceClient.ScheduledJobs.CreateQuery()` | |
 | `JobsClient.ScheduleTwinUpdateAsync(...)` | `IotHubServiceClient.ScheduledJobs.ScheduledTwinUpdateAsync(...)` | |
 | `JobType.ExportDevices` | `JobType.Export` | Matches the actual value expected by the service.¹ |
 | `JobType.ImportDevices` | `JobType.Import` | See¹ |
@@ -449,7 +449,15 @@ These span across all service clients.
 
 #### Notable breaking changes
 
-- Query methods (like for individual and group enrollments) now take a query string (and optionally a page size parameter), and the `Query` result no longer requires disposing.
+- `ProvisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(...)` now returns an `AsyncPageable` of the queried results.
+  - Iterate on entries by using `await foreach (DeviceRegistrationState registrationState in client.DeviceRegistrationStates.CreateEnrollmentGroupQuery(queryText))`.
+  - Iterate on pages of entries by using `await foreach (Page<DeviceRegistrationState> registrationStatePage in client.DeviceRegistrationStates.CreateEnrollmentGroupQuery(queryText).AsPages())`.
+- `ProvisioningServiceClient.IndividualEnrollments.CreateQuery(...)` now returns an `AsyncPageable` of the queried results.
+  - Iterate on entries by using `await foreach (IndividualEnrollment enrollment in client.IndividualEnrollments.CreateQuery(queryText))`.
+  - Iterate on pages of entries by using `await foreach (Page<IndividualEnrollment> enrollmentsPage in client.IndividualEnrollments.CreateQuery(queryText).AsPages())`.
+- `ProvisioningServiceClient.EnrollmentGroups.CreateQuery(...)` now returns an `AsyncPageable` of the queried results.
+  - Iterate on entries by using `await foreach (EnrollmentGroup enrollment in client.EnrollmentGroups.CreateQuery(queryText))`.
+  - Iterate on pages of entries by using `await foreach (Page<EnrollmentGroup> enrollmentsPage in client.EnrollmentGroups.CreateQuery(queryText).AsPages())`.  
 - ETag fields on the classes `IndividualEnrollment`, `EnrollmentGroup`, and `DeviceRegistrationState` are now taken as the `Azure.ETag` type instead of strings.
 - Twin.Tags is now of type `IDictionary<string, object>`.
 - `CustomAllocationDefinition.WebhookUri` is now of type `System.Uri` instead of `System.String`.
@@ -505,6 +513,10 @@ These span across all service clients.
 | `X509CertificateInfo.SHA256Thumbprint` | `X509CertificateInfo.Sha256Thumbprint` | See³ |
 | `ProvisioningServiceClientException` | `ProvisioningServiceException` | |
 | `ProvisioningClientCapabilities.IotEdge` | `InitialClientCapabilities.IsIotEdge` | Boolean properties should start with a verb, usually "Is". |
+| `Query` | Class removed | `AsyncPageable` type replaces this type and is returned by all query functions now |
+| `QueryResult` | Class removed | `AsyncPageable` type replaces this type and is returned by all query functions now |
+| `QueryResultType` | Class removed | The `AsyncPageable` returned by each Query API has a hardcoded type now (`IndividualEnrollment`, `EnrollmentGroup`, or `DeviceRegistrationState`) |
+
 
 ### Security provider client
 

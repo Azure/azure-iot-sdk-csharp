@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Samples
             try
             {
                 string countSqlQuery = "select count() AS numberOfDevices from devices";
-                AsyncPageable<Dictionary<string, int>> countQuery = _hubClient.Query.CreateAsync<Dictionary<string, int>>(countSqlQuery);
+                AsyncPageable<Dictionary<string, int>> countQuery = _hubClient.Query.Create<Dictionary<string, int>>(countSqlQuery);
                 IAsyncEnumerator<Dictionary<string, int>> enumerator = countQuery.GetAsyncEnumerator();
                 if (!await enumerator.MoveNextAsync())
                 {
@@ -226,13 +226,15 @@ namespace Microsoft.Azure.Devices.Samples
             }
             string queryText = queryTextSb.ToString();
             Console.WriteLine($"Using query: {queryText}");
-            AsyncPageable<DeviceQueryResult> devicesQuery = _hubClient.Query.CreateAsync<DeviceQueryResult>(queryText);
+            AsyncPageable<DeviceQueryResult> devicesQuery = _hubClient.Query.Create<DeviceQueryResult>(queryText);
             await foreach (Page<DeviceQueryResult> page in devicesQuery.AsPages(null, 1000))
             {
                 foreach (DeviceQueryResult queryResult in page.Values)
                 {
                     devicesToDelete.Add(new ExportImportDevice(new Device(queryResult.DeviceId), ImportMode.Delete));
                 }
+
+                page.GetRawResponse().Dispose();
             }
 
             return devicesToDelete;

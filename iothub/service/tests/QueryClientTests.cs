@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            AsyncPageable<ClientTwin> response = queryClient.CreateAsync<ClientTwin>(query);
+            AsyncPageable<ClientTwin> response = queryClient.Create<ClientTwin>(query);
             IAsyncEnumerator<ClientTwin> enumerator = response.GetAsyncEnumerator();
             await enumerator.MoveNextAsync().ConfigureAwait(false);
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Tests
             using var serviceClient = new IotHubServiceClient(s_connectionString);
 
             // act
-            Func<Task> act = async () => await serviceClient.Query.CreateAsync<ClientTwin>(null).GetAsyncEnumerator().MoveNextAsync();
+            Func<Task> act = async () => await serviceClient.Query.Create<ClientTwin>(null).GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
             // query returns HttpStatusCode.NotFound
-            Func<Task> act = async () => await queryClient.CreateAsync<ClientTwin>("SELECT * FROM devices").GetAsyncEnumerator().MoveNextAsync();
+            Func<Task> act = async () => await queryClient.Create<ClientTwin>("SELECT * FROM devices").GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await queryClient.CreateJobsQueryAsync().GetAsyncEnumerator().MoveNextAsync();
+            Func<Task> act = async () => await queryClient.CreateJobsQuery().GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             await act.Should().NotThrowAsync();
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Tests
                 s_retryHandler);
 
             // act
-            Func<Task> act = async () => await queryClient.CreateJobsQueryAsync().GetAsyncEnumerator().MoveNextAsync();
+            Func<Task> act = async () => await queryClient.CreateJobsQuery().GetAsyncEnumerator().MoveNextAsync();
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();

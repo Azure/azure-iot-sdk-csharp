@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
@@ -47,36 +48,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             string queryText = "SELECT * FROM enrollmentGroups";
             Console.WriteLine($"Running a query for enrollment groups: {queryText}");
-            Query query = _provisioningServiceClient.EnrollmentGroups.CreateQuery(queryText);
+            AsyncPageable<EnrollmentGroup> query = _provisioningServiceClient.EnrollmentGroups.CreateQuery(queryText);
 
-            while (query.HasNext())
+            await foreach (EnrollmentGroup enrollmentGroup in query)
             {
-                QueryResult queryResult = await query.NextAsync();
-
-                foreach (EnrollmentGroup group in queryResult.Items.Cast<EnrollmentGroup>())
-                {
-                    Console.WriteLine($"Found enrollment group {group.Id} is {group.ProvisioningStatus}.");
-                    await EnumerateRegistrationsInGroupAsync(queryText, group);
-                }
+                Console.WriteLine($"Found enrollment group {enrollmentGroup.Id} is {enrollmentGroup.ProvisioningStatus}.");
+                await EnumerateRegistrationsInGroupAsync(queryText, enrollmentGroup);
             }
         }
 
         private async Task EnumerateRegistrationsInGroupAsync(string queryText, EnrollmentGroup group)
         {
             Console.WriteLine($"Registrations within group {group.Id}:");
-            Query registrationQuery = _provisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(queryText, group.Id);
+            AsyncPageable<DeviceRegistrationState> registrationQuery = _provisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(queryText, group.Id);
 
-            while (registrationQuery.HasNext())
+            await foreach (DeviceRegistrationState registration in registrationQuery)
             {
-                QueryResult registrationQueryResult = await registrationQuery.NextAsync();
-
-                foreach (DeviceRegistrationState registration in registrationQueryResult.Items.Cast<DeviceRegistrationState>())
+                Console.WriteLine($"\t{registration.RegistrationId} for {registration.DeviceId} is {registration.Status}.");
+                if (registration.ErrorCode.HasValue)
                 {
-                    Console.WriteLine($"\t{registration.RegistrationId} for {registration.DeviceId} is {registration.Status}.");
-                    if (registration.ErrorCode.HasValue)
-                    {
-                        Console.WriteLine($"\t\tWith error ({registration.ErrorCode.Value}): {registration.ErrorMessage}");
-                    }
+                    Console.WriteLine($"\t\tWith error ({registration.ErrorCode.Value}): {registration.ErrorMessage}");
                 }
             }
         }

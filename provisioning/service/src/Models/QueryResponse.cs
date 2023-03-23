@@ -9,7 +9,7 @@ using System.Net.Http;
 using Azure;
 using Azure.Core;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// The local implementation of the Azure.Core Response type. Libraries in the azure-sdk-for-net repo have access to 

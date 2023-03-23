@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -84,16 +85,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task QueryIndividualEnrollmentsAsync()
         {
-            const string queryText = "";
-            Query query = _provisioningServiceClient.IndividualEnrollments.CreateQuery(queryText);
+            const string queryText = "SELECT * FROM enrollments";
+            AsyncPageable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery(queryText);
             Console.WriteLine($"Querying for individual enrollments: {queryText}");
-            while (query.HasNext())
+            await foreach (IndividualEnrollment enrollment in query)
             {
-                QueryResult queryResult = await query.NextAsync();
-                foreach (IndividualEnrollment enrollment in queryResult.Items.Cast<IndividualEnrollment>())
-                {
-                    Console.WriteLine($"Individual enrollment '{enrollment.RegistrationId}'");
-                }
+                Console.WriteLine($"Individual enrollment '{enrollment.RegistrationId}'");
             }
         }
 

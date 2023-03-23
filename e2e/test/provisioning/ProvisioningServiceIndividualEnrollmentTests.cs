@@ -225,12 +225,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString, options);
 
+            int maxCount = 5;
+            int currentCount = 0;
             string queryString = "SELECT * FROM enrollments";
-            Query query = provisioningServiceClient.IndividualEnrollments.CreateQuery(queryString);
-            while (query.HasNext())
+            IAsyncEnumerable<IndividualEnrollment> query = provisioningServiceClient.IndividualEnrollments.CreateQuery(queryString);
+            await foreach (IndividualEnrollment enrollment in query)
             {
-                QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
-                queryResult.QueryType.Should().Be(QueryResultType.Enrollment);
+                // Just checking that the returned type was, in fact, an individual enrollment and that deserialization
+                // of the always-present fields works.
+                enrollment.RegistrationId.Should().NotBeNull();
+
+                // Don't want to query all the individual enrollments. Just query a few.
+                if (++currentCount >= maxCount)
+                {
+                    return;
+                }
             }
         }
 
