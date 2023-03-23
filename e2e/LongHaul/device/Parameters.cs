@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Devices.Client;
 using CommandLine;
+using System;
 
 namespace Microsoft.Azure.IoT.Thief.Device
 {
@@ -19,14 +20,14 @@ namespace Microsoft.Azure.IoT.Thief.Device
             "ConnectionString",
             Required = false,
             HelpText = "The connection string for the device to simulate.")]
-        public string ConnectionString { get; set; }
+        public string ConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_DEVICE_CONNECTION_STRING");
 
         [Option(
             'i',
             "InstrumentationKey",
             Required = false,
             HelpText = "The instrumentation key string for application insights.")]
-        public string InstrumentationKey { get; set; }
+        public string InstrumentationKey { get; set; } = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_INSTRUMENTATION_KEY");
 
         [Option(
             't',

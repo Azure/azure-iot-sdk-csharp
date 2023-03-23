@@ -14,11 +14,8 @@ namespace ThiefDevice
     internal class Program
     {
         private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
-        private static readonly string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_DEVICE_CONNECTION_STRING");
-        private static readonly string s_instrumentationKey = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_INSTRUMENTATION_KEY");
         private static Logger s_logger;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
-        private static Parameters s_parameters;
 
         private static async Task Main(string[] args)
         {
@@ -28,17 +25,18 @@ namespace ThiefDevice
             s_commonProperties.Add(SdkVersion, "2.0.0-preview004");
 
             // Parse application parameters
+            Parameters parameters = null;
             ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
                 .WithParsed(parsedParams =>
                 {
-                    s_parameters = parsedParams;
+                    parameters = parsedParams;
                 })
                 .WithNotParsed(errors =>
                 {
                     Environment.Exit(1);
                 });
 
-            s_logger = InitializeLogging(s_parameters.ConnectionString ?? s_deviceConnectionString);
+            s_logger = InitializeLogging(parameters);
 
             // Log system health before initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -47,8 +45,8 @@ namespace ThiefDevice
 
             await using var iotHub = new IotHub(
                 s_logger,
-                s_parameters.ConnectionString ?? s_deviceConnectionString,
-                GetTransportSettings());
+                parameters.ConnectionString,
+                GetTransportSettings(parameters));
             foreach (KeyValuePair<string, string> prop in s_commonProperties)
             {
                 iotHub.IotProperties.Add(prop.Key, prop.Value);
@@ -100,16 +98,16 @@ namespace ThiefDevice
             return cancellationTokenSource;
         }
 
-        private static Logger InitializeLogging(string deviceConnectionString)
+        private static Logger InitializeLogging(Parameters parameters)
         {
-            var helper = new IotHubConnectionStringHelper(deviceConnectionString);
+            var helper = new IotHubConnectionStringHelper(parameters.ConnectionString);
             var logBuilder = new LoggingBuilder
             {
                 AppContext =
                 {
                     { Hub, helper.HostName },
                     { DeviceId, helper.DeviceId },
-                    { Transport, GetTransportSettings().ToString() },
+                    { Transport, GetTransportSettings(parameters).ToString() },
                 },
             };
             foreach (KeyValuePair<string, string> kvp in s_commonProperties)
@@ -117,20 +115,20 @@ namespace ThiefDevice
                 logBuilder.AppContext.Add(kvp.Key, kvp.Value);
             }
             logBuilder.LogProviders.Add(new ConsoleLogProvider { ShouldLogContext = false, ShouldUseColor = true });
-            s_aiLoggingProvider = new ApplicationInsightsLoggingProvider(s_parameters.InstrumentationKey ?? s_instrumentationKey);
+            s_aiLoggingProvider = new ApplicationInsightsLoggingProvider(parameters.InstrumentationKey);
             logBuilder.LogProviders.Add(s_aiLoggingProvider);
 
             Logger logger = logBuilder.BuildLogger();
             return logger;
         }
 
-        private static IotHubClientTransportSettings GetTransportSettings()
+        private static IotHubClientTransportSettings GetTransportSettings(Parameters parameters)
         {
-            return s_parameters.Transport switch
+            return parameters.Transport switch
             {
-                TransportType.Mqtt => new IotHubClientMqttSettings(s_parameters.TransportProtocol),
-                TransportType.Amqp => new IotHubClientAmqpSettings(s_parameters.TransportProtocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {s_parameters.Transport}/{s_parameters.TransportProtocol}"),
+                TransportType.Mqtt => new IotHubClientMqttSettings(parameters.TransportProtocol),
+                TransportType.Amqp => new IotHubClientAmqpSettings(parameters.TransportProtocol),
+                _ => throw new NotSupportedException($"Unsupported transport type {parameters.Transport}/{parameters.TransportProtocol}"),
             };
         }
     }
