@@ -237,6 +237,7 @@ $keyvaultKvps = @{
     # Environment variables for IoT Hub E2E tests
     "IOTHUB-LONG-HAUL-DEVICE-CONNECTION-STRING" = $longhaulDeviceConnectionString;
     "APPLICATION-INSIGHTS-INSTRUMENTATION-KEY" = $instrumentationKey;
+    "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
 }
 
 Write-Host "`nWriting secrets to KeyVault $keyVaultName."
