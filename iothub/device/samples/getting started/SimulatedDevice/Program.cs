@@ -5,13 +5,12 @@
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples
 
 using System;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client;
 using CommandLine;
+using Microsoft.Azure.Devices.Client;
 
 namespace SimulatedDevice
 {
@@ -21,6 +20,8 @@ namespace SimulatedDevice
     /// </summary>
     internal class Program
     {
+        private static TimeSpan s_telemetryInterval = TimeSpan.FromSeconds(30);
+
         private static async Task Main(string[] args)
         {
             Parameters parameters = null;
@@ -43,6 +44,8 @@ namespace SimulatedDevice
                 Console.WriteLine("Exiting...");
             };
 
+            await deviceClient.SetMethodDefaultHandlerAsync(DirectMethodCallback, null);
+
             // Run the telemetry loop
             await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
 
@@ -55,6 +58,30 @@ namespace SimulatedDevice
             await deviceClient.CloseAsync();
 
             Console.WriteLine("Device simulator finished.");
+        }
+
+        private static Task<MethodResponse> DirectMethodCallback(MethodRequest methodRequest, object userContext)
+        {
+            Console.WriteLine($"Received direct method [{methodRequest.Name}] with payload [{methodRequest.DataAsJson}].");
+
+            switch (methodRequest.Name)
+            {
+                case "SetTelemetryInterval":
+                    try
+                    {
+                        int telemetryIntervalSeconds = JsonSerializer.Deserialize<int>(methodRequest.DataAsJson);
+                        s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalSeconds);
+                        Console.WriteLine($"Setting the telemetry interval to {s_telemetryInterval}.");
+                        return Task.FromResult(new MethodResponse(200));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed ot parse the payload for direct method {methodRequest.Name} due to {ex}");
+                        break;
+                    }
+            }
+
+            return Task.FromResult(new MethodResponse(400));
         }
 
         // Async method to send simulated telemetry
@@ -93,7 +120,7 @@ namespace SimulatedDevice
                     await deviceClient.SendEventAsync(message, ct);
                     Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
 
-                    await Task.Delay(1000, ct);
+                    await Task.Delay(s_telemetryInterval, ct);
                 }
             }
             catch (TaskCanceledException) { } // ct was signaled
