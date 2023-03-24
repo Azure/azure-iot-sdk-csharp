@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             "DeviceId",
             Required = false,
             HelpText = "The Id of the device to receive the direct method.")]
-        public string DeviceId { get; set; }
+        public string DeviceId { get; set; } = "LongHaulDevice1";
 
         [Option(
             'p',
