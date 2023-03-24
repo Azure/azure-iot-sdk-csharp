@@ -51,18 +51,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             while (!ct.IsCancellationRequested)
             {
                 var payload = new KeyValuePair<string, string>("Guid_Value", Guid.NewGuid().ToString());
-                var methodInvocation = new DirectMethodServiceRequest("ReportGuidValue")
+                var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
                 {
                     Payload = payload,
                     ResponseTimeout = TimeSpan.FromSeconds(30),
                 };
 
-                Console.WriteLine($"Invoking direct method for device: {_deviceId}");
+                _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
 
                 // Invoke the direct method asynchronously and get the response from the simulated device.
                 DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation);
 
-                Console.WriteLine($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}");
+                _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
 
                 await Task.Delay(s_interval, ct).ConfigureAwait(false);
             }
@@ -70,11 +70,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public void Dispose()
         {
-            _logger.Trace("Disposing");
+            _logger.Trace("Disposing", TraceSeverity.Verbose);
 
             s_serviceClient?.Dispose();
 
-            _logger.Trace($"IotHub instance disposed");
+            _logger.Trace($"IotHub instance disposed", TraceSeverity.Verbose);
         }
     }
 }

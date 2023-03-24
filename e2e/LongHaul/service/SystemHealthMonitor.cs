@@ -2,10 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Mash.Logging;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -16,9 +12,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     /// </summary>
     internal class SystemHealthMonitor
     {
-        internal static SystemHealthC2DMessage BuildAndLogSystemHealth(Logger logger)
+        internal static SystemHealthC2dMessage BuildAndLogSystemHealth(Logger logger)
         {
-            var message = new SystemHealthC2DMessage();
+            var message = new SystemHealthC2dMessage();
             logger.Metric(nameof(message.ProcessCpuUsagePercent), message.ProcessCpuUsagePercent);
             logger.Metric(nameof(message.ProcessWorkingSet), message.ProcessWorkingSet);
             logger.Metric(nameof(message.ProcessWorkingSetPrivate), message.ProcessWorkingSetPrivate);

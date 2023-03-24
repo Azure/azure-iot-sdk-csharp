@@ -17,6 +17,7 @@
 
         // Logging properties
 
+        public const string TestClient = "testClient";
         public const string RunId = "runId";
         public const string SdkLanguage = "sdkLanguage";
         public const string SdkVersion = "sdkVersion";

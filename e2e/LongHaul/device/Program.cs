@@ -19,6 +19,7 @@ namespace ThiefDevice
 
         private static async Task Main(string[] args)
         {
+            s_commonProperties.Add(TestClient, "IotHubDeviceClient");
             s_commonProperties.Add(RunId, Guid.NewGuid().ToString());
             s_commonProperties.Add(SdkLanguage, ".NET");
             // TODO: get this info at runtime rather than hard-coding it
@@ -59,7 +60,16 @@ namespace ThiefDevice
             // Log system health after opening connection to hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
-            using CancellationTokenSource cancellationTokenSource = ConfigureAppExit();
+            // Set up a condition to quit the sample
+            Console.WriteLine("Press CTRL+C to exit");
+            using var cancellationTokenSource = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                cancellationTokenSource.Cancel();
+                Console.WriteLine("Exiting ...");
+            };
+
             var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_logger.Clone());
 
             try
@@ -73,7 +83,7 @@ namespace ThiefDevice
             catch (TaskCanceledException) { } // user signalled an exit
             catch (Exception ex)
             {
-                s_logger.Trace($"Device app failed with exception {ex}");
+                s_logger.Trace($"Device app failed with exception {ex}", TraceSeverity.Error);
             }
 
             await iotHub.DisposeAsync().ConfigureAwait(false);
@@ -83,19 +93,6 @@ namespace ThiefDevice
 
             s_logger.Flush();
             s_aiLoggingProvider.Dispose();
-        }
-
-        private static CancellationTokenSource ConfigureAppExit()
-        {
-            var cancellationTokenSource = new CancellationTokenSource();
-            Console.CancelKeyPress += (s, e) =>
-            {
-                e.Cancel = true;
-                cancellationTokenSource.Cancel();
-                Console.WriteLine("Exiting ...");
-            };
-            Console.WriteLine("Press CTRL+C to exit");
-            return cancellationTokenSource;
         }
 
         private static Logger InitializeLogging(Parameters parameters)

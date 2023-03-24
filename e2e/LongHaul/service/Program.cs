@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         private static async Task Main(string[] args)
         {
+            s_commonProperties.Add(TestClient, "IotHubServiceClient");
             s_commonProperties.Add(RunId, Guid.NewGuid().ToString());
             s_commonProperties.Add(SdkLanguage, ".NET");
             // TODO: get this info at runtime rather than hard-coding it
@@ -44,7 +45,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             s_logger.Event(StartingRun);
 
-            var iotHub = new IotHub(
+            using var iotHub = new IotHub(
                 s_logger,
                 parameters.IoTHubConnectionString,
                 parameters.DeviceId,
@@ -57,7 +58,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             // Log system health after opening connection to hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
-            using CancellationTokenSource cancellationTokenSource = ConfigureAppExit();
+            // Set up a condition to quit the sample
+            Console.WriteLine("Press CTRL+C to exit");
+            using var cancellationTokenSource = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                cancellationTokenSource.Cancel();
+                Console.WriteLine("Exiting ...");
+            };
 
             try
             {
@@ -66,10 +75,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             catch (TaskCanceledException) { } // user signalled an exit
             catch (Exception ex)
             {
-                s_logger.Trace($"Device app failed with exception {ex}");
+                s_logger.Trace($"Device app failed with exception {ex}", TraceSeverity.Error);
             }
-
-            iotHub.Dispose();
 
             // Log system health after disposing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -99,19 +106,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             Logger logger = logBuilder.BuildLogger();
             return logger;
-        }
-
-        private static CancellationTokenSource ConfigureAppExit()
-        {
-            var cancellationTokenSource = new CancellationTokenSource();
-            Console.CancelKeyPress += (s, e) =>
-            {
-                e.Cancel = true;
-                cancellationTokenSource.Cancel();
-                Console.WriteLine("Exiting ...");
-            };
-            Console.WriteLine("Press CTRL+C to exit");
-            return cancellationTokenSource;
         }
     }
 }
