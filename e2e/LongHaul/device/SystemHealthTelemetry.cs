@@ -28,7 +28,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
             "Private bytes",
             s_processName,
             true);
-        private static readonly PerformanceCounter _processBytesInAllHeaps = null;
+        private static readonly PerformanceCounter s_processBytesInAllHeaps = null;
         //new PerformanceCounter(
         //    ".NET CLR Memory",
         //    "# Bytes in all Heaps",
@@ -48,6 +48,6 @@ namespace Microsoft.Azure.IoT.Thief.Device
         public float ProcessPrivateBytes { get; set; } = s_processPrivateBytes.NextValue();
 
         [JsonPropertyName("processBytesInAllHeaps")]
-        public float? ProcessBytesInAllHeaps { get; set; } = _processBytesInAllHeaps?.NextValue();
+        public float? ProcessBytesInAllHeaps { get; set; } = s_processBytesInAllHeaps?.NextValue();
     }
 }
