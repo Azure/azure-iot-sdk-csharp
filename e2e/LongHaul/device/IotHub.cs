@@ -199,7 +199,6 @@ namespace Microsoft.Azure.IoT.Thief.Device
             await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
             _logger.Trace($"IotHub instance disposed");
-
         }
 
         private async void ConnectionStatusChangesHandlerAsync(ConnectionStatusInfo connectionInfo)
