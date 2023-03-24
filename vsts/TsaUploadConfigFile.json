@@ -1,0 +1,16 @@
+{
+  "codebaseName": ".NET Azure IoT SDK (track 1)",
+  "notificationAliases": [
+    "AzIoTEdMgdSdk@microsoft.com"
+  ],
+  "codebaseAdmins": [
+    "REDMOND\\drwill",
+    "REDMOND\\abmisr",
+    "REDMOND\\andykwong"
+  ],
+  "instanceUrl": "https://msazure.visualstudio.com/defaultcollection",
+  "projectName": "One",
+  "areaPath": "One\\IoT\\Platform and Devices\\IoT Devices\\SDKs\\Managed",
+  "iterationPath": "One\\Custom\\IoT\\Backlog",
+  "allTools": true
+}

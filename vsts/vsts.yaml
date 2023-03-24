@@ -69,6 +69,7 @@ jobs:
   ### Linux build ###
   - job: LINUX
     displayName: Linux
+    condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
@@ -86,8 +87,6 @@ jobs:
         .NET CoreApp 2.1.30:
           FRAMEWORK: netcoreapp2.1.30
           SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
-
-    condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
@@ -347,6 +346,7 @@ jobs:
  ### Windows build ###
   - job: WINDOWS
     displayName: Windows
+    condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
@@ -369,7 +369,6 @@ jobs:
         .NET 4.5.1:
           FRAMEWORK: net451
           SHOULD_RUN: ${{ eq(variables['testNet451'], 'True') }}
-    condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: windows-2022
@@ -613,19 +612,12 @@ jobs:
           alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
         condition: always()
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@2
-        displayName: "TSA upload"
-        inputs:
-          tsaVersion: 'TsaV2'
-          codebase: 'NewOrUpdate'
-          tsaEnvironment: 'PROD'
-          codeBaseName: 'Azure-Iot-SDK-CSharp'
-          notificationAlias: 'AzIoTEdMgdSdk@microsoft.com'
-          notifyAlwaysV2: false
-          instanceUrlForTsaV2: 'MSAZURE'
-          projectNameMSAZURE: 'One'
-          areaPath: 'One\IoT\Platform and Devices\IoT Devices\SDKs\Managed'
-          iterationPath: 'One\Custom\IoT\Backlog'
+      #- task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@2
+      #  displayName: 'TSA upload'
+      #  inputs:
+      #    GdnPublishTsaOnboard: false
+      #    GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)/vsts/TsaUploadConfigFile.json'
+      #    GdnPublishTsaExportedResultsPublishable: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
         displayName: "Post Analysis"
