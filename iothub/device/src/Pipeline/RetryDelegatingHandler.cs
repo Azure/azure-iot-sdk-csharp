@@ -751,27 +751,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 ThrowIfDisposed();
-                await _clientOpenSemaphore.WaitAsync(cancellationToken);
+                switch (GetClientTransportStatus())
+                {
+                    case ClientTransportStatus.Open:
+                        return;
+                    case ClientTransportStatus.Opening:
+                        await _clientOpenSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                try
-                {
-                    if (GetClientTransportStatus() != ClientTransportStatus.Open)
-                    {
+                        try
+                        {
+                            if (GetClientTransportStatus() != ClientTransportStatus.Open)
+                            {
+                                throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
+                            }
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                _clientOpenSemaphore?.Release();
+                            }
+                            catch (ObjectDisposedException) when (_isDisposing)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, "Tried releasing client open semaphore but it has already been disposed by client disposal on a separate thread." +
+                                        "Ignoring this exception and continuing with client cleanup.");
+                            }
+                        }
+                        break;
+                    case ClientTransportStatus.Closing:
+                    case ClientTransportStatus.Closed:
                         throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
-                    }
-                }
-                finally
-                {
-                    try
-                    {
-                        _clientOpenSemaphore?.Release();
-                    }
-                    catch (ObjectDisposedException) when (_isDisposing)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(this, "Tried releasing client open semaphore but it has already been disposed by client disposal on a separate thread." +
-                                "Ignoring this exception and continuing with client cleanup.");
-                    }
+
                 }
             }
             finally
