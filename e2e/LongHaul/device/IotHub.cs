@@ -78,6 +78,8 @@ namespace Microsoft.Azure.IoT.Thief.Device
         /// <param name="ct">The cancellation token</param>
         public async Task RunAsync(CancellationToken ct)
         {
+            await _deviceClient.SetDirectMethodCallbackAsync(DirectMethodCallbackAsync, ct).ConfigureAwait(false);
+
             TelemetryMessage pendingMessage = null;
 
             while (!ct.IsCancellationRequested)
@@ -169,7 +171,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
             _messagesToSend.Enqueue(iotMessage);
         }
 
-        public async Task SetPropertiesAsync(string keyName, object properties, CancellationToken cancellationToken)
+        public async Task SetPropertiesAsync(string keyName, object properties, CancellationToken cancellationToken = default)
         {
             Debug.Assert(_deviceClient != null);
             Debug.Assert(properties != null);
@@ -269,6 +271,32 @@ namespace Microsoft.Azure.IoT.Thief.Device
                     _logger.Trace("Quitting.", TraceSeverity.Information);
                     break;
             }
+        }
+
+        private async Task<DirectMethodResponse> DirectMethodCallbackAsync(DirectMethodRequest methodRequest)
+        {
+            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{methodRequest.GetPayloadAsJsonString()}].", TraceSeverity.Information);
+
+            switch (methodRequest.MethodName)
+            {
+                case "ReportGuidValue":
+                    try
+                    {
+                        if (methodRequest.TryGetPayload(out KeyValuePair<string, string> guidValue))
+                        {
+                            _logger.Trace($"Setting properties received from the direct method payload.", TraceSeverity.Information);
+                            await SetPropertiesAsync(guidValue.Key, guidValue.Value).ConfigureAwait(false);
+                            return new DirectMethodResponse(200);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Trace($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}.", TraceSeverity.Error);
+                    }
+                    break;
+            }
+
+            return new DirectMethodResponse(400);
         }
     }
 }
