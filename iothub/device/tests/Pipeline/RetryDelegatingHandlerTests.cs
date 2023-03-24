@@ -433,11 +433,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // act
-            Task open = retryDelegatingHandler.OpenAsync(CancellationToken.None);
+            Task openTask = retryDelegatingHandler.OpenAsync(CancellationToken.None);
             await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            await open.ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
+
+            Func<Task> openFunc = async () => await openTask.ConfigureAwait(false);
+            await openFunc.Should().ThrowAsync<OperationCanceledException>();
             nextHandlerMock.Verify(
                 x => x.OpenAsync(It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -470,11 +472,12 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            Task sendTelemetry = retryDelegatingHandler.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), CancellationToken.None);
+            Task sendTelemetryTask = retryDelegatingHandler.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), CancellationToken.None);
             await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            await sendTelemetry.ExpectedAsync<OperationCanceledException>().ConfigureAwait(false);
+            Func<Task> sendTelemetryFunc = async () => await sendTelemetryTask.ConfigureAwait(false);
+            await sendTelemetryFunc.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
             nextHandlerMock.Verify(
                 x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()),
                 Times.Once);
