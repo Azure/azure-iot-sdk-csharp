@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class MessageSendE2EPoolAmqpTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(MessageSendE2EPoolAmqpTests)}_";

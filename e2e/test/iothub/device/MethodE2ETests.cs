@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class MethodE2ETests : E2EMsTestBase
     {
         internal static readonly DeviceResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };

@@ -3,7 +3,6 @@
 
 using System;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -13,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     [TestCategory("Proxy")]
     public class IotHubServiceProxyE2ETests : E2EMsTestBase
     {

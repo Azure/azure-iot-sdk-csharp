@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class CombinedClientOperationsPoolAmqpTests : E2EMsTestBase
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";

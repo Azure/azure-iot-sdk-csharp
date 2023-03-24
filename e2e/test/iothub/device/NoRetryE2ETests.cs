@@ -15,14 +15,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub")]
+    [TestCategory("FaultInjection")]
+    [TestCategory("IoTHub-Client")]
     public class NoRetryE2ETests : E2EMsTestBase
     {
         private static readonly string _devicePrefix = $"{nameof(NoRetryE2ETests)}_";
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task FaultInjection_NoRetry_NoRecovery_OpenAsync()
         {
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);

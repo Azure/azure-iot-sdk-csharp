@@ -17,8 +17,8 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
     [TestClass]
-    [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
+    [TestCategory("IoTHub-Client")]
     public class MethodFaultInjectionTests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(MethodFaultInjectionTests)}_";

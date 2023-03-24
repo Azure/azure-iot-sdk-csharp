@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class MethodE2ECustomPayloadTests : E2EMsTestBase
     {
         private static readonly CustomType _customTypeRequest = new("request", 21, false, new("e2e_test_request", 12));

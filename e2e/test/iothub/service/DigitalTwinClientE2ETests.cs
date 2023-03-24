@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class DigitalTwinClientE2ETests : E2EMsTestBase
     {
         private const string ThermostatModelId = "dtmi:com:example:Thermostat;1";

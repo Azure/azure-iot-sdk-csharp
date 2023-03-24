@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class BulkOperationsE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(BulkOperationsE2ETests)}_";

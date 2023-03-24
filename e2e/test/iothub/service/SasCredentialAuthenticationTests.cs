@@ -3,7 +3,6 @@
 
 using System;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
@@ -19,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     /// </summary>
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class SasCredentialAuthenticationTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(SasCredentialAuthenticationTests)}_";

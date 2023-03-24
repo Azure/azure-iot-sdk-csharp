@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class FileUploadE2ETests : E2EMsTestBase
     {
         private const int FileSizeSmall = 10 * 1024;

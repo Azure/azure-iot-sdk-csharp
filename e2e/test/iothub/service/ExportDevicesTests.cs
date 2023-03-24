@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class ExportDevicesTests : E2EMsTestBase
     {
         // A bug in either Azure.Storage.Blob or System.Diagnostics causes an exception during container creation

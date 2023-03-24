@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class MethodE2EPoolAmqpTests : E2EMsTestBase
     {
         private const string MethodName = nameof(MethodE2EPoolAmqpTests);

@@ -383,7 +383,7 @@ try
 
         if ($skipIotHubTests)
         {
-            $testCategory += "&TestCategory!=IoTHub"
+            $testCategory += "&TestCategory!=IoTHub-Client&TestCategory!=IoTHubService"
         }
 
         if ($skipDPSTests)
