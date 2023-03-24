@@ -1,12 +1,11 @@
 {
-  "codebaseName": ".NET Azure IoT SDK (track 1)",
+  "codebaseName": "Azure-Iot-SDK-CSharp",
   "notificationAliases": [
     "AzIoTEdMgdSdk@microsoft.com"
   ],
   "codebaseAdmins": [
-    "REDMOND\\drwill",
-    "REDMOND\\abmisr",
-    "REDMOND\\andykwong"
+    "REDMOND\\andykwong",
+    "REDMOND\\drwill"
   ],
   "instanceUrl": "https://msazure.visualstudio.com/defaultcollection",
   "projectName": "One",
