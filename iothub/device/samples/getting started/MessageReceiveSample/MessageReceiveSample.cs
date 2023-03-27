@@ -73,11 +73,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     // Done running.
                 }
-
-                // Now unsubscibe from receiving the callback.
-                await _deviceClient.SetReceiveMessageHandlerAsync(null, null);
-                _processMessageSemaphore.Dispose();
-                _cts.Dispose();
+                finally
+                {
+                    // Now unsubscibe from receiving the callback.
+                    await _deviceClient.SetReceiveMessageHandlerAsync(null, null);
+                    _processMessageSemaphore.Dispose();
+                    _cts.Dispose();
+                }
             }
         }
 
@@ -112,15 +114,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task OnC2dMessageReceivedAsync(Message receivedMessage, object _)
         {
-            await _processMessageSemaphore.WaitAsync(_cts.Token).ConfigureAwait(false);
-            Console.WriteLine($"{DateTime.Now}> C2D message callback - message received with Id={receivedMessage.MessageId}.");
-            PrintMessage(receivedMessage);
+            try
+            {
+                // Use a semaphore to ensure C2D messages are processed in order - a requirement of IoT hub.
+                await _processMessageSemaphore.WaitAsync(_cts.Token).ConfigureAwait(false);
+                Console.WriteLine($"{DateTime.Now}> C2D message callback - message received with Id={receivedMessage.MessageId}.");
+                PrintMessage(receivedMessage);
 
-            await _deviceClient.CompleteAsync(receivedMessage);
-            Console.WriteLine($"{DateTime.Now}> Completed C2D message with Id={receivedMessage.MessageId}.");
-
-            receivedMessage.Dispose();
-            _processMessageSemaphore.Release();
+                await _deviceClient.CompleteAsync(receivedMessage);
+                Console.WriteLine($"{DateTime.Now}> Completed C2D message with Id={receivedMessage.MessageId}.");
+            }
+            finally
+            {
+                receivedMessage.Dispose();
+                _processMessageSemaphore.Release();
+            }
         }
 
         private static void PrintMessage(Message receivedMessage)
