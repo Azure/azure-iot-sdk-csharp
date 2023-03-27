@@ -37,6 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 ? new CancellationTokenSource(_maxRunTime.Value)
                 : new CancellationTokenSource();
 
+            // Semaphore to ensure sequential execution of received C2D messages.
             _processMessageSemaphore = new SemaphoreSlim(1, 1);
 
             Console.CancelKeyPress += (sender, eventArgs) =>
