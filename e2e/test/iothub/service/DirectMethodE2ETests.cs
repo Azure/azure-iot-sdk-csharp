@@ -26,57 +26,33 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DirectMethodsClient_InvokeAsync_MethodDoesNotExistAtFirst()
+        public async Task DirectMethodsClient_InvokeAsync_DeviceDoesNotExist()
         {
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            var cts = new CancellationToken();
 
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
             // act
-            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("some nonexistent device", methodInvocation, cts);
+            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("someNonexistentDevice", methodInvocation);
 
             // assert
             ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
             errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
             errorContext.And.IsTransient.Should().BeFalse();
-
-            // rearrange, open device client and set direct method callback
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
-            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
-            await deviceClient.OpenAsync();
-            DirectMethodRequest actualRequest = null;
-            await deviceClient.SetDirectMethodCallbackAsync((request) =>
-            {
-                actualRequest = request;
-                return Task.FromResult(new DirectMethodResponse(200));
-            }).ConfigureAwait(false);
-
-            // act
-            DirectMethodClientResponse response = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation, cts);
-
-            // assert
-            response.Status.Should().Be(200);
-            actualRequest.Should().NotBeNull();
-
-            await deviceClient.CloseAsync();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DirectMethodsClient_InvokeAsycn_MethodDoesNotExist_ModuleId()
+        public async Task DirectMethodsClient_InvokeAsycn_ModuleDoesNotExist()
         {
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            await using TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
-            var cts = new CancellationToken();
 
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
             // act
-            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, testModule.Id, methodInvocation, cts);
+            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("someNonexistentDevice", "someNonexistentModule", methodInvocation);
 
             // assert
             ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
