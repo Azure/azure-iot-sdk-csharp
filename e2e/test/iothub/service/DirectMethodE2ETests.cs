@@ -30,7 +30,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         {
             // arrange
             using IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var cts = new CancellationToken();
 
             var methodInvocation = new DirectMethodServiceRequest("SetTelemetryInterval")
@@ -40,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             };
 
             // act
-            Func<Task> act1 = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation, cts);
+            Func<Task> act1 = async () => await serviceClient.DirectMethods.InvokeAsync("some nonexistent device", methodInvocation, cts);
 
             // assert
             var errorContext = await act1.Should().ThrowAsync<IotHubServiceException>();
@@ -48,6 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             errorContext.And.IsTransient.Should().BeTrue();
 
             // rearrange, open device client and set direct method callback
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             await deviceClient.OpenAsync();
             DirectMethodRequest actualRequest = null;
