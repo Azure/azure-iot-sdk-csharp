@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static Microsoft.Azure.IoT.Thief.Device.LoggingConstants;
 
-namespace Microsoft.Azure.IoT.Thief.Device
+namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal sealed class IotHub : IIotHub, IAsyncDisposable
     {
@@ -281,10 +281,10 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 case "EchoPayload":
                     try
                     {
-                        if (methodRequest.TryGetPayload(out KeyValuePair<string, string> guidValue))
+                        if (methodRequest.TryGetPayload(out CustomPayload methodPayload))
                         {
                             _logger.Trace($"Echoing back the payload of direct method.", TraceSeverity.Information);
-                            return Task.FromResult(new DirectMethodResponse(200) { Payload = guidValue });
+                            return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
                         }
                     }
                     catch (Exception ex)

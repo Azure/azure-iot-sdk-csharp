@@ -48,9 +48,17 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         /// <param name="ct">The cancellation token</param>
         public async Task RunAsync(CancellationToken ct)
         {
+            int methodCallsCount = 0;
+
             while (!ct.IsCancellationRequested)
             {
-                var payload = new KeyValuePair<string, string>("Guid_Value", Guid.NewGuid().ToString());
+                var payload = new CustomPayload
+                {
+                    RandomId = Guid.NewGuid(),
+                    CurrentTime = DateTimeOffset.UtcNow,
+                    MethodCallsCount = methodCallsCount++,
+                };
+
                 var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
                 {
                     Payload = payload,
