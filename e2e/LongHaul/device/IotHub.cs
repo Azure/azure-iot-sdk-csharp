@@ -280,9 +280,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 case "EchoPayload":
                     try
                     {
-                        if (methodRequest.TryGetPayload(out CustomPayload methodPayload))
+                        if (methodRequest.TryGetPayload(out CustomDirectMethodPayload methodPayload))
                         {
                             _logger.Trace($"Echoing back the payload of direct method.", TraceSeverity.Information);
+                            _logger.Metric(
+                                C2dDirectMethodDelaySeconds,
+                                (DateTimeOffset.UtcNow - methodPayload.CurrentTimeUtc).TotalSeconds);
+
+                            // Log the current time again and send the response back to the service app.
+                            methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;
                             return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
                         }
                     }

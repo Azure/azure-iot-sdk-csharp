@@ -8,6 +8,7 @@
         public const string TotalMessagesSent = "TotalMessagesSent";
         public const string MessageDelaySeconds = "MessageDelaySeconds";
         public const string MessageBacklog = "MessageBacklog";
+        public const string C2dDirectMethodDelaySeconds = "C2dDirectMethodDelaySeconds";
 
         // Events
 

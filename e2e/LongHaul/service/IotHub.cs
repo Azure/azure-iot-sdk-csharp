@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
 using Newtonsoft.Json;
+using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -52,11 +52,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             while (!ct.IsCancellationRequested)
             {
-                var payload = new CustomPayload
+                var payload = new CustomDirectMethodPayload
                 {
                     RandomId = Guid.NewGuid(),
-                    CurrentTime = DateTimeOffset.UtcNow,
-                    MethodCallsCount = methodCallsCount++,
+                    CurrentTimeUtc = DateTimeOffset.UtcNow,
+                    MethodCallsCount = ++methodCallsCount,
                 };
 
                 var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
@@ -69,6 +69,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                 // Invoke the direct method asynchronously and get the response from the simulated device.
                 DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation);
+
+                if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
+                {
+                    _logger.Metric(
+                        D2cDirectMethodDelaySeconds,
+                        (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
+                }
 
                 _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
 

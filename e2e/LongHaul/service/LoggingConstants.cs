@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
-    internal sealed class LoggingConstants
+    internal static class LoggingConstants
     {
         // Logging properties
 
@@ -18,5 +18,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         // Events
 
         public const string StartingRun = "StartingRun";
+
+        // Metrics
+
+        public const string D2cDirectMethodDelaySeconds = "D2cDirectMethodDelaySeconds";
     }
 }

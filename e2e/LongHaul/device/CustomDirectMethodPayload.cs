@@ -4,17 +4,20 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.LongHaul.Service
+namespace Microsoft.Azure.Devices.LongHaul.Device
 {
-    internal class CustomPayload
+    /// <summary>
+    /// Use a custom payload for direct method invocation to test object serialization using several data types.
+    /// </summary>
+    internal class CustomDirectMethodPayload
     {
         [JsonPropertyName("randomId")]
         public Guid RandomId { get; set; }
 
-        [JsonPropertyName("currentTime")]
-        public DateTimeOffset CurrentTime { get; set; }
-
         [JsonPropertyName("methodCallsCount")]
         public int MethodCallsCount { get; set; }
+
+        [JsonPropertyName("currentTimeUtc")]
+        public DateTimeOffset CurrentTimeUtc { get; set; } = DateTimeOffset.UtcNow;
     }
 }
