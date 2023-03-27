@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly TimeSpan? _maxRunTime;
         private readonly DeviceClient _deviceClient;
         private readonly TransportType _transportType;
+        private SemaphoreSlim _processMessageSemaphore;
 
         public MessageReceiveSample(DeviceClient deviceClient, TransportType transportType, TimeSpan? maxRunTime)
         {
@@ -35,6 +36,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             using var cts = _maxRunTime.HasValue
                 ? new CancellationTokenSource(_maxRunTime.Value)
                 : new CancellationTokenSource();
+
+            _processMessageSemaphore = new SemaphoreSlim(1, 1);
+
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
@@ -70,6 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 // Now unsubscibe from receiving the callback.
                 await _deviceClient.SetReceiveMessageHandlerAsync(null, null);
+                _processMessageSemaphore.Dispose();
             }
         }
 
@@ -104,6 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task OnC2dMessageReceivedAsync(Message receivedMessage, object _)
         {
+            await _processMessageSemaphore.WaitAsync().ConfigureAwait(false);
             Console.WriteLine($"{DateTime.Now}> C2D message callback - message received with Id={receivedMessage.MessageId}.");
             PrintMessage(receivedMessage);
 
@@ -111,6 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"{DateTime.Now}> Completed C2D message with Id={receivedMessage.MessageId}.");
 
             receivedMessage.Dispose();
+            _processMessageSemaphore.Release();
         }
 
         private static void PrintMessage(Message receivedMessage)
@@ -123,8 +130,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 formattedMessage.AppendLine($"\tProperty: key={prop.Key}, value={prop.Value}");
             }
-            // System properties can be accessed using their respective accessors, e.g. DeliveryCount.
-            formattedMessage.AppendLine($"\tDelivery count: {receivedMessage.DeliveryCount}");
+            // System properties can be accessed using their respective accessors, e.g. ContentType.
+            formattedMessage.AppendLine($"\tContent type: {receivedMessage.ContentType}");
 
             Console.WriteLine($"{DateTime.Now}> {formattedMessage}");
         }
