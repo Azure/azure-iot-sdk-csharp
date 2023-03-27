@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly DeviceClient _deviceClient;
         private readonly TransportType _transportType;
         private SemaphoreSlim _processMessageSemaphore;
+        private CancellationTokenSource _cts;
 
         public MessageReceiveSample(DeviceClient deviceClient, TransportType transportType, TimeSpan? maxRunTime)
         {
@@ -33,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync()
         {
-            using var cts = _maxRunTime.HasValue
+            _cts = _maxRunTime.HasValue
                 ? new CancellationTokenSource(_maxRunTime.Value)
                 : new CancellationTokenSource();
 
@@ -43,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 eventArgs.Cancel = true;
-                cts.Cancel();
+                _cts.Cancel();
                 Console.WriteLine("Sample execution cancellation requested; will exit.");
             };
             Console.WriteLine($"{DateTime.Now}> Press Control+C at any time to quit the sample.");
@@ -51,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // First receive C2D messages using the polling ReceiveAsync().
             Console.WriteLine($"\n{DateTime.Now}> Device waiting for C2D messages from the hub...");
             Console.WriteLine($"{DateTime.Now}> Use the Azure Portal IoT hub blade or Azure IoT Explorer to send a message to this device.");
-            await ReceiveC2dMessagesPollingAndCompleteAsync(cts.Token);
+            await ReceiveC2dMessagesPollingAndCompleteAsync(_cts.Token);
 
             if (_transportType != TransportType.Http1)
             {
@@ -66,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 try
                 {
-                    await Task.Delay(-1, cts.Token);
+                    await Task.Delay(-1, _cts.Token);
                 }
                 catch (TaskCanceledException)
                 {
@@ -76,6 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 // Now unsubscibe from receiving the callback.
                 await _deviceClient.SetReceiveMessageHandlerAsync(null, null);
                 _processMessageSemaphore.Dispose();
+                _cts.Dispose();
             }
         }
 
@@ -110,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task OnC2dMessageReceivedAsync(Message receivedMessage, object _)
         {
-            await _processMessageSemaphore.WaitAsync().ConfigureAwait(false);
+            await _processMessageSemaphore.WaitAsync(_cts.Token).ConfigureAwait(false);
             Console.WriteLine($"{DateTime.Now}> C2D message callback - message received with Id={receivedMessage.MessageId}.");
             PrintMessage(receivedMessage);
 
