@@ -223,7 +223,7 @@ $longhaulDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $
 
 if (-not $longhaulDevice)
 {
-    Write-Host "`nCreating X509 CA certificate authenticated device $longhaulDeviceId on IoT hub."
+    Write-Host "`nCreating SAK authenticated device $longhaulDeviceId on IoT hub."
     az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulDeviceId --am shared_private_key
 }
 
