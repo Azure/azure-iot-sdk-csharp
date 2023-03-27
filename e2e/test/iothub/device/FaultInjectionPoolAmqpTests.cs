@@ -6,8 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
+    [TestCategory("IoTHub-Client")]
     [TestCategory("PoolAmqp")]
     [TestCategory("LongRunning")]
     public partial class FaultInjectionPoolAmqpTests : E2EMsTestBase

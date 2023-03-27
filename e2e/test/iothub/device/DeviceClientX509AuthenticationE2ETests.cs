@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class DeviceClientX509AuthenticationE2ETests : E2EMsTestBase
     {
         private const string Amqpwsb10 = "AMQPWSB10";

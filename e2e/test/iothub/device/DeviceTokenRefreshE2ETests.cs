@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class DeviceTokenRefreshE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(DeviceTokenRefreshE2ETests)}_";

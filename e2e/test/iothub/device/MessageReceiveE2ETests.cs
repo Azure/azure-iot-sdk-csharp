@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -19,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     [TestCategory("LongRunning")]
     public class MessageReceiveE2ETests : E2EMsTestBase
     {

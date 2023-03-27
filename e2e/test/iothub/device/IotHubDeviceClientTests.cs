@@ -11,8 +11,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("IoTHub")]
     [TestCategory("E2E")]
+    [TestCategory("IoTHub-Client")]
     public class IotHubDeviceClientTests
     {
         [TestMethod]

@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     [TestCategory("LongRunning")]
     public class AzureSecurityCenterForIoTSecurityMessageE2ETests : E2EMsTestBase
     {

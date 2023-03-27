@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     /// </summary>
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class MessageFeedbackReceiverE2ETest : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";

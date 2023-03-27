@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     /// </summary>
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class PurgeMesageQueueE2ETests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(PurgeMesageQueueE2ETests)}_";

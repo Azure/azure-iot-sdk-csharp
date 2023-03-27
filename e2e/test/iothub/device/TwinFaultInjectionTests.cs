@@ -13,8 +13,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
     [TestClass]
-    [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
+    [TestCategory("IoTHub-Client")]
     public class TwinFaultInjectionTests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"{nameof(TwinFaultInjectionTests)}_";

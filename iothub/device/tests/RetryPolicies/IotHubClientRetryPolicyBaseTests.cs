@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
-    [TestCategory("IoTHub")]
     public class IotHubClientRetryPolicyBaseTests
     {
         [TestMethod]

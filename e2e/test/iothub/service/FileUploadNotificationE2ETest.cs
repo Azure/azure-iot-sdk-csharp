@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     /// </summary>
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class FileUploadNotificationE2ETest : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(FileUploadNotificationE2ETest)}_";

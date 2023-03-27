@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Client")]
     public class TwinE2EPoolAmqpTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2EPoolAmqpTests)}_";

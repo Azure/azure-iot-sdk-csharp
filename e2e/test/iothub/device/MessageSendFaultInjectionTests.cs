@@ -13,8 +13,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
-    [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
+    [TestCategory("IoTHub-Client")]
     public partial class MessageSendFaultInjectionTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(MessageSendFaultInjectionTests)}_";

@@ -4,8 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -16,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class MessagingClientE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(MessagingClientE2ETests)}_";
