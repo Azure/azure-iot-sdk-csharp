@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
@@ -23,28 +24,23 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         private readonly string _devicePrefix = $"{nameof(DirectMethodE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(DirectMethodE2ETests)}_Module_";
 
-
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DirectMethodsClient_InvokeAsync_MethodDoesNotExistAtFirst()
         {
             // arrange
-            using IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             var cts = new CancellationToken();
 
-            var methodInvocation = new DirectMethodServiceRequest("SetTelemetryInterval")
-            {
-                Payload = "10",
-                ResponseTimeout = TimeSpan.FromSeconds(30),
-            };
+            var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
             // act
-            Func<Task> act1 = async () => await serviceClient.DirectMethods.InvokeAsync("some nonexistent device", methodInvocation, cts);
+            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("some nonexistent device", methodInvocation, cts);
 
             // assert
-            var errorContext = await act1.Should().ThrowAsync<IotHubServiceException>();
+            ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
             errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
-            errorContext.And.IsTransient.Should().BeTrue();
+            errorContext.And.IsTransient.Should().BeFalse();
 
             // rearrange, open device client and set direct method callback
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
@@ -58,10 +54,10 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             }).ConfigureAwait(false);
 
             // act
-            Func<Task> act2 = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation, cts);
+            DirectMethodClientResponse response = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation, cts);
 
             // assert
-            var response = await act2.Should().NotThrowAsync();
+            response.Status.Should().Be(200);
             actualRequest.Should().NotBeNull();
 
             await deviceClient.CloseAsync();
@@ -72,21 +68,18 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         public async Task DirectMethodsClient_InvokeAsycn_MethodDoesNotExist_ModuleId()
         {
             // arrange
-            using IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
             var cts = new CancellationToken();
 
-            var methodInvocation = new DirectMethodServiceRequest("SetTelemetryInterval")
-            {
-                Payload = "10",
-                ResponseTimeout = TimeSpan.FromSeconds(30),
-            };
+            var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
             // act
-            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testModule.Id, methodInvocation, cts);
+            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, testModule.Id, methodInvocation, cts);
 
             // assert
-            var errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
+            ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
             errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
             errorContext.And.IsTransient.Should().BeFalse();
         }
