@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Tests
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class IotHubServiceFixedDelayRetryPolicyTests
     {
         [TestMethod]
