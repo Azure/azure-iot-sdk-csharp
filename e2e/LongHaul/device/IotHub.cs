@@ -180,9 +180,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
             };
 
             await _deviceClient
-                .UpdateReportedPropertiesAsync(
-                    reportedProperties,
-                    cancellationToken)
+                .UpdateReportedPropertiesAsync(reportedProperties, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -198,7 +196,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
             await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
-            _logger.Trace($"IotHub instance disposed");
+            _logger.Trace($"IoT hub client instance disposed");
 
         }
 

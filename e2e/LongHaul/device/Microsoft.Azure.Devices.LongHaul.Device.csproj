@@ -20,12 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Settings\*.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
 
