@@ -5,7 +5,7 @@ using Microsoft.Azure.Devices.Client;
 using CommandLine;
 using System;
 
-namespace Microsoft.Azure.IoT.Thief.Device
+namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     public enum TransportType
     {

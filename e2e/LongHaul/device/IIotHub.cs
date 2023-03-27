@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
+{
     /// <summary>
     /// An interface for device code to interact with hub
     /// </summary>

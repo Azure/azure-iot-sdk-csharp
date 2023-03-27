@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.IoT.Thief.Device
+namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal class IotHubConnectionStringHelper
     {

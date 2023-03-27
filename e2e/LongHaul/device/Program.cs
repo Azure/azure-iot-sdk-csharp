@@ -2,14 +2,13 @@
 using Mash.Logging;
 using Mash.Logging.ApplicationInsights;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.IoT.Thief.Device;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.Azure.IoT.Thief.Device.LoggingConstants;
+using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
-namespace ThiefDevice
+namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal class Program
     {
