@@ -74,6 +74,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
+            // ensure device client is closed
+            await deviceClient.CloseAsync();
+            
             try
             {
                 // act
@@ -112,6 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 .SetDirectMethodCallbackAsync(
                     (methodRequest) =>
                     {
+                        // force a timeout
                         Thread.Sleep(10000);
                         var response = new DirectMethodResponse(200);
                         return Task.FromResult(response);
