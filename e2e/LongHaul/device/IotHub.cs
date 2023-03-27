@@ -181,9 +181,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             };
 
             await _deviceClient
-                .UpdateReportedPropertiesAsync(
-                    reportedProperties,
-                    cancellationToken)
+                .UpdateReportedPropertiesAsync(reportedProperties, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -199,7 +197,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
-            _logger.Trace($"IotHub instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"IoT hub client instance disposed", TraceSeverity.Verbose);
+
         }
 
         private async void ConnectionStatusChangesHandlerAsync(ConnectionStatusInfo connectionInfo)
