@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _deviceReceiveMessageEnabled;
 
         private Task _transportClosedTask;
-        private readonly CancellationTokenSource _handleDisconnectCts = new();
+        private CancellationTokenSource _handleDisconnectCts;
 
         private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
 
@@ -408,7 +408,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // we are returning the corresponding connection status change event => disconnected: retry_expired.
                     try
                     {
-                        await OpenInternalAsync(cancellationToken).ConfigureAwait(false);
+                        await OpenInternalAsync(true, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (!Fx.IsFatal(ex))
                     {
@@ -420,7 +420,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         _isOpen = true;
 
-                        // Send the request for transport close notification.
+                        // Send up the handler for handling transport disconnection event.
                         _transportClosedTask = HandleDisconnectAsync();
                     }
                     else
@@ -428,7 +428,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         if (Logging.IsEnabled)
                             Logging.Info(this, "Race condition: Disposed during opening.", nameof(OpenAsync));
 
-                        _handleDisconnectCts.Cancel();
+                        _handleDisconnectCts?.Cancel();
+                        _handleDisconnectCts?.Dispose();
+                        _handleDisconnectCts = null;
                     }
                 }
             }
@@ -459,7 +461,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return;
                 }
 
-                _handleDisconnectCts.Cancel();
+                _handleDisconnectCts?.Cancel();
+                _handleDisconnectCts?.Dispose();
+                _handleDisconnectCts = null;
+
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -636,9 +641,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private async Task OpenInternalAsync(CancellationToken cancellationToken)
+        private async Task OpenInternalAsync(bool recoverSubscriptions, CancellationToken cancellationToken)
         {
             var connectionStatusInfo = new ConnectionStatusInfo();
+
+            _handleDisconnectCts ??= new CancellationTokenSource();
 
             await _internalRetryHandler
                 .RunWithRetryAsync(
@@ -652,6 +659,42 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // Will throw on error.
                             await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
+                            if (recoverSubscriptions)
+                            {
+
+                                if (Logging.IsEnabled)
+                                    Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));
+
+                                var tasks = new List<Task>(3);
+
+                                // This is to ensure that, if previously enabled, the callback to receive direct methods is recovered.
+                                if (_methodsEnabled)
+                                {
+                                    tasks.Add(base.EnableMethodsAsync(cancellationToken));
+                                }
+
+                                // This is to ensure that, if previously enabled, the callback to receive twin properties is recovered.
+                                if (_twinEnabled)
+                                {
+                                    tasks.Add(base.EnableTwinPatchAsync(cancellationToken));
+                                }
+
+                                // This is to ensure that, if previously enabled, the callback to receive C2D messages is recovered.
+                                if (_deviceReceiveMessageEnabled)
+                                {
+                                    tasks.Add(base.EnableReceiveMessageAsync(cancellationToken));
+                                }
+
+                                if (tasks.Any())
+                                {
+                                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                                }
+
+                                if (Logging.IsEnabled)
+                                    Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
+                            }
+
+                            _isOpen = true;
                             connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                             _onConnectionStatusChanged(connectionStatusInfo);
                         }
@@ -679,7 +722,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
 
-                _handleDisconnectCts.Cancel();
+                _handleDisconnectCts?.Cancel();
+                _handleDisconnectCts?.Dispose();
+                _handleDisconnectCts = null;
             }
 
             try
@@ -731,49 +776,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;
 
                 // This will recover to the status before the disconnect.
-                await _internalRetryHandler.RunWithRetryAsync(async () =>
+                await OpenInternalAsync(true, cancellationToken).ConfigureAwait(false);
+
+                if (!_isDisposed)
+                {
+                    _isOpen = true;
+
+                    // Send up the handler for handling transport disconnection event.
+                    _transportClosedTask = HandleDisconnectAsync();
+                }
+                else
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));
+                        Logging.Info(this, "Race condition: Disposed during opening.", nameof(OpenAsync));
 
-                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-                    var tasks = new List<Task>(3);
-
-                    // This is to ensure that, if previously enabled, the callback to receive direct methods is recovered.
-                    if (_methodsEnabled)
-                    {
-                        tasks.Add(base.EnableMethodsAsync(cancellationToken));
-                    }
-
-                    // This is to ensure that, if previously enabled, the callback to receive twin properties is recovered.
-                    if (_twinEnabled)
-                    {
-                        tasks.Add(base.EnableTwinPatchAsync(cancellationToken));
-                    }
-
-                    // This is to ensure that, if previously enabled, the callback to receive C2D messages is recovered.
-                    if (_deviceReceiveMessageEnabled)
-                    {
-                        tasks.Add(base.EnableReceiveMessageAsync(cancellationToken));
-                    }
-
-                    if (tasks.Any())
-                    {
-                        await Task.WhenAll(tasks).ConfigureAwait(false);
-                    }
-
-                    // Send the request for transport close notification.
-                    _transportClosedTask = HandleDisconnectAsync();
-
-                    _isOpen = true;
-                    connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
-                    _onConnectionStatusChanged(connectionStatusInfo);
-
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
-                },
-                cancellationToken).ConfigureAwait(false);
+                    _handleDisconnectCts?.Cancel();
+                    _handleDisconnectCts?.Dispose();
+                    _handleDisconnectCts = null;
+                }
             }
             catch (Exception ex)
             {
@@ -851,6 +871,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         _handleDisconnectCts?.Cancel();
                         _handleDisconnectCts?.Dispose();
+                        _handleDisconnectCts = null;
+
                         _loopCancellationTokenSource?.Dispose();
                         if (_handlerSemaphore != null && _handlerSemaphore.CurrentCount == 0)
                         {
