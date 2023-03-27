@@ -1,14 +1,16 @@
-﻿using CommandLine;
-using Mash.Logging;
-using Mash.Logging.ApplicationInsights;
-using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
+using CommandLine;
+using Mash.Logging;
+using Mash.Logging.ApplicationInsights;
+using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
 
-namespace Microsoft.Azure.Devices.LongHaul.Device
+namespace Microsoft.Azure.Devices.LongHaul.Service
 {
     internal class Program
     {
@@ -18,7 +20,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         private static async Task Main(string[] args)
         {
-            s_commonProperties.Add(TestClient, "IotHubDeviceClient");
+            s_commonProperties.Add(TestClient, "IotHubServiceClient");
             s_commonProperties.Add(RunId, Guid.NewGuid().ToString());
             s_commonProperties.Add(SdkLanguage, ".NET");
             // TODO: get this info at runtime rather than hard-coding it
@@ -43,18 +45,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             s_logger.Event(StartingRun);
 
-            await using var iotHub = new IotHub(
+            using var iotHub = new IotHub(
                 s_logger,
-                parameters.ConnectionString,
-                GetTransportSettings(parameters));
-            foreach (KeyValuePair<string, string> prop in s_commonProperties)
-            {
-                iotHub.IotProperties.Add(prop.Key, prop.Value);
-            }
+                parameters.IoTHubConnectionString,
+                parameters.DeviceId,
+                parameters.TransportProtocol);
 
             // Log system health after initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
-            await iotHub.InitializeAsync().ConfigureAwait(false);
+            iotHub.Initialize();
 
             // Log system health after opening connection to hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -69,23 +68,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 Console.WriteLine("Exiting ...");
             };
 
-            var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_logger.Clone());
-
             try
             {
-                await Task
-                    .WhenAll(
-                        systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
-                        iotHub.RunAsync(cancellationTokenSource.Token))
-                    .ConfigureAwait(false);
+                await iotHub.RunAsync(cancellationTokenSource.Token).ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
             catch (Exception ex)
             {
                 s_logger.Trace($"Device app failed with exception {ex}", TraceSeverity.Error);
             }
-
-            await iotHub.DisposeAsync().ConfigureAwait(false);
 
             // Log system health after disposing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -96,14 +87,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         private static Logger InitializeLogging(Parameters parameters)
         {
-            var helper = new IotHubConnectionStringHelper(parameters.ConnectionString);
+            var helper = new IotHubConnectionStringHelper(parameters.IoTHubConnectionString);
             var logBuilder = new LoggingBuilder
             {
                 AppContext =
                 {
                     { Hub, helper.HostName },
-                    { DeviceId, helper.DeviceId },
-                    { Transport, GetTransportSettings(parameters).ToString() },
+                    { Transport, $"HTTP/{parameters.TransportProtocol}" },
                 },
             };
             foreach (KeyValuePair<string, string> kvp in s_commonProperties)
@@ -116,16 +106,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             Logger logger = logBuilder.BuildLogger();
             return logger;
-        }
-
-        private static IotHubClientTransportSettings GetTransportSettings(Parameters parameters)
-        {
-            return parameters.Transport switch
-            {
-                TransportType.Mqtt => new IotHubClientMqttSettings(parameters.TransportProtocol),
-                TransportType.Amqp => new IotHubClientAmqpSettings(parameters.TransportProtocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {parameters.Transport}/{parameters.TransportProtocol}"),
-            };
         }
     }
 }

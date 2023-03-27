@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.IoT.Thief.Device
+namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     /// <summary>
     /// Acts as a sensor for the device, but what it "senses" is system and process health.
@@ -15,7 +15,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
     {
         private readonly IIotHub _iotHub;
         private readonly Logger _logger;
-        private static readonly TimeSpan _interval = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(3);
 
         public SystemHealthMonitor(IIotHub iotHub, Logger logger)
         {
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
                     }
                 }
 
-                await Task.Delay(_interval, ct).ConfigureAwait(false);
+                await Task.Delay(s_interval, ct).ConfigureAwait(false);
             }
         }
 

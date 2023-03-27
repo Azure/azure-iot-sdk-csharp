@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Azure.IoT.Thief.Device
+﻿namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal static class LoggingConstants
     {
@@ -8,6 +8,7 @@
         public const string TotalMessagesSent = "TotalMessagesSent";
         public const string MessageDelaySeconds = "MessageDelaySeconds";
         public const string MessageBacklog = "MessageBacklog";
+        public const string C2dDirectMethodDelaySeconds = "C2dDirectMethodDelaySeconds";
 
         // Events
 
@@ -17,6 +18,7 @@
 
         // Logging properties
 
+        public const string TestClient = "testClient";
         public const string RunId = "runId";
         public const string SdkLanguage = "sdkLanguage";
         public const string SdkVersion = "sdkVersion";

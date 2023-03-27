@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.LongHaul.Device
+namespace Microsoft.Azure.Devices.LongHaul.Service
 {
     internal class IotHubConnectionStringHelper
     {
@@ -24,15 +24,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     HostName = element[1];
                 }
-                else if (element[0].Equals("DeviceId"))
-                {
-                    DeviceId = element[1];
-                }
             }
         }
 
         public string HostName { get; private set; }
-
-        public string DeviceId { get; private set; }
     }
 }

@@ -1,9 +1,12 @@
-﻿using System.Diagnostics;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.LongHaul.Device
+namespace Microsoft.Azure.Devices.LongHaul.Service
 {
-    internal class SystemHealthTelemetry : TelemetryBase
+    internal class SystemHealthC2dMessage : MessageBase
     {
         private static readonly Process s_currentProcess = Process.GetCurrentProcess();
         private static readonly string s_processName = s_currentProcess.ProcessName;

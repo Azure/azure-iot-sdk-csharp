@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.Azure.IoT.Thief.Device.LoggingConstants;
+using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
-namespace Microsoft.Azure.IoT.Thief.Device
+namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal sealed class IotHub : IIotHub, IAsyncDisposable
     {
@@ -65,6 +65,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
                 }
 
                 await _deviceClient.OpenAsync().ConfigureAwait(false);
+                await _deviceClient.SetDirectMethodCallbackAsync(DirectMethodCallback).ConfigureAwait(false);
             }
             finally
             {
@@ -95,7 +96,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
                     catch (TaskCanceledException)
                     {
                         // App is signalled to exit
-                        _logger.Trace($"Exit signal encountered. Terminating telemetry message pump.");
+                        _logger.Trace($"Exit signal encountered. Terminating telemetry message pump.", TraceSeverity.Verbose);
                         return;
                     }
                 }
@@ -186,7 +187,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
         public async ValueTask DisposeAsync()
         {
-            _logger.Trace("Disposing");
+            _logger.Trace("Disposing", TraceSeverity.Verbose);
 
             if (_lifetimeControl != null)
             {
@@ -196,7 +197,7 @@ namespace Microsoft.Azure.IoT.Thief.Device
 
             await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
-            _logger.Trace($"IoT hub client instance disposed");
+            _logger.Trace($"IoT hub client instance disposed", TraceSeverity.Verbose);
 
         }
 
@@ -268,6 +269,40 @@ namespace Microsoft.Azure.IoT.Thief.Device
                     _logger.Trace("Quitting.", TraceSeverity.Information);
                     break;
             }
+        }
+
+        private Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
+        {
+            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{methodRequest.GetPayloadAsJsonString()}].", TraceSeverity.Information);
+
+            switch (methodRequest.MethodName)
+            {
+                case "EchoPayload":
+                    try
+                    {
+                        if (methodRequest.TryGetPayload(out CustomDirectMethodPayload methodPayload))
+                        {
+                            _logger.Trace($"Echoing back the payload of direct method.", TraceSeverity.Information);
+                            _logger.Metric(
+                                C2dDirectMethodDelaySeconds,
+                                (DateTimeOffset.UtcNow - methodPayload.CurrentTimeUtc).TotalSeconds);
+
+                            // Log the current time again and send the response back to the service app.
+                            methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;
+                            return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Trace($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}.", TraceSeverity.Error);
+                        return Task.FromResult(new DirectMethodResponse(400) { Payload = ex.Message });
+                    }
+                    break;
+            }
+
+            string unsupportedMessage = $"The direct method [{methodRequest.MethodName}] is not supported.";
+            _logger.Trace(unsupportedMessage, TraceSeverity.Warning);
+            return Task.FromResult(new DirectMethodResponse(400) { Payload = unsupportedMessage });
         }
     }
 }

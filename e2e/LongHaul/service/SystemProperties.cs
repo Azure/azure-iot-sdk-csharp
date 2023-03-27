@@ -1,9 +1,12 @@
-﻿using System.Runtime.InteropServices;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.LongHaul.Device
+namespace Microsoft.Azure.Devices.LongHaul.Service
 {
-    class SystemProperties
+    internal class SystemProperties
     {
         [JsonPropertyName("systemArchitecture")]
         public string SystemArchitecture { get; set; } = RuntimeInformation.OSArchitecture.ToString();

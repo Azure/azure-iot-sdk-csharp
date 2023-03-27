@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Microsoft.Azure.IoT.Thief.Device
+namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal static class MessageHelpers
     {

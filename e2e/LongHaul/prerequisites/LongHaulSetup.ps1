@@ -238,6 +238,7 @@ $keyvaultKvps = @{
     "IOTHUB-LONG-HAUL-DEVICE-CONNECTION-STRING" = $longhaulDeviceConnectionString;
     "APPLICATION-INSIGHTS-INSTRUMENTATION-KEY" = $instrumentationKey;
     "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
+    "IOTHUB-CONNECTION-STRING" = $iotHubConnectionString;
 }
 
 Write-Host "`nWriting secrets to KeyVault $keyVaultName."
