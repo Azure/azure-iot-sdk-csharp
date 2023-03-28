@@ -38,6 +38,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     Environment.Exit(1);
                 });
 
+            if (!parameters.Validate())
+            {
+                Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(result, null, null));
+                Environment.Exit(1);
+            }
+
             s_logger = InitializeLogging(parameters);
 
             // Log system health before initializing hub
@@ -47,7 +53,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             using var iotHub = new IotHub(
                 s_logger,
-                parameters.IoTHubConnectionString,
+                parameters.IotHubConnectionString,
                 parameters.DeviceId,
                 parameters.TransportProtocol);
 
@@ -70,12 +76,17 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             try
             {
-                await iotHub.RunAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                await Task
+                    .WhenAll(
+                        iotHub.RunAsync(cancellationTokenSource.Token),
+                        new HubEvents(iotHub).RunAsync(cancellationTokenSource.Token))
+                    .ConfigureAwait(false);
             }
-            catch (TaskCanceledException) { } // user signalled an exit
+            catch (OperationCanceledException) { } // user signaled an exit
+            catch (AggregateException ex) when (ex.InnerException is OperationCanceledException) { } // user signaled an exit
             catch (Exception ex)
             {
-                s_logger.Trace($"Device app failed with exception {ex}", TraceSeverity.Error);
+                s_logger.Trace($"Service app failed with exception {ex}", TraceSeverity.Error);
             }
 
             // Log system health after disposing hub
@@ -87,7 +98,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         private static Logger InitializeLogging(Parameters parameters)
         {
-            var helper = new IotHubConnectionStringHelper(parameters.IoTHubConnectionString);
+            var helper = new IotHubConnectionStringHelper(parameters.IotHubConnectionString);
             var logBuilder = new LoggingBuilder
             {
                 AppContext =

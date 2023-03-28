@@ -83,6 +83,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
+        public Task<string> GetEventHubCompatibleConnectionStringAsync(CancellationToken ct)
+        {
+            return s_serviceClient.GetEventHubCompatibleConnectionStringAsync(_hubConnectionString, ct);
+        }
+
         public void Dispose()
         {
             _logger.Trace("Disposing", TraceSeverity.Verbose);

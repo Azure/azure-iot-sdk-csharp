@@ -26,9 +26,6 @@ param HubLocation string = resourceGroup().location
 @description('The number of IoT hub units to be deployed.')
 param HubUnitsCount int = 1
 
-@description('The IoT hub consumer group name.')
-param ConsumerGroupName string = 'longhaul'
-
 @description('The name of BlobService inside the StorageAccount.')
 param BlobServiceName string = 'default'
 
@@ -148,6 +145,28 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-01' = {
         partitionCount: 4
       }
     }
+    routing: {
+        routes: [
+          {
+            name: 'DeviceConnections'
+            source: 'DeviceConnectionStateEvents'
+            condition: 'true'
+            endpointNames: [
+                'events'
+            ]
+            isEnabled: true
+          }
+          {
+            name: 'DeviceTwinChangeEvents'
+            source: 'TwinChangeEvents'
+            condition: 'true'
+            endpointNames: [
+                'events'
+            ]
+            isEnabled: true
+          }
+      ]
+    }
     cloudToDevice: {
       defaultTtlAsIso8601: 'PT1H'
       maxDeliveryCount: 100
@@ -164,7 +183,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-01' = {
         maxDeliveryCount: 100
       }
     }
-    storageEndPoints: {
+    storageEndpoints: {
       '$default': {
         sasTtlAsIso8601: 'PT1H'
         connectionString: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listkeys(storageAccount.id, '2022-09-01').keys[0].value}'
@@ -180,10 +199,6 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-01' = {
   dependsOn: [
     container
   ]
-}
-
-resource consumerGroups 'Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups@2018-04-01' = {
-  name: '${iotHub.name}/events/${ConsumerGroupName}'
 }
 
 output hubName string = HubName

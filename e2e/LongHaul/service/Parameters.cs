@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             "IoTHubConnectionString",
             Required = false,
             HelpText = "The connection string of the IoT hub instance to connect to.")]
-        public string IoTHubConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
+        public string IotHubConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
 
         [Option(
             'i',
@@ -36,5 +36,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             Default = IotHubTransportProtocol.Tcp,
             HelpText = "The protocol over which a transport (i.e., HTTP) communicates.")]
         public IotHubTransportProtocol TransportProtocol { get; set; }
+
+        internal bool Validate()
+        {
+            return !string.IsNullOrWhiteSpace(IotHubConnectionString)
+                || !string.IsNullOrWhiteSpace(InstrumentationKey);
+        }
     }
 }
