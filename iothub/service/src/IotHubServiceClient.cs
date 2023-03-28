@@ -232,6 +232,9 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Requests connection string for the built-in Event Hubs messaging endpoint of the associated IoT hub.
         /// </summary>
+        /// <remarks>
+        /// Use this overload when retrieving the Event Hubs compatible connection string for an IotHubServiceClient that was initialized using a method other than IoT hub connection string.
+        /// </remarks>
         /// <param name="connectionString">The IoT hub connection string.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>A connection string which can be used to connect to the Event Hubs service and interact with the IoT hub messaging endpoint.</returns>
