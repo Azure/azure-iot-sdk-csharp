@@ -16,11 +16,11 @@ using Microsoft.Azure.Devices.Client;
 using System.Reflection;
 using Microsoft.Identity.Client;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub.service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
-    [TestCategory("IoTHub")]
+    [TestCategory("IoTHub-Service")]
     public class DirectMethodE2ETests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(DirectMethodE2ETests)}_";
@@ -69,15 +69,15 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DirectMethodsClient_DeviceOnline_DeviceNotSubscribedToDirectMethods()
+        public async Task DirectMethodsClient_DeviceClientOpen_DeviceNotSubscribedToDirectMethods()
         {
             // arrange
-            // device is online but device client is not explicitly opened
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
-            
-            //IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
+
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
+            await testDevice.OpenWithRetryAsync();
 
             // act
             Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
@@ -86,6 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
             errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
             errorContext.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotOnline);
+            testDevice.Device.ConnectionState.Should().Be(ClientConnectionState.Disconnected);
         }
 
         [TestMethod]
