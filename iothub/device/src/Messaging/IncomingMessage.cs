@@ -181,6 +181,15 @@ namespace Microsoft.Azure.Devices.Client
             return false;
         }
 
+        /// <summary>
+        /// Get the raw payload bytes.
+        /// </summary>
+        /// <returns>A copy of the raw payload as a byte array.</returns>
+        public byte[] GetPayloadAsBytes()
+        {
+            return (byte[])_payload.Clone();
+        }
+
         private T GetSystemProperty<T>(string key)
         {
             return SystemProperties.TryGetValue(key, out object value) ? (T)value : default;

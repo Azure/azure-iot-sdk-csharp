@@ -126,10 +126,12 @@ namespace Microsoft.Azure.Devices.Client
                 payload = PayloadConvention.GetObject<T>(Payload);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
+                if (Logging.IsEnabled)
+                    Logging.Error(this, ex, nameof(TryGetPayload));
             }
 
             return false;
@@ -143,6 +145,15 @@ namespace Microsoft.Azure.Devices.Client
             return Payload == null || Payload.Length == 0
                 ? null
                 : DefaultPayloadConvention.Encoding.GetString(Payload);
+        }
+
+        /// <summary>
+        /// Get the raw payload bytes.
+        /// </summary>
+        /// <returns>A copy of the raw payload as a byte array.</returns>
+        public byte[] GetPayloadAsBytes()
+        {
+            return (byte[])Payload.Clone();
         }
     }
 }
