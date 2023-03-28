@@ -31,6 +31,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
         private long _totalMessagesSent = 0;
+        private long _totalTwinUpdatesReported = 0;
+        private long _totalTwinCallbacksHandled = 0;
+        private long _totalDesiredPropertiesHandled = 0;
 
         public IDictionary<string, string> IotProperties { get; } = new Dictionary<string, string>();
 
@@ -142,6 +145,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                         { "TotalMessagesSent", _totalMessagesSent },
                     };
                     await _deviceClient.UpdateReportedPropertiesAsync(reported ,ct).ConfigureAwait(false);
+
+                    ++_totalTwinUpdatesReported;
+                    _logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
                 }
                 else
                 {
@@ -351,7 +357,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             if (reported.Any())
             {
                 await _deviceClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
+
+                _totalDesiredPropertiesHandled += reported.Count();
+                _logger.Metric(TotalDesiredPropertiesHandled, _totalDesiredPropertiesHandled);
             }
+
+            ++_totalTwinCallbacksHandled;
+            _logger.Metric(TotalTwinCallbacksHandled, _totalTwinCallbacksHandled);
         }
     }
 }

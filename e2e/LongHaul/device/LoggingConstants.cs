@@ -9,6 +9,9 @@
         public const string MessageDelaySeconds = "MessageDelaySeconds";
         public const string MessageBacklog = "MessageBacklog";
         public const string C2dDirectMethodDelaySeconds = "C2dDirectMethodDelaySeconds";
+        public const string TotalTwinUpdatesReported = "TotalTwinUpdatesReported";
+        public const string TotalTwinCallbacksHandled = "TotalTwinCallbacksHandled";
+        public const string TotalDesiredPropertiesHandled = "TotalDesiredPropertiesHandled";
 
         // Events
 
