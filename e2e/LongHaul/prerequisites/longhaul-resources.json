@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "12696841579327562494"
+      "templateHash": "1231974184335345689"
     }
   },
   "parameters": {
@@ -146,13 +146,22 @@
             "tenantId": "[subscription().tenantId]",
             "permissions": {
               "secrets": [
-                "all"
+                "get",
+                "list",
+                "set",
+                "delete"
               ],
               "certificates": [
-                "all"
+                "get",
+                "list",
+                "create",
+                "delete"
               ],
               "keys": [
-                "all"
+                "get",
+                "list",
+                "create",
+                "delete"
               ]
             }
           }
@@ -206,6 +215,9 @@
             "retentionTimeInDays": 1,
             "partitionCount": 4
           }
+        },
+        "rootCertfificate": {
+          "enableRootCertificateV2": true
         },
         "routing": {
           "routes": [
