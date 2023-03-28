@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 }
 
                 await _deviceClient.OpenAsync().ConfigureAwait(false);
-                await _deviceClient.SetDirectMethodCallbackAsync(DirectMethodCallbackAsync).ConfigureAwait(false);
+                await _deviceClient.SetDirectMethodCallbackAsync(DirectMethodCallback).ConfigureAwait(false);
             }
             finally
             {
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _messagesToSend.Enqueue(iotMessage);
         }
 
-        public async Task SetPropertiesAsync(string keyName, object properties, CancellationToken cancellationToken = default)
+        public async Task SetPropertiesAsync(string keyName, object properties, CancellationToken cancellationToken)
         {
             Debug.Assert(_deviceClient != null);
             Debug.Assert(properties != null);
@@ -183,8 +183,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             await _deviceClient
                 .UpdateReportedPropertiesAsync(reportedProperties, cancellationToken)
                 .ConfigureAwait(false);
-
-            _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
         }
 
         public async ValueTask DisposeAsync()
@@ -273,7 +271,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             }
         }
 
-        private async Task<DirectMethodResponse> DirectMethodCallbackAsync(DirectMethodRequest methodRequest)
+        private Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
             _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{methodRequest.GetPayloadAsJsonString()}].", TraceSeverity.Information);
 
@@ -289,25 +287,22 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                                 C2dDirectMethodDelaySeconds,
                                 (DateTimeOffset.UtcNow - methodPayload.CurrentTimeUtc).TotalSeconds);
 
-                            // Set "methodCallsCount" obtained from the method payload as one of the reported properties.
-                            await SetPropertiesAsync("methodCallsCount", methodPayload.MethodCallsCount).ConfigureAwait(false);
-
                             // Log the current time again and send the response back to the service app.
                             methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;
-                            return new DirectMethodResponse(200) { Payload = methodPayload };
+                            return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.Trace($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}.", TraceSeverity.Error);
-                        return new DirectMethodResponse(400) { Payload = ex.Message };
+                        return Task.FromResult(new DirectMethodResponse(400) { Payload = ex.Message });
                     }
                     break;
             }
 
             string unsupportedMessage = $"The direct method [{methodRequest.MethodName}] is not supported.";
             _logger.Trace(unsupportedMessage, TraceSeverity.Warning);
-            return new DirectMethodResponse(400) { Payload = unsupportedMessage };
+            return Task.FromResult(new DirectMethodResponse(400) { Payload = unsupportedMessage });
         }
     }
 }
