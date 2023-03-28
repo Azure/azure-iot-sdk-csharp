@@ -9,7 +9,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         public static void WriteLine(string message)
         {
-            Console.WriteLine(message);
             EventSourceTestLogger.Log.TestVerboseMessage(message);
         }
     }
