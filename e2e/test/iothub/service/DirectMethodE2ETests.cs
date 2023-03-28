@@ -39,9 +39,11 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("someNonexistentDevice", methodInvocation);
 
             // assert
+
             ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
             errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
             errorContext.And.IsTransient.Should().BeFalse();
+            errorContext.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotFound);
         }
 
         [TestMethod]
@@ -51,86 +53,75 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
+            // ensure device exists but module does not
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
             // act
-            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("someNonexistentDevice", "someNonexistentModule", methodInvocation);
+            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonexistentModule", methodInvocation);
 
             // assert
             ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
             errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
             errorContext.And.IsTransient.Should().BeFalse();
+            errorContext.And.ErrorCode.Should().Be(IotHubServiceErrorCode.ModuleNotFound);
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DirectMethodsClient_DeviceOnline_DeviceClientNotOpen()
+        public async Task DirectMethodsClient_DeviceOnline_DeviceNotSubscribedToDirectMethods()
         {
             // arrange
+            // device is online but device client is not explicitly opened
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
-
-            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+            
+            //IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
-            // ensure device client is closed
-            await deviceClient.CloseAsync();
-            
-            try
-            {
-                // act
-                Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
+            // act
+            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
 
-                // assert
-                ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
-                errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
-            }
-            finally
-            {
-                await deviceClient.CloseAsync();
-            }
+            // assert
+            ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
+            errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+            errorContext.And.ErrorCode.Should().Be(IotHubServiceErrorCode.DeviceNotOnline);
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DirectMethodsClient_DeviceOnline_MethodCallbackTimesOut()
+        public async Task DirectMethodsClient_DeviceOnline_ExceedsRequestTimeout()
         {
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
+            const int timeoutInSeconds = 3;
+
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod")
             {
-                ConnectionTimeout = TimeSpan.FromSeconds(3),
-                ResponseTimeout = TimeSpan.FromSeconds(3),
+                ConnectionTimeout = TimeSpan.FromSeconds(timeoutInSeconds),
+                ResponseTimeout = TimeSpan.FromSeconds(timeoutInSeconds),
             };
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
-            await deviceClient.OpenAsync();
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
-            try
-            {
-                // act
-                await deviceClient
-                .SetDirectMethodCallbackAsync(
-                    (methodRequest) =>
-                    {
-                        // force a timeout
-                        Thread.Sleep(10000);
-                        var response = new DirectMethodResponse(200);
-                        return Task.FromResult(response);
-                    })
-                .ConfigureAwait(false);
+            // act
+            await deviceClient
+            .SetDirectMethodCallbackAsync(
+                async (methodRequest) =>
+                {
+                    // force a timeout
+                    await Task.Delay(timeoutInSeconds * 1000 * 2).ConfigureAwait(false);
+                    var response = new DirectMethodResponse(200);
+                    return response;
+                })
+            .ConfigureAwait(false);
 
-                // assert
-                Func<Task> act = async() => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
-                ExceptionAssertions<IotHubServiceException> response = await act.Should().ThrowAsync<IotHubServiceException>();
-                response.And.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-            }
-            finally
-            {
-                await deviceClient.CloseAsync();
-            }
+            // assert
+            Func<Task> act = async() => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
+            ExceptionAssertions<IotHubServiceException> response = await act.Should().ThrowAsync<IotHubServiceException>();
+            response.And.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+            response.And.ErrorCode.Should().Be(IotHubServiceErrorCode.ArgumentInvalid);
         }
     }
 }
