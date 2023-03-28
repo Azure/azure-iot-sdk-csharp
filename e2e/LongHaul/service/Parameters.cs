@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         internal bool Validate()
         {
             return !string.IsNullOrWhiteSpace(IotHubConnectionString)
-                || !string.IsNullOrWhiteSpace(InstrumentationKey);
+                && !string.IsNullOrWhiteSpace(InstrumentationKey);
         }
     }
 }

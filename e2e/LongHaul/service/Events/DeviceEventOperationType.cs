@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     public enum DeviceEventOperationType
     {
         /// <summary>
-        /// Published when a device is registered to an IoT hub.
+        /// Unknown operation type.
         /// </summary>
         Unknown = 0,
 

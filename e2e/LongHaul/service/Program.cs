@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 await Task
                     .WhenAll(
                         iotHub.RunAsync(cancellationTokenSource.Token),
-                        new HubEvents(iotHub).RunAsync(cancellationTokenSource.Token))
+                        new HubEvents(iotHub, s_logger.Clone()).RunAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
             catch (OperationCanceledException) { } // user signaled an exit

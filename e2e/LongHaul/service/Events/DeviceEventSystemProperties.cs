@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public DateTimeOffset EnqueuedOnUtc { get; set; }
 
         /// <summary>
-        /// The date and time of the enqueued event in UTC.
+        /// The date and time of the enqueued event with the time zone information.
         /// </summary>
         [JsonPropertyName("x-opt-enqueued-time")]
         public DateTimeOffset EnqueuedOn { get; set; }
