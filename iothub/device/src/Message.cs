@@ -258,7 +258,6 @@ namespace Microsoft.Azure.Devices.Client
 
         bool IReadOnlyIndicator.IsReadOnly => Interlocked.Read(ref _sizeInBytesCalled) == 1;
 
-
         /// <summary>
         /// The body stream of the current event data instance
         /// </summary>
