@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             while (!ct.IsCancellationRequested)
             {
                 await InvokeDirectMethodAsync(++methodCallsCount, ct).ConfigureAwait(false);
-                await SetDesiredPropertiesAsync("methodCallsCount", methodCallsCount, ct).ConfigureAwait(false);
+                await SetDesiredPropertiesAsync("methodCallsCount", methodCallsCount.ToString(), ct).ConfigureAwait(false);
 
                 await Task.Delay(s_interval, ct).ConfigureAwait(false);
             }
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
         }
 
-        private async Task SetDesiredPropertiesAsync(string keyName, object properties, CancellationToken ct)
+        private async Task SetDesiredPropertiesAsync(string keyName, string properties, CancellationToken ct)
         {
             var twin = new ClientTwin();
             twin.Properties.Desired[keyName] = properties;

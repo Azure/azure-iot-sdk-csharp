@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         {
             var properties = new SystemProperties();
             _logger.Trace(
-                "System properties",
+                "System Properties",
                 TraceSeverity.Information,
                 new Dictionary<string, string>
                 {

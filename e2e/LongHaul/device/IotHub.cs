@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private volatile IotHubDeviceClient _deviceClient;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan s_deviceTwinCheckInterval = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
         private long _totalMessagesSent = 0;
 
@@ -67,6 +67,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
                 await _deviceClient.OpenAsync().ConfigureAwait(false);
                 await _deviceClient.SetDirectMethodCallbackAsync(DirectMethodCallback).ConfigureAwait(false);
+                await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallbackAsync).ConfigureAwait(false);
             }
             finally
             {
@@ -129,28 +130,26 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             }
         }
 
-        public async Task CheckDesiredPropertiesAndUpdateAsync(CancellationToken ct)
+        public async Task ReportReadOnlyPropertiesAsync(CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
-                if (!IsConnected)
+                if (IsConnected)
+                {
+                    var reported = new ReportedProperties
+                    {
+                        { "TotalMessagesSent", _totalMessagesSent },
+                    };
+                    await _deviceClient.UpdateReportedPropertiesAsync(reported ,ct).ConfigureAwait(false);
+                }
+                else
                 {
                     _logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
                     continue;
                 }
 
-                TwinProperties deviceTwin = await _deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
-                if (deviceTwin.Desired.TryGetValue("methodCallsCount", out int methodCallsCount))
-                {
-                    await SetPropertiesAsync("methodCallsCount", methodCallsCount, ct).ConfigureAwait(false);
-                }
-                else
-                {
-                    _logger.Trace($"Waiting for the desired property \"methodCallsCount\".", TraceSeverity.Warning);
-                }
-
-                await Task.Delay(s_deviceTwinCheckInterval, ct).ConfigureAwait(false);
+                await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
             }
         }
 
@@ -331,6 +330,28 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             string unsupportedMessage = $"The direct method [{methodRequest.MethodName}] is not supported.";
             _logger.Trace(unsupportedMessage, TraceSeverity.Warning);
             return Task.FromResult(new DirectMethodResponse(400) { Payload = unsupportedMessage });
+        }
+
+        private async Task DesiredPropertyUpdateCallbackAsync(DesiredProperties properties)
+        {
+            var reported = new ReportedProperties();
+            foreach (KeyValuePair<string, object> prop in properties)
+            {
+                // Assume all values are strings.
+                if (!properties.TryGetValue(prop.Key, out string propertyValue))
+                {
+                    _logger.Trace($"Got request for {prop.Key} with non-string [{prop.Value}]", TraceSeverity.Warning);
+                    continue;
+                }
+
+                _logger.Trace($"Got request for {prop.Key} with [{propertyValue}]", TraceSeverity.Information);
+                reported.Add(prop.Key, propertyValue);
+            }
+
+            if (reported.Any())
+            {
+                await _deviceClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
+            }
         }
     }
 }

@@ -68,9 +68,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Console.WriteLine("Exiting ...");
             };
 
+            var systemHealthMonitor = new SystemHealthMonitor(s_logger.Clone());
+
             try
             {
-                await iotHub.RunAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                await Task
+                    .WhenAll(
+                        systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
+                        iotHub.RunAsync(cancellationTokenSource.Token))
+                    .ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
             catch (Exception ex)
