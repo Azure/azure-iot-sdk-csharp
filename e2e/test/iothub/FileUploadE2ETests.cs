@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
 
-                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, Client.TransportType.Http1);
+                deviceClient = DeviceClient.Create(TestDevice.IotHubHostName, x509Auth, Client.TransportType.Http1);
             }
             else
             {
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
 
-                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, transport);
+                deviceClient = DeviceClient.Create(TestDevice.IotHubHostName, x509Auth, transport);
             }
             else
             {
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
 
-                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, transport);
+                deviceClient = DeviceClient.Create(TestDevice.IotHubHostName, x509Auth, transport);
             }
             else
             {
