@@ -1,0 +1,15 @@
+{
+  "codebaseName": "Azure-Iot-SDK-CSharp",
+  "notificationAliases": [
+    "AzIoTEdMgdSdk@microsoft.com"
+  ],
+  "codebaseAdmins": [
+    "REDMOND\\andykwong",
+    "REDMOND\\drwill"
+  ],
+  "instanceUrl": "https://msazure.visualstudio.com/defaultcollection",
+  "projectName": "One",
+  "areaPath": "One\\IoT\\Platform and Devices\\IoT Devices\\SDKs\\Managed",
+  "iterationPath": "One\\Custom\\IoT\\Backlog",
+  "allTools": true
+}
