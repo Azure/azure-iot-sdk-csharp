@@ -60,13 +60,13 @@ resource keyVault 'Microsoft.KeyVault/vaults@2018-02-14' = {
         tenantId: subscription().tenantId
         permissions: {
           secrets: [
-            'all'
+            'get', 'list', 'set', 'delete'
           ]
           certificates: [
-            'all'
+            'get', 'list', 'create', 'delete'
           ]
           keys: [
-            'all'
+            'get', 'list', 'create', 'delete'
           ]
         }
       }
@@ -150,6 +150,9 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-03-03-preview' = {
         retentionTimeInDays: 1
         partitionCount: 4
       }
+    }
+    rootCertfificate: {
+      enableRootCertificateV2: true
     }
     cloudToDevice: {
       defaultTtlAsIso8601: 'PT1H'

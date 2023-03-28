@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "2785763649443622511"
+      "templateHash": "9765864709452438240"
     }
   },
   "parameters": {
@@ -129,13 +129,22 @@
             "tenantId": "[subscription().tenantId]",
             "permissions": {
               "secrets": [
-                "all"
+                "get",
+                "list",
+                "set",
+                "delete"
               ],
               "certificates": [
-                "all"
+                "get",
+                "list",
+                "create",
+                "delete"
               ],
               "keys": [
-                "all"
+                "get",
+                "list",
+                "create",
+                "delete"
               ]
             }
           }
@@ -228,6 +237,9 @@
             "retentionTimeInDays": 1,
             "partitionCount": 4
           }
+        },
+        "rootCertfificate": {
+          "enableRootCertificateV2": true
         },
         "cloudToDevice": {
           "defaultTtlAsIso8601": "PT1H",
