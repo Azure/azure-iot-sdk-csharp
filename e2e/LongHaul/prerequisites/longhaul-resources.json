@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "977298854607594937"
+      "templateHash": "12696841579327562494"
     }
   },
   "parameters": {
@@ -23,6 +23,12 @@
         "description": "The location for the Application insights instance."
       }
     },
+    "UserObjectId": {
+      "type": "string",
+      "metadata": {
+        "description": "Signed in user objectId"
+      }
+    },
     "StorageAccountName": {
       "type": "string",
       "metadata": {
@@ -30,12 +36,6 @@
       },
       "maxLength": 24,
       "minLength": 3
-    },
-    "UserObjectId": {
-      "type": "string",
-      "metadata": {
-        "description": "Signed in user objectId"
-      }
     },
     "KeyVaultName": {
       "type": "string",
@@ -65,13 +65,6 @@
       "defaultValue": 1,
       "metadata": {
         "description": "The number of IoT hub units to be deployed."
-      }
-    },
-    "ConsumerGroupName": {
-      "type": "string",
-      "defaultValue": "longhaul",
-      "metadata": {
-        "description": "The IoT hub consumer group name."
       }
     },
     "BlobServiceName": {
@@ -111,6 +104,32 @@
       "dependsOn": [
         "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('ApplicationInsightsName'))]"
       ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-06-01",
+      "name": "[parameters('StorageAccountName')]",
+      "location": "[parameters('HubLocation')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage",
+      "properties": {
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "keyType": "Account",
+              "enabled": true
+            },
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        }
+      }
     },
     {
       "type": "Microsoft.KeyVault/vaults",
@@ -153,32 +172,6 @@
       }
     },
     {
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2021-06-01",
-      "name": "[parameters('StorageAccountName')]",
-      "location": "[parameters('HubLocation')]",
-      "sku": {
-        "name": "Standard_LRS"
-      },
-      "kind": "Storage",
-      "properties": {
-        "supportsHttpsTrafficOnly": true,
-        "encryption": {
-          "services": {
-            "file": {
-              "keyType": "Account",
-              "enabled": true
-            },
-            "blob": {
-              "keyType": "Account",
-              "enabled": true
-            }
-          },
-          "keySource": "Microsoft.Storage"
-        }
-      }
-    },
-    {
       "type": "Microsoft.Storage/storageAccounts/blobServices",
       "apiVersion": "2021-06-01",
       "name": "[format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName'))]",
@@ -214,6 +207,28 @@
             "partitionCount": 4
           }
         },
+        "routing": {
+          "routes": [
+            {
+              "name": "DeviceConnections",
+              "source": "DeviceConnectionStateEvents",
+              "condition": "true",
+              "endpointNames": [
+                "events"
+              ],
+              "isEnabled": true
+            },
+            {
+              "name": "DeviceTwinChangeEvents",
+              "source": "TwinChangeEvents",
+              "condition": "true",
+              "endpointNames": [
+                "events"
+              ],
+              "isEnabled": true
+            }
+          ]
+        },
         "cloudToDevice": {
           "defaultTtlAsIso8601": "PT1H",
           "maxDeliveryCount": 100,
@@ -230,7 +245,7 @@
             "maxDeliveryCount": 100
           }
         },
-        "storageEndPoints": {
+        "storageEndpoints": {
           "$default": {
             "sasTtlAsIso8601": "PT1H",
             "connectionString": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2022-09-01').keys[0].value)]",
@@ -247,14 +262,6 @@
         "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', parameters('StorageAccountName'), parameters('BlobServiceName'), parameters('ContainerName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
       ]
-    },
-    {
-      "type": "Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups",
-      "apiVersion": "2018-04-01",
-      "name": "[format('{0}/events/{1}', parameters('HubName'), parameters('ConsumerGroupName'))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
-      ]
     }
   ],
   "outputs": {
@@ -270,13 +277,13 @@
       "type": "string",
       "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2021-06-01').keys[0].value)]"
     },
-    "keyVaultName": {
-      "type": "string",
-      "value": "[parameters('KeyVaultName')]"
-    },
     "instrumentationKey": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName')), '2020-02-02-preview').InstrumentationKey]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "value": "[parameters('KeyVaultName')]"
     }
   }
 }
