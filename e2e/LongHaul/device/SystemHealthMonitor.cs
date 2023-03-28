@@ -38,28 +38,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 });
             await _iotHub.SetPropertiesAsync("systemProperties", properties, ct).ConfigureAwait(false);
 
-            int errorCount = 0;
-
             while (!ct.IsCancellationRequested)
             {
-                try
-                {
-                    SystemHealthTelemetry telemetry = BuildAndLogSystemHealth(_logger);
-                    _iotHub.AddTelemetry(telemetry);
-                    errorCount = 0;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Trace(
-                        $"Error {++errorCount} reporting system health telemetry {ex}",
-                        TraceSeverity.Error);
-
-                    if (errorCount > 10)
-                    {
-                        _logger.Trace("Quitting system health monitor due to too many consecutive errors", TraceSeverity.Critical);
-                        break;
-                    }
-                }
+                SystemHealthTelemetry telemetry = BuildAndLogSystemHealth(_logger);
+                _iotHub.AddTelemetry(telemetry);
 
                 await Task.Delay(s_interval, ct).ConfigureAwait(false);
             }

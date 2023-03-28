@@ -26,28 +26,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public async Task RunAsync(CancellationToken ct)
         {
-            int errorCount = 0;
-
             while (!ct.IsCancellationRequested)
             {
-                try
-                {
-                    _ = BuildAndLogSystemHealth(_logger);
-                    errorCount = 0;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Trace(
-                        $"Error {++errorCount} reporting system health telemetry {ex}",
-                        TraceSeverity.Error);
-
-                    if (errorCount > 10)
-                    {
-                        _logger.Trace("Quitting system health monitor due to too many consecutive errors", TraceSeverity.Critical);
-                        break;
-                    }
-                }
-
+                _ = BuildAndLogSystemHealth(_logger);
                 await Task.Delay(s_interval, ct).ConfigureAwait(false);
             }
         }
