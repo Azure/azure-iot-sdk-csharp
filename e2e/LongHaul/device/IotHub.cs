@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private volatile IotHubDeviceClient _deviceClient;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan s_deviceTwinCheckInterval = TimeSpan.FromSeconds(3);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
         private long _totalMessagesSent = 0;
 
@@ -74,10 +75,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         }
 
         /// <summary>
-        /// Runs a background
+        /// Frequently send telemetry messages to the hub.
         /// </summary>
         /// <param name="ct">The cancellation token</param>
-        public async Task RunAsync(CancellationToken ct)
+        public async Task SendTelemetryMessagesAsync(CancellationToken ct)
         {
             TelemetryMessage pendingMessage = null;
 
@@ -125,6 +126,32 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
                     pendingMessage = null;
                 }
+            }
+        }
+
+        public async Task CheckDesiredPropertiesAndUpdateAsync(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                // If not connected, skip the work below this round
+                if (!IsConnected)
+                {
+                    _logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
+                    continue;
+                }
+
+                TwinProperties deviceTwin = await _deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
+                if (deviceTwin.Desired.TryGetValue("methodCallsCount", out int methodCallsCount))
+                {
+                    await SetPropertiesAsync("methodCallsCount", methodCallsCount, ct).ConfigureAwait(false);
+                }
+                else
+                {
+                    _logger.Trace($"Waiting for the desired property \"methodCallsCount\".", TraceSeverity.Warning);
+                    continue;
+                }
+
+                await Task.Delay(s_deviceTwinCheckInterval, ct).ConfigureAwait(false);
             }
         }
 
@@ -183,6 +210,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             await _deviceClient
                 .UpdateReportedPropertiesAsync(reportedProperties, cancellationToken)
                 .ConfigureAwait(false);
+
+            _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
         }
 
         public async ValueTask DisposeAsync()
