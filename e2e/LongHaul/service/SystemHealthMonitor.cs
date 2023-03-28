@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Mash.Logging;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
@@ -12,6 +15,24 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     /// </summary>
     internal class SystemHealthMonitor
     {
+        private readonly Logger _logger;
+        private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(3);
+
+        public SystemHealthMonitor(Logger logger)
+        {
+            _logger = logger;
+            _logger.LoggerContext.Add("Component", nameof(SystemHealthMonitor));
+        }
+
+        public async Task RunAsync(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                _ = BuildAndLogSystemHealth(_logger);
+                await Task.Delay(s_interval, ct).ConfigureAwait(false);
+            }
+        }
+
         internal static SystemHealthC2dMessage BuildAndLogSystemHealth(Logger logger)
         {
             var message = new SystemHealthC2dMessage();

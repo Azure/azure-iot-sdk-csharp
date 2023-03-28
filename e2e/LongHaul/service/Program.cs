@@ -74,11 +74,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Console.WriteLine("Exiting ...");
             };
 
+            var systemHealthMonitor = new SystemHealthMonitor(s_logger.Clone());
+
             try
             {
                 await Task
                     .WhenAll(
-                        iotHub.RunAsync(cancellationTokenSource.Token),
+                        systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
+                        iotHub.InvokeDirectMethodAsync(cancellationTokenSource.Token),
+                        iotHub.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), cancellationTokenSource.Token),
                         new HubEvents(iotHub, s_logger.Clone()).RunAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
