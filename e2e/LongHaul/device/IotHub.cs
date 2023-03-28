@@ -148,7 +148,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 else
                 {
                     _logger.Trace($"Waiting for the desired property \"methodCallsCount\".", TraceSeverity.Warning);
-                    continue;
                 }
 
                 await Task.Delay(s_deviceTwinCheckInterval, ct).ConfigureAwait(false);
