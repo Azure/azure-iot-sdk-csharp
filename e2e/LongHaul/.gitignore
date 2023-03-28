@@ -1,0 +1,2 @@
+*.config.json
+!common.config.json

@@ -1,6 +1,13 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.15.31.15270",
+      "templateHash": "9765864709452438240"
+    }
+  },
   "parameters": {
     "StorageAccountName": {
       "type": "string",
@@ -35,13 +42,6 @@
       "defaultValue": 1,
       "metadata": {
         "description": "The number of IoT hub units to be deployed."
-      }
-    },
-    "ConsumerGroupName": {
-      "type": "string",
-      "defaultValue": "e2e-tests",
-      "metadata": {
-        "description": "The IoT hub consumer group name."
       }
     },
     "DpsName": {
@@ -109,7 +109,6 @@
       }
     }
   },
-  "functions": [],
   "variables": {
     "hubKeysId": "[resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner')]",
     "dpsKeysId": "[resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DpsName'), 'provisioningserviceowner')]"
@@ -130,13 +129,22 @@
             "tenantId": "[subscription().tenantId]",
             "permissions": {
               "secrets": [
-                "all"
+                "get",
+                "list",
+                "set",
+                "delete"
               ],
               "certificates": [
-                "all"
+                "get",
+                "list",
+                "create",
+                "delete"
               ],
               "keys": [
-                "all"
+                "get",
+                "list",
+                "create",
+                "delete"
               ]
             }
           }
@@ -164,7 +172,7 @@
         "name": "Standard_LRS",
         "tier": "Standard"
       },
-      "kind": "StorageV2",
+      "kind": "Storage",
       "properties": {
         "supportsHttpsTrafficOnly": true,
         "encryption": {
@@ -220,7 +228,7 @@
       "identity": {
         "type": "SystemAssigned, UserAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName'))]": {}
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName')))]": {}
         }
       },
       "properties": {
@@ -229,6 +237,9 @@
             "retentionTimeInDays": 1,
             "partitionCount": 4
           }
+        },
+        "rootCertfificate": {
+          "enableRootCertificateV2": true
         },
         "cloudToDevice": {
           "defaultTtlAsIso8601": "PT1H",
@@ -246,7 +257,7 @@
             "maxDeliveryCount": 100
           }
         },
-        "StorageEndPoints": {
+        "StorageEndpoints": {
           "$default": {
             "sasTtlAsIso8601": "PT1H",
             "connectionString": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2019-06-01').keys[0].value)]",
@@ -264,14 +275,6 @@
         "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[0], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[1], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[2])]",
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups",
-      "apiVersion": "2018-04-01",
-      "name": "[format('{0}/events/{1}', parameters('HubName'), parameters('ConsumerGroupName'))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
       ]
     },
     {
@@ -352,18 +355,11 @@
     },
     "workspaceId": {
       "type": "string",
-      "value": "[if(parameters('EnableIotHubSecuritySolution'), reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId, '')]"
+      "value": "[if(parameters('EnableIotHubSecuritySolution'), format('{0}', reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId), '')]"
     },
     "keyVaultName": {
       "type": "string",
       "value": "[parameters('KeyVaultName')]"
-    }
-  },
-  "metadata": {
-    "_generator": {
-      "name": "bicep",
-      "version": "0.3.1.62928",
-      "templateHash": "129270437041242196"
     }
   }
 }

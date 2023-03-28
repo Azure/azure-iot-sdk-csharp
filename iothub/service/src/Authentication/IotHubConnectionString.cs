@@ -14,7 +14,8 @@ namespace Microsoft.Azure.Devices
     {
         private static readonly TimeSpan s_tokenTimeToLive = TimeSpan.FromHours(1);
 
-        public IotHubConnectionString(string audience, string sharedAccessKeyName, string sharedAccessKey, string sharedAccessSignature) : base(audience)
+        public IotHubConnectionString(string audience, string sharedAccessKeyName, string sharedAccessKey, string sharedAccessSignature)
+            : base(audience)
         {
             Audience = audience;
             SharedAccessKeyName = sharedAccessKeyName;
