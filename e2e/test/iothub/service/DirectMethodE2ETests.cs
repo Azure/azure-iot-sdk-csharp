@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
-            TimeSpan responseTimeout = TimeSpan.FromSeconds(5);
+            var responseTimeout = TimeSpan.FromSeconds(5);
 
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod")
             {
