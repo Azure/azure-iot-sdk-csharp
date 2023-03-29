@@ -65,6 +65,7 @@ jobs:
   ### Linux build ###
   - job: LINUX
     displayName: Linux
+    condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
@@ -80,7 +81,6 @@ jobs:
           FRAMEWORK: netcoreapp3.1
           SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
 
-    condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
@@ -153,18 +153,18 @@ jobs:
             Write-Host "============"
             docker images
             docker ps -a
-            gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
+            gci -Path $(Build.SourcesDirectory)/e2e/Tests/docker -Recurse -Force -Name
             Write-Host "==========================="
             Write-Host "uncompress self-signed cert"
             Write-Host "==========================="
-            gzip -d -N -S ".bin" $(Build.SourcesDirectory)/e2e/test/docker/haproxy/haproxy.bin
-            gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
+            gzip -d -N -S ".bin" $(Build.SourcesDirectory)/e2e/Tests/docker/haproxy/haproxy.bin
+            gci -Path $(Build.SourcesDirectory)/e2e/Tests/docker -Recurse -Force -Name
             Write-Host "====================="
             Write-Host "Docker run containers"
             Write-Host "====================="
-            docker run -h invalidcertgde1.westus.cloudapp.azure.com --name invalid-gde --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxygde.cfg
-            docker run -h invalidcertdps1.westus.cloudapp.azure.com --name invalid-dps --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxydps.cfg
-            docker run -h invalidcertiothub1.westus.cloudapp.azure.com --name invalid-hub --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxyhub.cfg
+            docker run -h invalidcertgde1.westus.cloudapp.azure.com --name invalid-gde --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/Tests/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxygde.cfg
+            docker run -h invalidcertdps1.westus.cloudapp.azure.com --name invalid-dps --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/Tests/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxydps.cfg
+            docker run -h invalidcertiothub1.westus.cloudapp.azure.com --name invalid-hub --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/Tests/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxyhub.cfg
             docker ps -a
 
       # The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
@@ -354,7 +354,7 @@ jobs:
         inputs:
           codeCoverageTool: Cobertura
           summaryFileLocation: '**/*.coverage'
-      
+
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
         condition: eq(variables.SHOULD_RUN, 'True')
@@ -497,7 +497,7 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
-      
+
       - task: CopyFiles@2
         displayName: "Copy coverage files to the artifacts folder"
         condition: eq(variables.SHOULD_RUN, 'True')
@@ -570,20 +570,20 @@ jobs:
           rem Start build
           build.cmd -clean -build -configuration Debug -package
 
-        displayName: build
+        displayName: Build and Package
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
       
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
         displayName: "Run PoliCheck"
         inputs:
           targetType: F
-          optionsRulesDBPath: 'vsts/PolicheckExclusionsDB.mdb'
+          optionsRulesDBPath: '$(Build.SourcesDirectory)\vsts\PolicheckExclusionsDB.mdb'
           optionsSEV: '1|2|3|4'
           optionsPE: 1
       
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@4
         displayName: "Run MpCmdRun.exe"
         inputs:
           EnableServices: true
@@ -591,15 +591,6 @@ jobs:
           # Signature refreshes on Hosted Agents can sometimes have a delay of a day or two.
           # The support team already has a process to address this, so our pipeline can treat stale signatures as warnings (instead of treating it as an error).
           TreatStaleSignatureAs: Warning
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
-        displayName: "Run AutoApplicability"
-        inputs:
-          ExternalRelease: true
-
-          IsSoftware: true
-
-          UsesHSM: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
         displayName: "Run BinSkim"
@@ -617,7 +608,7 @@ jobs:
         # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
         enabled: false
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@3
         displayName: "Run CredScan"
         inputs:
           toolMajorVersion: V2
@@ -627,13 +618,10 @@ jobs:
           # TODO #181 Samples / tests fail the test due to fake connection strings.
           debugMode: false
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
-        displayName: "Run Vulnerability Assessment"
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@3
         displayName: "Publish Security Analysis Logs"
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
         displayName: "Create Security Analysis Report"
         inputs:
           AllTools: true
@@ -646,27 +634,12 @@ jobs:
           alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
         condition: always()
 
-      - task: ComponentGovernanceComponentDetection@0
-        displayName: Component Governance Detection
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@2
+        displayName: 'TSA upload'
         inputs:
-          scanType: 'Register'
-          verbosity: 'Verbose'
-          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
-        condition: always()
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
-        displayName: "TSA upload"
-        inputs:
-          tsaVersion: 'TsaV2'
-          codebase: 'NewOrUpdate'
-          tsaEnvironment: 'PROD'
-          codeBaseName: 'Azure-Iot-SDK-CSharp-Master'
-          notificationAlias: 'AzIoTDnDMgdSdk@microsoft.com'
-          notifyAlwaysV2: false
-          instanceUrlForTsaV2: 'MSAZURE'
-          projectNameMSAZURE: 'One'
-          areaPath: 'One\IoT\Platform and Devices\IoT Devices\SDKs\Managed'
-          iterationPath: 'One\Custom\IoT\Backlog'
+          GdnPublishTsaOnboard: false
+          GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)/vsts/TsaUploadConfigFile.json'
+          GdnPublishTsaExportedResultsPublishable: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
         displayName: "Post Analysis"

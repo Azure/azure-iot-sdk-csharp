@@ -24,10 +24,10 @@ namespace Microsoft.Azure.Devices.Client
                 .Matches(valuePairString)
                 .Cast<Match>()
                 .Select(m => new string[] {
-                    m.Result("$1"),
+                    m.Result("$1").Trim(),
                     valuePairString.Substring(
                         m.Index + m.Value.Length,
-                        (m.NextMatch().Success ? m.NextMatch().Index : valuePairString.Length) - (m.Index + m.Value.Length))
+                        (m.NextMatch().Success ? m.NextMatch().Index : valuePairString.Length) - (m.Index + m.Value.Length)).Trim()
                 });
 
             if (!parts.Any() || parts.Any(p => p.Length != 2))
