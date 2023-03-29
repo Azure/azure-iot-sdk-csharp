@@ -9,13 +9,13 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal abstract class DefaultDelegatingHandler : IDelegatingHandler
+    internal class DefaultDelegatingHandler : IDelegatingHandler
     {
-        protected const string ClientDisposedMessage = "The client has been disposed and is no longer usable.";
+        protected internal const string ClientDisposedMessage = "The client has been disposed and is no longer usable.";
         protected volatile bool _isDisposed;
         private volatile IDelegatingHandler _innerHandler;
 
-        protected DefaultDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
+        protected internal DefaultDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
         {
             Context = context;
             _innerHandler = innerHandler;
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             GC.SuppressFinalize(this);
         }
 
-        protected void ThrowIfDisposed()
+        protected internal void ThrowIfDisposed()
         {
             if (_isDisposed)
             {
