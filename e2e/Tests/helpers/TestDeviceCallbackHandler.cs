@@ -24,8 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
-        private OutgoingMessage _expectedOutgoingMessage
-            ;
+        private OutgoingMessage _expectedOutgoingMessage;
 
         internal TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, string deviceId)
         {

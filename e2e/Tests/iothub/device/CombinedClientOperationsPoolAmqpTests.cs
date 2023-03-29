@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";
         private readonly string _devicePrefix = $"{nameof(CombinedClientOperationsPoolAmqpTests)}_";
+        private readonly TimeSpan _testOperationTimeSpan = TimeSpan.FromSeconds(30);
 
         private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
         private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
