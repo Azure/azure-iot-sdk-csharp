@@ -40,7 +40,6 @@ namespace System.Diagnostics.Tracing
 
             eventIdent = eventData.EventName;
             string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture)} [{eventData.EventSource.Name}-{eventIdent}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
-            Debug.WriteLine(text);
 
             lock (_consoleLock)
             {
