@@ -248,5 +248,10 @@ namespace Microsoft.Azure.Devices
         /// IoT hub is currently unable to process the request. This is a transient, retryable error.
         /// </summary>
         ServiceUnavailable = 503001,
+
+        /// <summary>
+        /// The operation has timed out
+        /// </summary>
+        GatewayTimeout = 504101,
     }
 }
