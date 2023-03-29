@@ -707,10 +707,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (Message message in messages)
                 {
-                    if (message.MessageId == null)
-                    {
-                        message.MessageId = Guid.NewGuid().ToString();
-                    }
+                    message.MessageId ??= Guid.NewGuid().ToString();
                 }
             }
 
@@ -1502,7 +1499,7 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentNullException(nameof(message));
                 }
 
-                message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
+                message.SystemProperties[MessageSystemPropertyNames.OutputName] = outputName;
 
                 return InnerHandler.SendEventAsync(message, cancellationToken);
             }
@@ -1635,11 +1632,7 @@ namespace Microsoft.Azure.Devices.Client
                     // When using a device module we need to enable the 'deviceBound' message link
                     await EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
 
-                    if (_receiveEventEndpoints == null)
-                    {
-                        _receiveEventEndpoints = new Dictionary<string, Tuple<MessageHandler, object>>();
-                    }
-
+                    _receiveEventEndpoints ??= new Dictionary<string, Tuple<MessageHandler, object>>();
                     _receiveEventEndpoints[inputName] = new Tuple<MessageHandler, object>(messageHandler, userContext);
                 }
                 else
