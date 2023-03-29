@@ -124,6 +124,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 {
                     // An acknowledgment is sent on delivery success or failure.
                     Ack = DeliveryAcknowledgement.Full,
+                    MessageId = payload.RandomId.ToString(),
                 };
 
                 _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
