@@ -5,7 +5,7 @@
         // Metrics
 
         public const string DisconnectedDurationSeconds = "DisconnectedDurationSeconds";
-        public const string TotalMessagesSent = "TotalMessagesSent";
+        public const string TotalTelemetryMessagesSent = "TotalTelemetryMessagesSent";
         public const string MessageDelaySeconds = "MessageDelaySeconds";
         public const string MessageBacklog = "MessageBacklog";
         public const string C2dDirectMethodDelaySeconds = "C2dDirectMethodDelaySeconds";

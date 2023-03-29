@@ -19,11 +19,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_desiredPropertiesSetInterval = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_c2dMessagesSentInterval = TimeSpan.FromSeconds(3);
 
         private static IotHubServiceClient s_serviceClient;
 
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
+        private long _totalC2dMessagesSentCount = 0;
 
         public IotHub(Logger logger, string hubConnectionString, string deviceId, IotHubTransportProtocol transportProtocol)
         {
@@ -93,14 +95,44 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             {
                 var twin = new ClientTwin();
                 twin.Properties.Desired[keyName] = properties;
-                await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
 
                 ++_totalDesiredPropertiesUpdatesCount;
                 _logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
                 _logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
 
+                await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
+
                 await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);
             }
+        }
+
+        public async Task SendC2dMessagesAsync(CancellationToken ct)
+        {
+            await s_serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
+
+            while (!ct.IsCancellationRequested)
+            {
+                var payload = new CustomC2dMessagePayload
+                {
+                    RandomId = Guid.NewGuid(),
+                    CurrentTimeUtc = DateTime.UtcNow,
+                    MessagesSentCount = ++_totalC2dMessagesSentCount,
+                };
+                var message = new OutgoingMessage(payload)
+                {
+                    // An acknowledgment is sent on delivery success or failure.
+                    Ack = DeliveryAcknowledgement.Full,
+                };
+
+                _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
+                _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
+
+                await s_serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
+
+                await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
+            }
+
+            await s_serviceClient.Messages.CloseAsync(ct).ConfigureAwait(false);
         }
 
         public void Dispose()

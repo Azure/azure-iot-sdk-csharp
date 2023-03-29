@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
-        private long _totalMessagesSent = 0;
+        private long _totalTelemetryMessagesSent = 0;
         private long _totalTwinUpdatesReported = 0;
         private long _totalTwinCallbacksHandled = 0;
         private long _totalDesiredPropertiesHandled = 0;
@@ -124,8 +124,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     await _deviceClient.SendTelemetryAsync(pendingMessage, ct).ConfigureAwait(false);
 
-                    ++_totalMessagesSent;
-                    _logger.Metric(TotalMessagesSent, _totalMessagesSent);
+                    ++_totalTelemetryMessagesSent;
+                    _logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
                     _logger.Metric(MessageDelaySeconds, (DateTime.UtcNow - pendingMessage.CreatedOnUtc).TotalSeconds);
 
                     pendingMessage = null;
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     var reported = new ReportedProperties
                     {
-                        { "TotalMessagesSent", _totalMessagesSent },
+                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
                     };
                     await _deviceClient.UpdateReportedPropertiesAsync(reported ,ct).ConfigureAwait(false);
 
