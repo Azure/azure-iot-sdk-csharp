@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private readonly SemaphoreSlim _twinCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _twinExceptionDispatch;
-        private string _expectedTwinPropertyValue;
 
         private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
@@ -36,12 +35,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     $" Initialize the {nameof(IotHubDeviceClient)} before creating a {nameof(TestDeviceCallbackHandler)}.");
             }
             _deviceClient = testDevice.DeviceClient;
-        }
-
-        internal string ExpectedTwinPropertyValue
-        {
-            get => Volatile.Read(ref _expectedTwinPropertyValue);
-            set => Volatile.Write(ref _expectedTwinPropertyValue, value);
         }
 
         internal OutgoingMessage ExpectedMessageSentByService
@@ -78,12 +71,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     }
                     catch (Exception ex)
                     {
-                        VerboseTestLogger.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
-
+                        VerboseTestLogger.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient direct method callback {request.MethodName}: {ex}.");
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
 
                         var response = new DirectMethodResponse(500);
-
                         return Task.FromResult(response);
                     }
                     finally
@@ -100,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _methodExceptionDispatch?.Throw();
         }
 
-        internal async Task SetTwinPropertyUpdateCallbackHandlerAsync(string expectedPropName)
+        internal async Task SetTwinPropertyUpdateCallbackHandlerAsync<T>(string expectedPropName, T expectedPropValue)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
@@ -110,12 +101,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                     try
                     {
-                        bool containsProperty = patch.TryGetValue(expectedPropName, out string propertyValue);
-                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDeviceId} to be {expectedPropName} but was: {patch.GetSerializedString()}");
-                        propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
+                        bool containsProperty = patch.TryGetValue(expectedPropName, out T actualPropertyValue);
+                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDeviceId} for {expectedPropName} to be {expectedPropValue} but was: {patch.GetSerializedString()}");
+                        actualPropertyValue.Should().Be(expectedPropValue, "The property value should match what was set by service");
                     }
                     catch (Exception ex)
                     {
+     
+                        VerboseTestLogger.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient desired property callback for patch {patch}: {ex}.");
                         _twinExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
                     }
                     finally

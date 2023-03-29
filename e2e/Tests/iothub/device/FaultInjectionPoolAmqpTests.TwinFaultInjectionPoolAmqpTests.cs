@@ -582,7 +582,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
                 VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp)}: name={propName}, value={propValue}");
-                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName, propValue).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
@@ -592,7 +592,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 string propName = twinProperties[0];
                 string propValue = twinProperties[1];
-                testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
 
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
 
