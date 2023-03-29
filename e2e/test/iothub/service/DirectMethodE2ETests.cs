@@ -26,14 +26,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
             // act
             Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("someNonexistentDevice", methodInvocation);
 
             // assert
-
             ExceptionAssertions<IotHubServiceException> errorContext = await act.Should().ThrowAsync<IotHubServiceException>();
             errorContext.And.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
             errorContext.And.IsTransient.Should().BeFalse();
