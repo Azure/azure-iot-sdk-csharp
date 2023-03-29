@@ -24,8 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<TestDevice, TestDeviceCallbackHandler, Task> initOperation,
             Func<TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<Task> cleanupOperation,
-            ConnectionStringAuthScope authScope,
-            bool ignoreConnectionStatus)
+            ConnectionStringAuthScope authScope)
         {
             transportSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings
             {
@@ -54,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     var amqpConnectionStatusChange = new AmqpConnectionStatusChange();
                     deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusChange.ConnectionStatusChangeHandler;
 
-                    var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
+                    var testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
 
                     testDevices.Add(testDevice);
                     testDeviceCallbackHandlers.Add(testDeviceCallbackHandler);

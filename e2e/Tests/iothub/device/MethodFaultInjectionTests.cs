@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload)
                     .ConfigureAwait(false);

@@ -144,8 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     null,
                     TestOperationAsync,
                     null,
-                    authScope,
-                    true)
+                    authScope)
                 .ConfigureAwait(false);
         }
 
@@ -195,8 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync,
-                    authScope,
-                    true)
+                    authScope)
                 .ConfigureAwait(false);
         }
     }

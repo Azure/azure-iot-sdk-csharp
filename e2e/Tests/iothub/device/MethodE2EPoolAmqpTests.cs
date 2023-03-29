@@ -102,8 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     InitOperationAsync,
                     TestOperationAsync,
                     null,
-                    authScope,
-                    true)
+                    authScope)
                 .ConfigureAwait(false);
         }
     }

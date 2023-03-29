@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 var amqpConnectionStatusesChange = new AmqpConnectionStatusChange(testDevice.Id);
                 deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusesChange.ConnectionStatusChangeHandler;
 
-                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
+                var testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
 
                 testDevices.Add(testDevice);
                 deviceClients.Add(deviceClient);

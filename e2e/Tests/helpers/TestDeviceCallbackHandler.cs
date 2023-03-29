@@ -3,7 +3,6 @@
 
 using System;
 using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -14,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     internal sealed class TestDeviceCallbackHandler : IDisposable
     {
         private readonly IotHubDeviceClient _deviceClient;
-        private readonly TestDevice _testDevice;
+        private readonly string _testDeviceId;
 
         private readonly SemaphoreSlim _methodCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _methodExceptionDispatch;
@@ -27,10 +26,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
         private OutgoingMessage _expectedMessageSentByService;
 
-        internal TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, TestDevice testDevice)
+        internal TestDeviceCallbackHandler(TestDevice testDevice)
         {
-            _deviceClient = deviceClient;
-            _testDevice = testDevice;
+            _testDeviceId = testDevice.Id;
+
+            if (testDevice.DeviceClient == null)
+            {
+                throw new InvalidOperationException($"The {nameof(IotHubDeviceClient)} for device Id {_testDeviceId} hasn't been initialized yet." +
+                    $" Initialize the {nameof(IotHubDeviceClient)} before creating a {nameof(TestDeviceCallbackHandler)}.");
+            }
+            _deviceClient = testDevice.DeviceClient;
         }
 
         internal string ExpectedTwinPropertyValue
@@ -60,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 {
                     try
                     {
-                        VerboseTestLogger.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.MethodName} with timeout {request.ResponseTimeout}.");
+                        VerboseTestLogger.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDeviceId} callback method: {request.MethodName} with timeout {request.ResponseTimeout}.");
                         request.MethodName.Should().Be(methodName, "The expected method name should match what was sent from service");
                         request.TryGetPayload(out T actualRequestPayload).Should().BeTrue();
                         actualRequestPayload.Should().BeEquivalentTo(expectedServiceRequestJson, "The expected method data should match what was sent from service");
@@ -101,12 +106,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch) =>
                 {
-                    VerboseTestLogger.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback twin: DesiredProperty: {patch}");
+                    VerboseTestLogger.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDeviceId} callback twin: DesiredProperty: {patch}");
 
                     try
                     {
                         bool containsProperty = patch.TryGetValue(expectedPropName, out string propertyValue);
-                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDevice.Id} to be {expectedPropName} but was: {patch.GetSerializedString()}");
+                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDeviceId} to be {expectedPropName} but was: {patch.GetSerializedString()}");
                         propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
                     }
                     catch (Exception ex)
@@ -134,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetIncomingMessageCallbackAsync((IncomingMessage message) =>
             {
-                VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {message.MessageId}.");
+                VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDeviceId} received message with Id: {message.MessageId}.");
 
                 try
                 {
