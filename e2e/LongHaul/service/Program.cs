@@ -85,6 +85,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         iotHub.InvokeDirectMethodAsync(cancellationTokenSource.Token),
                         iotHub.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), cancellationTokenSource.Token),
                         iotHub.SendC2dMessagesAsync(cancellationTokenSource.Token),
+                        iotHub.ReceiveMessageFeedbacksAsync(cancellationTokenSource.Token),
                         hubEvents.RunAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }

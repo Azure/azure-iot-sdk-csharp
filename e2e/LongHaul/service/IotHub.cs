@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
@@ -26,6 +27,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
         private long _totalC2dMessagesSentCount = 0;
+        private long _totalFeedbackMessagesReceivedCount = 0;
 
         public IotHub(Logger logger, string hubConnectionString, string deviceId, IotHubTransportProtocol transportProtocol)
         {
@@ -133,6 +135,38 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
 
             await s_serviceClient.Messages.CloseAsync(ct).ConfigureAwait(false);
+        }
+
+        public async Task ReceiveMessageFeedbacksAsync(CancellationToken ct)
+        {
+            // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
+            _logger.Trace("Starting to listen to cloud-to-device feedback messages", TraceSeverity.Verbose);
+
+            AcknowledgementType OnC2dMessageAck(FeedbackBatch feedbackMessages)
+            {
+                foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
+                {
+                    _logger.Trace(
+                        $"Device {feedbackRecord.DeviceId} acted on message: {feedbackRecord.OriginalMessageId} with status: {feedbackRecord.StatusCode}",
+                        TraceSeverity.Information);
+                }
+
+                _totalFeedbackMessagesReceivedCount += feedbackMessages.Records.Count();
+                _logger.Metric(TotalFeedbackMessagesReceivedCount, _totalFeedbackMessagesReceivedCount);
+
+                return AcknowledgementType.Complete;
+            }
+
+            s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
+            await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
+
+            try
+            {
+                await Task.Delay(-1, ct);
+            }
+            catch (OperationCanceledException) { }
+
+            await s_serviceClient.MessageFeedback.CloseAsync(ct).ConfigureAwait(false);
         }
 
         public void Dispose()
