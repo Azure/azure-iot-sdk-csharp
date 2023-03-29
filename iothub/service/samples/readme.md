@@ -21,19 +21,19 @@ This folder contains simple samples showing how to use the various features of M
 - [Clean up devices][clean-up-devices-sample] sample
 - [Role-based authentication][role-based-authentication-sample] sample
 
-[adm-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/AutomaticDeviceManagementSample
+[adm-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/how%20to%20guides/AutomaticDeviceManagementSample
 [device-streaming-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/preview/iot-hub/Samples/service/DeviceStreamingSample
-[edge-deployment-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/EdgeDeploymentSample
-[import-export-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/ImportExportDevicesSample
-[jobs-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/JobsSample
-[reg-man-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/RegistryManagerSample
-[service-client-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/ServiceClientSample
-[pnp-service-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/solutions/PnpServiceSamples
-[digital-twin-client-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/solutions/DigitalTwinClientSamples
-[file-upload-notification-receiver-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/FileUploadNotificationReceiverSample
-[azure-sas-credential-authentication-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/AzureSasCredentialAuthenticationSample
-[clean-up-devices-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/CleanupDevicesSample
-[import-export-with-managed-identity-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/ImportExportDevicesWithManagedIdentitySample
-[role-based-authentication-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/how%20to%20guides/RoleBasedAuthenticationSample
-[d-invoke-device-method-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/InvokeDeviceMethod
-[read-d2c-messages-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service/samples/getting%20started/ReadD2cMessages
+[edge-deployment-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/getting%20started/EdgeDeploymentSample
+[import-export-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/how%20to%20guides/ImportExportDevicesSample
+[import-export-with-managed-identity-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/how%20to%20guides/ImportExportDevicesWithManagedIdentitySample
+[d-invoke-device-method-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/getting%20started/InvokeDeviceMethod
+[jobs-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/getting%20started/JobsSample
+[reg-man-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/how%20to%20guides/RegistryManagerSample
+[service-client-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/getting%20started/ServiceClientSample
+[pnp-service-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/solutions/PnpServiceSamples
+[read-d2c-messages-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/getting%20started/ReadD2cMessages
+[digital-twin-client-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/solutions/DigitalTwinClientSamples
+[file-upload-notification-receiver-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/getting%20started/FileUploadNotificationReceiverSample
+[azure-sas-credential-authentication-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/how%20to%20guides/AzureSasCredentialAuthenticationSample
+[clean-up-devices-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/how%20to%20guides/CleanupDevicesSample
+[role-based-authentication-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/v2/iothub/service/samples/how%20to%20guides/RoleBasedAuthenticationSample
