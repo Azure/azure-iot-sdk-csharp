@@ -2,19 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Specialized;
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Azure.Devices.Client;
-using System.Reflection;
-using Microsoft.Identity.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
@@ -96,33 +90,33 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
-            const int timeoutInSeconds = 3;
+            TimeSpan responseTimeout = TimeSpan.FromSeconds(5);
 
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod")
             {
-                ConnectionTimeout = TimeSpan.FromSeconds(timeoutInSeconds),
-                ResponseTimeout = TimeSpan.FromSeconds(timeoutInSeconds),
+                ConnectionTimeout = responseTimeout,
+                ResponseTimeout = responseTimeout,
             };
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             // act
             await deviceClient
-            .SetDirectMethodCallbackAsync(
-                async (methodRequest) =>
-                {
-                    // force a timeout
-                    await Task.Delay(timeoutInSeconds * 1000 * 2).ConfigureAwait(false);
-                    var response = new DirectMethodResponse(200);
-                    return response;
-                })
-            .ConfigureAwait(false);
+                .SetDirectMethodCallbackAsync(
+                    async (methodRequest) =>
+                    {
+                        // force a timeout
+                        await Task.Delay(responseTimeout.Add(responseTimeout)).ConfigureAwait(false);
+                        var response = new DirectMethodResponse(200);
+                        return response;
+                    })
+                .ConfigureAwait(false);
 
             // assert
             Func<Task> act = async() => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
             ExceptionAssertions<IotHubServiceException> response = await act.Should().ThrowAsync<IotHubServiceException>();
-            response.And.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-            response.And.ErrorCode.Should().Be(IotHubServiceErrorCode.ArgumentInvalid);
+            response.And.StatusCode.Should().Be(System.Net.HttpStatusCode.GatewayTimeout);
+            response.And.ErrorCode.Should().Be(IotHubServiceErrorCode.GatewayTimeout);
         }
     }
 }
