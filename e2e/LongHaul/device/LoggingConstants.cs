@@ -6,12 +6,15 @@
 
         public const string DisconnectedDurationSeconds = "DisconnectedDurationSeconds";
         public const string TotalTelemetryMessagesSent = "TotalTelemetryMessagesSent";
-        public const string MessageDelaySeconds = "MessageDelaySeconds";
+        public const string TelemetryMessageDelaySeconds = "TelemetryMessageDelaySeconds";
         public const string MessageBacklog = "MessageBacklog";
         public const string C2dDirectMethodDelaySeconds = "C2dDirectMethodDelaySeconds";
         public const string TotalTwinUpdatesReported = "TotalTwinUpdatesReported";
         public const string TotalTwinCallbacksHandled = "TotalTwinCallbacksHandled";
         public const string TotalDesiredPropertiesHandled = "TotalDesiredPropertiesHandled";
+        public const string TotalC2dMessagesCompleted = "TotalC2dMessagesCompleted";
+        public const string TotalC2dMessagesRejected = "TotalC2dMessagesRejected";
+        public const string C2dMessageDelaySeconds = "C2dMessageDelaySeconds";
 
         // Events
 

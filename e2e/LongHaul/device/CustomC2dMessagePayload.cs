@@ -7,17 +7,17 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     /// <summary>
-    /// Use a custom payload for direct method invocation to test object serialization using several data types.
+    /// Use a custom payload for cloud-to-device messaging to test object serialization using several data types.
     /// </summary>
-    internal class CustomDirectMethodPayload
+    internal class CustomC2dMessagePayload
     {
         [JsonPropertyName("randomId")]
         public Guid RandomId { get; set; }
 
-        [JsonPropertyName("methodCallsCount")]
-        public long MethodCallsCount { get; set; }
-
         [JsonPropertyName("currentTimeUtc")]
         public DateTimeOffset CurrentTimeUtc { get; set; } = DateTimeOffset.UtcNow;
+
+        [JsonPropertyName("messagesSentCount")]
+        public long MessagesSentCount { get; set; }
     }
 }
