@@ -115,6 +115,7 @@ jobs:
 
       - task: Docker@2
         displayName: "Login to ACR"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           command: "login"
           containerRegistry: "Azure IoT ACR"
@@ -240,6 +241,7 @@ jobs:
 
       - task: Docker@1
         displayName: "Start TPM Simulator"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           containerregistrytype: "Container Registry"
           command: "Run an image"
@@ -254,6 +256,7 @@ jobs:
 
       - task: Docker@1
         displayName: "Start Test Proxy"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           containerregistrytype: "Container Registry"
           command: "Run an image"
@@ -265,6 +268,7 @@ jobs:
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
+        condition: eq(variables.SHOULD_RUN, 'True')
         env:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
@@ -321,35 +325,33 @@ jobs:
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
-        condition: always()
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
 
-        condition: always()
-
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           testRunner: VSTest
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
 
-        condition: always()
-        
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
           alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
-        condition: always()
 
  ### Windows build ###
   - job: WINDOWS
@@ -419,12 +421,15 @@ jobs:
           choco install -y squid
 
         displayName: "Install Squid"
+        condition: eq(variables.SHOULD_RUN, 'True')
 
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
+        condition: eq(variables.SHOULD_RUN, 'True')
 
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
+        condition: eq(variables.SHOULD_RUN, 'True')
         env:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
@@ -481,31 +486,29 @@ jobs:
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
-        condition: always()
-
       - task: CopyFiles@2
         displayName: "Copy ETL files to the artifacts folder"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.etl"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
-        condition: always()
-
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           ArtifactName: testresults_windows_$(FRAMEWORK)
 
-        condition: always()
-
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           testRunner: VSTest
           testResultsFiles: "**/*.trx"
@@ -513,15 +516,13 @@ jobs:
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
 
-        condition: always()
-
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
+        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
           alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
-        condition: always()
 
   ### .Net SDL Analyzers ###
   - job: DOTNet_SDL_Analyzers
@@ -538,15 +539,15 @@ jobs:
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
       
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
         displayName: "Run PoliCheck"
         inputs:
           targetType: F
-          optionsRulesDBPath: 'vsts/PolicheckExclusionsDB.mdb'
+          optionsRulesDBPath: '$(Build.SourcesDirectory)\vsts\PolicheckExclusionsDB.mdb'
           optionsSEV: '1|2|3|4'
           optionsPE: 1
       
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@4
         displayName: "Run MpCmdRun.exe"
         inputs:
           EnableServices: true
@@ -554,15 +555,6 @@ jobs:
           # Signature refreshes on Hosted Agents can sometimes have a delay of a day or two.
           # The support team already has a process to address this, so our pipeline can treat stale signatures as warnings (instead of treating it as an error).
           TreatStaleSignatureAs: Warning
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
-        displayName: "Run AutoApplicability"
-        inputs:
-          ExternalRelease: true
-
-          IsSoftware: true
-
-          UsesHSM: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
         displayName: "Run BinSkim"
@@ -580,7 +572,7 @@ jobs:
         # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
         enabled: false
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@3
         displayName: "Run CredScan"
         inputs:
           toolMajorVersion: V2
@@ -590,17 +582,14 @@ jobs:
           # TODO #181 Samples / tests fail the test due to fake connection strings.
           debugMode: false
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
-        displayName: "Run Vulnerability Assessment"
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@3
         displayName: "Publish Security Analysis Logs"
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
         displayName: "Create Security Analysis Report"
         inputs:
           AllTools: true
-          
+
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
         inputs:
@@ -609,19 +598,12 @@ jobs:
           alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
         condition: always()
 
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
-        displayName: "TSA upload"
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@2
+        displayName: 'TSA upload'
         inputs:
-          tsaVersion: 'TsaV2'
-          codebase: 'NewOrUpdate'
-          tsaEnvironment: 'PROD'
-          codeBaseName: 'Azure-Iot-SDK-CSharp-Master'
-          notificationAlias: 'AzIoTDnDMgdSdk@microsoft.com'
-          notifyAlwaysV2: false
-          instanceUrlForTsaV2: 'MSAZURE'
-          projectNameMSAZURE: 'One'
-          areaPath: 'One\IoT\Platform and Devices\IoT Devices\SDKs\Managed'
-          iterationPath: 'One\Custom\IoT\Backlog'
+          GdnPublishTsaOnboard: false
+          GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)/vsts/TsaUploadConfigFile.json'
+          GdnPublishTsaExportedResultsPublishable: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
         displayName: "Post Analysis"
