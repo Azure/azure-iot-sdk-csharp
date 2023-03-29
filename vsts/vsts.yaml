@@ -153,18 +153,18 @@ jobs:
             Write-Host "============"
             docker images
             docker ps -a
-            gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
+            gci -Path $(Build.SourcesDirectory)/e2e/Tests/docker -Recurse -Force -Name
             Write-Host "==========================="
             Write-Host "uncompress self-signed cert"
             Write-Host "==========================="
-            gzip -d -N -S ".bin" $(Build.SourcesDirectory)/e2e/test/docker/haproxy/haproxy.bin
-            gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
+            gzip -d -N -S ".bin" $(Build.SourcesDirectory)/e2e/Tests/docker/haproxy/haproxy.bin
+            gci -Path $(Build.SourcesDirectory)/e2e/Tests/docker -Recurse -Force -Name
             Write-Host "====================="
             Write-Host "Docker run containers"
             Write-Host "====================="
-            docker run -h invalidcertgde1.westus.cloudapp.azure.com --name invalid-gde --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxygde.cfg
-            docker run -h invalidcertdps1.westus.cloudapp.azure.com --name invalid-dps --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxydps.cfg
-            docker run -h invalidcertiothub1.westus.cloudapp.azure.com --name invalid-hub --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/test/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxyhub.cfg
+            docker run -h invalidcertgde1.westus.cloudapp.azure.com --name invalid-gde --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/Tests/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxygde.cfg
+            docker run -h invalidcertdps1.westus.cloudapp.azure.com --name invalid-dps --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/Tests/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxydps.cfg
+            docker run -h invalidcertiothub1.westus.cloudapp.azure.com --name invalid-hub --expose=443 --expose=5671 --expose=8883 -v $(Build.SourcesDirectory)/e2e/Tests/docker/haproxy:/usr/local/etc/haproxy:ro -d aziotacr.azurecr.io/haproxy haproxy -f /usr/local/etc/haproxy/haproxyhub.cfg
             docker ps -a
 
       # The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
