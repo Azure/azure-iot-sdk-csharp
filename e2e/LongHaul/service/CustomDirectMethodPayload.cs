@@ -18,6 +18,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public DateTimeOffset CurrentTimeUtc { get; set; } = DateTimeOffset.UtcNow;
 
         [JsonPropertyName("methodCallsCount")]
-        public int MethodCallsCount { get; set; }
+        public long MethodCallsCount { get; set; }
     }
 }

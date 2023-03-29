@@ -22,5 +22,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         // Metrics
 
         public const string D2cDirectMethodDelaySeconds = "D2cDirectMethodDelaySeconds";
+        public const string TotalDirectMethodCallsCount = "TotalDirectMethodCallsCount";
+        public const string TotalDesiredPropertiesUpdatesCount = "TotalDesiredPropertiesUpdatesCount";
     }
 }

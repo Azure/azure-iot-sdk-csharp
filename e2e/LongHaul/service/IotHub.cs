@@ -22,6 +22,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         private static IotHubServiceClient s_serviceClient;
 
+        private long _totalMethodCallsCount = 0;
+        private long _totalDesiredPropertiesUpdatesCount = 0;
+
         public IotHub(Logger logger, string hubConnectionString, string deviceId, IotHubTransportProtocol transportProtocol)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -50,15 +53,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public async Task InvokeDirectMethodAsync(CancellationToken ct)
         {
-            int methodCallsCount = 0;
-
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomDirectMethodPayload
                 {
                     RandomId = Guid.NewGuid(),
                     CurrentTimeUtc = DateTimeOffset.UtcNow,
-                    MethodCallsCount = ++methodCallsCount,
+                    MethodCallsCount = ++_totalMethodCallsCount,
                 };
 
                 var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
@@ -68,6 +69,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 };
 
                 _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
+                _logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
 
                 // Invoke the direct method asynchronously and get the response from the simulated device.
                 DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
@@ -92,6 +94,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 var twin = new ClientTwin();
                 twin.Properties.Desired[keyName] = properties;
                 await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
+
+                ++_totalDesiredPropertiesUpdatesCount;
+                _logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
+                _logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
 
                 await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);
             }
