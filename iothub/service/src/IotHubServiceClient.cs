@@ -2,7 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
 using Microsoft.Azure.Amqp;
@@ -29,6 +32,7 @@ namespace Microsoft.Azure.Devices
     /// </remarks>
     public class IotHubServiceClient : IDisposable
     {
+        private readonly string _connectionString;
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
@@ -62,6 +66,8 @@ namespace Microsoft.Azure.Devices
             : this(options)
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
+
+            _connectionString = connectionString;
 
             IotHubConnectionString iotHubConnectionString = IotHubConnectionStringParser.Parse(connectionString);
             _credentialProvider = iotHubConnectionString;
@@ -203,6 +209,45 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
         public MessagesClient Messages { get; protected set; }
+        
+        /// <summary>
+        /// Requests connection string for the built-in Event Hubs messaging endpoint of the associated IoT hub.
+        /// </summary>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>A connection string which can be used to connect to the Event Hubs service and interact with the IoT hub messaging endpoint.</returns>
+        /// <exception cref="InvalidOperationException">The Event Hubs host information was not returned by the IoT hub service.</exception>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-endpoints"/>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-read-builtin"/>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-amqp-support#receive-telemetry-messages-service-client"/>
+        public Task<string> GetEventHubCompatibleConnectionStringAsync(CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(_connectionString))
+            {
+                throw new InvalidOperationException("This overload must only be called if the client was initialized with a connection string.");
+            }
+
+            return EventHubConnectionStringBuilder.GetEventHubCompatibleConnectionStringAsync(_connectionString, cancellationToken);
+        }
+
+        /// <summary>
+        /// Requests connection string for the built-in Event Hubs messaging endpoint of the associated IoT hub.
+        /// </summary>
+        /// <remarks>
+        /// Use this overload when retrieving the Event Hubs compatible connection string for an IotHubServiceClient that was initialized using a method other than IoT hub connection string.
+        /// </remarks>
+        /// <param name="connectionString">The IoT hub connection string.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>A connection string which can be used to connect to the Event Hubs service and interact with the IoT hub messaging endpoint.</returns>
+        /// <exception cref="InvalidOperationException">The Event Hubs host information was not returned by the IoT hub service.</exception>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-endpoints"/>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-read-builtin"/>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-amqp-support#receive-telemetry-messages-service-client"/>
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Client interface should all be instance methods for mocking purposes.")]
+        public Task<string> GetEventHubCompatibleConnectionStringAsync(string connectionString, CancellationToken cancellationToken)
+        {
+            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
+            return EventHubConnectionStringBuilder.GetEventHubCompatibleConnectionStringAsync(connectionString, cancellationToken);
+        }
 
         /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients

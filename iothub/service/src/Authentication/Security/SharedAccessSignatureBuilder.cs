@@ -52,21 +52,16 @@ namespace Microsoft.Azure.Devices
             return BuildSignature(KeyName, Key, Target, TimeToLive);
         }
 
-        private static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
+        internal static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
-            var fields = new List<string>
-            {
-                audience,
-                expiresOn
-            };
 
             // Example string to be signed:
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
             // <Value for ExpiresOn>
 
-            string signature = Sign(string.Join("\n", fields), key);
+            string signature = Sign($"{audience}\n{expiresOn}", key);
 
             // Example returned string:
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]

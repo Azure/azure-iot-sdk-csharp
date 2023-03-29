@@ -15,9 +15,6 @@ param HubName string = '${resourceGroup().name}-hub'
 @description('The number of IoT hub units to be deployed.')
 param HubUnitsCount int = 1
 
-@description('The IoT hub consumer group name.')
-param ConsumerGroupName string = 'e2e-tests'
-
 @description('The name of DPS used by tests.')
 param DpsName string ='${resourceGroup().name}-dps'
 
@@ -63,13 +60,13 @@ resource keyVault 'Microsoft.KeyVault/vaults@2018-02-14' = {
         tenantId: subscription().tenantId
         permissions: {
           secrets: [
-            'all'
+            'get', 'list', 'set', 'delete'
           ]
           certificates: [
-            'all'
+            'get', 'list', 'create', 'delete'
           ]
           keys: [
-            'all'
+            'get', 'list', 'create', 'delete'
           ]
         }
       }
@@ -154,6 +151,9 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-03-03-preview' = {
         partitionCount: 4
       }
     }
+    rootCertfificate: {
+      enableRootCertificateV2: true
+    }
     cloudToDevice: {
       defaultTtlAsIso8601: 'PT1H'
       maxDeliveryCount: 100
@@ -170,7 +170,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-03-03-preview' = {
         maxDeliveryCount: 100
       }
     }
-    StorageEndPoints: {
+    StorageEndpoints: {
       '$default': {
         sasTtlAsIso8601: 'PT1H'
         connectionString: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value}'
@@ -187,10 +187,6 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-03-03-preview' = {
   dependsOn: [
     container
   ]
-}
-
-resource consumerGroups 'Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups@2018-04-01' = {
-  name: '${iotHub.name}/events/${ConsumerGroupName}'
 }
 
 resource provisioningService 'Microsoft.Devices/provisioningServices@2017-11-15' = {
