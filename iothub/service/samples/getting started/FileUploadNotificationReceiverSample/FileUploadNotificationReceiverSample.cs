@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             _logger.LogInformation($"Listening for file upload notifications from the service.");
 
-            AcknowledgementType FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+            Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
             {
                 AcknowledgementType ackType = AcknowledgementType.Abandon;
 
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Samples
                     _totalNotificationsCompleted++;
                 }
 
-                return ackType;
+                return Task.FromResult(ackType);
             }
 
             s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;

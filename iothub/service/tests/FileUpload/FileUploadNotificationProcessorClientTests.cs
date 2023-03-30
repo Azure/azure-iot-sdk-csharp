@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
                 s_connectionString,
                 s_options);
 
-            AcknowledgementType OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification) => AcknowledgementType.Abandon;
+            Task<AcknowledgementType> OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification) => Task.FromResult(AcknowledgementType.Abandon);
 
             serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
 
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
                 s_connectionString,
                 s_options);
 
-            AcknowledgementType OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification) => AcknowledgementType.Abandon;
+            Task<AcknowledgementType> OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification) => Task.FromResult(AcknowledgementType.Abandon);
 
             serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
 
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
                 s_retryHandler,
                 mockAmqpConnectionHandler.Object);
 
-            AcknowledgementType OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification) => AcknowledgementType.Abandon;
+            Task<AcknowledgementType> OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification) => Task.FromResult(AcknowledgementType.Abandon);
 
             var ct = new CancellationToken(false);
 

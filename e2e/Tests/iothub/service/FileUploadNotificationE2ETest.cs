@@ -43,10 +43,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             var counter = new FileUploadNotificationCounter();
-            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            Func<FileUploadNotification, Task<AcknowledgementType>> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
-                return _acknowledgementType;
+                return Task.FromResult(_acknowledgementType);
             };
 
             serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
@@ -71,10 +71,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             var counter = new FileUploadNotificationCounter();
-            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            Func<FileUploadNotification, Task<AcknowledgementType>> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
-                return _acknowledgementType;
+                return Task.FromResult(_acknowledgementType);
             };
 
             serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
@@ -104,10 +104,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             var counter = new FileUploadNotificationCounter();
-            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            Func<FileUploadNotification, Task<AcknowledgementType>> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 counter.FileUploadNotificationsReceived++;
-                return _acknowledgementType;
+                return Task.FromResult(_acknowledgementType);
             };
 
             serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;

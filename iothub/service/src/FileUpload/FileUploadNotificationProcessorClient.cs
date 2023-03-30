@@ -61,26 +61,29 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The callback to be executed each time file upload notification is received from the service.
+        /// The async callback to be executed each time file upload notification is received from the service.
         /// </summary>
         /// <remarks>
         /// Must not be null.
         /// </remarks>
         /// <example>
         /// <code language="csharp">
-        /// serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
-        /// serviceClient.FileUploadNotificationProcessor.OpenAsync();
+        /// serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceivedAsync;
+        /// await serviceClient.FileUploadNotificationProcessor.OpenAsync();
         ///
         /// //...
         ///
-        /// public AcknowledgementType OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification)
+        /// public Task<AcknowledgementType></AcknowledgementType> OnFileUploadNotificationReceivedAsync(FileUploadNotification fileUploadNotification)
         /// {
         ///    Console.WriteLine($"Received file upload notification from device {fileUploadNotification.DeviceId}")
-        ///    return AcknowledgementType.Complete;
+        /// 
+        ///    // Make necessary calls to inspect/manage uploaded blob.
+        /// 
+        ///    return Task.FromResult(AcknowledgementType.Complete);
         /// }
         /// </code>
         /// </example>
-        public Func<FileUploadNotification, AcknowledgementType> FileUploadNotificationProcessor { get; set; }
+        public Func<FileUploadNotification, Task<AcknowledgementType>> FileUploadNotificationProcessor { get; set; }
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
@@ -88,14 +91,16 @@ namespace Microsoft.Azure.Devices
         /// <example>
         /// <code language="csharp">
         /// serviceClient.FileUploadNotificationProcessor.ErrorProcessor = OnConnectionLost;
-        /// serviceClient.FileUploadNotificationProcessor.OpenAsync();
+        /// await serviceClient.FileUploadNotificationProcessor.OpenAsync();
         ///
         /// //...
         ///
-        /// public void OnConnectionLost(ErrorContext errorContext)
+        /// public async OnConnectionLost(ErrorContext errorContext)
         /// {
-        ///    // Add reconnection logic as needed
-        ///    Console.WriteLine("File upload notification processor connection lost")
+        ///    Console.WriteLine("File upload notification processor connection lost");
+        ///    
+        ///    // Add reconnection logic as needed, for example:
+        ///    await serviceClient.FileUploadNotificationProcessor.OpenAsync();
         /// }
         /// </code>
         /// </example>
@@ -204,7 +209,7 @@ namespace Microsoft.Azure.Devices
                         FileUploadNotification fileUploadNotification = await AmqpClientHelper
                             .GetObjectFromAmqpMessageAsync<FileUploadNotification>(amqpMessage)
                             .ConfigureAwait(false);
-                        AcknowledgementType ack = FileUploadNotificationProcessor.Invoke(fileUploadNotification);
+                        AcknowledgementType ack = await FileUploadNotificationProcessor.Invoke(fileUploadNotification).ConfigureAwait(false);
                         if (ack == AcknowledgementType.Complete)
                         {
                             await _amqpConnection.CompleteMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
@@ -253,10 +258,12 @@ namespace Microsoft.Azure.Devices
             {
                 ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
                 ErrorProcessor?.Invoke(errorContext);
-                Exception exceptionToLog = errorContext.IotHubServiceException;
 
                 if (Logging.IsEnabled)
+                {
+                    Exception exceptionToLog = errorContext.IotHubServiceException;
                     Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                }
             }
             else
             {
