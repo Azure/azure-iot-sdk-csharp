@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
     /// <summary>
     /// The device event message source.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DeviceEventMessageSource
     {
         /// <summary>

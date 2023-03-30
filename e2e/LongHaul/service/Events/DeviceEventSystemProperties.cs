@@ -51,6 +51,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         /// The version of the metadata.
         /// </summary>
         [JsonPropertyName("iothub-message-schema")]
-        public string MessageSchema{ get; set; }
+        public string MessageSchema { get; set; }
+
+        [JsonIgnore]
+        [JsonPropertyName("user-id")]
+        public byte[] UserId { get; set; }
     }
 }
