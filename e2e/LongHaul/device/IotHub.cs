@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Blobs.Models;
 using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
+using System.Text;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
@@ -223,23 +224,21 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         public async Task UploadFileAsync(CancellationToken ct)
         {
-            const string filePath = "TestPayload.txt";
-            using var fileStreamSource = new FileStream(filePath, FileMode.Open);
-            string fileName = Path.GetFileName(fileStreamSource.Name);
+            string fileName = $"TestPayload-{Guid.NewGuid()}.txt";
+            using var ms = new MemoryStream(Encoding.UTF8.GetBytes("TestPayload"));
+            _logger.Trace($"Uploading file {fileName}");
 
-            _logger.Trace($"Getting file upload SAS URI {fileName}...");
+            var fileUploadTime = Stopwatch.StartNew();
 
             var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
-            FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
+            FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
             Uri uploadUri = sasUri.GetBlobUri();
-
-            _logger.Trace($"Successfully got SAS URI ({uploadUri}) from IoT Hub");
 
             try
             {
                 _logger.Trace($"Attempting to upload {fileName}...");
                 var blockBlobClient = new BlockBlobClient(uploadUri);
-                await blockBlobClient.UploadAsync(fileStreamSource, new BlobUploadOptions());
+                await blockBlobClient.UploadAsync(ms, new BlobUploadOptions());
             }
             catch (Exception ex)
             {
@@ -253,9 +252,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _logger.Trace("File upload to Azure Storage was a success");
             var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true);
             await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct);
-
-            // TODO -- send telemetry message to let service client know that a file has been uploaded
-            // TODO -- incorporate specific device id
         }
 
         public async ValueTask DisposeAsync()
@@ -270,7 +266,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
-            _logger.Trace($"IoT hub client instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"IoT Hub client instance disposed", TraceSeverity.Verbose);
 
         }
 

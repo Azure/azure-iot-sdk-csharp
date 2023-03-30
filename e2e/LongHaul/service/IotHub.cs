@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
             _serviceClient?.Dispose();
 
-            _logger.Trace($"IotHub instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"IoT Hub instance disposed", TraceSeverity.Verbose);
         }
     }
 }
