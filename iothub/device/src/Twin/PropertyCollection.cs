@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string GetSerializedString()
         {
-            return JsonConvert.SerializeObject(_properties);
+            return DefaultPayloadConvention.Serialize(_properties);
         }
 
         /// <inheritdoc/>
