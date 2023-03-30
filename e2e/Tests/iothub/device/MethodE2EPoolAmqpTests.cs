@@ -33,8 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndRespondPoolOverAmqp(
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync)
+                    PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
         }
 
@@ -45,8 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndRespondPoolOverAmqp(
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync)
+                    PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
         }
 
@@ -58,7 +56,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
@@ -71,7 +68,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
@@ -80,7 +76,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<IotHubDeviceClient, string, Task<Task>> setDeviceReceiveMethod,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
