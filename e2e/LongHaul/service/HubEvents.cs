@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs.Consumer;
 using Mash.Logging;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -41,14 +41,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                     try
                     {
-                        DeviceEventSystemProperties eventMetadata = JsonSerializer.Deserialize<DeviceEventSystemProperties>(
-                            JsonSerializer.Serialize(partitionEvent.Data.SystemProperties));
+                        var testProperties = JsonConvert.SerializeObject(partitionEvent.Data.SystemProperties);
+                        DeviceEventSystemProperties eventMetadata = JsonConvert.DeserializeObject<DeviceEventSystemProperties>(testProperties);
 
                         switch (eventMetadata.MessageSource)
                         {
                             case DeviceEventMessageSource.DeviceConnectionStateEvents:
-                                DeviceEventProperties deviceEvent = JsonSerializer.Deserialize<DeviceEventProperties>(
-                                    JsonSerializer.Serialize(partitionEvent.Data.Properties));
+                                DeviceEventProperties deviceEvent = JsonConvert.DeserializeObject<DeviceEventProperties>(
+                                    JsonConvert.SerializeObject(partitionEvent.Data.Properties));
                                 TimeSpan timeSince = DateTimeOffset.UtcNow - deviceEvent.OperationOnUtc;
                                 if (timeSince.TotalSeconds < 30)
                                 {
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     }
                     catch (Exception ex)
                     {
-                        _logger.Trace($"Failed to convert event [{JsonSerializer.Serialize(partitionEvent.Data.Properties)}] to DeviceEventProperties due to {ex}", TraceSeverity.Warning);
+                        _logger.Trace($"Failed to convert event [{JsonConvert.SerializeObject(partitionEvent.Data.Properties)}] to DeviceEventProperties due to {ex}", TraceSeverity.Warning);
                     }
                 }
             }
