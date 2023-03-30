@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
         }
 
-        public async Task UploadFileAsync()
+        public async Task UploadFileAsync(CancellationToken ct)
         {
             const string filePath = "TestPayload.txt";
             using var fileStreamSource = new FileStream(filePath, FileMode.Open);
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             _logger.Trace("File upload to Azure Storage was a success");
             var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true);
-            await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification);
+            await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct);
 
             // TODO -- send telemetry message to let service client know that a file has been uploaded
             // TODO -- incorporate specific device id
