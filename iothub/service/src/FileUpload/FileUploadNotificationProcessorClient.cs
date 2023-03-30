@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
         ///
         /// //...
         ///
-        /// public Task<AcknowledgementType></AcknowledgementType> OnFileUploadNotificationReceivedAsync(FileUploadNotification fileUploadNotification)
+        /// public Task&lt;AcknowledgementType&gt; OnFileUploadNotificationReceivedAsync(FileUploadNotification fileUploadNotification)
         /// {
         ///    Console.WriteLine($"Received file upload notification from device {fileUploadNotification.DeviceId}")
         /// 
