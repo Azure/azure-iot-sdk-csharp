@@ -23,6 +23,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_desiredPropertiesSetInterval = TimeSpan.FromSeconds(3);
         private int _totalFileUploadNotificationsReceived;
+
+        // TODO -- determine what to do with these
         private int _totalFileUploadNotificationsCompleted;
         private int _totalFileUploadNotificationsAbandoned;
 
