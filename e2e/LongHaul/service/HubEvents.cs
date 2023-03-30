@@ -62,7 +62,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         {
                             case DeviceEventMessageSource.DeviceConnectionStateEvents:
                                 DeviceEventProperties deviceEvent = JsonSerializer.Deserialize<DeviceEventProperties>(
-                                    JsonSerializer.Serialize(partitionEvent.Data.Properties, options), options);
+                                    JsonSerializer.Serialize(partitionEvent.Data.Properties, options),
+                                    options);
                                 TimeSpan timeSince = DateTimeOffset.UtcNow - deviceEvent.OperationOnUtc;
                                 if (timeSince.TotalSeconds < 30)
                                 {
@@ -70,7 +71,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                                 }
                                 else
                                 {
-                                    _logger.Trace($"HubEvents: known message source {eventMetadata.MessageSource}/{deviceEvent.OperationType} but it happened {timeSince} ago.", TraceSeverity.Verbose);
+                                    _logger.Trace($"HubEvents: known message source {eventMetadata.MessageSource}/{deviceEvent.OperationType} {timeSince} ago.", TraceSeverity.Verbose);
                                 }
                                 break;
                         }
@@ -83,17 +84,17 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 }
             }
         }
-    }
 
-    public class ReadOnlyMemoryConverter : JsonConverter<ReadOnlyMemory<byte>>
-    {
-        public override ReadOnlyMemory<byte> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            => new();
-
-        public override void Write(Utf8JsonWriter writer, ReadOnlyMemory<byte> value, JsonSerializerOptions options)
+        private class ReadOnlyMemoryConverter : JsonConverter<ReadOnlyMemory<byte>>
         {
-            writer.WriteStartArray();
-            writer.WriteEndArray();
+            public override ReadOnlyMemory<byte> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+                => new();
+
+            public override void Write(Utf8JsonWriter writer, ReadOnlyMemory<byte> value, JsonSerializerOptions options)
+            {
+                writer.WriteStartArray();
+                writer.WriteEndArray();
+            }
         }
     }
 }

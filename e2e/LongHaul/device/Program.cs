@@ -15,11 +15,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
         private static Logger s_logger;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
+        internal static readonly string _runId = Guid.NewGuid().ToString();
 
         private static async Task Main(string[] args)
         {
             s_commonProperties.Add(TestClient, "IotHubDeviceClient");
-            s_commonProperties.Add(RunId, Guid.NewGuid().ToString());
+            s_commonProperties.Add(RunId, _runId);
             s_commonProperties.Add(SdkLanguage, ".NET");
             // TODO: get this info at runtime rather than hard-coding it
             s_commonProperties.Add(SdkVersion, "2.0.0-preview004");
@@ -49,7 +50,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 GetTransportSettings(parameters));
             foreach (KeyValuePair<string, string> prop in s_commonProperties)
             {
-                iotHub.IotProperties.Add(prop.Key, prop.Value);
+                iotHub.TelemetryUserProperties.Add(prop.Key, prop.Value);
             }
 
             // Log system health after initializing hub
@@ -58,6 +59,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             // Log system health after opening connection to hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
+
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press CTRL+C to exit");
@@ -68,6 +70,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 cancellationTokenSource.Cancel();
                 Console.WriteLine("Exiting ...");
             };
+
+            await iotHub.SetPropertiesAsync(LoggingConstants.RunId, _runId, cancellationTokenSource.Token).ConfigureAwait(false);
 
             var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_logger.Clone());
 

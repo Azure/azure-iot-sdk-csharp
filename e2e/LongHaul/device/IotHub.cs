@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private long _totalTwinCallbacksHandled = 0;
         private long _totalDesiredPropertiesHandled = 0;
 
-        public IDictionary<string, string> IotProperties { get; } = new Dictionary<string, string>();
+        public IDictionary<string, string> TelemetryUserProperties { get; } = new Dictionary<string, string>();
 
         public IotHub(Logger logger, string deviceConnectionString, IotHubClientTransportSettings transportSettings)
         {
@@ -58,7 +58,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 if (_deviceClient == null)
                 {
-                    _deviceClient = new IotHubDeviceClient(_deviceConnectionString, new IotHubClientOptions(_transportSettings))
+                    _deviceClient = new IotHubDeviceClient(
+                        _deviceConnectionString,
+                        new IotHubClientOptions(_transportSettings)
+                        {
+                            PayloadConvention = SystemTextJsonPayloadConvention.Instance,
+                        })
                     {
                         ConnectionStatusChangeCallback = ConnectionStatusChangesHandlerAsync
                     };
@@ -178,7 +183,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 CreatedOnUtc = createdOnUtc,
             };
 
-            foreach (KeyValuePair<string, string> prop in IotProperties)
+            foreach (KeyValuePair<string, string> prop in TelemetryUserProperties)
             {
                 iotMessage.Properties.TryAdd(prop.Key, prop.Value);
             }
