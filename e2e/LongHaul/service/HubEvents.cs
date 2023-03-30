@@ -41,8 +41,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                     try
                     {
-                        var testProperties = JsonConvert.SerializeObject(partitionEvent.Data.SystemProperties);
-                        DeviceEventSystemProperties eventMetadata = JsonConvert.DeserializeObject<DeviceEventSystemProperties>(testProperties);
+                        DeviceEventSystemProperties eventMetadata = JsonConvert.DeserializeObject<DeviceEventSystemProperties>(
+                            JsonConvert.SerializeObject(partitionEvent.Data.SystemProperties));
 
                         switch (eventMetadata.MessageSource)
                         {
