@@ -228,8 +228,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             using var ms = new MemoryStream(Encoding.UTF8.GetBytes("TestPayload"));
             _logger.Trace($"Uploading file {fileName}");
 
-            var fileUploadTime = Stopwatch.StartNew();
-
             var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
             FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
             Uri uploadUri = sasUri.GetBlobUri();
@@ -243,14 +241,21 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             catch (Exception ex)
             {
                 _logger.Trace($"WARNING: Exception occured while using Azure Storage SDK to upload file: {ex.Message}");
+                var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false)
+                {
+                    StatusCode = 500,
+                };
 
-                var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false);
                 await _deviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification);
                 return;
             }
 
             _logger.Trace("File upload to Azure Storage was a success");
-            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true);
+            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
+            {
+                StatusCode = 200,
+            };
+
             await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct);
         }
 
@@ -267,7 +272,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
             _logger.Trace($"IoT Hub client instance disposed", TraceSeverity.Verbose);
-
         }
 
         private async void ConnectionStatusChangesHandlerAsync(ConnectionStatusInfo connectionInfo)
