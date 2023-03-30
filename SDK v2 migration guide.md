@@ -430,7 +430,7 @@ These span across all service clients.
  - `DeviceRegistrationResult` now has a method `TryGetPayload<T>(...)`.
  - `ProvisioningClientTransportSettings` and derived classes now have settable property `CertificateRevocationCheck`. Remote certificate validation check is turned off by default.
    -  For connections over AMQP, this check is used in conjunction with the property `RemoteCertificateValidationCallback` on `ProvisioningClientTransportSettings`.
-   -   For connections over MQTT, this check is set directly on the TLS settings.
+   -  For connections over MQTT, this check is set directly on the TLS settings.
 
 #### API mapping
 
