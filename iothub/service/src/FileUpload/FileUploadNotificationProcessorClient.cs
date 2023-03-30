@@ -92,9 +92,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The callback to be executed when the connection is lost.
         /// </summary>
-        /// <remarks>
-        /// This call is not awaited by the client.
-        /// </remarks>
         /// <example>
         /// <code language="csharp">
         /// serviceClient.FileUploadNotificationProcessor.ErrorProcessor = OnConnectionLostAsync;
@@ -102,7 +99,7 @@ namespace Microsoft.Azure.Devices
         ///
         /// //...
         ///
-        /// public async void OnConnectionLostAsync(ErrorContext errorContext)
+        /// public async Task OnConnectionLostAsync(ErrorContext errorContext)
         /// {
         ///    Console.WriteLine("File upload notification processor connection lost");
         ///    
@@ -111,7 +108,7 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </code>
         /// </example>
-        public Action<ErrorContext> ErrorProcessor { get; set; }
+        public Func<ErrorContext, Task> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Open the connection and start receiving file upload notifications.
@@ -235,21 +232,36 @@ namespace Microsoft.Azure.Devices
 
                 try
                 {
-                    if (ex is IotHubServiceException hubEx)
-                    {
-                        ErrorProcessor?.Invoke(new ErrorContext(hubEx));
-                    }
-                    else if (ex is IOException ioEx)
-                    {
-                        ErrorProcessor?.Invoke(new ErrorContext(ioEx));
-                    }
-
                     await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                 }
                 catch (Exception ex2)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during cleanup: {ex2}", nameof(OnNotificationMessageReceivedAsync));
+                        Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during message abandon: {ex2}", nameof(OnNotificationMessageReceivedAsync));
+
+                    // silently fail
+                }
+
+                if (ErrorProcessor != null)
+                {
+                    try
+                    {
+                        if (ex is IotHubServiceException hubEx)
+                        {
+                            await ErrorProcessor.Invoke(new ErrorContext(hubEx)).ConfigureAwait(false);
+                        }
+                        else if (ex is IOException ioEx)
+                        {
+                            await ErrorProcessor.Invoke(new ErrorContext(ioEx)).ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception ex3)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during error process invoke: {ex3}", nameof(OnNotificationMessageReceivedAsync));
+
+                        // silently fail
+                    }
                 }
             }
             finally
