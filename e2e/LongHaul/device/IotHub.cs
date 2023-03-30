@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
         }
 
-        public async Task UploadFileAsync(CancellationToken cancellationToken)
+        public async Task UploadFileAsync()
         {
             const string filePath = "TestPayload.txt";
             using var fileStreamSource = new FileStream(filePath, FileMode.Open);
