@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
-            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
+            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
             await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<T, H>(directMethodResponseFromClient);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
