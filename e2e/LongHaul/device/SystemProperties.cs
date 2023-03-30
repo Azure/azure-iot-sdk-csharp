@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
-    class SystemProperties
+    internal class SystemProperties
     {
         [JsonPropertyName("systemArchitecture")]
         public string SystemArchitecture { get; set; } = RuntimeInformation.OSArchitecture.ToString();
