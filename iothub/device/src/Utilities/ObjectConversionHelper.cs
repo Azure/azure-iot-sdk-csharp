@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
                 // If it can be successfully converted, go ahead and return it.
-                value = payloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(objectToCastOrConvert);
+                string objectAsString = objectToCastOrConvert as string ?? objectToCastOrConvert.ToString();
+                value = payloadConvention.GetObject<T>(objectAsString);
                 return true;
             }
             catch
@@ -55,9 +56,7 @@ namespace Microsoft.Azure.Devices.Client
                     result = (T)Convert.ChangeType(input, typeof(T), CultureInfo.InvariantCulture);
                     return true;
                 }
-                catch
-                {
-                }
+                catch { }
             }
 
             result = default;

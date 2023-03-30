@@ -9,6 +9,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -150,8 +151,8 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             message.PayloadConvention = _clientOptions.PayloadConvention;
-            message.ContentType = _clientOptions.PayloadConvention.PayloadSerializer.ContentType;
-            message.ContentEncoding = _clientOptions.PayloadConvention.PayloadEncoder.ContentEncoding.WebName;
+            message.ContentType = _clientOptions.PayloadConvention.ContentType;
+            message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding;
 
             try
             {
@@ -196,8 +197,8 @@ namespace Microsoft.Azure.Devices.Client
             foreach (TelemetryMessage message in messages)
             {
                 message.PayloadConvention = _clientOptions.PayloadConvention;
-                message.ContentType = _clientOptions.PayloadConvention.PayloadSerializer.ContentType;
-                message.ContentEncoding = _clientOptions.PayloadConvention.PayloadEncoder.ContentEncoding.WebName;
+                message.ContentType = _clientOptions.PayloadConvention.ContentType;
+                message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding;
 
                 if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
                 {

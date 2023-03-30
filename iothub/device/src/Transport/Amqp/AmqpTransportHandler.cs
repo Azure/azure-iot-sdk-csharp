@@ -360,23 +360,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
 
-                AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken)
-                    .ConfigureAwait(false);
+                AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Get, null, cancellationToken).ConfigureAwait(false);
 
                 if (responseFromService == null)
                 {
                     throw new InvalidOperationException("Service rejected the message");
                 }
 
-                // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
-                using var reader = new StreamReader(responseFromService.BodyStream, _payloadConvention.PayloadEncoder.ContentEncoding);
-                string body = reader.ReadToEnd();
-
                 try
                 {
                     // The response here is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                     // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                    TwinDocument clientTwinProperties = JsonConvert.DeserializeObject<TwinDocument>(body);
+                    TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(responseFromService.BodyStream);
 
                     var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
                     {
@@ -393,7 +388,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 catch (JsonReaderException ex)
                 {
                     if (Logging.IsEnabled)
+                    {
+                        using var reader = new StreamReader(responseFromService.BodyStream);
+                        string body = reader.ReadToEnd();
                         Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+                    }
 
                     throw;
                 }
@@ -415,15 +414,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
                 AmqpMessage responseFromService = await RoundTripTwinMessageAsync(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
 
-                if (responseFromService != null)
-                {
-                    if (responseFromService.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseVersionName, out long version))
-                    {
-                        return version;
-                    }
-                }
-
-                return -1;
+                return responseFromService != null
+                    && responseFromService.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseVersionName, out long version)
+                    ? version
+                    : -1;
             }
             finally
             {
@@ -479,10 +473,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (correlationId == null)
             {
                 // This is desired property updates, so call the callback with DesiredPropertyCollection.
-                using var reader = new StreamReader(responseFromService.BodyStream, _payloadConvention.PayloadEncoder.ContentEncoding);
-                string responseBody = reader.ReadToEnd();
-
-                Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(responseBody);
+                Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.GetObject<Dictionary<string, object>>(responseFromService.BodyStream);
                 var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
                 {
                     PayloadConvention = _payloadConvention,

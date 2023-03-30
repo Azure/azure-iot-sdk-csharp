@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -83,12 +84,6 @@ namespace Microsoft.Azure.Devices.Client
         public string RequestId { get; protected internal set; }
 
         /// <summary>
-        /// The JSON payload in JRaw type.
-        /// </summary>
-        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        protected internal JRaw JsonPayload { get; set; }
-
-        /// <summary>
         /// The direct method payload.
         /// </summary>
         protected internal byte[] Payload { get; set; }
@@ -128,26 +123,37 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.PayloadSerializer.DeserializeToType<T>(GetPayloadAsJsonString());
+                payload = PayloadConvention.GetObject<T>(Payload);
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
+                if (Logging.IsEnabled)
+                    Logging.Error(this, ex, nameof(TryGetPayload));
             }
 
             return false;
         }
 
         /// <summary>
-        /// The command payload as a JSON string.
+        /// The command payload as a JSON string, if applicable.
         /// </summary>
         public string GetPayloadAsJsonString()
         {
             return Payload == null || Payload.Length == 0
                 ? null
-                : PayloadConvention.PayloadEncoder.ContentEncoding.GetString(Payload);
+                : DefaultPayloadConvention.s_encoding.GetString(Payload);
+        }
+
+        /// <summary>
+        /// Get the raw payload bytes.
+        /// </summary>
+        /// <returns>A copy of the raw payload as a byte array.</returns>
+        public byte[] GetPayloadAsBytes()
+        {
+            return (byte[])Payload.Clone();
         }
     }
 }

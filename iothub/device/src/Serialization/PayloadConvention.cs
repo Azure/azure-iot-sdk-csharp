@@ -1,35 +1,63 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The payload convention class. It is used to define a specific serializer as well as a specific content encoding.
+    /// The payload convention class.
     /// </summary>
     public abstract class PayloadConvention
     {
         /// <summary>
-        /// Gets the serializer used for the payload.
+        /// Used to specify what type of content will be in the payload.
         /// </summary>
-        /// <value>A serializer that will be used to convert the payload object to a string.</value>
-        public abstract PayloadSerializer PayloadSerializer { get; }
+        /// <remarks>
+        /// This can be free-form but should adhere to standard <see href="https://docs.w3cub.com/http/basics_of_http/mime_types.html">MIME types</see>,
+        /// for example: "application/json".
+        /// </remarks>
+        /// <value>A string representing the content type to use when sending a payload.</value>
+        public abstract string ContentType { get; }
 
         /// <summary>
-        /// Gets the encoder used for the payload to be serialized.
+        /// The encoding used for the payload.
         /// </summary>
-        /// <value>An encoder that will be used to convert the serialized string to a byte array.</value>
-        public abstract PayloadEncoder PayloadEncoder { get; }
+        public abstract string ContentEncoding { get; }
 
         /// <summary>
-        /// Returns the byte array for the convention-based message.
+        /// Returns the byte array for the convention-based serialized/encoded message.
         /// </summary>
-        /// <remarks>This will use the <see cref="PayloadSerializer"/> and <see cref="PayloadEncoder"/> to create the byte array.</remarks>
-        /// <param name="objectToSendWithConvention">The convention-based message to be sent.</param>
         /// <returns>The correctly encoded object for this convention.</returns>
-        public virtual byte[] GetObjectBytes(object objectToSendWithConvention)
-        {
-            string serializedString = PayloadSerializer.SerializeToString(objectToSendWithConvention);
-            return PayloadEncoder.EncodeStringToByteArray(serializedString);
-        }
+        public abstract byte[] GetObjectBytes(object objectToSendWithConvention);
+
+        /// <summary>
+        /// Returns the object as the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type to convert to.</typeparam>
+        /// <param name="objectToConvert">The object to convert.</param>
+        /// <returns>The converted object.</returns>
+        public abstract T GetObject<T>(byte[] objectToConvert);
+
+        /// <summary>
+        /// Returns the object as the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type to convert to.</typeparam>
+        /// <param name="streamToConvert">The stream to convert.</param>
+        /// <returns>The converted object.</returns>
+        public abstract T GetObject<T>(Stream streamToConvert);
+
+        /// <summary>
+        /// Returns the object as the specified type.
+        /// </summary>
+        /// <remarks>
+        /// Used to deserialize a twin property value.
+        /// </remarks>
+        /// <typeparam name="T">The type to convert to.</typeparam>
+        /// <param name="jsonObjectAsText">The serialized object as text to convert.</param>
+        /// <returns>The converted object.</returns>
+        public abstract T GetObject<T>(string jsonObjectAsText);
     }
 }

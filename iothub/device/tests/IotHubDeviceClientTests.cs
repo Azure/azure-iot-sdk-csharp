@@ -480,7 +480,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
                 RequestId = "request",
-                JsonPayload = new JRaw("Json"),
+                Payload = Encoding.UTF8.GetBytes("Json"),
                 ResponseTimeout = TimeSpan.FromSeconds(5),
                 ConnectionTimeout = TimeSpan.FromSeconds(5),
             };
@@ -513,8 +513,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         isMethodHandlerCalled = true;
                         bool methodReceived = payload.TryGetPayload(out actualMethodBody);
-                        var connectionTimeout = payload.ConnectionTimeoutInSeconds;
-                        var responseTimeout = payload.ResponseTimeoutInSeconds;
+                        int? connectionTimeout = payload.ConnectionTimeoutInSeconds;
+                        int? responseTimeout = payload.ResponseTimeoutInSeconds;
                         return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
@@ -601,8 +601,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         isMethodHandlerCalled = true;
                         responseReceivedAsExpected = payload.TryGetPayload(out response);
-                        var connectionTimeout = payload.ConnectionTimeoutInSeconds;
-                        var responseTimeout = payload.ResponseTimeoutInSeconds;
+                        int? connectionTimeout = payload.ConnectionTimeoutInSeconds;
+                        int? responseTimeout = payload.ResponseTimeoutInSeconds;
                         return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
@@ -790,7 +790,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler.Object;
             bool isMethodHandlerCalled = false;
-            DirectMethodResponse response = new DirectMethodResponse(200)
+            var response = new DirectMethodResponse(200)
             {
                 Payload = true,
                 PayloadConvention = DefaultPayloadConvention.Instance,
@@ -868,13 +868,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool methodCallbackCalled = false;
             string actualMethodName = string.Empty;
             CustomDirectMethodPayload actualMethodBody = null;
-            Func<DirectMethodRequest, Task<DirectMethodResponse>> methodCallback = (methodRequest) =>
+            Task<DirectMethodResponse> methodCallback(DirectMethodRequest methodRequest)
             {
                 actualMethodName = methodRequest.MethodName;
                 bool methodReceived = methodRequest.TryGetPayload(out actualMethodBody);
                 methodCallbackCalled = true;
                 return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
-            };
+            }
 
             const string methodName = "TestMethodName";
             var methodBody = new CustomDirectMethodPayload { Grade = "good" };
@@ -900,13 +900,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool methodCallbackCalled2 = false;
             string actualMethodName2 = string.Empty;
             CustomDirectMethodPayload actualMethodBody2 = null;
-            Func<DirectMethodRequest, Task<DirectMethodResponse>> methodCallback2 = (methodRequest) =>
+            Task<DirectMethodResponse> methodCallback2(DirectMethodRequest methodRequest)
             {
                 actualMethodName2 = methodRequest.MethodName;
                 bool methodReceived = methodRequest.TryGetPayload(out actualMethodBody2);
                 methodCallbackCalled2 = true;
                 return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
-            };
+            }
 
             var methodBody2 = new CustomDirectMethodPayload { Grade = "bad" };
             await deviceClient.SetDirectMethodCallbackAsync(methodCallback2).ConfigureAwait(false);
@@ -941,13 +941,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool methodCallbackCalled = false;
             string actualMethodName = string.Empty;
             CustomDirectMethodPayload actualMethodBody = null;
-            Func<DirectMethodRequest, Task<DirectMethodResponse>> methodCallback = (methodRequest) =>
+            Task<DirectMethodResponse> methodCallback(DirectMethodRequest methodRequest)
             {
                 actualMethodName = methodRequest.MethodName;
                 bool methodReceived = methodRequest.TryGetPayload(out actualMethodBody);
                 methodCallbackCalled = true;
                 return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
-            };
+            }
 
             const string methodName = "TestMethodName";
             var methodBody = new CustomDirectMethodPayload { Grade = "good" };
@@ -1015,11 +1015,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var deviceClient = new IotHubDeviceClient(fakeConnectionString);
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            void statusChangeHandler(ConnectionStatusInfo c)
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
-            };
+            }
             deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
 
             // act
@@ -1041,11 +1041,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var deviceClient = new IotHubDeviceClient(fakeConnectionString);
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
+            void StatusChangeHandler(ConnectionStatusInfo c)
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
-            };
+            }
             deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
             deviceClient.ConnectionStatusChangeCallback = null;
 
@@ -1064,11 +1064,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             await using var deviceClient = new IotHubDeviceClient(fakeConnectionString);
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            void statusChangeHandler(ConnectionStatusInfo c)
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
-            };
+            }
             deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
             // current status = disabled
 
@@ -1099,11 +1099,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sender = new object();
             bool handlerCalled = false;
             var connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
+            void statusChangeHandler(ConnectionStatusInfo c)
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
-            };
+            }
             deviceClient.ConnectionStatusChangeCallback = statusChangeHandler;
 
             // act
@@ -1135,12 +1135,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler.Object;
             var sender = new object();
             bool handlerCalled = false;
-            ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
-            Action<ConnectionStatusInfo> StatusChangeHandler = (c) =>
+            var connectionStatusInfo = new ConnectionStatusInfo();
+            void StatusChangeHandler(ConnectionStatusInfo c)
             {
                 handlerCalled = true;
                 connectionStatusInfo = c;
-            };
+            }
             deviceClient.ConnectionStatusChangeCallback = StatusChangeHandler;
 
             // act
