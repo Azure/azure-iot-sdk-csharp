@@ -64,7 +64,11 @@ namespace Microsoft.Azure.Devices
         /// The async callback to be executed each time file upload notification is received from the service.
         /// </summary>
         /// <remarks>
-        /// Must not be null.
+        /// Must not be null. To stop notifications, call <see cref="CloseAsync(CancellationToken)"/>.
+        /// <para>
+        /// This call is awaited by the client and the return value is used to complete or abandon the notification.
+        /// Abandoned notifications will be redelivered to a subscribed client, including this one.
+        /// </para>
         /// </remarks>
         /// <example>
         /// <code language="csharp">
@@ -88,14 +92,17 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The callback to be executed when the connection is lost.
         /// </summary>
+        /// <remarks>
+        /// This call is not awaited by the client.
+        /// </remarks>
         /// <example>
         /// <code language="csharp">
-        /// serviceClient.FileUploadNotificationProcessor.ErrorProcessor = OnConnectionLost;
+        /// serviceClient.FileUploadNotificationProcessor.ErrorProcessor = OnConnectionLostAsync;
         /// await serviceClient.FileUploadNotificationProcessor.OpenAsync();
         ///
         /// //...
         ///
-        /// public async OnConnectionLost(ErrorContext errorContext)
+        /// public async void OnConnectionLostAsync(ErrorContext errorContext)
         /// {
         ///    Console.WriteLine("File upload notification processor connection lost");
         ///    
