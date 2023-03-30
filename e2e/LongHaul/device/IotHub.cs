@@ -374,12 +374,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         {
             _logger.Trace($"Received the C2D message with Id {receivedMessage.MessageId}", TraceSeverity.Information);
 
-            if (receivedMessage.TryGetPayload(out CustomC2dMessagePayload customC2DMessagePayload))
+            if (receivedMessage.TryGetPayload(out CustomC2dMessagePayload customC2dMessagePayload))
             {
                 _logger.Trace("The message payload is received in an expected type.", TraceSeverity.Verbose);
                 _logger.Metric(TotalC2dMessagesCompleted, ++_totalC2dMessagesCompleted);
 
-                TimeSpan delay = DateTimeOffset.UtcNow - customC2DMessagePayload.CurrentTimeUtc;
+                TimeSpan delay = DateTimeOffset.UtcNow - customC2dMessagePayload.CurrentTimeUtc;
                 _logger.Metric(C2dMessageDelaySeconds, delay.TotalSeconds);
 
                 return Task.FromResult(MessageAcknowledgement.Complete);

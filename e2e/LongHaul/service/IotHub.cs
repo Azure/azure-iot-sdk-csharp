@@ -110,32 +110,37 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public async Task SendC2dMessagesAsync(CancellationToken ct)
         {
-            await s_serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
-
-            while (!ct.IsCancellationRequested)
+            try
             {
-                var payload = new CustomC2dMessagePayload
+                await s_serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
+
+                while (!ct.IsCancellationRequested)
                 {
-                    RandomId = Guid.NewGuid(),
-                    CurrentTimeUtc = DateTime.UtcNow,
-                    MessagesSentCount = ++_totalC2dMessagesSentCount,
-                };
-                var message = new OutgoingMessage(payload)
-                {
-                    // An acknowledgment is sent on delivery success or failure.
-                    Ack = DeliveryAcknowledgement.Full,
-                    MessageId = payload.RandomId.ToString(),
-                };
+                    var payload = new CustomC2dMessagePayload
+                    {
+                        RandomId = Guid.NewGuid(),
+                        CurrentTimeUtc = DateTime.UtcNow,
+                        MessagesSentCount = ++_totalC2dMessagesSentCount,
+                    };
+                    var message = new OutgoingMessage(payload)
+                    {
+                        // An acknowledgment is sent on delivery success or failure.
+                        Ack = DeliveryAcknowledgement.Full,
+                        MessageId = payload.RandomId.ToString(),
+                    };
 
-                _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
-                _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
+                    _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
+                    _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
 
-                await s_serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
+                    await s_serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
 
-                await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
+                    await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
+                }
             }
-
-            await s_serviceClient.Messages.CloseAsync(ct).ConfigureAwait(false);
+            finally
+            {
+                await s_serviceClient.Messages.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         public async Task ReceiveMessageFeedbacksAsync(CancellationToken ct)
@@ -159,15 +164,21 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
 
             s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
-            await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
 
             try
             {
-                await Task.Delay(-1, ct);
-            }
-            catch (OperationCanceledException) { }
+                await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
 
-            await s_serviceClient.MessageFeedback.CloseAsync(ct).ConfigureAwait(false);
+                try
+                {
+                    await Task.Delay(-1, ct);
+                }
+                catch (OperationCanceledException) { }
+            }
+            finally
+            {
+                await s_serviceClient.MessageFeedback.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         public void Dispose()
