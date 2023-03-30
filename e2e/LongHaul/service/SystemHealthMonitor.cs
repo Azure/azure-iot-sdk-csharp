@@ -33,9 +33,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
-        internal static SystemHealthC2dMessage BuildAndLogSystemHealth(Logger logger)
+        internal static SystemHealthMessage BuildAndLogSystemHealth(Logger logger)
         {
-            var message = new SystemHealthC2dMessage();
+            var message = new SystemHealthMessage();
             logger.Metric(nameof(message.ProcessCpuUsagePercent), message.ProcessCpuUsagePercent);
             logger.Metric(nameof(message.ProcessWorkingSet), message.ProcessWorkingSet);
             logger.Metric(nameof(message.ProcessWorkingSetPrivate), message.ProcessWorkingSetPrivate);

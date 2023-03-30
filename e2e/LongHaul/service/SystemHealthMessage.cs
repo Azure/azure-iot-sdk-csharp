@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
-    internal class SystemHealthC2dMessage : MessageBase
+    internal class SystemHealthMessage : MessageBase
     {
         private static readonly Process s_currentProcess = Process.GetCurrentProcess();
         private static readonly string s_processName = s_currentProcess.ProcessName;

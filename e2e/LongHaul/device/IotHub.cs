@@ -30,10 +30,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
-        private long _totalMessagesSent = 0;
+
+        private long _totalTelemetryMessagesSent = 0;
         private long _totalTwinUpdatesReported = 0;
         private long _totalTwinCallbacksHandled = 0;
         private long _totalDesiredPropertiesHandled = 0;
+        private long _totalC2dMessagesCompleted = 0;
+        private long _totalC2dMessagesRejected = 0;
 
         public IDictionary<string, string> IotProperties { get; } = new Dictionary<string, string>();
 
@@ -71,6 +74,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 await _deviceClient.OpenAsync().ConfigureAwait(false);
                 await _deviceClient.SetDirectMethodCallbackAsync(DirectMethodCallback).ConfigureAwait(false);
                 await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallbackAsync).ConfigureAwait(false);
+                await _deviceClient.SetIncomingMessageCallbackAsync(OnC2dMessageReceivedAsync).ConfigureAwait(false);
             }
             finally
             {
@@ -124,9 +128,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     await _deviceClient.SendTelemetryAsync(pendingMessage, ct).ConfigureAwait(false);
 
-                    ++_totalMessagesSent;
-                    _logger.Metric(TotalMessagesSent, _totalMessagesSent);
-                    _logger.Metric(MessageDelaySeconds, (DateTime.UtcNow - pendingMessage.CreatedOnUtc).TotalSeconds);
+                    ++_totalTelemetryMessagesSent;
+                    _logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
+                    _logger.Metric(TelemetryMessageDelaySeconds, (DateTime.UtcNow - pendingMessage.CreatedOnUtc).TotalSeconds);
 
                     pendingMessage = null;
                 }
@@ -142,7 +146,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     var reported = new ReportedProperties
                     {
-                        { "TotalMessagesSent", _totalMessagesSent },
+                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
                     };
                     await _deviceClient.UpdateReportedPropertiesAsync(reported ,ct).ConfigureAwait(false);
 
@@ -364,6 +368,27 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             ++_totalTwinCallbacksHandled;
             _logger.Metric(TotalTwinCallbacksHandled, _totalTwinCallbacksHandled);
+        }
+
+        private Task<MessageAcknowledgement> OnC2dMessageReceivedAsync(IncomingMessage receivedMessage)
+        {
+            _logger.Trace($"Received the C2D message with Id {receivedMessage.MessageId}", TraceSeverity.Information);
+
+            if (receivedMessage.TryGetPayload(out CustomC2dMessagePayload customC2dMessagePayload))
+            {
+                _logger.Trace("The message payload is received in an expected type.", TraceSeverity.Verbose);
+                _logger.Metric(TotalC2dMessagesCompleted, ++_totalC2dMessagesCompleted);
+
+                TimeSpan delay = DateTimeOffset.UtcNow - customC2dMessagePayload.CurrentTimeUtc;
+                _logger.Metric(C2dMessageDelaySeconds, delay.TotalSeconds);
+
+                return Task.FromResult(MessageAcknowledgement.Complete);
+            }
+
+            _logger.Trace("The message payload is received in an unknown type.", TraceSeverity.Verbose);
+            _logger.Metric(TotalC2dMessagesRejected, ++_totalC2dMessagesRejected);
+
+            return Task.FromResult(MessageAcknowledgement.Reject);
         }
     }
 }
