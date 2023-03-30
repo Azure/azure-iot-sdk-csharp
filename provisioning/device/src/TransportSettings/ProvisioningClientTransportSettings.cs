@@ -73,18 +73,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </remarks>
         public bool CertificateRevocationCheck { get; set; }
 
-        /// <summary>
-        /// A callback for remote certificate validation.
-        /// </summary>
-        /// <remarks>
-        /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
-        /// <para>
-        /// This feature is only applicable for MQTT over TCP, MQTT over web socket and AMQP over TCP.
-        /// AMQP web socket communication does not support this feature.
-        /// For users who want this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
-        /// instance with the desired callback and other websocket options (eg. proxy, keep-alive etc.) set.
-        /// </para>
-        /// </remarks>
+        /// <summary>
+        /// A callback for remote certificate validation.
+        /// </summary>
+        /// <remarks>
+        /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
+        /// <para>
+        /// This feature is only applicable for MQTT over TCP, MQTT over web socket, and AMQP over TCP.
+        /// </para>
+        /// <para>
+        /// AMQP web socket communication does not support this feature.
+        /// For users who want this support over AMQP web socket, you must instead provide a <see cref="ClientWebSocket"/>
+        /// instance using .NET Standard 2.1 or greater with the desired callback and other web socket options (eg. proxy, keep-alive etc.) set.
+        /// </para>
+        /// </remarks>
+        /// <seealso href="https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.remotecertificatevalidationcallback"/>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
 
         // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
