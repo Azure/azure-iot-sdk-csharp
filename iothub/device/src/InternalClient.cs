@@ -115,6 +115,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly ITransportSettings[] _transportSettings;
         private readonly ClientOptions _clientOptions;
+        private volatile bool _isDisposed;
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
@@ -1378,6 +1379,11 @@ namespace Microsoft.Azure.Devices.Client
             FileUploadSasUriRequest request,
             CancellationToken cancellationToken = default)
         {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("IoT client", DefaultDelegatingHandler.ClientDisposedMessage);
+            }
+
             return _fileUploadHttpTransportHandler.GetFileUploadSasUriAsync(request, cancellationToken);
         }
 
@@ -1385,6 +1391,11 @@ namespace Microsoft.Azure.Devices.Client
             FileUploadCompletionNotification notification,
             CancellationToken cancellationToken = default)
         {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("IoT client", DefaultDelegatingHandler.ClientDisposedMessage);
+            }
+
             return _fileUploadHttpTransportHandler.CompleteFileUploadAsync(notification, cancellationToken);
         }
 
@@ -1413,10 +1424,15 @@ namespace Microsoft.Azure.Devices.Client
         [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
         public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, blobName, source, nameof(UploadToBlobAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, blobName, source, nameof(UploadToBlobAsync));
+                if (_isDisposed)
+                {
+                    throw new ObjectDisposedException("IoT client", DefaultDelegatingHandler.ClientDisposedMessage);
+                }
 
                 if (string.IsNullOrEmpty(blobName))
                 {
@@ -1830,6 +1846,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public void Dispose()
         {
+            _isDisposed = true;
             InnerHandler?.Dispose();
             _methodsSemaphore?.Dispose();
             _moduleReceiveMessageSemaphore?.Dispose();
