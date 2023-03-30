@@ -75,17 +75,24 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
                 _logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
 
-                // Invoke the direct method asynchronously and get the response from the simulated device.
-                DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
-
-                if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
+                try
                 {
-                    _logger.Metric(
-                        D2cDirectMethodDelaySeconds,
-                        (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
-                }
+                    // Invoke the direct method asynchronously and get the response from the simulated device.
+                    DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
 
-                _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
+                    if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
+                    {
+                        _logger.Metric(
+                            D2cDirectMethodDelaySeconds,
+                            (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
+                    }
+
+                    _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
+                }
+                catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
+                {
+                    _logger.Trace($"Caught exception invoking direct method {ex}", TraceSeverity.Warning);
+                }
 
                 await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
             }

@@ -209,7 +209,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisi
 		e2e\LongHaul\prerequisites\readme.md = e2e\LongHaul\prerequisites\readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.LongHaul.Service", "e2e\LongHaul\service\Microsoft.Azure.Devices.LongHaul.Service.csproj", "{73AC4FF1-87EF-4A82-B139-89E8547EFEE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.LongHaul.Service", "e2e\LongHaul\service\Microsoft.Azure.Devices.LongHaul.Service.csproj", "{73AC4FF1-87EF-4A82-B139-89E8547EFEE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
