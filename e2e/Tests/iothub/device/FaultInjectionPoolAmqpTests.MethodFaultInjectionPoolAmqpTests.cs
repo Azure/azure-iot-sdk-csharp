@@ -193,6 +193,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             string faultType,
             string reason)
         {
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
