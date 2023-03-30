@@ -97,6 +97,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
+        public async Task UploadFileAsync(CancellationToken ct)
+        {
+            // TODO 
+        }
+
         public void Dispose()
         {
             _logger.Trace("Disposing", TraceSeverity.Verbose);

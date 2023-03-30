@@ -4,10 +4,13 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Blobs.Models;
 using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
@@ -216,6 +219,42 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 .ConfigureAwait(false);
 
             _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
+        }
+
+        public async Task UploadFileAsync(CancellationToken cancellationToken)
+        {
+            const string filePath = "TestPayload.txt";
+            using var fileStreamSource = new FileStream(filePath, FileMode.Open);
+            string fileName = Path.GetFileName(fileStreamSource.Name);
+
+            _logger.Trace($"Getting file upload SAS URI {fileName}...");
+
+            // TODO -- stopwatch?
+
+            var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
+            FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
+            Uri uploadUri = sasUri.GetBlobUri();
+
+            _logger.Trace($"Successfully got SAS URI ({uploadUri}) from IoT Hub");
+
+            try
+            {
+                _logger.Trace($"Attempting to upload {fileName}...");
+                var blockBlobClient = new BlockBlobClient(uploadUri);
+                await blockBlobClient.UploadAsync(fileStreamSource, new BlobUploadOptions();
+            }
+            catch (Exception ex)
+            {
+                _logger.Trace($"WARNING: Exception occured while using Azure Storage SDK to upload file: {ex.Message}");
+
+                var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false);
+                await _deviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification);
+                return;
+            }
+
+            _logger.Trace("File upload to Azure Storage was a success");
+            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true);
+            await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification);
         }
 
         public async ValueTask DisposeAsync()
