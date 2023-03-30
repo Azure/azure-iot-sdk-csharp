@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Payload == null || Payload.Length == 0
                 ? null
-                : DefaultPayloadConvention.Encoding.GetString(Payload);
+                : DefaultPayloadConvention.s_encoding.GetString(Payload);
         }
 
         /// <summary>

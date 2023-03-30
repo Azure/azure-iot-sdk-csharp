@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class SystemTextJsonPayloadConvention : PayloadConvention
     {
-        internal static readonly Encoding Encoding = Encoding.UTF8;
+        internal static readonly Encoding s_encoding = Encoding.UTF8;
 
         private SystemTextJsonPayloadConvention() { }
 
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         public override string ContentType => "application/json";
 
         /// <inheritdoc/>
-        public override string ContentEncoding => Encoding.WebName;
+        public override string ContentEncoding => s_encoding.WebName;
 
         /// <inheritdoc/>
         public override byte[] GetObjectBytes(object objectToSendWithConvention)
