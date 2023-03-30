@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs.Consumer;
@@ -23,6 +24,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         internal async Task RunAsync(CancellationToken ct)
         {
+            var options = new JsonSerializerOptions { Converters = { new ReadOnlyMemoryConverter() } };
+
             var readEventOptions = new ReadEventOptions { MaximumWaitTime = TimeSpan.FromSeconds(3) };
             string eventHubConnectionString = await _iotHub.GetEventHubCompatibleConnectionStringAsync(ct);
             await using var eventHubClient = new EventHubConsumerClient(
@@ -39,16 +42,28 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         break;
                     }
 
+                    DeviceEventSystemProperties eventMetadata;
                     try
                     {
-                        DeviceEventSystemProperties eventMetadata = JsonSerializer.Deserialize<DeviceEventSystemProperties>(
-                            JsonSerializer.Serialize(partitionEvent.Data.SystemProperties));
+                        eventMetadata = JsonSerializer.Deserialize<DeviceEventSystemProperties>(
+                            JsonSerializer.Serialize(partitionEvent.Data.SystemProperties, options),
+                            options);
 
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Trace($"Failed to convert event [{JsonSerializer.Serialize(partitionEvent.Data.SystemProperties)}] to DeviceEventProperties due to {ex}", TraceSeverity.Warning);
+                        continue;
+                    }
+
+                    try
+                    {
                         switch (eventMetadata.MessageSource)
                         {
                             case DeviceEventMessageSource.DeviceConnectionStateEvents:
                                 DeviceEventProperties deviceEvent = JsonSerializer.Deserialize<DeviceEventProperties>(
-                                    JsonSerializer.Serialize(partitionEvent.Data.Properties));
+                                    JsonSerializer.Serialize(partitionEvent.Data.Properties, options),
+                                    options);
                                 TimeSpan timeSince = DateTimeOffset.UtcNow - deviceEvent.OperationOnUtc;
                                 if (timeSince.TotalSeconds < 30)
                                 {
@@ -56,7 +71,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                                 }
                                 else
                                 {
-                                    _logger.Trace($"HubEvents: known message source {eventMetadata.MessageSource}", TraceSeverity.Verbose);
+                                    _logger.Trace($"HubEvents: known message source {eventMetadata.MessageSource}/{deviceEvent.OperationType} {timeSince} ago.", TraceSeverity.Verbose);
                                 }
                                 break;
                         }
@@ -64,8 +79,21 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     catch (Exception ex)
                     {
                         _logger.Trace($"Failed to convert event [{JsonSerializer.Serialize(partitionEvent.Data.Properties)}] to DeviceEventProperties due to {ex}", TraceSeverity.Warning);
+                        continue;
                     }
                 }
+            }
+        }
+
+        private class ReadOnlyMemoryConverter : JsonConverter<ReadOnlyMemory<byte>>
+        {
+            public override ReadOnlyMemory<byte> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+                => new();
+
+            public override void Write(Utf8JsonWriter writer, ReadOnlyMemory<byte> value, JsonSerializerOptions options)
+            {
+                writer.WriteStartArray();
+                writer.WriteEndArray();
             }
         }
     }

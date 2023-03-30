@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
     /// <summary>
     /// IoT hub publishes these event types.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DeviceEventOperationType
     {
         /// <summary>
