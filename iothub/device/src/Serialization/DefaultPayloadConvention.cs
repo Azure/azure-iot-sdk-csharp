@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
@@ -82,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
             return JsonConvert.DeserializeObject<T>(jsonObjectAsText);
         }
 
-        // For unit testing
+        // For internal and unit testing use
         internal static string Serialize(object objectToSerialize)
         {
             return JsonConvert.SerializeObject(objectToSerialize);
