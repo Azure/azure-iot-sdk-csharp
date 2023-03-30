@@ -256,7 +256,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             // TODO -- send telemetry message to let service client know that a file has been uploaded
             // TODO -- incorporate specific device id
-            await _deviceClient.SendTelemetryAsync(new TelemetryMessage("File Upload"), cancellationToken);
         }
 
         public async ValueTask DisposeAsync()

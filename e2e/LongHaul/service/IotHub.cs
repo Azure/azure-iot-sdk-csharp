@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public async Task ReceiveFileUploadAsync(CancellationToken ct)
         {
-            // TODO 
+            await _serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
             _logger.Trace("Listening for file upload notifications from the service...");
 
             AcknowledgementType FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
@@ -129,29 +129,20 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 _logger.Trace(sb.ToString());
 
                 _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
-
-                // TODO -- figure out if the total upload metrics are needed in the same way as the sample
                 return ackType;
             }
 
             _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
-            await _serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
-
-            // Wait for cancellation and then print the summary
-            try
-            {
-                await Task.Delay(-1, ct);
-            }
-            catch (OperationCanceledException) { }
-
             _logger.Trace($"Total File Notifications Received: {_totalFileUploadNotificationsReceived}.");
-            await _serviceClient.FileUploadNotifications.CloseAsync(CancellationToken.None);
+
+            await Task.Delay(30 * 1000);
         }
 
         public void Dispose()
         {
             _logger.Trace("Disposing", TraceSeverity.Verbose);
 
+            _serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
             _serviceClient?.Dispose();
 
             _logger.Trace($"IotHub instance disposed", TraceSeverity.Verbose);
